@@ -1,4 +1,4 @@
-"""DeepSeek AI service — tool-calling agent avec cascade BDD + fail-closed.
+"""AI service — tool-calling agent avec cascade BDD + fail-closed.
 
 Phase 1 de l'assistant agentique (cf. ROADMAP.md § IA) :
   1. Le LLM reçoit la question + la liste de tools (specs JSON Schema)
@@ -12,28 +12,26 @@ La boucle est non-streamée ; seul le texte final est streamé en SSE.
 Cela permet d'inspecter `tool_calls` avant de décider quoi envoyer à
 l'utilisateur.
 
-Environnement : `DEEPSEEK_API_KEY` requis. Le service est fail-closed :
-sans clé, `/ai/ask` répond 503 (non géré ici, mais côté route).
+Provider LLM (DeepSeek cloud / Ollama local) sélectionné à runtime via
+`backend.services.llm_providers.select_provider()`. Sans provider
+configuré, la route répond 503 (non géré ici).
 """
 
 from __future__ import annotations
 
 import json
 import logging
-import os
 from typing import AsyncIterator
 
-from openai import AsyncOpenAI
 from sqlalchemy.orm import Session
 
 from backend.services.ai_tools import TOOL_SPECS, dispatch_tool
+from backend.services.llm_providers import LLMProvider, select_provider
 
 LOGGER = logging.getLogger(__name__)
 
 # ─── Configuration ───────────────────────────────────────────────────────────
 
-MODEL            = "deepseek-chat"
-BASE_URL         = "https://api.deepseek.com"
 MAX_ITERATIONS   = 5       # circuit breaker : 5 tours d'appels tools max
 MAX_TOKENS       = 1024
 TEMPERATURE      = 0.3     # basse pour réponses factuelles
@@ -58,20 +56,13 @@ Règles STRICTES à respecter :
 6. Sois concis, précis, et cite les valeurs concrètes retournées par les tools (stats, prix, localisations)."""
 
 
-def _get_client() -> AsyncOpenAI:
-    """Factory — lève RuntimeError si `DEEPSEEK_API_KEY` est absente."""
-    api_key = os.getenv("DEEPSEEK_API_KEY")
-    if not api_key:
-        raise RuntimeError("DEEPSEEK_API_KEY environment variable not set")
-    return AsyncOpenAI(api_key=api_key, base_url=BASE_URL)
-
-
 # ─── Boucle tool-calling ─────────────────────────────────────────────────────
 
 async def stream_ai_response(
     db: Session,
     message: str,
     context: str | None = None,
+    provider: LLMProvider | None = None,
 ) -> AsyncIterator[str]:
     """Agent loop : tool calls → résultats → boucle → streaming de la réponse finale.
 
@@ -79,11 +70,19 @@ async def stream_ai_response(
         db: Session SQLAlchemy (passée aux handlers de tools).
         message: Question de l'utilisateur.
         context: Contexte optionnel injecté par l'UI (sélection courante).
+        provider: Provider LLM. Si None, sélectionné via select_provider().
+                  Lève RuntimeError si aucun provider disponible.
 
     Yields:
         Chunks de texte (réponse finale OU message de refus fail-closed).
     """
-    client = _get_client()
+    provider = provider or select_provider()
+    if provider is None:
+        raise RuntimeError("No LLM provider configured (DEEPSEEK_API_KEY or OLLAMA_URL)")
+
+    client = provider.client
+    model = provider.model
+    LOGGER.debug("AI loop using provider=%s model=%s", provider.name, model)
 
     user_content = message
     if context:
@@ -98,7 +97,7 @@ async def stream_ai_response(
         LOGGER.debug("AI loop iteration %d/%d", iteration + 1, MAX_ITERATIONS)
 
         response = await client.chat.completions.create(
-            model=MODEL,
+            model=model,
             messages=messages,
             tools=TOOL_SPECS,
             tool_choice="auto",

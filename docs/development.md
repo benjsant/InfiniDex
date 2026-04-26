@@ -103,31 +103,72 @@ CORS_ALLOWED_ORIGINS=http://localhost:53000,http://localhost:58000
 
 En prod, lister uniquement le domaine public.
 
-### Assistant IA (DeepSeek)
+### Assistant IA (DeepSeek ou Ollama local)
 
-L'endpoint `POST /ai/ask` utilise [DeepSeek](https://platform.deepseek.com/) en provider cloud (compatible OpenAI). Le fonctionnement complet (boucle tool-calling, fail-closed, circuit breaker) est documenté côté [API](api.md#ia-deepseek-agentique).
+L'endpoint `POST /ai/ask` est un agent tool-calling (cf. [API](api.md#ia-agentique-deepseek-ou-ollama)). Il sélectionne automatiquement un provider à runtime :
+
+1. **DeepSeek** si `DEEPSEEK_API_KEY` est défini (priorité, qualité maximale)
+2. **Ollama local** si `OLLAMA_URL` est défini
+3. Sinon → `503` avec instructions de setup retournées en JSON
+
+#### Option 1 — DeepSeek (cloud)
 
 ```dotenv
-# Active l'assistant. Sans cette variable, POST /ai/ask répond 503.
 DEEPSEEK_API_KEY=sk-...
 ```
 
-Étapes :
-
 1. Créer un compte sur [platform.deepseek.com](https://platform.deepseek.com/)
 2. Générer une clé API
-3. Décommenter et coller la clé dans `.env`
-4. `docker compose up -d backend` (la clé est lue à runtime, pas besoin de rebuild)
+3. Décommenter et coller dans `.env`
+4. `docker compose restart backend` (clé lue à runtime, pas de rebuild)
 
-!!! note "Test rapide"
-    ```bash
-    curl -X POST http://localhost:58000/ai/ask \
-      -H 'Content-Type: application/json' \
-      -d '{"message": "Que peut apprendre la fusion Pikachu × Charizard ?"}'
-    ```
+#### Option 2 — Ollama local (autonome, sans clé)
 
-!!! warning "Fallback Ollama local — à venir"
-    Pour ceux sans clé DeepSeek, un fallback Ollama (LLM local en Docker) est planifié dans une PR suivante. En attendant, sans `DEEPSEEK_API_KEY` l'endpoint retourne `503` proprement.
+```bash
+docker compose --profile ollama up -d ollama
+```
+
+Puis dans `.env` :
+
+```dotenv
+OLLAMA_URL=http://ollama:11434
+OLLAMA_MODEL=qwen2.5:3b   # défaut, ~2 GB téléchargés au premier boot
+```
+
+`docker compose restart backend`.
+
+**Modèles recommandés** (override via `OLLAMA_MODEL`) :
+
+| Modèle | Taille Q4 | RAM | Cible |
+|--------|-----------|-----|-------|
+| `qwen2.5:3b` (défaut) | ~2 GB | 4 GB | CPU only, laptop |
+| `qwen2.5:7b` | ~4.5 GB | 6 GB | GPU 8 GB / Apple Silicon |
+
+!!! note "Qualité comparée"
+    Ollama local est moins fiable que DeepSeek sur le tool calling : 5-15 % d'arguments malformés contre <1 %, latence 5-30 s sur CPU contre ~2 s en cloud. Le fail-closed garantit qu'aucune hallucination ne passe — au pire l'agent répond *« Je n'ai pas trouvé cette information. »*.
+
+#### Test rapide
+
+```bash
+curl -X POST http://localhost:58000/ai/ask \
+  -H 'Content-Type: application/json' \
+  -d '{"message": "Que peut apprendre la fusion Pikachu × Charizard ?"}'
+```
+
+#### Que se passe-t-il sans provider ?
+
+```bash
+$ curl -s http://localhost:58000/ai/ask -d '{"message":"hi"}' | jq .detail
+{
+  "error": "No LLM provider configured",
+  "options": [
+    { "provider": "deepseek", "label": "...", "steps": [...] },
+    { "provider": "ollama",   "label": "...", "steps": [...] }
+  ]
+}
+```
+
+Le frontend peut afficher cette payload comme une bannière d'aide.
 
 ### Proxy Next.js
 

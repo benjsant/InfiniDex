@@ -1,4 +1,4 @@
-"""Tests for /ai route — tool-calling loop with mocked DeepSeek."""
+"""Tests for /ai route — tool-calling loop with mocked LLM provider."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.services import ai_service
+from backend.services import ai_service, llm_providers
 
 
 # ─── Helpers pour mocker les réponses DeepSeek ───────────────────────────────
@@ -61,18 +61,39 @@ class FakeClient:
         self.chat = SimpleNamespace(completions=FakeCompletions(responses))
 
 
+class FakeProvider:
+    """Minimal LLMProvider impl for tests."""
+
+    def __init__(self, responses: list):
+        self._client = FakeClient(responses)
+
+    @property
+    def name(self) -> str:
+        return "fake"
+
+    @property
+    def model(self) -> str:
+        return "fake-model"
+
+    @property
+    def client(self):
+        return self._client
+
+
 @pytest.fixture
 def fake_client_factory(monkeypatch):
-    """Install a fake DeepSeek client + canned tool dispatch.
+    """Install a fake LLM provider + canned tool dispatch.
 
     `dispatch_tool` is mocked to return tool-name-specific stubs so these
     tests don't need a populated DB (CI runs without Postgres). Real
     tool↔DB integration is covered separately in `test_ai_tools.py`.
+
+    `select_provider` is monkey-patched at the route level so the 503
+    branch is bypassed and our FakeProvider is used in the loop.
     """
     monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key-fake")
 
     def fake_dispatch_tool(_db, name: str, args: dict) -> dict:
-        # Canned, deterministic responses — sufficient for loop testing.
         if name == "get_pokemon":
             return {
                 "id": args.get("name_or_id"),
@@ -84,20 +105,31 @@ def fake_client_factory(monkeypatch):
     monkeypatch.setattr(ai_service, "dispatch_tool", fake_dispatch_tool)
 
     def install(responses: list) -> FakeClient:
-        client = FakeClient(responses)
-        monkeypatch.setattr(ai_service, "_get_client", lambda: client)
-        return client
+        provider = FakeProvider(responses)
+        # Patch both module references — route checks select_provider first
+        # (its own import), then service uses provider passed in.
+        monkeypatch.setattr(
+            "backend.routes.ai_route.select_provider",
+            lambda: provider,
+        )
+        monkeypatch.setattr(llm_providers, "select_provider", lambda: provider)
+        return provider.client
 
     yield install
 
 
 # ─── Tests ───────────────────────────────────────────────────────────────────
 
-def test_ai_missing_key(client: TestClient, monkeypatch) -> None:
+def test_ai_no_provider_configured(client: TestClient, monkeypatch) -> None:
+    """Without DEEPSEEK_API_KEY nor OLLAMA_URL → 503 with setup instructions."""
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.delenv("OLLAMA_URL", raising=False)
     r = client.post("/ai/ask", json={"message": "salut"})
     assert r.status_code == 503
-    assert "DEEPSEEK_API_KEY" in r.json()["detail"]
+    detail = r.json()["detail"]
+    assert detail["error"] == "No LLM provider configured"
+    providers = {opt["provider"] for opt in detail["options"]}
+    assert providers == {"deepseek", "ollama"}
 
 
 def test_ai_direct_answer_no_tool_call(client: TestClient, fake_client_factory) -> None:

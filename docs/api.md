@@ -102,11 +102,11 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 | GET     | `/stats/coverage`                   | Audit de complétude DB                         |
 | GET     | `/health`                           | Healthcheck (Docker + CI)                      |
 
-### IA (DeepSeek agentique)
+### IA agentique (DeepSeek ou Ollama)
 
 | Méthode | Chemin      | Description                                                                 |
 | ------- | ----------- | --------------------------------------------------------------------------- |
-| POST    | `/ai/ask`   | Agent avec tool calling DeepSeek — streaming SSE. `503` si `DEEPSEEK_API_KEY` absente. |
+| POST    | `/ai/ask`   | Agent tool-calling — streaming SSE. Provider sélectionné runtime (DeepSeek si `DEEPSEEK_API_KEY`, sinon Ollama si `OLLAMA_URL`, sinon `503` avec instructions de setup). |
 
 Payload : `{ "message": "...", "context": "..." }` (context optionnel pour injecter la sélection courante — ex. *"Pokémon Dracaufeu id=6, fusion avec Mewtwo id=150"*).
 
