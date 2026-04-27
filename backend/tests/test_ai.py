@@ -93,7 +93,7 @@ def fake_client_factory(monkeypatch):
     """
     monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key-fake")
 
-    def fake_dispatch_tool(_db, name: str, args: dict) -> dict:
+    async def fake_dispatch_tool(_db, name: str, args: dict) -> dict:
         if name == "get_pokemon":
             return {
                 "id": args.get("name_or_id"),

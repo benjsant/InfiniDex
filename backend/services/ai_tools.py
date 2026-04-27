@@ -26,6 +26,8 @@ from typing import Any, Callable
 
 from sqlalchemy.orm import Session
 
+from backend.services.wiki_service import fetch_wiki
+
 from backend.db.models import Item, Move, Pokemon
 from backend.services.fusion_service import (
     MOVE_EXPERT_PRICES_HEART_SCALES,
@@ -385,6 +387,32 @@ TOOL_SPECS: list[dict] = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_wiki",
+            "description": (
+                "Cherche une page sur le wiki officiel de Pokémon Infinite "
+                "Fusion (infinitefusion.fandom.com). À utiliser quand les "
+                "tools BDD ne couvrent pas la question : mécaniques de jeu, "
+                "lore, quêtes, patches, fonctionnalités spécifiques au "
+                "fan-game. Retourne l'intro de la meilleure page trouvée."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": (
+                            "Termes de recherche en anglais (le wiki est en EN). "
+                            "Ex: 'Safari Zone', 'Wonder Trade', 'Randomizer mode'"
+                        ),
+                    }
+                },
+                "required": ["query"],
+            },
+        },
+    },
 ]
 
 
@@ -397,11 +425,30 @@ TOOL_HANDLERS: dict[str, Callable[[Session, dict], dict]] = {
 }
 
 
-def dispatch_tool(db: Session, name: str, args: dict[str, Any]) -> dict:
+# ─── Async handlers (tools requiring I/O outside the DB) ─────────────────────
+
+async def _search_wiki(db: Session, args: dict) -> dict:
+    """Async handler — proxies to wiki_service.fetch_wiki."""
+    query = args.get("query")
+    if not query:
+        return {"error": "Missing required arg 'query'"}
+    return await fetch_wiki(str(query))
+
+
+ASYNC_TOOL_HANDLERS: dict[str, Callable] = {
+    "search_wiki": _search_wiki,
+}
+
+
+async def dispatch_tool(db: Session, name: str, args: dict[str, Any]) -> dict:
     """Central entry-point : resolve `name` to a handler and invoke it.
 
+    Async because some tools (search_wiki) perform network I/O.
     Returns `{"error": "..."}` if the tool name is unknown.
     """
+    async_handler = ASYNC_TOOL_HANDLERS.get(name)
+    if async_handler is not None:
+        return await async_handler(db, args)
     handler = TOOL_HANDLERS.get(name)
     if handler is None:
         return {"error": f"Unknown tool '{name}'"}
