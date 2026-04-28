@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { askAi } from "@/lib/api";
+import type { HistoryMessage } from "@/types/api";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -13,31 +14,40 @@ export function useAiChat() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Ref tracks latest messages so sendMessage doesn't need them as a dep.
+  const messagesRef = useRef<ChatMessage[]>([]);
+  messagesRef.current = messages;
+
   const sendMessage = useCallback(
     async (message: string, context?: string) => {
       setError(null);
-      const userMsg: ChatMessage = { role: "user", content: message };
-      setMessages((prev) => [...prev, userMsg]);
 
-      // Placeholder assistant message that will be filled by stream
-      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+      // Completed exchanges = history for this request (exclude empty placeholders).
+      const history: HistoryMessage[] = messagesRef.current
+        .filter((m) => m.content.trim() !== "")
+        .map((m) => ({ role: m.role, content: m.content }));
+
+      setMessages((prev) => [
+        ...prev.filter((m) => m.content.trim() !== ""),
+        { role: "user", content: message },
+        { role: "assistant", content: "" },
+      ]);
       setIsStreaming(true);
 
       try {
-        const res = await askAi({ message, context });
+        const res = await askAi({ message, context, history });
         const reader = res.body?.getReader();
         if (!reader) throw new Error("No response body");
 
         const decoder = new TextDecoder();
         let done = false;
-
         while (!done) {
           const { value, done: doneReading } = await reader.read();
           done = doneReading;
           if (value) {
             const chunk = decoder.decode(value, { stream: true });
-            setMessages((prev) => {
-              const updated = [...prev];
+            setMessages((cur) => {
+              const updated = [...cur];
               const last = updated[updated.length - 1];
               updated[updated.length - 1] = {
                 ...last,
@@ -49,8 +59,7 @@ export function useAiChat() {
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erreur inconnue");
-        // Remove empty assistant message on error
-        setMessages((prev) => prev.slice(0, -1));
+        setMessages((cur) => cur.slice(0, -1));
       } finally {
         setIsStreaming(false);
       }

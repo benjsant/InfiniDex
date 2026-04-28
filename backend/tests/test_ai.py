@@ -277,3 +277,49 @@ def test_ai_context_is_prepended(client: TestClient, fake_client_factory) -> Non
     assert user_msg["role"] == "user"
     assert "Pikachu id=25" in user_msg["content"]
     assert "Que penses-tu" in user_msg["content"]
+
+
+def test_ai_history_ordering(client: TestClient, fake_client_factory) -> None:
+    """Messages order: system → history turns → new user message."""
+    fake = fake_client_factory([
+        _fake_response(_fake_message_content("ok")),
+    ])
+
+    client.post("/ai/ask", json={
+        "message": "question 3",
+        "history": [
+            {"role": "user",      "content": "question 1"},
+            {"role": "assistant", "content": "réponse 1"},
+            {"role": "user",      "content": "question 2"},
+            {"role": "assistant", "content": "réponse 2"},
+        ],
+    })
+
+    sent = fake.chat.completions.received_calls[0]["messages"]
+    assert sent[0]["role"] == "system"
+    assert sent[1] == {"role": "user",      "content": "question 1"}
+    assert sent[2] == {"role": "assistant", "content": "réponse 1"}
+    assert sent[3] == {"role": "user",      "content": "question 2"}
+    assert sent[4] == {"role": "assistant", "content": "réponse 2"}
+    assert sent[5]["role"] == "user"
+    assert "question 3" in sent[5]["content"]
+
+
+def test_ai_history_trimmed_to_max(client: TestClient, fake_client_factory) -> None:
+    """History longer than MAX_HISTORY_MSGS is trimmed (oldest dropped)."""
+    from backend.services.ai_service import MAX_HISTORY_MSGS
+
+    fake = fake_client_factory([
+        _fake_response(_fake_message_content("ok")),
+    ])
+
+    # Send 20 history messages (10 pairs) — more than MAX_HISTORY_MSGS=10
+    long_history = [
+        {"role": "user" if i % 2 == 0 else "assistant", "content": f"msg {i}"}
+        for i in range(20)
+    ]
+    client.post("/ai/ask", json={"message": "nouvelle question", "history": long_history})
+
+    sent = fake.chat.completions.received_calls[0]["messages"]
+    # system + trimmed history + new user = 1 + MAX_HISTORY_MSGS + 1
+    assert len(sent) == 1 + MAX_HISTORY_MSGS + 1

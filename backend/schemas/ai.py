@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
+class HistoryMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+
+
 class AiRequest(BaseModel):
-    message: str = Field(..., min_length=1, description="Question posée à l'assistant.")
-    context: str | None = Field(
-        None,
-        description="Contexte optionnel injecté dans le prompt (ex. 'Pokémon Dracaufeu id=6, fusion avec Mewtwo id=150').",
-    )
+    message: str = Field(..., min_length=1)
+    context: str | None = None
+    history: list[HistoryMessage] = Field(default_factory=list)
