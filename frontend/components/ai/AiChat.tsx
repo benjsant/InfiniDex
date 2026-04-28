@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import ReactMarkdown from "react-markdown";
 import { useAiChat } from "@/hooks/useAiChat";
 import { getAiProvider } from "@/lib/api";
 import type { ChatMessage } from "@/hooks/useAiChat";
@@ -175,13 +176,28 @@ function MessageBubble({ message }: { message: ChatMessage }) {
           </div>
         )}
         <div
-          className={`px-4 py-2.5 rounded-xl text-sm whitespace-pre-wrap leading-relaxed ${
+          className={`px-4 py-2.5 rounded-xl text-sm leading-relaxed ${
             isUser
-              ? "bg-indigo-600/30 text-[rgb(220,220,255)] rounded-br-sm"
-              : "bg-[rgb(25,25,38)] text-[rgb(200,200,220)] rounded-bl-sm"
+              ? "bg-indigo-600/30 text-[rgb(220,220,255)] rounded-br-sm whitespace-pre-wrap"
+              : "bg-[rgb(25,25,38)] text-[rgb(200,200,220)] rounded-bl-sm prose prose-sm prose-invert max-w-none"
           }`}
         >
-          {message.content}
+          {isUser ? (
+            message.content
+          ) : (
+            <ReactMarkdown
+              components={{
+                p:      ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                ul:     ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-0.5">{children}</ul>,
+                ol:     ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-0.5">{children}</ol>,
+                li:     ({ children }) => <li>{children}</li>,
+                strong: ({ children }) => <strong className="font-semibold text-[rgb(220,220,255)]">{children}</strong>,
+                code:   ({ children }) => <code className="bg-[rgb(15,15,28)] px-1 py-0.5 rounded text-indigo-300 text-xs font-mono">{children}</code>,
+              }}
+            >
+              {message.content}
+            </ReactMarkdown>
+          )}
         </div>
       </div>
     </div>
