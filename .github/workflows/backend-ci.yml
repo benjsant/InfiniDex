@@ -21,7 +21,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          version: "0.10.x"
+          version: "0.10.12"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -38,7 +38,7 @@ jobs:
 
       - name: Run DB-free tests
         working-directory: backend
-        run: uv run pytest tests/test_ai.py -v
+        run: uv run pytest tests/test_ai.py tests/test_llm_providers.py -v
 
   # Full pytest suite requires a populated DB (572 Pokémon dataset from ETL).
   # To enable, commit a SQL fixture dump under e.g. backend/tests/fixtures/
