@@ -2,11 +2,12 @@
 
 import { use } from "react";
 import Link from "next/link";
-import { useFusion } from "@/hooks/useFusion";
+import { useFusion, useFusionMoves, useFusionExpertMoves, useSprites } from "@/hooks/useFusion";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import { StatBar } from "@/components/pokemon/StatBar";
 import { AiSuggestButton } from "@/components/ai/AiSuggestButton";
 import { FusionSprite } from "@/components/fusion/FusionSprite";
+import { FusionMovesetTable } from "@/components/fusion/FusionMovesetTable";
 
 export default function FusionResultPage({
   params,
@@ -18,6 +19,10 @@ export default function FusionResultPage({
   const bId = parseInt(bodyId, 10);
 
   const { data: fusion, isLoading, error } = useFusion(hId, bId);
+  const { data: moves = [] }         = useFusionMoves(hId, bId);
+  const { data: expertMoves = [] }   = useFusionExpertMoves(hId, bId);
+  const { data: sprites = [] }       = useSprites(hId, bId);
+  const { data: spritesReversed = [] } = useSprites(bId, hId);
 
   if (isLoading) {
     return (
@@ -40,6 +45,7 @@ export default function FusionResultPage({
   }
 
   const fusionName = `${fusion.head_name_en}/${fusion.body_name_en}`;
+  const reversedName = `${fusion.body_name_en}/${fusion.head_name_en}`;
 
   const stats = [
     { key: "hp",         value: fusion.hp },
@@ -52,6 +58,9 @@ export default function FusionResultPage({
 
   const baseTotal = stats.reduce((s, st) => s + st.value, 0);
 
+  const defaultSprite   = sprites.find((s) => s.is_default) ?? sprites[0];
+  const defaultReversed = spritesReversed.find((s) => s.is_default) ?? spritesReversed[0];
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-center gap-2 text-sm text-[rgb(120,120,140)] mb-6">
@@ -62,33 +71,51 @@ export default function FusionResultPage({
 
       {/* Main card */}
       <div className="rounded-xl bg-[rgb(20,20,28)] border border-[rgb(50,50,70)] p-6 mb-6">
-        <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
-          <div className="w-40 h-40 flex items-center justify-center rounded-xl bg-[rgb(15,15,22)] border border-[rgb(40,40,55)] shrink-0">
-            <FusionSprite headId={hId} bodyId={bId} size={128} />
+        {/* Sprites row */}
+        <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start mb-6">
+          {/* Normal sprite */}
+          <SpriteCard
+            headId={hId}
+            bodyId={bId}
+            label={fusionName}
+            creators={defaultSprite?.creators ?? []}
+          />
+
+          <div className="hidden sm:flex items-center self-center text-[rgb(60,60,80)] text-2xl">⇄</div>
+
+          {/* Reversed sprite */}
+          <Link href={`/fusion/${bId}/${hId}`} className="group">
+            <SpriteCard
+              headId={bId}
+              bodyId={hId}
+              label={reversedName}
+              creators={defaultReversed?.creators ?? []}
+              muted
+            />
+          </Link>
+        </div>
+
+        {/* Name + types */}
+        <div className="text-center sm:text-left">
+          <h1 className="text-2xl font-bold text-[rgb(220,220,255)] mb-1">{fusionName}</h1>
+          <div className="flex gap-2 justify-center sm:justify-start mb-1 text-xs text-[rgb(120,120,140)]">
+            <span>
+              Tête :{" "}
+              <Link href={`/pokedex/${hId}`} className="text-indigo-400 hover:text-indigo-300">
+                {fusion.head_name_en} #{hId}
+              </Link>
+            </span>
+            <span className="text-[rgb(60,60,80)]">·</span>
+            <span>
+              Corps :{" "}
+              <Link href={`/pokedex/${bId}`} className="text-purple-400 hover:text-purple-300">
+                {fusion.body_name_en} #{bId}
+              </Link>
+            </span>
           </div>
-
-          <div className="flex-1 text-center sm:text-left">
-            <h1 className="text-2xl font-bold text-[rgb(220,220,255)] mb-1">{fusionName}</h1>
-            <div className="flex gap-2 justify-center sm:justify-start mb-1 text-xs text-[rgb(120,120,140)]">
-              <span>
-                Tête:{" "}
-                <Link href={`/pokedex/${hId}`} className="text-indigo-400 hover:text-indigo-300">
-                  {fusion.head_name_en} #{hId}
-                </Link>
-              </span>
-              <span className="text-[rgb(60,60,80)]">·</span>
-              <span>
-                Corps:{" "}
-                <Link href={`/pokedex/${bId}`} className="text-purple-400 hover:text-purple-300">
-                  {fusion.body_name_en} #{bId}
-                </Link>
-              </span>
-            </div>
-
-            <div className="flex gap-2 justify-center sm:justify-start mb-4">
-              <TypeBadge typeName={fusion.type1.name_en} />
-              {fusion.type2 && <TypeBadge typeName={fusion.type2.name_en} />}
-            </div>
+          <div className="flex gap-2 justify-center sm:justify-start">
+            <TypeBadge typeName={fusion.type1.name_en} />
+            {fusion.type2 && <TypeBadge typeName={fusion.type2.name_en} />}
           </div>
         </div>
       </div>
@@ -112,19 +139,58 @@ export default function FusionResultPage({
         </p>
       </div>
 
+      {/* Moveset */}
+      {(moves.length > 0 || expertMoves.length > 0) && (
+        <div className="rounded-xl bg-[rgb(20,20,28)] border border-[rgb(50,50,70)] p-5 mb-4">
+          <h2 className="text-sm font-semibold text-[rgb(120,120,140)] uppercase tracking-wider mb-4">
+            Capacités apprises
+          </h2>
+          <FusionMovesetTable
+            moves={moves}
+            expertMoves={expertMoves}
+            headName={fusion.head_name_en}
+            bodyName={fusion.body_name_en}
+          />
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-3">
-        <Link
-          href={`/fusion/${bId}/${hId}`}
-          className="px-4 py-2 rounded-lg bg-[rgb(25,25,35)] border border-[rgb(40,40,55)] hover:border-indigo-500 text-sm text-[rgb(160,160,180)] hover:text-white transition-all"
-        >
-          ⇄ Inverser (Head/Body)
-        </Link>
         <AiSuggestButton
           pokemonName={fusionName}
           pokemonId={hId}
           context={`Fusion de ${fusion.head_name_en} (tête) et ${fusion.body_name_en} (corps). Types: ${fusion.type1.name_en}${fusion.type2 ? "/" + fusion.type2.name_en : ""}. Total: ${baseTotal}.`}
         />
       </div>
+    </div>
+  );
+}
+
+function SpriteCard({
+  headId,
+  bodyId,
+  label,
+  creators,
+  muted = false,
+}: {
+  headId: number;
+  bodyId: number;
+  label: string;
+  creators: string[];
+  muted?: boolean;
+}) {
+  return (
+    <div className={`flex flex-col items-center gap-2 ${muted ? "opacity-70 hover:opacity-100 transition-opacity" : ""}`}>
+      <div className="w-40 h-40 flex items-center justify-center rounded-xl bg-[rgb(15,15,22)] border border-[rgb(40,40,55)] shrink-0">
+        <FusionSprite headId={headId} bodyId={bodyId} size={128} />
+      </div>
+      <p className="text-xs text-[rgb(140,140,160)] font-medium">{label}</p>
+      {creators.length > 0 ? (
+        <p className="text-[10px] text-[rgb(100,100,130)] text-center leading-tight">
+          🎨 {creators.join(", ")}
+        </p>
+      ) : (
+        <p className="text-[10px] text-[rgb(70,70,90)] italic">Auto-généré</p>
+      )}
     </div>
   );
 }
