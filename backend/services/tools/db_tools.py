@@ -83,6 +83,14 @@ async def _get_pokemon(db: Session, args: dict) -> dict:
     p = _resolve_pokemon(db, name_or_id)
     if isinstance(p, dict):
         return p
+    # ID lookup: _resolve_pokemon already called get_pokemon_by_id (types+abilities
+    # eager-loaded) — reuse directly. Name lookup: search_pokemon only loads types,
+    # so we need one extra fetch to get abilities.
+    is_id = isinstance(name_or_id, int) or (
+        isinstance(name_or_id, str) and name_or_id.isdigit()
+    )
+    if is_id:
+        return _pokemon_payload(p)
     full = get_pokemon_by_id(db, p.id)
     return _pokemon_payload(full) if full else {"error": f"Pokémon id={p.id} vanished"}
 

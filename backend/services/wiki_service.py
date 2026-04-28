@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 import re
+import time
 
 import httpx
 
@@ -20,6 +21,10 @@ LOGGER = logging.getLogger(__name__)
 WIKI_API_URL = "https://infinitefusion.fandom.com/api.php"
 MAX_EXTRACT_CHARS = 2_000
 HTTP_TIMEOUT = 8.0
+_CACHE_TTL = 600  # seconds
+
+# Simple in-process TTL cache: normalised_query → (timestamp, result)
+_wiki_cache: dict[str, tuple[float, dict]] = {}
 
 
 def _strip_wiki_markup(text: str) -> str:
@@ -36,6 +41,9 @@ def _strip_wiki_markup(text: str) -> str:
 async def fetch_wiki(query: str) -> dict:
     """Search the Infinite Fusion wiki and return the best page's intro.
 
+    Results are cached in-process for _CACHE_TTL seconds to avoid redundant
+    HTTP calls when the same query is repeated within a conversation.
+
     Uses action=parse with section=0 (intro) then falls back to the full
     page when the intro is empty (some pages have no lead section).
 
@@ -46,6 +54,12 @@ async def fetch_wiki(query: str) -> dict:
           - ``other_results`` — list of alternative page titles (if found)
           On HTTP/network error: ``{"found": False, "error": "<message>"}``
     """
+    cache_key = query.strip().lower()
+    cached = _wiki_cache.get(cache_key)
+    if cached and time.monotonic() - cached[0] < _CACHE_TTL:
+        LOGGER.debug("wiki cache hit for query=%r", query)
+        return cached[1]
+
     try:
         async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
             # 1. Search for matching pages.
@@ -63,7 +77,9 @@ async def fetch_wiki(query: str) -> dict:
             results = search_resp.json().get("query", {}).get("search", [])
 
             if not results:
-                return {"found": False, "query": query}
+                result: dict = {"found": False, "query": query}
+                _wiki_cache[cache_key] = (time.monotonic(), result)
+                return result
 
             title = results[0]["title"]
 
@@ -75,19 +91,23 @@ async def fetch_wiki(query: str) -> dict:
                 extract = await _fetch_section(client, title, section=None)
 
             if not extract:
-                return {
+                result = {
                     "found": False,
                     "query": query,
                     "note": f"Page '{title}' trouvée mais contenu illisible",
                 }
+                _wiki_cache[cache_key] = (time.monotonic(), result)
+                return result
 
-            return {
+            result = {
                 "found": True,
                 "title": title,
                 "url": f"https://infinitefusion.fandom.com/wiki/{title.replace(' ', '_')}",
                 "extract": extract,
                 "other_results": [r["title"] for r in results[1:]],
             }
+            _wiki_cache[cache_key] = (time.monotonic(), result)
+            return result
 
     except httpx.TimeoutException:
         LOGGER.warning("Wiki fetch timeout for query=%r", query)

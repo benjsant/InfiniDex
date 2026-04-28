@@ -2,8 +2,9 @@
 
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 # Import all models so SQLAlchemy registers them with Base
 import backend.db.models  # noqa: F401
@@ -29,6 +30,24 @@ app = FastAPI(
     version="0.3.0",
 )
 
+
+class StaticCacheMiddleware(BaseHTTPMiddleware):
+    """Add Cache-Control headers to successful GET responses on read-only data.
+
+    Excludes /ai/* (streaming + dynamic) and /health.
+    """
+
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        if (
+            request.method == "GET"
+            and response.status_code == 200
+            and not request.url.path.startswith("/ai")
+            and request.url.path != "/health"
+        ):
+            response.headers["Cache-Control"] = "public, max-age=3600"
+        return response
+
 _cors_raw = os.getenv(
     "CORS_ALLOWED_ORIGINS",
     "http://localhost:53000,http://localhost:58000",
@@ -38,6 +57,7 @@ cors_origins = [o.strip() for o in _cors_raw.split(",") if o.strip()]
 # En temps normal, le browser ne tape jamais le backend directement : les
 # requêtes passent par le proxy Next.js (même origine). Ce CORS sert de
 # defense in depth pour les appels directs (Swagger, Postman, intégrations).
+app.add_middleware(StaticCacheMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
