@@ -6,5 +6,6 @@ export function useFusion(headId: number | null, bodyId: number | null) {
     queryKey: ["fusion", headId, bodyId],
     queryFn: () => getFusion(headId!, bodyId!),
     enabled: headId != null && bodyId != null && headId > 0 && bodyId > 0,
+    staleTime: Infinity,
   });
 }

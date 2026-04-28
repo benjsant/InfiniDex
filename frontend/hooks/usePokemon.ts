@@ -9,6 +9,9 @@ import {
   searchPokemon,
 } from "@/lib/api";
 
+// Pokémon data is static between deploys — never refetch in background.
+const STATIC: { staleTime: number } = { staleTime: Infinity };
+
 export function usePokemonList(params?: {
   type_id?: number;
   gen?: number;
@@ -18,6 +21,7 @@ export function usePokemonList(params?: {
   return useQuery({
     queryKey: ["pokemon-list", params],
     queryFn: () => getPokemonList(params),
+    ...STATIC,
   });
 }
 
@@ -25,7 +29,7 @@ export function useTypes() {
   return useQuery({
     queryKey: ["types"],
     queryFn: () => getTypes(),
-    staleTime: 5 * 60 * 1000,
+    ...STATIC,
   });
 }
 
@@ -34,6 +38,7 @@ export function usePokemonSearch(q: string) {
     queryKey: ["pokemon-search", q],
     queryFn: () => searchPokemon(q),
     enabled: q.trim().length >= 2,
+    ...STATIC,
   });
 }
 
@@ -42,6 +47,7 @@ export function usePokemon(id: number) {
     queryKey: ["pokemon", id],
     queryFn: () => getPokemon(id),
     enabled: id > 0,
+    ...STATIC,
   });
 }
 
@@ -50,6 +56,7 @@ export function usePokemonMoves(id: number) {
     queryKey: ["pokemon-moves", id],
     queryFn: () => getPokemonMoves(id),
     enabled: id > 0,
+    ...STATIC,
   });
 }
 
@@ -58,6 +65,7 @@ export function usePokemonEvolutions(id: number) {
     queryKey: ["pokemon-evolutions", id],
     queryFn: () => getPokemonEvolutions(id),
     enabled: id > 0,
+    ...STATIC,
   });
 }
 
@@ -66,5 +74,6 @@ export function usePokemonWeaknesses(id: number) {
     queryKey: ["pokemon-weaknesses", id],
     queryFn: () => getPokemonWeaknesses(id),
     enabled: id > 0,
+    ...STATIC,
   });
 }

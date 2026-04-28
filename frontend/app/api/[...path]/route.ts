@@ -18,13 +18,15 @@ async function proxy(req: NextRequest, path: string[]) {
   headers.delete("connection");
   headers.delete("content-length");
 
+  const isReadOnly = ["GET", "HEAD"].includes(req.method);
   const init: RequestInit = {
     method: req.method,
     headers,
-    // fetch() gère correctement body === undefined pour GET/HEAD.
-    body: ["GET", "HEAD"].includes(req.method) ? undefined : await req.arrayBuffer(),
+    body: isReadOnly ? undefined : await req.arrayBuffer(),
     redirect: "manual",
-    cache: "no-store",
+    // Let GET/HEAD responses be cached by Next.js according to the upstream
+    // Cache-Control headers. Force no-store only for mutating requests.
+    ...(isReadOnly ? {} : { cache: "no-store" }),
   };
 
   try {
