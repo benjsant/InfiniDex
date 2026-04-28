@@ -22,7 +22,13 @@ const SUGGESTIONS = [
   "Quels sont les types les plus forts dans Infinite Fusion ?",
 ];
 
-export function AiChat({ initialMessage }: { initialMessage?: string }) {
+export function AiChat({
+  initialMessage,
+  initialContext,
+}: {
+  initialMessage?: string;
+  initialContext?: string;
+}) {
   const { messages, isStreaming, error, sendMessage, reset } = useAiChat();
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -35,10 +41,10 @@ export function AiChat({ initialMessage }: { initialMessage?: string }) {
     retry: false,
   });
 
-  // Auto-send initial message
+  // Auto-send initial message with optional Pokémon context from the referring page.
   useEffect(() => {
     if (initialMessage) {
-      sendMessage(initialMessage);
+      sendMessage(initialMessage, initialContext);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

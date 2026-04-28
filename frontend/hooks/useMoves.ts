@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { getMoves, getMove, searchMoves, getMovesByType } from "@/lib/api";
 
+// Move data is static between deploys — never refetch in background.
+const STATIC: { staleTime: number } = { staleTime: Infinity };
+
 export function useMoves() {
   return useQuery({
     queryKey: ["moves"],
     queryFn: getMoves,
-    staleTime: 10 * 60 * 1000,
+    ...STATIC,
   });
 }
 
@@ -14,6 +17,7 @@ export function useMove(id: number) {
     queryKey: ["move", id],
     queryFn: () => getMove(id),
     enabled: id > 0,
+    ...STATIC,
   });
 }
 
@@ -22,6 +26,7 @@ export function useMoveSearch(q: string) {
     queryKey: ["move-search", q],
     queryFn: () => searchMoves(q),
     enabled: q.trim().length >= 2,
+    ...STATIC,
   });
 }
 
@@ -30,5 +35,6 @@ export function useMovesByType(typeName: string) {
     queryKey: ["moves-by-type", typeName],
     queryFn: () => getMovesByType(typeName),
     enabled: typeName.length > 0,
+    ...STATIC,
   });
 }
