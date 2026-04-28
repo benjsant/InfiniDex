@@ -45,6 +45,56 @@ def load_pokemon_with_types(db: Session, pid: int) -> Pokemon | None:
     )
 
 
+def load_pokemon_for_fusion(db: Session, pid: int) -> Pokemon | None:
+    """Load a Pokémon with types (→ Type) AND abilities (→ Ability) in a single query.
+
+    Used by the AI agent tool to avoid separate loads for stat computation,
+    type resolution, and ability listing.
+    """
+    return (
+        db.query(Pokemon)
+        .options(
+            joinedload(Pokemon.types).joinedload(PokemonType.type),
+            joinedload(Pokemon.abilities).joinedload(PokemonAbility.ability),
+        )
+        .filter(Pokemon.id == pid)
+        .first()
+    )
+
+
+def compute_fusion_from_objects(head: Pokemon, body: Pokemon) -> dict:
+    """Same as compute_fusion but takes already-loaded Pokemon objects.
+
+    Avoids two extra load_pokemon_with_types queries when the caller
+    already has the objects (e.g. the AI agent tool).
+    """
+    def phys(b: int, h: int) -> int:
+        return math.floor(b * 2 / 3 + h * 1 / 3)
+
+    def spec(h: int, b: int) -> int:
+        return math.floor(h * 2 / 3 + b * 1 / 3)
+
+    type1_obj, type2_obj = compute_fusion_types(head, body)
+
+    return {
+        "head_id":       head.id,
+        "body_id":       body.id,
+        "head_name_en":  head.name_en,
+        "head_name_fr":  head.name_fr,
+        "body_name_en":  body.name_en,
+        "body_name_fr":  body.name_fr,
+        "hp":            phys(body.hp,        head.hp),
+        "attack":        phys(body.attack,    head.attack),
+        "defense":       phys(body.defense,   head.defense),
+        "speed":         phys(body.speed,     head.speed),
+        "sp_attack":     spec(head.sp_attack,  body.sp_attack),
+        "sp_defense":    spec(head.sp_defense, body.sp_defense),
+        "type1":         type1_obj,
+        "type2":         type2_obj,
+        "sprite_path":   f"{head.id}.{body.id}.png",
+    }
+
+
 NORMAL_TYPE_EN = "Normal"
 FLYING_TYPE_EN = "Flying"
 

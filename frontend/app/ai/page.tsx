@@ -6,7 +6,8 @@ import { AiChat } from "@/components/ai/AiChat";
 
 function AiPageInner() {
   const searchParams = useSearchParams();
-  const q = searchParams.get("q") ?? undefined;
+  const q   = searchParams.get("q")   ?? undefined;
+  const ctx = searchParams.get("ctx") ?? undefined;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 h-[calc(100vh-4rem)] flex flex-col">
@@ -19,7 +20,7 @@ function AiPageInner() {
         </p>
       </div>
       <div className="flex-1 min-h-0">
-        <AiChat initialMessage={q} />
+        <AiChat initialMessage={q} initialContext={ctx} />
       </div>
     </div>
   );

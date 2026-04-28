@@ -8,14 +8,18 @@ interface AiSuggestButtonProps {
   context?: string;
 }
 
-export function AiSuggestButton({ pokemonName, pokemonId }: AiSuggestButtonProps) {
+export function AiSuggestButton({ pokemonName, pokemonId, context }: AiSuggestButtonProps) {
   const query = encodeURIComponent(
     `Quels sont les meilleurs partenaires de fusion pour ${pokemonName} (#${pokemonId}) dans Pokémon Infinite Fusion ? Donne des conseils stratégiques.`,
   );
 
+  const href = context
+    ? `/ai?q=${query}&ctx=${encodeURIComponent(context)}`
+    : `/ai?q=${query}`;
+
   return (
     <Link
-      href={`/ai?q=${query}`}
+      href={href}
       className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-700/30 border border-indigo-600/40 text-indigo-300 hover:bg-indigo-700/50 hover:text-indigo-200 transition-all text-sm font-medium"
     >
       🤖 Demander à l&apos;IA

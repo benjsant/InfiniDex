@@ -11,10 +11,10 @@ from sqlalchemy.orm import Session
 from backend.db.models import Item, Move, Pokemon
 from backend.services.fusion_service import (
     MOVE_EXPERT_PRICES_HEART_SCALES,
-    compute_fusion,
     compute_fusion_abilities,
     compute_fusion_expert_moves,
-    load_pokemon_with_types,
+    compute_fusion_from_objects,
+    load_pokemon_for_fusion,
 )
 from backend.services.item_service import search_items
 from backend.services.move_service import (
@@ -40,6 +40,20 @@ def _resolve_pokemon(db: Session, name_or_id: str | int) -> Pokemon | dict:
         if (p.name_en or "").lower() == needle or (p.name_fr or "").lower() == needle:
             return p
     return matches[0]
+
+
+def _resolve_to_id(db: Session, name_or_id: str | int) -> int | dict:
+    """Resolve a name or ID to an integer pokemon_id without loading the full object."""
+    if isinstance(name_or_id, int) or (isinstance(name_or_id, str) and name_or_id.isdigit()):
+        return int(name_or_id)
+    needle = str(name_or_id).lower().strip()
+    matches = search_pokemon(db, str(name_or_id))
+    if not matches:
+        return {"error": f"No Pokémon matching name '{name_or_id}'"}
+    for p in matches:
+        if (p.name_en or "").lower() == needle or (p.name_fr or "").lower() == needle:
+            return p.id
+    return matches[0].id
 
 
 def _resolve_move(db: Session, name_or_id: str | int) -> Move | dict:
@@ -99,21 +113,31 @@ async def _get_fusion(db: Session, args: dict) -> dict:
     head, body = args.get("head"), args.get("body")
     if head is None or body is None:
         return {"error": "Missing required args 'head' and/or 'body'"}
-    head_p = _resolve_pokemon(db, head)
-    body_p = _resolve_pokemon(db, body)
-    if isinstance(head_p, dict):
-        return {"error": f"head: {head_p['error']}"}
-    if isinstance(body_p, dict):
-        return {"error": f"body: {body_p['error']}"}
-    head_full = load_pokemon_with_types(db, head_p.id)
-    body_full = load_pokemon_with_types(db, body_p.id)
-    assert head_full and body_full
-    fusion = compute_fusion(db, head_p.id, body_p.id)
-    abilities = compute_fusion_abilities(db, head_full, body_full)
-    expert_moves = compute_fusion_expert_moves(db, head_full, body_full)
+
+    # Resolve names/IDs to integer IDs first (search only — no full object load).
+    head_id = _resolve_to_id(db, head)
+    body_id = _resolve_to_id(db, body)
+    if isinstance(head_id, dict):
+        return {"error": f"head: {head_id['error']}"}
+    if isinstance(body_id, dict):
+        return {"error": f"body: {body_id['error']}"}
+
+    # Single load per Pokémon: types (+ Type) + abilities (+ Ability) in one query.
+    # Replaces the previous _resolve_pokemon + load_pokemon_with_types + compute_fusion
+    # chain which issued up to 6 redundant queries for the same two rows.
+    head_obj = load_pokemon_for_fusion(db, head_id)
+    body_obj = load_pokemon_for_fusion(db, body_id)
+    if not head_obj:
+        return {"error": f"No Pokémon with id={head_id}"}
+    if not body_obj:
+        return {"error": f"No Pokémon with id={body_id}"}
+
+    fusion = compute_fusion_from_objects(head_obj, body_obj)
+    abilities = compute_fusion_abilities(db, head_obj, body_obj)
+    expert_moves = compute_fusion_expert_moves(db, head_obj, body_obj)
     return {
-        "head": {"id": head_p.id, "name_en": head_p.name_en, "name_fr": head_p.name_fr},
-        "body": {"id": body_p.id, "name_en": body_p.name_en, "name_fr": body_p.name_fr},
+        "head": {"id": head_obj.id, "name_en": head_obj.name_en, "name_fr": head_obj.name_fr},
+        "body": {"id": body_obj.id, "name_en": body_obj.name_en, "name_fr": body_obj.name_fr},
         "stats": {
             "hp": fusion["hp"], "attack": fusion["attack"], "defense": fusion["defense"],
             "sp_attack": fusion["sp_attack"], "sp_defense": fusion["sp_defense"],

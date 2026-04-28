@@ -93,7 +93,15 @@ export default function PokemonDetailPage({
                 <p className="text-lg text-[rgb(160,160,180)]">{pokemon.name_fr}</p>
               )}
             </div>
-            <AiSuggestButton pokemonName={pokemon.name_en} pokemonId={pokemonId} />
+            <AiSuggestButton
+              pokemonName={pokemon.name_en}
+              pokemonId={pokemonId}
+              context={[
+                `Pokémon consulté : ${pokemon.name_en}${pokemon.name_fr ? ` / ${pokemon.name_fr}` : ""} (IF #${pokemon.id}${pokemon.national_id ? `, National #${pokemon.national_id}` : ""})`,
+                `Types : ${[t1, t2].filter(Boolean).map(t => t!.name_en).join(" / ")}`,
+                `Stats : HP ${pokemon.hp} / Atk ${pokemon.attack} / Def ${pokemon.defense} / SpA ${pokemon.sp_attack} / SpD ${pokemon.sp_defense} / Spe ${pokemon.speed}`,
+              ].join(" · ")}
+            />
           </div>
 
           <div className="flex gap-2 mt-3">
