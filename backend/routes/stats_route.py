@@ -14,5 +14,5 @@ router = APIRouter(prefix="/stats", tags=["Stats"])
 
 @router.get("/coverage", response_model=CoverageOut)
 def get_coverage(db: Session = Depends(get_db)):
-    """Audit : Pokémon sans sprite/types/moves, moves/abilities orphelins, totaux."""
+    """Audit: Pokémon without sprite/types/moves, orphaned moves/abilities, totals."""
     return CoverageOut(**compute_coverage(db))

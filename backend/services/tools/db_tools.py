@@ -228,16 +228,16 @@ async def _get_move_tutors(db: Session, args: dict) -> dict:
 get_pokemon_tool = Tool(
     name="get_pokemon",
     description=(
-        "Retourne la fiche d'un Pokémon d'Infinite Fusion : types, "
-        "abilities (dont hidden), stats de base, génération. Accepte "
-        "un nom (EN ou FR) ou un ID IF."
+        "Returns the Pokédex entry for an Infinite Fusion Pokémon: types, "
+        "abilities (including hidden), base stats, generation. Accepts "
+        "a name (EN or FR) or an IF ID."
     ),
     parameters={
         "type": "object",
         "properties": {
             "name_or_id": {
                 "type": ["string", "integer"],
-                "description": "Nom EN/FR (ex: 'Pikachu') ou ID IF (ex: 25)",
+                "description": "EN/FR name (e.g. 'Pikachu') or IF ID (e.g. 25)",
             }
         },
         "required": ["name_or_id"],
@@ -248,16 +248,15 @@ get_pokemon_tool = Tool(
 get_fusion_tool = Tool(
     name="get_fusion",
     description=(
-        "Calcule une fusion head × body : stats, types, abilities, et "
-        "moves enseignables par les Move Experts avec les prix en "
-        "Heart Scales (Knot = 2, Boon = 10). Paramètres : nom ou ID "
-        "de chaque Pokémon."
+        "Computes a head × body fusion: stats, types, abilities, and "
+        "moves teachable by Move Experts with their Heart Scale prices "
+        "(Knot = 2, Boon = 10). Parameters: name or ID of each Pokémon."
     ),
     parameters={
         "type": "object",
         "properties": {
-            "head": {"type": ["string", "integer"], "description": "Pokémon tête (nom EN/FR ou ID IF)"},
-            "body": {"type": ["string", "integer"], "description": "Pokémon corps (nom EN/FR ou ID IF)"},
+            "head": {"type": ["string", "integer"], "description": "Head Pokémon (EN/FR name or IF ID)"},
+            "body": {"type": ["string", "integer"], "description": "Body Pokémon (EN/FR name or IF ID)"},
         },
         "required": ["head", "body"],
     },
@@ -267,15 +266,15 @@ get_fusion_tool = Tool(
 search_move_tool = Tool(
     name="search_move",
     description=(
-        "Cherche un move par nom (EN/FR, insensible aux accents). "
-        "Retourne le détail (type, catégorie, puissance, précision, "
-        "PP, description), plus les infos TM (si ce move est une CT) "
-        "et la liste des Move Tutors classiques qui l'enseignent."
+        "Search for a move by name (EN/FR, accent-insensitive). "
+        "Returns the detail (type, category, power, accuracy, PP, "
+        "description), plus TM info (if this move is a TM) and the "
+        "list of classic Move Tutors that teach it."
     ),
     parameters={
         "type": "object",
         "properties": {
-            "name": {"type": "string", "description": "Nom du move (EN ou FR), partiel accepté"},
+            "name": {"type": "string", "description": "Move name (EN or FR), partial match accepted"},
         },
         "required": ["name"],
     },
@@ -285,15 +284,15 @@ search_move_tool = Tool(
 get_item_tool = Tool(
     name="get_item",
     description=(
-        "Cherche un item par nom dans les catégories couvertes : "
+        "Search for an item by name within the covered categories: "
         "fusion items (DNA Splicers, ...), evolution items (Fire "
-        "Stone, ...), valuables (Heart Scale, Nugget, ...). Retourne "
-        "l'effet et les prix d'achat/revente."
+        "Stone, ...), valuables (Heart Scale, Nugget, ...). Returns "
+        "the effect and buy/sell prices."
     ),
     parameters={
         "type": "object",
         "properties": {
-            "name": {"type": "string", "description": "Nom de l'item (EN), partiel accepté"},
+            "name": {"type": "string", "description": "Item name (EN), partial match accepted"},
         },
         "required": ["name"],
     },
@@ -303,15 +302,15 @@ get_item_tool = Tool(
 get_move_tutors_tool = Tool(
     name="get_move_tutors",
     description=(
-        "Liste les Move Tutors classiques (NPCs) qui enseignent un "
-        "move donné, avec leur lieu et leur prix (en Pokédollars, "
-        "gratuit, ou quête). Ne couvre pas les Move Experts des "
-        "Knot/Boon Islands qui sont exposés via get_fusion."
+        "List classic Move Tutors (NPCs) that teach a given move, "
+        "with their location and price (in Pokédollars, free, or "
+        "quest). Does not cover Move Experts on Knot/Boon Islands, "
+        "which are exposed via get_fusion."
     ),
     parameters={
         "type": "object",
         "properties": {
-            "move_name": {"type": "string", "description": "Nom du move (EN ou FR)"},
+            "move_name": {"type": "string", "description": "Move name (EN or FR)"},
         },
         "required": ["move_name"],
     },

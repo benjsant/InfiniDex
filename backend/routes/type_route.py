@@ -18,13 +18,13 @@ router = APIRouter(prefix="/types", tags=["Types"])
 
 @router.get("/", response_model=list[TypeOut])
 def get_types(db: Session = Depends(get_db)):
-    """Liste les 27 types IF (18 standard + 9 triple-fusion)."""
+    """List all 27 IF types (18 standard + 9 triple-fusion)."""
     return list_types(db)
 
 
 @router.get("/by-name/{name}", response_model=TypeOut)
 def get_type_by_name(name: str, db: Session = Depends(get_db)):
-    """Trouve un type par nom EN ou FR (insensible aux accents, préfixe)."""
+    """Find a type by EN or FR name (accent-insensitive, prefix match)."""
     t = find_type_by_name(db, name)
     if not t:
         raise HTTPException(status_code=404, detail=f"Type '{name}' not found")
@@ -33,7 +33,7 @@ def get_type_by_name(name: str, db: Session = Depends(get_db)):
 
 @router.get("/{type_id}", response_model=TypeOut)
 def get_type(type_id: int, db: Session = Depends(get_db)):
-    """Type par ID."""
+    """Type by ID."""
     t = get_type_by_id(db, type_id)
     if not t:
         raise HTTPException(status_code=404, detail="Type not found")

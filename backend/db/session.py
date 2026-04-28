@@ -13,10 +13,10 @@ _DB_URL = (
 
 engine = create_engine(
     _DB_URL,
-    pool_size=5,        # connexions persistantes
-    max_overflow=10,    # burst jusqu'à 15 connexions totales
-    pool_timeout=30,    # attente max pour obtenir une connexion
-    pool_pre_ping=True, # valide la connexion avant usage (évite les erreurs après idle)
+    pool_size=5,        # persistent connections
+    max_overflow=10,    # burst up to 15 total connections
+    pool_timeout=30,    # max wait time to obtain a connection
+    pool_pre_ping=True, # validate connection before use (avoids errors after idle)
 )
 SessionLocal = sessionmaker(bind=engine)
 

@@ -18,11 +18,11 @@ async def _search_wiki(db: Session, args: dict) -> dict:
 search_wiki_tool = Tool(
     name="search_wiki",
     description=(
-        "Cherche une page sur le wiki officiel de Pokémon Infinite "
-        "Fusion (infinitefusion.fandom.com). À utiliser quand les "
-        "tools BDD ne couvrent pas la question : mécaniques de jeu, "
-        "lore, quêtes, patches, fonctionnalités spécifiques au "
-        "fan-game. Retourne l'intro de la meilleure page trouvée."
+        "Search a page on the official Pokémon Infinite Fusion wiki "
+        "(infinitefusion.fandom.com). Use when the DB tools do not "
+        "cover the question: game mechanics, lore, quests, patches, "
+        "fan-game-specific features. Returns the intro of the best "
+        "matching page found."
     ),
     parameters={
         "type": "object",
@@ -30,8 +30,8 @@ search_wiki_tool = Tool(
             "query": {
                 "type": "string",
                 "description": (
-                    "Termes de recherche en anglais (le wiki est en EN). "
-                    "Ex: 'Safari Zone', 'Wonder Trade', 'Randomizer mode'"
+                    "Search terms in English (the wiki is in EN). "
+                    "E.g.: 'Safari Zone', 'Wonder Trade', 'Randomizer mode'"
                 ),
             }
         },

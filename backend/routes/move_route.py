@@ -48,7 +48,7 @@ def get_moves(
     limit: int | None = Query(None, ge=1, le=1000),
     offset: int = Query(0, ge=0),
 ):
-    """Liste les capacités avec filtres optionnels (category/type/power/pagination)."""
+    """List moves with optional filters (category/type/power/pagination)."""
     moves = list_moves(
         db,
         category=category,
@@ -63,16 +63,16 @@ def get_moves(
 
 @router.get("/search", response_model=list[MoveListItem])
 def search_moves_route(
-    q: str = Query(..., min_length=1, description="Nom partiel EN ou FR (insensible aux accents)"),
+    q: str = Query(..., min_length=1, description="Partial name EN or FR (accent-insensitive)"),
     db: Session = Depends(get_db),
 ):
-    """Recherche accent-insensitive sur nom EN ou FR."""
+    """Accent-insensitive search on EN or FR move name."""
     return [_move_to_list_item(m) for m in search_moves(db, q)]
 
 
 @router.get("/by-type/{type_name}", response_model=list[MoveListItem])
 def get_moves_by_type(type_name: str, db: Session = Depends(get_db)):
-    """Toutes les capacités d'un type donné (nom EN ou FR, préfixe insensible)."""
+    """All moves of a given type (EN or FR name, case-insensitive prefix match)."""
     moves = list_moves_by_type(db, type_name)
     if not moves:
         raise HTTPException(status_code=404, detail=f"No moves found for type '{type_name}'")
@@ -81,10 +81,10 @@ def get_moves_by_type(type_name: str, db: Session = Depends(get_db)):
 
 @router.get("/{move_id}/tutors", response_model=list[MoveTutorOut])
 def get_move_tutors(move_id: int, db: Session = Depends(get_db)):
-    """Lieux et prix où cette capacité peut être apprise via un Move Tutor classique.
+    """Locations and prices where this move can be learned from a classic Move Tutor.
 
-    Retourne une liste vide si aucun tutor n'enseigne ce move. Scope : tutors
-    classiques (un NPC = un move). Hors scope : Move Experts (fusion-only),
+    Returns an empty list if no tutor teaches this move. Scope: classic tutors
+    only (one NPC = one move). Out of scope: Move Experts (fusion-only),
     Move Relearner, Move Deleter, Egg Move Tutor.
     """
     tutors = list_tutors_for_move(db, move_id)
@@ -105,7 +105,7 @@ def get_move_tutors(move_id: int, db: Session = Depends(get_db)):
 
 @router.get("/{move_id}", response_model=MoveDetail)
 def get_move(move_id: int, db: Session = Depends(get_db)):
-    """Détail complet d'une capacité. Inclut `tm` si le move est un TM."""
+    """Full detail of a move. Includes `tm` if the move is a TM."""
     move = get_move_by_id(db, move_id)
     if not move:
         raise HTTPException(status_code=404, detail="Move not found")

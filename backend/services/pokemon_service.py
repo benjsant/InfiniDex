@@ -1,5 +1,5 @@
-"""Service layer for Pokémon — requêtes liste/détail + sous-aspects (moves,
-évolutions, locations, faiblesses)."""
+"""Service layer for Pokémon — list/detail queries + sub-aspects (moves,
+evolutions, locations, weaknesses)."""
 
 from collections import defaultdict
 from decimal import Decimal
@@ -18,7 +18,7 @@ def list_pokemon(
     generation_id: int | None = None,
     include_hoenn: bool = True,
 ) -> list[Pokemon]:
-    """Liste paginée de Pokémon avec filtres type / génération / Hoenn-only."""
+    """Paginated list of Pokémon with type / generation / Hoenn-only filters."""
     query = db.query(Pokemon).options(joinedload(Pokemon.types))
     if type_id is not None:
         sub = db.query(PokemonType.pokemon_id).filter(PokemonType.type_id == type_id)
@@ -34,7 +34,7 @@ def list_pokemon(
 
 
 def get_pokemon_by_id(db: Session, pokemon_id: int) -> Pokemon | None:
-    """Charge un Pokémon par ID avec ses types et abilities eager-loadés."""
+    """Load a Pokémon by ID with its types and abilities eagerly loaded."""
     return (
         db.query(Pokemon)
         .options(
@@ -47,7 +47,7 @@ def get_pokemon_by_id(db: Session, pokemon_id: int) -> Pokemon | None:
 
 
 def search_pokemon(db: Session, name: str) -> list[Pokemon]:
-    """Recherche Pokémon par nom EN ou FR (ilike, insensible à la casse)."""
+    """Search Pokémon by EN or FR name (ilike, case-insensitive)."""
     return (
         db.query(Pokemon)
         .options(joinedload(Pokemon.types))

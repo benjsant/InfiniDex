@@ -12,8 +12,8 @@ class Move(Base):
     name_fr        = Column(String(100))
     type_id        = Column(Integer, ForeignKey("type.id"), nullable=False)
     category       = Column(String(10), nullable=False)   # Physical | Special | Status
-    power          = Column(Integer)                       # NULL pour Status
-    accuracy       = Column(Integer)                       # NULL si précision infinie
+    power          = Column(Integer)                       # NULL for Status moves
+    accuracy       = Column(Integer)                       # NULL if accuracy is infinite
     pp             = Column(Integer, nullable=False)
     description_en = Column(Text)
     description_fr = Column(Text)

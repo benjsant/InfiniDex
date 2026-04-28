@@ -22,16 +22,16 @@ def get_creators(
     db: Session = Depends(get_db),
     limit: int | None = Query(None, ge=1, le=1000),
     offset: int = Query(0, ge=0),
-    q: str | None = Query(None, description="Filtre par nom (ilike)"),
+    q: str | None = Query(None, description="Filter by name (ilike)"),
 ):
-    """Liste les artistes de sprites, triés par nombre de sprites décroissant."""
+    """List sprite artists, sorted by sprite count in descending order."""
     rows = list_creators(db, limit=limit, offset=offset, q=q)
     return [CreatorOut(id=c.id, name=c.name, sprite_count=cnt) for c, cnt in rows]
 
 
 @router.get("/{creator_id}", response_model=CreatorOut)
 def get_creator(creator_id: int, db: Session = Depends(get_db)):
-    """Fiche d'un créateur de sprites avec son compteur total."""
+    """Detail of a sprite creator with their total sprite count."""
     row = get_creator_by_id(db, creator_id)
     if not row:
         raise HTTPException(status_code=404, detail="Creator not found")
@@ -41,7 +41,7 @@ def get_creator(creator_id: int, db: Session = Depends(get_db)):
 
 @router.get("/{creator_id}/sprites", response_model=list[SpriteOut])
 def get_sprites_by_creator(creator_id: int, db: Session = Depends(get_db)):
-    """Tous les sprites réalisés par ce créateur."""
+    """All sprites created by this creator."""
     if not get_creator_by_id(db, creator_id):
         raise HTTPException(status_code=404, detail="Creator not found")
     sprites = list_sprites_for_creator(db, creator_id)

@@ -1,11 +1,11 @@
-"""MediaWiki client pour le wiki Infinite Fusion (infinitefusion.fandom.com).
+"""MediaWiki client for the Infinite Fusion wiki (infinitefusion.fandom.com).
 
-Utilisé comme fallback par le tool `search_wiki` lorsque la BDD locale
-ne couvre pas la question (mécaniques de jeu, lore, patches, etc.).
+Used as a fallback by the `search_wiki` tool when the local DB does not cover
+the question (game mechanics, lore, patches, etc.).
 
-L'API MediaWiki est publique, sans clé. On utilise `action=parse&prop=wikitext`
-(prop=extracts retourne vide sur ce wiki Fandom) puis on strip le markup wiki.
-L'extract est limité à MAX_EXTRACT_CHARS pour éviter l'explosion de tokens.
+The MediaWiki API is public, no key required. We use `action=parse&prop=wikitext`
+(prop=extracts returns empty on this Fandom wiki) then strip the wiki markup.
+The extract is capped at MAX_EXTRACT_CHARS to avoid token explosion.
 """
 
 from __future__ import annotations
@@ -94,7 +94,7 @@ async def fetch_wiki(query: str) -> dict:
                 result = {
                     "found": False,
                     "query": query,
-                    "note": f"Page '{title}' trouvée mais contenu illisible",
+                    "note": f"Page '{title}' found but content could not be parsed",
                 }
                 _wiki_cache[cache_key] = (time.monotonic(), result)
                 return result

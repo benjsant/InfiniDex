@@ -4,14 +4,14 @@ Formulas (Pokémon Infinite Fusion):
   Physical stats (HP, Attack, Defense, Speed) = floor(Body×2/3 + Head×1/3)
   Special stats (Sp.Atk, Sp.Def)              = floor(Head×2/3 + Body×1/3)
 
-Types — règles canoniques tirées du script IF `FusedSpecies.rb`
-(calculate_type1 / calculate_type2) :
+Types — canonical rules derived from the IF script `FusedSpecies.rb`
+(calculate_type1 / calculate_type2):
   type1 = head.type1
-         Exception : si head est pur Normal/Flying → on prend type2 (Flying).
-  type2 = body.type2 si défini (ou body.type1 pour les mono-types),
-         sauf si cette valeur est identique à type1 — dans ce cas on
-         retombe sur body.type1.
-  Si type2 finit identique à type1 → on l'omet (fusion mono-type).
+         Exception: if head is pure Normal/Flying → use type2 (Flying) instead.
+  type2 = body.type2 if defined (or body.type1 for mono-types),
+         unless that value is identical to type1 — in which case we
+         fall back to body.type1.
+  If type2 ends up identical to type1 → omit it (mono-type fusion).
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ from backend.db.models import (
 
 
 def load_pokemon_with_types(db: Session, pid: int) -> Pokemon | None:
-    """Charge un Pokémon + types (slot1/slot2) eager-loadés. Public : réutilisé par `fusion_route`."""
+    """Load a Pokémon + types (slot1/slot2) eagerly loaded. Public: reused by `fusion_route`."""
     return (
         db.query(Pokemon)
         .options(joinedload(Pokemon.types).joinedload(PokemonType.type))
@@ -97,7 +97,7 @@ def compute_fusion_from_objects(head: Pokemon, body: Pokemon) -> dict:
 NORMAL_TYPE_EN = "Normal"
 FLYING_TYPE_EN = "Flying"
 
-# Prix uniforme par expert (source : wiki IF — List_of_Move_Expert_Moves).
+# Uniform price per expert (source: IF wiki — List_of_Move_Expert_Moves).
 # Knot Island = 2 Heart Scales/move, Boon Island = 10 Heart Scales/move.
 MOVE_EXPERT_PRICES_HEART_SCALES: dict[str, int] = {
     "knot_island": 2,
@@ -106,20 +106,20 @@ MOVE_EXPERT_PRICES_HEART_SCALES: dict[str, int] = {
 
 
 def _slot_types(p: Pokemon) -> tuple[Type | None, Type | None]:
-    """Retourne (type_slot1, type_slot2) du Pokémon (type2 à None si mono)."""
+    """Return (type_slot1, type_slot2) for a Pokémon (type2 is None for mono-type)."""
     by_slot = {pt.slot: pt.type for pt in p.types}
     return by_slot.get(1), by_slot.get(2)
 
 
 def compute_fusion_types(head: Pokemon, body: Pokemon) -> tuple[Type | None, Type | None]:
-    """Calcule (type1, type2) selon les règles d'Infinite Fusion.
+    """Compute (type1, type2) according to Infinite Fusion rules.
 
-    Voir docstring du module pour la spec complète.
+    See the module docstring for the full specification.
     """
     head_t1, head_t2 = _slot_types(head)
     body_t1, body_t2 = _slot_types(body)
 
-    # type1 = head.type1, avec exception Normal/Flying → Flying
+    # type1 = head.type1, with Normal/Flying exception → Flying
     if (
         head_t1 is not None
         and head_t2 is not None
@@ -130,15 +130,15 @@ def compute_fusion_types(head: Pokemon, body: Pokemon) -> tuple[Type | None, Typ
     else:
         type1 = head_t1
 
-    # type2 = body.type2 (ou body.type1 pour les mono-types), sauf si ça
-    # duplique type1 → on retombe sur body.type1.
+    # type2 = body.type2 (or body.type1 for mono-types), unless it
+    # duplicates type1 → fall back to body.type1.
     body_secondary = body_t2 if body_t2 is not None else body_t1
     if body_secondary is not None and type1 is not None and body_secondary.id == type1.id:
         type2 = body_t1
     else:
         type2 = body_secondary
 
-    # Dernière dédup : fusion mono-type si type2 == type1
+    # Final dedup: mono-type fusion if type2 == type1
     if type1 is not None and type2 is not None and type1.id == type2.id:
         type2 = None
 
@@ -266,22 +266,22 @@ def compute_fusion_abilities(db: Session, head: Pokemon, body: Pokemon) -> list[
 def compute_fusion_expert_moves(
     db: Session, head: Pokemon, body: Pokemon
 ) -> list[dict]:
-    """Moves enseignables à cette fusion par les Move Experts (Knot + Boon).
+    """Moves teachable to this fusion by Move Experts (Knot + Boon Islands).
 
-    Une fusion qualifie pour un move si AU MOINS UNE ligne de
-    `move_expert_move` satisfait les 3 conditions (AND intra-ligne) :
-      - required_pokemon_ids non-vide ⇒ head.id OU body.id ∈ liste
-      - required_type_ids    non-vide ⇒ TOUS ces types ∈ types de la fusion
-      - required_move_ids    non-vide ⇒ la fusion connaît ≥1 de ces moves
-    Un tableau vide = pas de contrainte sur cet axe.
+    A fusion qualifies for a move if AT LEAST ONE row in
+    `move_expert_move` satisfies all 3 conditions (AND within a row):
+      - required_pokemon_ids non-empty ⇒ head.id OR body.id ∈ list
+      - required_type_ids    non-empty ⇒ ALL those types ∈ fusion's types
+      - required_move_ids    non-empty ⇒ the fusion knows ≥1 of those moves
+    An empty array means no constraint on that axis.
 
-    Retourne une entrée par move qualifié, avec la liste des locations
-    (« knot_island » / « boon_island ») qui l'enseignent.
+    Returns one entry per qualifying move, with the list of locations
+    ('knot_island' / 'boon_island') that teach it.
     """
     type1, type2 = compute_fusion_types(head, body)
     fusion_type_ids = {t.id for t in (type1, type2) if t}
 
-    # Moves connus par la fusion (head ∪ body movepool)
+    # Moves known by the fusion (head ∪ body movepool)
     learned_move_ids: set[int] = {
         mid for (mid,) in db.query(PokemonMove.move_id)
         .filter(PokemonMove.pokemon_id.in_((head.id, body.id)))
@@ -297,15 +297,15 @@ def compute_fusion_expert_moves(
 
     qualified: dict[int, dict] = {}  # move_id → entry
     for row in rows:
-        # AND : Pokémon
+        # AND: Pokémon check
         if row.required_pokemon_ids:
             if head.id not in row.required_pokemon_ids and body.id not in row.required_pokemon_ids:
                 continue
-        # AND : tous les types requis doivent être dans la fusion
+        # AND: all required types must be present in the fusion
         if row.required_type_ids:
             if not set(row.required_type_ids).issubset(fusion_type_ids):
                 continue
-        # AND : ≥1 move prérequis connu
+        # AND: ≥1 prerequisite move must be known
         if row.required_move_ids:
             if not (set(row.required_move_ids) & learned_move_ids):
                 continue

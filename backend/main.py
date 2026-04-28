@@ -54,9 +54,9 @@ _cors_raw = os.getenv(
 )
 cors_origins = [o.strip() for o in _cors_raw.split(",") if o.strip()]
 
-# En temps normal, le browser ne tape jamais le backend directement : les
-# requêtes passent par le proxy Next.js (même origine). Ce CORS sert de
-# defense in depth pour les appels directs (Swagger, Postman, intégrations).
+# Normally the browser never hits the backend directly: requests flow through
+# the Next.js proxy (same origin). This CORS config serves as defense-in-depth
+# for direct calls (Swagger, Postman, third-party integrations).
 app.add_middleware(StaticCacheMiddleware)
 app.add_middleware(
     CORSMiddleware,
@@ -69,7 +69,7 @@ app.add_middleware(
 
 @app.get("/health", tags=["health"])
 def healthcheck():
-    """Endpoint de liveness — utilisé par Docker healthcheck + CI smoke."""
+    """Liveness endpoint — used by Docker healthcheck and CI smoke tests."""
     return {"status": "healthy"}
 
 
