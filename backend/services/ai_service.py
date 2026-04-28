@@ -18,30 +18,34 @@ from typing import AsyncIterator
 
 from sqlalchemy.orm import Session
 
+from backend.schemas.ai import HistoryMessage
 from backend.services.llm_providers import LLMProvider, select_provider
 from backend.services.prompt import SYSTEM_PROMPT
 from backend.services.tools import TOOL_SPECS, dispatch_tool
 
 LOGGER = logging.getLogger(__name__)
 
-MAX_ITERATIONS  = 5
-MAX_TOKENS      = 1024
-TEMPERATURE     = 0.3
-FAILURE_MESSAGE = "Je n'ai pas trouvé cette information."
+MAX_ITERATIONS   = 5
+MAX_TOKENS       = 1024
+TEMPERATURE      = 0.3
+FAILURE_MESSAGE  = "Je n'ai pas trouvé cette information."
+MAX_HISTORY_MSGS = 10  # trim history server-side to cap token usage
 
 
 async def stream_ai_response(
     db: Session,
     message: str,
     context: str | None = None,
+    history: list[HistoryMessage] | None = None,
     provider: LLMProvider | None = None,
 ) -> AsyncIterator[str]:
     """Agent loop: tool calls → results → loop → stream final response.
 
     Args:
         db: SQLAlchemy session passed to tool handlers.
-        message: User question.
+        message: Current user question.
         context: Optional context injected by the UI (current Pokémon/fusion).
+        history: Previous turns (user/assistant pairs). Trimmed to MAX_HISTORY_MSGS.
         provider: LLM provider. Falls back to select_provider() if None.
 
     Yields:
@@ -51,11 +55,15 @@ async def stream_ai_response(
     if provider is None:
         raise RuntimeError("No LLM provider configured (DEEPSEEK_API_KEY or OLLAMA_URL)")
 
-    LOGGER.debug("agent provider=%s model=%s", provider.name, provider.model)
+    LOGGER.debug("agent provider=%s model=%s history_len=%d",
+                 provider.name, provider.model, len(history or []))
 
+    trimmed_history = (history or [])[-MAX_HISTORY_MSGS:]
     user_content = f"[Contexte: {context}]\n\n{message}" if context else message
+
     messages: list[dict] = [
         {"role": "system", "content": SYSTEM_PROMPT},
+        *[{"role": m.role, "content": m.content} for m in trimmed_history],
         {"role": "user",   "content": user_content},
     ]
 

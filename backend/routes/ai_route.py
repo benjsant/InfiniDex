@@ -31,7 +31,9 @@ async def ask_ai(request: AiRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=503, detail=provider_setup_instructions())
 
     async def token_generator():
-        async for token in stream_ai_response(db, request.message, request.context, provider):
+        async for token in stream_ai_response(
+            db, request.message, request.context, request.history, provider
+        ):
             yield token
 
     return StreamingResponse(

@@ -137,7 +137,13 @@ export interface FusionResult {
   sprite_path: string;
 }
 
+export interface HistoryMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 export interface AiRequest {
   message: string;
   context?: string;
+  history?: HistoryMessage[];
 }
