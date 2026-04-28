@@ -17,7 +17,6 @@ Types — règles canoniques tirées du script IF `FusedSpecies.rb`
 from __future__ import annotations
 
 import math
-import random
 from collections import defaultdict
 from decimal import Decimal
 
@@ -162,7 +161,8 @@ def compute_fusion_weaknesses(db: Session, head: Pokemon, body: Pokemon) -> list
     for eff in rows:
         multipliers[eff.attacking_type_id] *= eff.multiplier
 
-    type_map = {t.id: t for t in db.query(Type).all()}
+    # Only fetch the attacking types that actually appear — never all 18.
+    type_map = {t.id: t for t in db.query(Type).filter(Type.id.in_(multipliers.keys())).all()}
     return [
         {
             "attacking_type_id":      tid,
@@ -377,9 +377,15 @@ def list_fusions_involving(
 
 
 def random_fusion_ids(db: Session) -> tuple[int, int]:
-    """Pick two random Pokémon IDs for a random fusion."""
-    ids = [pid for (pid,) in db.query(Pokemon.id).all()]
-    return random.choice(ids), random.choice(ids)
+    """Pick two distinct random Pokémon IDs for a random fusion.
+
+    Uses ORDER BY RANDOM() LIMIT 2 so only 2 rows are transferred instead
+    of loading all 501 IDs into Python memory. DISTINCT is guaranteed by
+    fetching 2 separate rows from the DB shuffle.
+    """
+    from sqlalchemy import func
+    rows = db.query(Pokemon.id).order_by(func.random()).limit(2).all()
+    return rows[0][0], rows[1][0]
 
 
 def compute_fusion(
