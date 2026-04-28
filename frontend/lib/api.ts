@@ -11,6 +11,9 @@ import type {
   AbilityListItem,
   AbilityDetail,
   FusionResult,
+  SpriteOut,
+  FusionMoveOut,
+  FusionExpertMoveOut,
   AiRequest,
   AiProviderInfo,
 } from "@/types/api";
@@ -70,6 +73,18 @@ export function getPokemonWeaknesses(id: number): Promise<WeaknessOut[]> {
 
 export function getFusion(headId: number, bodyId: number): Promise<FusionResult> {
   return apiFetch<FusionResult>(`/fusion/${headId}/${bodyId}`);
+}
+
+export function getFusionMoves(headId: number, bodyId: number): Promise<FusionMoveOut[]> {
+  return apiFetch<FusionMoveOut[]>(`/fusion/${headId}/${bodyId}/moves`);
+}
+
+export function getFusionExpertMoves(headId: number, bodyId: number): Promise<FusionExpertMoveOut[]> {
+  return apiFetch<FusionExpertMoveOut[]>(`/fusion/${headId}/${bodyId}/expert-moves`);
+}
+
+export function getSprites(headId: number, bodyId: number): Promise<SpriteOut[]> {
+  return apiFetch<SpriteOut[]>(`/sprites/${headId}/${bodyId}`);
 }
 
 // ── Moves ────────────────────────────────────────────────────────────────────

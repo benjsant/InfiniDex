@@ -137,6 +137,45 @@ export interface FusionResult {
   sprite_path: string;
 }
 
+export interface SpriteOut {
+  id: number;
+  head_id: number;
+  body_id: number;
+  sprite_path: string;
+  is_custom: boolean;
+  is_default: boolean;
+  source: string;
+  creators: string[];
+}
+
+export interface FusionMoveOut {
+  move_id: number;
+  name_en: string;
+  name_fr: string | null;
+  category: string;
+  power: number | null;
+  accuracy: number | null;
+  pp: number;
+  type: TypeOut;
+  method: string;
+  level: number | null;
+  source: string;
+  origin: "head" | "body" | "both";
+}
+
+export interface FusionExpertMoveOut {
+  move_id: number;
+  name_en: string;
+  name_fr: string | null;
+  category: string;
+  power: number | null;
+  accuracy: number | null;
+  pp: number;
+  type: TypeOut;
+  locations: string[];
+  prices_heart_scales: Record<string, number>;
+}
+
 export interface HistoryMessage {
   role: "user" | "assistant";
   content: string;
