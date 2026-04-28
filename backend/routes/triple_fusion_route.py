@@ -32,7 +32,7 @@ def _serialize_types(types_rel) -> list[TripleFusionTypeOut]:
 
 @router.get("/", response_model=list[TripleFusionListItem])
 def list_all(db: Session = Depends(get_db)):
-    """Liste toutes les triple-fusions du jeu (23 entrées)."""
+    """List all triple fusions in the game (23 entries)."""
     return [
         TripleFusionListItem(
             id=tf.id,
@@ -47,7 +47,7 @@ def list_all(db: Session = Depends(get_db)):
 
 @router.get("/{tf_id}", response_model=TripleFusionDetail)
 def get_detail(tf_id: int, db: Session = Depends(get_db)):
-    """Fiche complète d'une triple-fusion : stats, composants, types, abilities."""
+    """Full detail of a triple fusion: stats, components, types, and abilities."""
     tf = get_triple_fusion(db, tf_id)
     if not tf:
         raise HTTPException(status_code=404, detail=f"Triple fusion #{tf_id} not found")

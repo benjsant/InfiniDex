@@ -19,7 +19,7 @@ class MoveListItem(BaseModel):
 
 
 class TMLocationOut(BaseModel):
-    """Un lieu où un TM peut être trouvé."""
+    """A location where a TM can be found."""
     location_id: int
     location_name_en: str
     location_name_fr: str | None
@@ -29,10 +29,10 @@ class TMLocationOut(BaseModel):
 
 
 class TMInfo(BaseModel):
-    """Informations TM pour un move (si ce move est un TM)."""
+    """TM information for a move (if this move is a TM)."""
     number: int                      # 1 = TM01, 121 = TM121
-    location_summary: str | None     # résumé texte prêt à afficher
-    locations: list[TMLocationOut]   # lieux structurés (0..N)
+    location_summary: str | None     # human-readable text summary ready to display
+    locations: list[TMLocationOut]   # structured locations (0..N)
 
     model_config = {"from_attributes": True}
 
@@ -41,7 +41,7 @@ class MoveDetail(MoveListItem):
     description_en: str | None
     description_fr: str | None
     source: str         # base | infinite_fusion
-    tm: TMInfo | None = None    # null si ce move n'est pas un TM
+    tm: TMInfo | None = None    # null if this move is not a TM
 
 
 class PokemonMoveOut(BaseModel):

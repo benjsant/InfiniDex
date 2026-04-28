@@ -10,14 +10,14 @@ class TM(Base):
     id       = Column(Integer, primary_key=True)
     number   = Column(Integer, nullable=False, unique=True)
     move_id  = Column(Integer, ForeignKey("move.id"), nullable=False)
-    location = Column(Text)  # résumé texte prêt à afficher (ex: "Route 13 (Surf)")
+    location = Column(Text)  # human-readable text summary ready to display (e.g. "Route 13 (Surf)")
 
     move      = relationship("Move", back_populates="tm")
     locations = relationship("TMLocation", back_populates="tm", cascade="all, delete-orphan")
 
 
 class TMLocation(Base):
-    """Junction TM ↔ Location (un TM peut être trouvé à plusieurs endroits)."""
+    """Junction TM ↔ Location (a TM can be found at multiple locations)."""
 
     __tablename__ = "tm_location"
 

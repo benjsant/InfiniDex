@@ -1,20 +1,20 @@
 """LLM provider abstraction — DeepSeek (cloud) + Ollama (local).
 
-Permet à l'agent de basculer entre un provider cloud (DeepSeek, qualité
-maximale) et un fallback local (Ollama avec un petit modèle quantifié)
-sans toucher au code de la boucle tool-calling.
+Allows the agent to switch between a cloud provider (DeepSeek, best quality)
+and a local fallback (Ollama with a small quantized model) without touching
+the tool-calling loop code.
 
-Sélection à runtime via env :
-  - DEEPSEEK_API_KEY défini  → DeepSeekProvider
-  - sinon, OLLAMA_URL défini → OllamaProvider
-  - sinon                    → None (le route répond 503 avec instructions)
+Runtime selection via env:
+  - DEEPSEEK_API_KEY set  → DeepSeekProvider
+  - else, OLLAMA_URL set  → OllamaProvider
+  - else                  → None (route returns 503 with setup instructions)
 
-Les deux providers exposent la même interface (un client OpenAI-compatible
-+ un nom de modèle) car DeepSeek et Ollama parlent tous deux le protocole
-OpenAI Chat Completions.
+Both providers expose the same interface (an OpenAI-compatible client
++ a model name) because DeepSeek and Ollama both speak the OpenAI Chat
+Completions protocol.
 
-Anticipe la Phase 5 v1.1 (provider pluggable) — ajouter Anthropic ou un
-autre provider revient à créer une nouvelle classe `LLMProvider`.
+Anticipates Phase 5 v1.1 (pluggable provider) — adding Anthropic or another
+provider simply means creating a new `LLMProvider` subclass.
 """
 
 from __future__ import annotations
@@ -26,22 +26,22 @@ from openai import AsyncOpenAI
 
 
 class LLMProvider(ABC):
-    """Contrat pour un provider de LLM compatible OpenAI Chat Completions."""
+    """Contract for an OpenAI Chat Completions-compatible LLM provider."""
 
     @property
     @abstractmethod
     def name(self) -> str:
-        """Identifiant court du provider, utilisé dans les logs et la doc."""
+        """Short provider identifier, used in logs and documentation."""
 
     @property
     @abstractmethod
     def model(self) -> str:
-        """Nom du modèle à passer dans `chat.completions.create(model=...)`."""
+        """Model name to pass to `chat.completions.create(model=...)`."""
 
     @property
     @abstractmethod
     def client(self) -> AsyncOpenAI:
-        """Instance `AsyncOpenAI` configurée (base_url + api_key)."""
+        """Configured `AsyncOpenAI` instance (base_url + api_key)."""
 
 
 class DeepSeekProvider(LLMProvider):
@@ -67,17 +67,16 @@ class DeepSeekProvider(LLMProvider):
 
 
 class OllamaProvider(LLMProvider):
-    """Local — serveur Ollama avec endpoint OpenAI-compatible (`/v1`).
+    """Local — Ollama server with OpenAI-compatible endpoint (`/v1`).
 
-    Le modèle par défaut est `qwen2.5:3b` : ~2 GB, supporte le tool calling
-    de façon correcte en français, tourne sur n'importe quel laptop avec
-    8 GB de RAM. Override via `OLLAMA_MODEL`.
+    The default model is `qwen2.5:3b`: ~2 GB, supports tool calling
+    correctly, runs on any laptop with 8 GB of RAM. Override via `OLLAMA_MODEL`.
     """
 
     DEFAULT_MODEL = "qwen2.5:3b"
 
     def __init__(self, base_url: str, model: str | None = None) -> None:
-        # Ollama ignore l'API key mais OpenAI SDK en exige une non-vide.
+        # Ollama ignores the API key but the OpenAI SDK requires a non-empty one.
         self._client = AsyncOpenAI(api_key="ollama", base_url=f"{base_url.rstrip('/')}/v1")
         self._model = model or self.DEFAULT_MODEL
 
@@ -94,7 +93,7 @@ class OllamaProvider(LLMProvider):
         return self._client
 
 
-# ─── Sélection runtime ───────────────────────────────────────────────────────
+# ─── Runtime selection ───────────────────────────────────────────────────────
 
 def select_provider() -> LLMProvider | None:
     """Return the first available provider based on environment.
@@ -122,22 +121,22 @@ def provider_setup_instructions() -> dict:
         "options": [
             {
                 "provider": "deepseek",
-                "label":    "DeepSeek (cloud, qualité maximale)",
+                "label":    "DeepSeek (cloud, best quality)",
                 "steps":    [
-                    "Créer une clé sur https://platform.deepseek.com/",
-                    "Ajouter `DEEPSEEK_API_KEY=sk-...` dans .env",
+                    "Create a key at https://platform.deepseek.com/",
+                    "Add `DEEPSEEK_API_KEY=sk-...` to .env",
                     "docker compose restart backend",
                 ],
             },
             {
                 "provider": "ollama",
-                "label":    "Ollama (local, autonome, sans clé)",
+                "label":    "Ollama (local, self-contained, no key required)",
                 "steps":    [
                     "docker compose --profile ollama up -d ollama",
-                    "Décommenter `OLLAMA_URL=http://ollama:11434` dans .env",
+                    "Uncomment `OLLAMA_URL=http://ollama:11434` in .env",
                     "docker compose restart backend",
                 ],
-                "note":     "Premier démarrage : ~2 GB téléchargés (modèle qwen2.5:3b).",
+                "note":     "First start: ~2 GB downloaded (qwen2.5:3b model).",
             },
         ],
     }

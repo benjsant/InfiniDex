@@ -20,11 +20,10 @@ def get_sprites_for_pair(
     db: Session = Depends(get_db),
 ):
     """
-    Liste toutes les variantes de sprite pour une paire head/body,
-    avec leurs crédits (créateurs).
+    List all sprite variants for a head/body pair, including their credits (creators).
 
-    - Le sprite par défaut est trié en premier (is_default=true).
-    - `source`: 'local' (auto-généré), 'community' (sprite custom), 'auto_generated'.
+    - The default sprite is sorted first (is_default=true).
+    - `source`: 'local' (auto-generated), 'community' (custom sprite), 'auto_generated'.
     """
     sprites = list_sprites_for_pair(db, head_id, body_id)
     return [
@@ -46,10 +45,10 @@ def get_sprites_for_pair(
 def get_sprite_image(
     head_id: int,
     body_id: int,
-    variant_id: int | None = Query(None, description="Specific sprite.id; default=variant marqué is_default"),
+    variant_id: int | None = Query(None, description="Specific sprite.id; default=variant marked is_default"),
     db: Session = Depends(get_db),
 ):
-    """Sert l'image PNG du sprite (default ou variante spécifique)."""
+    """Serve the PNG image of a sprite (default or specific variant)."""
     path = resolve_sprite_file(db, head_id, body_id, variant_id)
     if path is None:
         raise HTTPException(status_code=404, detail="Sprite not found")

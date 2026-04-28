@@ -18,22 +18,22 @@ router = APIRouter(prefix="/abilities", tags=["Abilities"])
 
 @router.get("/", response_model=list[AbilityListItem])
 def get_abilities(db: Session = Depends(get_db)):
-    """Liste tous les talents (~289 talents IF)."""
+    """List all abilities (~289 IF abilities)."""
     return list_abilities(db)
 
 
 @router.get("/search", response_model=list[AbilityListItem])
 def search_abilities_route(
-    q: str = Query(..., min_length=1, description="Nom partiel EN ou FR (insensible aux accents)"),
+    q: str = Query(..., min_length=1, description="Partial name EN or FR (accent-insensitive)"),
     db: Session = Depends(get_db),
 ):
-    """Recherche accent-insensitive sur nom EN ou FR."""
+    """Accent-insensitive search on EN or FR ability name."""
     return search_abilities(db, q)
 
 
 @router.get("/{ability_id}", response_model=AbilityDetail)
 def get_ability(ability_id: int, db: Session = Depends(get_db)):
-    """Détail d'un talent avec descriptions EN/FR."""
+    """Detail of an ability with EN/FR descriptions."""
     ability = get_ability_by_id(db, ability_id)
     if not ability:
         raise HTTPException(status_code=404, detail="Ability not found")

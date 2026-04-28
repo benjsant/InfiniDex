@@ -1,4 +1,4 @@
-"""API routes for Pokémon — liste, fiche, moveset, évolutions, locations, faiblesses."""
+"""API routes for Pokémon — list, detail, moveset, evolutions, locations, weaknesses."""
 
 from __future__ import annotations
 
@@ -46,7 +46,7 @@ def _serialize_abilities(abilities_rel) -> list[AbilityOut]:
 
 
 def pokemon_to_list_item(p: Pokemon) -> PokemonListItem:
-    """Sérialise un Pokémon au format `PokemonListItem`. Public : réutilisé par `generation_route`."""
+    """Serialize a Pokémon to `PokemonListItem` format. Public: reused by `generation_route`."""
     return PokemonListItem(
         id=p.id,
         national_id=p.national_id,
@@ -64,11 +64,11 @@ def get_pokemon_list(
     db: Session = Depends(get_db),
     limit: int | None = Query(None, ge=1, le=1000),
     offset: int = Query(0, ge=0),
-    type_id: int | None = Query(None, ge=1, description="Filtre par type (id)"),
-    generation_id: int | None = Query(None, ge=1, description="Filtre par génération"),
-    include_hoenn: bool = Query(True, description="Inclure les Pokémon Hoenn-only"),
+    type_id: int | None = Query(None, ge=1, description="Filter by type (id)"),
+    generation_id: int | None = Query(None, ge=1, description="Filter by generation"),
+    include_hoenn: bool = Query(True, description="Include Hoenn-only Pokémon"),
 ):
-    """Liste les Pokémon du jeu Infinite Fusion, avec pagination + filtres."""
+    """List Pokémon in the Infinite Fusion game, with pagination and filters."""
     pokemons = list_pokemon(
         db,
         limit=limit,
@@ -85,13 +85,13 @@ def search_pokemon_route(
     q: str = Query(..., min_length=1),
     db: Session = Depends(get_db),
 ):
-    """Recherche par nom anglais ou français (accent-insensitive)."""
+    """Search by English or French name (accent-insensitive)."""
     return [pokemon_to_list_item(p) for p in search_pokemon(db, q)]
 
 
 @router.get("/{pokemon_id}", response_model=PokemonDetail)
 def get_pokemon(p: Pokemon = Depends(get_pokemon_or_404)):
-    """Fiche détaillée d'un Pokémon par son IF ID."""
+    """Detailed Pokédex entry for a Pokémon by its IF ID."""
     return PokemonDetail(
         id=p.id,
         national_id=p.national_id,
@@ -118,7 +118,7 @@ def get_moves_for_pokemon(
     p: Pokemon = Depends(get_pokemon_or_404),
     db: Session = Depends(get_db),
 ):
-    """Moveset complet (level_up, tm, breeding, tutor, before_evolution)."""
+    """Full moveset (level_up, tm, breeding, tutor, before_evolution)."""
     rows = get_pokemon_moves(db, p.id)
     return [
         PokemonMoveOut(
@@ -148,7 +148,7 @@ def get_evolutions_for_pokemon(
     p: Pokemon = Depends(get_pokemon_or_404),
     db: Session = Depends(get_db),
 ):
-    """Chaîne d'évolutions d'un Pokémon."""
+    """Evolution chain for a Pokémon."""
     rows = get_pokemon_evolutions(db, p.id)
     return [
         EvolutionOut(
@@ -175,7 +175,7 @@ def get_locations_for_pokemon(
     p: Pokemon = Depends(get_pokemon_or_404),
     db: Session = Depends(get_db),
 ):
-    """Lieux d'encounter d'un Pokémon (wild, static, legendary…)."""
+    """Encounter locations for a Pokémon (wild, static, legendary…)."""
     rows = get_pokemon_locations(db, p.id)
     return [
         LocationOut(
@@ -193,5 +193,5 @@ def get_weaknesses_for_pokemon(
     p: Pokemon = Depends(get_pokemon_or_404),
     db: Session = Depends(get_db),
 ):
-    """Multiplicateurs de dégâts par type attaquant (non-neutres uniquement)."""
+    """Damage multipliers by attacking type (non-neutral only)."""
     return compute_pokemon_weaknesses(db, p.id) or []

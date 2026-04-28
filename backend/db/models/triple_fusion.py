@@ -40,7 +40,7 @@ class TripleFusionType(Base):
     triple_fusion_id = Column(Integer, ForeignKey("triple_fusion.id", ondelete="CASCADE"),
                               primary_key=True)
     type_id          = Column(Integer, ForeignKey("type.id"), primary_key=True)
-    slot             = Column(Integer, nullable=False)   # 1 à 4
+    slot             = Column(Integer, nullable=False)   # 1 to 4
 
     triple_fusion = relationship("TripleFusion", back_populates="types")
     type          = relationship("Type")
@@ -52,7 +52,7 @@ class TripleFusionComponent(Base):
     triple_fusion_id = Column(Integer, ForeignKey("triple_fusion.id", ondelete="CASCADE"),
                               primary_key=True)
     pokemon_id       = Column(Integer, ForeignKey("pokemon.id"), primary_key=True)
-    position         = Column(Integer, nullable=False)   # 1, 2 ou 3
+    position         = Column(Integer, nullable=False)   # 1, 2 or 3
 
     triple_fusion = relationship("TripleFusion", back_populates="components")
     pokemon       = relationship("Pokemon", back_populates="triple_fusion_components")
@@ -64,7 +64,7 @@ class TripleFusionAbility(Base):
     triple_fusion_id = Column(Integer, ForeignKey("triple_fusion.id", ondelete="CASCADE"),
                               primary_key=True)
     ability_id       = Column(Integer, ForeignKey("ability.id"), primary_key=True)
-    slot             = Column(Integer, nullable=False)   # 1, 2 (normal) ou 3 (caché)
+    slot             = Column(Integer, nullable=False)   # 1, 2 (normal) or 3 (hidden)
     is_hidden        = Column(Boolean, nullable=False, default=False)
 
     triple_fusion = relationship("TripleFusion", back_populates="abilities")

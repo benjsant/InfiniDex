@@ -39,7 +39,7 @@ def get_fusions_involving(
     limit: int | None = Query(None, ge=1, le=2000),
     offset: int = Query(0, ge=0),
 ):
-    """Toutes les paires de fusion (head OU body) impliquant ce Pokémon."""
+    """All fusion pairs (as head OR body) involving this Pokémon."""
     rows = list_fusions_involving(db, p.id, limit=limit, offset=offset)
     return [FusionInvolvingOut(**r) for r in rows]
 
@@ -68,7 +68,7 @@ def _load_pair_or_404(db: Session, head_id: int, body_id: int):
 
 @router.get("/random", response_model=FusionResult)
 def get_random_fusion(db: Session = Depends(get_db)):
-    """Retourne une fusion aléatoire (head + body tirés au hasard)."""
+    """Return a random fusion (head + body drawn at random)."""
     head_id, body_id = random_fusion_ids(db)
     return get_fusion(head_id, body_id, db)
 
@@ -76,13 +76,13 @@ def get_random_fusion(db: Session = Depends(get_db)):
 @router.get("/{head_id}/{body_id}", response_model=FusionResult)
 def get_fusion(head_id: int, body_id: int, db: Session = Depends(get_db)):
     """
-    Stats, types et sprite d'une fusion.
+    Stats, types, and sprite of a fusion.
 
-    - Stats physiques (HP/Atk/Def/Spe) = floor(Body×2/3 + Head×1/3)
-    - Stats spéciales (SpA/SpD)        = floor(Head×2/3 + Body×1/3)
-    - Type 1 = type principal de Head
-    - Type 2 = type principal de Body (si différent)
-    - Sprite : `{head_id}.{body_id}.png`
+    - Physical stats (HP/Atk/Def/Spe) = floor(Body×2/3 + Head×1/3)
+    - Special stats (SpA/SpD)          = floor(Head×2/3 + Body×1/3)
+    - Type 1 = primary type of Head
+    - Type 2 = primary type of Body (if different)
+    - Sprite: `{head_id}.{body_id}.png`
     """
     result = compute_fusion(db, head_id, body_id)
     if result is None:
@@ -111,7 +111,7 @@ def get_fusion(head_id: int, body_id: int, db: Session = Depends(get_db)):
 
 @router.get("/{head_id}/{body_id}/moves", response_model=list[FusionMoveOut])
 def get_fusion_moves(head_id: int, body_id: int, db: Session = Depends(get_db)):
-    """Moveset combiné head + body, dédupliqué par move (origin='head'|'body'|'both')."""
+    """Combined head + body moveset, deduplicated per move (origin='head'|'body'|'both')."""
     head, body = _load_pair_or_404(db, head_id, body_id)
     rows = compute_fusion_moves(db, head.id, body.id)
     return [
@@ -135,14 +135,14 @@ def get_fusion_moves(head_id: int, body_id: int, db: Session = Depends(get_db)):
 
 @router.get("/{head_id}/{body_id}/abilities", response_model=list[FusionAbilityOut])
 def get_fusion_abilities(head_id: int, body_id: int, db: Session = Depends(get_db)):
-    """Abilities disponibles pour la fusion (règle IF : head slot 1 + body slot 1 + hidden)."""
+    """Abilities available for the fusion (IF rule: head slot 1 + body slot 1 + hidden abilities)."""
     head, body = _load_pair_or_404(db, head_id, body_id)
     return [FusionAbilityOut(**a) for a in compute_fusion_abilities(db, head, body)]
 
 
 @router.get("/{head_id}/{body_id}/weaknesses", response_model=list[WeaknessOut])
 def get_fusion_weaknesses(head_id: int, body_id: int, db: Session = Depends(get_db)):
-    """Multiplicateurs de dégâts contre les types de la fusion (non-neutres uniquement)."""
+    """Damage multipliers against the fusion's types (non-neutral only)."""
     head, body = _load_pair_or_404(db, head_id, body_id)
     return compute_fusion_weaknesses(db, head, body)
 
@@ -152,7 +152,7 @@ def get_fusion_weaknesses(head_id: int, body_id: int, db: Session = Depends(get_
     response_model=list[FusionExpertMoveOut],
 )
 def get_fusion_expert_moves(head_id: int, body_id: int, db: Session = Depends(get_db)):
-    """Moves enseignables à cette fusion par un Move Expert (Knot / Boon Island)."""
+    """Moves teachable to this fusion by a Move Expert (Knot / Boon Island)."""
     head, body = _load_pair_or_404(db, head_id, body_id)
     rows = compute_fusion_expert_moves(db, head, body)
     return [

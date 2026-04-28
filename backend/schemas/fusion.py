@@ -56,7 +56,7 @@ class FusionResult(BaseModel):
 
 
 class FusionExpertMoveOut(BaseModel):
-    """Move enseignable à la fusion par un Move Expert (Knot / Boon)."""
+    """Move teachable to a fusion by a Move Expert (Knot / Boon Island)."""
     move_id: int
     name_en: str
     name_fr: str | None
@@ -65,8 +65,8 @@ class FusionExpertMoveOut(BaseModel):
     accuracy: int | None
     pp: int
     type: TypeOut
-    locations: list[str]                       # ['knot_island'] / ['boon_island'] / les deux
-    prices_heart_scales: dict[str, int]        # map location → prix en Heart Scales
+    locations: list[str]                       # ['knot_island'] / ['boon_island'] / both
+    prices_heart_scales: dict[str, int]        # map location → price in Heart Scales
 
     model_config = {"from_attributes": True}
 
