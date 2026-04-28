@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { PokemonMoveOut } from "@/types/api";
 import { TypeBadge } from "./TypeBadge";
 import { formatCategory, formatMethod, formatPower, formatAccuracy } from "@/lib/utils";
@@ -12,12 +13,13 @@ interface MovesetTableProps {
 const METHOD_ORDER = ["level_up", "tm", "breeding", "tutor", "before_evolution"];
 
 export function MovesetTable({ moves }: MovesetTableProps) {
-  const grouped = METHOD_ORDER.reduce<Record<string, PokemonMoveOut[]>>(
-    (acc, m) => {
-      acc[m] = moves.filter((mv) => mv.method === m);
-      return acc;
-    },
-    {},
+  const grouped = useMemo(
+    () =>
+      METHOD_ORDER.reduce<Record<string, PokemonMoveOut[]>>((acc, m) => {
+        acc[m] = moves.filter((mv) => mv.method === m);
+        return acc;
+      }, {}),
+    [moves],
   );
 
   return (
@@ -46,7 +48,7 @@ export function MovesetTable({ moves }: MovesetTableProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {group
+                  {[...group]
                     .sort((a, b) => (a.level ?? 0) - (b.level ?? 0))
                     .map((mv, i) => (
                       <tr

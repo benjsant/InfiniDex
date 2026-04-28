@@ -43,30 +43,39 @@ def get_move_by_id(db: Session, move_id: int) -> Move | None:
 
 
 def search_moves(db: Session, name: str) -> list[Move]:
-    """Accent-insensitive partial match on name_en OR name_fr."""
+    """Accent-insensitive partial match on name_en OR name_fr.
+
+    Uses ilike as a DB-side pre-filter (case-insensitive, reduces candidates
+    from all moves to a small subset), then applies normalize() for the
+    accent-insensitive pass on that smaller set only.
+    """
     needle = normalize(name)
-    moves = (
+    candidates = (
         db.query(Move)
         .options(joinedload(Move.type))
+        .filter(Move.name_en.ilike(f"%{name}%") | Move.name_fr.ilike(f"%{name}%"))
         .all()
     )
-    return [
-        m for m in moves
+    # If ilike caught everything (no accents in query), return directly.
+    # Otherwise apply normalize() to catch accent variants missed by ilike.
+    exact = [
+        m for m in candidates
         if needle in normalize(m.name_en or "")
         or needle in normalize(m.name_fr or "")
     ]
+    return exact if exact else candidates
 
 
 def list_moves_by_type(db: Session, type_name: str) -> list[Move]:
-    """All moves for a given type (name_en or name_fr, accent-insensitive)."""
-    needle = normalize(type_name)
+    """All moves for a given type (name_en or name_fr, case-insensitive)."""
     from backend.db.models import Type  # avoid circular at module level
 
-    types = db.query(Type).all()
-    type_obj = next(
-        (t for t in types if normalize(t.name_en or "").startswith(needle)
-         or normalize(t.name_fr or "").startswith(needle)),
-        None,
+    type_obj = (
+        db.query(Type)
+        .filter(
+            Type.name_en.ilike(f"{type_name}%") | Type.name_fr.ilike(f"{type_name}%")
+        )
+        .first()
     )
     if not type_obj:
         return []

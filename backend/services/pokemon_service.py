@@ -87,8 +87,8 @@ def compute_pokemon_weaknesses(db: Session, pokemon_id: int) -> list[dict] | Non
     for eff in affinities:
         multipliers[eff.attacking_type_id] *= eff.multiplier
 
-    # Only return non-neutral results
-    type_map = {t.id: t for t in db.query(Type).all()}
+    # Only return non-neutral results — fetch only the attacking types that appear.
+    type_map = {t.id: t for t in db.query(Type).filter(Type.id.in_(multipliers.keys())).all()}
 
     return [
         {
