@@ -3,14 +3,15 @@
 Utilisé comme fallback par le tool `search_wiki` lorsque la BDD locale
 ne couvre pas la question (mécaniques de jeu, lore, patches, etc.).
 
-L'API MediaWiki est publique, sans clé. On limite l'extract à 2 000
-caractères pour éviter l'explosion de tokens dans la fenêtre de contexte
-du LLM.
+L'API MediaWiki est publique, sans clé. On utilise `action=parse&prop=wikitext`
+(prop=extracts retourne vide sur ce wiki Fandom) puis on strip le markup wiki.
+L'extract est limité à MAX_EXTRACT_CHARS pour éviter l'explosion de tokens.
 """
 
 from __future__ import annotations
 
 import logging
+import re
 
 import httpx
 
@@ -21,8 +22,22 @@ MAX_EXTRACT_CHARS = 2_000
 HTTP_TIMEOUT = 8.0
 
 
+def _strip_wiki_markup(text: str) -> str:
+    """Convert wikitext to plain text (best-effort, not a full parser)."""
+    text = re.sub(r"\{\{[^}]*\}\}", "", text)                            # templates
+    text = re.sub(r"\[\[(?:[^|\]]*\|)?([^\]]+)\]\]", r"\1", text)       # [[link|label]]
+    text = re.sub(r"'{2,3}", "", text)                                   # bold/italic
+    text = re.sub(r"==+[^=]*==+", "", text)                              # == headers ==
+    text = re.sub(r"<[^>]+>", "", text)                                  # HTML tags
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
 async def fetch_wiki(query: str) -> dict:
-    """Search the Infinite Fusion wiki and return the best page's intro extract.
+    """Search the Infinite Fusion wiki and return the best page's intro.
+
+    Uses action=parse with section=0 (intro) then falls back to the full
+    page when the intro is empty (some pages have no lead section).
 
     Returns:
         dict with keys:
@@ -50,26 +65,21 @@ async def fetch_wiki(query: str) -> dict:
             if not results:
                 return {"found": False, "query": query}
 
-            # 2. Fetch the plain-text intro extract of the best result.
             title = results[0]["title"]
-            extract_resp = await client.get(
-                WIKI_API_URL,
-                params={
-                    "action": "query",
-                    "prop": "extracts",
-                    "titles": title,
-                    "exintro": 1,
-                    "explaintext": 1,
-                    "format": "json",
-                },
-            )
-            extract_resp.raise_for_status()
-            pages = extract_resp.json().get("query", {}).get("pages", {})
-            page = next(iter(pages.values()))
-            extract = (page.get("extract") or "").strip()
 
-            if len(extract) > MAX_EXTRACT_CHARS:
-                extract = extract[:MAX_EXTRACT_CHARS] + "…"
+            # 2. Fetch intro section (section=0) wikitext, strip markup.
+            extract = await _fetch_section(client, title, section=0)
+
+            # 3. If intro is empty, grab the full page and truncate.
+            if not extract:
+                extract = await _fetch_section(client, title, section=None)
+
+            if not extract:
+                return {
+                    "found": False,
+                    "query": query,
+                    "note": f"Page '{title}' trouvée mais contenu illisible",
+                }
 
             return {
                 "found": True,
@@ -85,3 +95,27 @@ async def fetch_wiki(query: str) -> dict:
     except httpx.HTTPError as exc:
         LOGGER.warning("Wiki HTTP error for query=%r: %s", query, exc)
         return {"found": False, "error": f"Wiki HTTP error: {exc}"}
+
+
+async def _fetch_section(
+    client: httpx.AsyncClient,
+    title: str,
+    section: int | None,
+) -> str:
+    """Return stripped plain text for a page section (None = full page)."""
+    params: dict = {
+        "action": "parse",
+        "page": title,
+        "prop": "wikitext",
+        "format": "json",
+    }
+    if section is not None:
+        params["section"] = section
+
+    resp = await client.get(WIKI_API_URL, params=params)
+    resp.raise_for_status()
+    wikitext = resp.json().get("parse", {}).get("wikitext", {}).get("*", "")
+    text = _strip_wiki_markup(wikitext)
+    if len(text) > MAX_EXTRACT_CHARS:
+        text = text[:MAX_EXTRACT_CHARS] + "…"
+    return text
