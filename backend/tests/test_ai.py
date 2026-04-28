@@ -252,7 +252,7 @@ def test_ai_system_prompt_is_injected(client: TestClient, fake_client_factory) -
     msgs = fake.chat.completions.received_calls[0]["messages"]
     assert msgs[0]["role"] == "system"
     assert "FusionDex AI" in msgs[0]["content"]
-    assert "Je n'ai pas trouvé" in msgs[0]["content"]
+    assert "Je n'ai pas trouvé" in msgs[0]["content"]  # fail-closed phrase (in both EN prompt + FR reply rule)
 
 
 def test_ai_context_is_prepended(client: TestClient, fake_client_factory) -> None:
