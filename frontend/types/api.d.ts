@@ -147,3 +147,8 @@ export interface AiRequest {
   context?: string;
   history?: HistoryMessage[];
 }
+
+export interface AiProviderInfo {
+  name: string;
+  model: string;
+}

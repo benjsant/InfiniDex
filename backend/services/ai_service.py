@@ -1,20 +1,19 @@
 """AI service — tool-calling agent loop with fail-closed guarantee.
 
 Flow:
-  1. LLM receives the question + TOOL_SPECS (JSON Schema for all 6 tools)
-  2. LLM may request 1+ tool calls → backend executes, returns results, loops
-  3. When LLM produces a text response → stream it to the UI
-  4. After MAX_ITERATIONS with no text response → fail-closed refusal
+  1. LLM receives the question + TOOL_SPECS
+  2. LLM may request tool calls → backend executes, returns results, loops
+  3. When LLM produces a text response → yield token events to stream to UI
+  4. After MAX_ITERATIONS with no text → fail-closed refusal token event
 
-Provider (DeepSeek cloud / Ollama local) is selected at runtime by the route
-via llm_providers.select_provider(). No provider → route returns 503.
+Yields typed AgentEvent dicts. The route formats them as SSE.
 """
 
 from __future__ import annotations
 
 import json
 import logging
-from typing import AsyncIterator
+from typing import AsyncIterator, Literal, TypedDict
 
 from sqlalchemy.orm import Session
 
@@ -29,8 +28,25 @@ MAX_ITERATIONS   = 5
 MAX_TOKENS       = 1024
 TEMPERATURE      = 0.3
 FAILURE_MESSAGE  = "Je n'ai pas trouvé cette information."
-MAX_HISTORY_MSGS = 10  # trim history server-side to cap token usage
+MAX_HISTORY_MSGS = 10
 
+
+# ─── Event types ─────────────────────────────────────────────────────────────
+
+class ToolCallEvent(TypedDict):
+    type: Literal["tool_call"]
+    name: str
+
+
+class TokenEvent(TypedDict):
+    type: Literal["token"]
+    chunk: str
+
+
+AgentEvent = ToolCallEvent | TokenEvent
+
+
+# ─── Agent loop ──────────────────────────────────────────────────────────────
 
 async def stream_ai_response(
     db: Session,
@@ -38,18 +54,12 @@ async def stream_ai_response(
     context: str | None = None,
     history: list[HistoryMessage] | None = None,
     provider: LLMProvider | None = None,
-) -> AsyncIterator[str]:
-    """Agent loop: tool calls → results → loop → stream final response.
-
-    Args:
-        db: SQLAlchemy session passed to tool handlers.
-        message: Current user question.
-        context: Optional context injected by the UI (current Pokémon/fusion).
-        history: Previous turns (user/assistant pairs). Trimmed to MAX_HISTORY_MSGS.
-        provider: LLM provider. Falls back to select_provider() if None.
+) -> AsyncIterator[AgentEvent]:
+    """Agent loop: tool calls → results → loop → yield token events.
 
     Yields:
-        Text chunks (final answer or FAILURE_MESSAGE).
+        ToolCallEvent when a tool is invoked (for UI transparency).
+        TokenEvent with the final response chunks (or FAILURE_MESSAGE).
     """
     provider = provider or select_provider()
     if provider is None:
@@ -82,7 +92,7 @@ async def stream_ai_response(
 
         if not msg.tool_calls:
             content = (msg.content or "").strip()
-            yield content if content else FAILURE_MESSAGE
+            yield TokenEvent(type="token", chunk=content if content else FAILURE_MESSAGE)
             return
 
         messages.append({
@@ -99,6 +109,8 @@ async def stream_ai_response(
         })
 
         for tc in msg.tool_calls:
+            yield ToolCallEvent(type="tool_call", name=tc.function.name)
+
             try:
                 args = json.loads(tc.function.arguments) if tc.function.arguments else {}
             except json.JSONDecodeError as exc:
@@ -113,4 +125,4 @@ async def stream_ai_response(
             })
 
     LOGGER.warning("agent reached MAX_ITERATIONS=%d without final response", MAX_ITERATIONS)
-    yield FAILURE_MESSAGE
+    yield TokenEvent(type="token", chunk=FAILURE_MESSAGE)

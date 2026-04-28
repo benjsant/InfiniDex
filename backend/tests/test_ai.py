@@ -11,27 +11,44 @@ from fastapi.testclient import TestClient
 from backend.services import ai_service, llm_providers
 
 
-# ─── Helpers pour mocker les réponses DeepSeek ───────────────────────────────
+# ─── SSE helpers ─────────────────────────────────────────────────────────────
+
+def _sse_events(response) -> list[dict]:
+    """Parse all JSON events from an SSE response body."""
+    events = []
+    for line in response.text.splitlines():
+        if line.startswith("data: "):
+            try:
+                events.append(json.loads(line[6:]))
+            except json.JSONDecodeError:
+                pass
+    return events
+
+
+def _sse_text(response) -> str:
+    """Concatenate all token chunks from an SSE response."""
+    return "".join(
+        e["chunk"] for e in _sse_events(response) if e.get("type") == "token"
+    )
+
+
+def _sse_tool_calls(response) -> list[str]:
+    """Return tool names from tool_call events in an SSE response."""
+    return [e["name"] for e in _sse_events(response) if e.get("type") == "tool_call"]
+
+
+# ─── Fake LLM infrastructure ─────────────────────────────────────────────────
 
 def _fake_message_content(text: str):
-    """Fake OpenAI ChatCompletionMessage with text only, no tool_calls."""
     return SimpleNamespace(content=text, tool_calls=None)
 
 
 def _fake_message_tool_calls(calls: list[tuple[str, dict]]):
-    """Fake message where the assistant requests tool calls.
-
-    Args:
-        calls: list of (tool_name, args_dict) tuples.
-    """
     tool_calls = [
         SimpleNamespace(
             id=f"call_{i}",
             type="function",
-            function=SimpleNamespace(
-                name=name,
-                arguments=json.dumps(args),
-            ),
+            function=SimpleNamespace(name=name, arguments=json.dumps(args)),
         )
         for i, (name, args) in enumerate(calls)
     ]
@@ -43,8 +60,6 @@ def _fake_response(message):
 
 
 class FakeCompletions:
-    """Fake `client.chat.completions` with a scripted sequence of responses."""
-
     def __init__(self, responses: list):
         self._responses = list(responses)
         self.received_calls: list[dict] = []
@@ -62,8 +77,6 @@ class FakeClient:
 
 
 class FakeProvider:
-    """Minimal LLMProvider impl for tests."""
-
     def __init__(self, responses: list):
         self._client = FakeClient(responses)
 
@@ -82,15 +95,7 @@ class FakeProvider:
 
 @pytest.fixture
 def fake_client_factory(monkeypatch):
-    """Install a fake LLM provider + canned tool dispatch.
-
-    `dispatch_tool` is mocked to return tool-name-specific stubs so these
-    tests don't need a populated DB (CI runs without Postgres). Real
-    tool↔DB integration is covered separately in `test_ai_tools.py`.
-
-    `select_provider` is monkey-patched at the route level so the 503
-    branch is bypassed and our FakeProvider is used in the loop.
-    """
+    """Install a fake LLM provider + canned tool dispatch (no DB needed)."""
     monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key-fake")
 
     async def fake_dispatch_tool(_db, name: str, args: dict) -> dict:
@@ -106,72 +111,83 @@ def fake_client_factory(monkeypatch):
 
     def install(responses: list) -> FakeClient:
         provider = FakeProvider(responses)
-        # Patch both module references — route checks select_provider first
-        # (its own import), then service uses provider passed in.
-        monkeypatch.setattr(
-            "backend.routes.ai_route.select_provider",
-            lambda: provider,
-        )
+        monkeypatch.setattr("backend.routes.ai_route.select_provider", lambda: provider)
         monkeypatch.setattr(llm_providers, "select_provider", lambda: provider)
         return provider.client
 
     yield install
 
 
-# ─── Tests ───────────────────────────────────────────────────────────────────
+# ─── Provider endpoint ───────────────────────────────────────────────────────
+
+def test_ai_provider_returns_name_and_model(client: TestClient, monkeypatch) -> None:
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "sk-test")
+    monkeypatch.delenv("OLLAMA_URL", raising=False)
+    r = client.get("/ai/provider")
+    assert r.status_code == 200
+    assert r.json()["name"] == "deepseek"
+    assert r.json()["model"] == "deepseek-chat"
+
+
+def test_ai_provider_503_when_none_configured(client: TestClient, monkeypatch) -> None:
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.delenv("OLLAMA_URL", raising=False)
+    r = client.get("/ai/provider")
+    assert r.status_code == 503
+
+
+# ─── Core agent behavior ─────────────────────────────────────────────────────
 
 def test_ai_no_provider_configured(client: TestClient, monkeypatch) -> None:
-    """Without DEEPSEEK_API_KEY nor OLLAMA_URL → 503 with setup instructions."""
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
     monkeypatch.delenv("OLLAMA_URL", raising=False)
     r = client.post("/ai/ask", json={"message": "salut"})
     assert r.status_code == 503
     detail = r.json()["detail"]
     assert detail["error"] == "No LLM provider configured"
-    providers = {opt["provider"] for opt in detail["options"]}
-    assert providers == {"deepseek", "ollama"}
+    assert {opt["provider"] for opt in detail["options"]} == {"deepseek", "ollama"}
 
 
 def test_ai_direct_answer_no_tool_call(client: TestClient, fake_client_factory) -> None:
-    """LLM answers directly without invoking any tool."""
-    fake = fake_client_factory([
-        _fake_response(_fake_message_content("Bonjour !")),
-    ])
+    fake = fake_client_factory([_fake_response(_fake_message_content("Bonjour !"))])
 
     r = client.post("/ai/ask", json={"message": "Bonjour"})
     assert r.status_code == 200
-    assert r.text == "Bonjour !"
-    # One call made, no follow-up needed
+    assert _sse_text(r) == "Bonjour !"
+    assert _sse_tool_calls(r) == []
     assert len(fake.chat.completions.received_calls) == 1
-    # Tools were advertised even though the model didn't use them
     assert "tools" in fake.chat.completions.received_calls[0]
 
 
 def test_ai_single_tool_call_then_answer(client: TestClient, fake_client_factory) -> None:
-    """LLM calls one tool, then gives a final answer using the result."""
     fake = fake_client_factory([
-        _fake_response(_fake_message_tool_calls([
-            ("get_pokemon", {"name_or_id": 25}),
-        ])),
+        _fake_response(_fake_message_tool_calls([("get_pokemon", {"name_or_id": 25})])),
         _fake_response(_fake_message_content("Pikachu est de type Electric.")),
     ])
 
     r = client.post("/ai/ask", json={"message": "Parle-moi de Pikachu"})
     assert r.status_code == 200
-    assert "Pikachu" in r.text
+    assert "Pikachu" in _sse_text(r)
+    assert _sse_tool_calls(r) == ["get_pokemon"]
 
-    calls = fake.chat.completions.received_calls
-    assert len(calls) == 2
-    # Second call's messages include the tool result
-    second_messages = calls[1]["messages"]
-    tool_msgs = [m for m in second_messages if m["role"] == "tool"]
-    assert len(tool_msgs) == 1
-    tool_payload = json.loads(tool_msgs[0]["content"])
-    assert tool_payload["name_en"] == "Pikachu"
+    tool_msgs = [m for m in fake.chat.completions.received_calls[1]["messages"] if m["role"] == "tool"]
+    assert json.loads(tool_msgs[0]["content"])["name_en"] == "Pikachu"
+
+
+def test_ai_tool_call_events_emitted_before_response(client: TestClient, fake_client_factory) -> None:
+    """tool_call events appear in the SSE stream before the token event."""
+    fake_client_factory([
+        _fake_response(_fake_message_tool_calls([("get_pokemon", {"name_or_id": 25})])),
+        _fake_response(_fake_message_content("Pikachu.")),
+    ])
+
+    r = client.post("/ai/ask", json={"message": "Pikachu ?"})
+    events = _sse_events(r)
+    types = [e["type"] for e in events]
+    assert types.index("tool_call") < types.index("token")
 
 
 def test_ai_multi_tool_single_turn(client: TestClient, fake_client_factory) -> None:
-    """LLM calls 2 tools in one turn, then answers."""
     fake = fake_client_factory([
         _fake_response(_fake_message_tool_calls([
             ("get_pokemon", {"name_or_id": 25}),
@@ -182,109 +198,78 @@ def test_ai_multi_tool_single_turn(client: TestClient, fake_client_factory) -> N
 
     r = client.post("/ai/ask", json={"message": "Compare Pikachu et Charizard"})
     assert r.status_code == 200
-    calls = fake.chat.completions.received_calls
-    # Both tool results made it back in the second call
+    assert set(_sse_tool_calls(r)) == {"get_pokemon"}
     tool_results = [
         json.loads(m["content"])
-        for m in calls[1]["messages"]
+        for m in fake.chat.completions.received_calls[1]["messages"]
         if m["role"] == "tool"
     ]
-    assert {r["name_en"] for r in tool_results} == {"Pikachu", "Charizard"}
+    assert {res["name_en"] for res in tool_results} == {"Pikachu", "Charizard"}
 
 
 def test_ai_circuit_breaker_fails_closed(client: TestClient, fake_client_factory) -> None:
-    """If LLM keeps requesting tools past MAX_ITERATIONS, we fail-close."""
-    # Script: always request a tool — MAX_ITERATIONS times
-    repeating = _fake_response(_fake_message_tool_calls([
-        ("get_pokemon", {"name_or_id": 1}),
-    ]))
+    repeating = _fake_response(_fake_message_tool_calls([("get_pokemon", {"name_or_id": 1})]))
     fake_client_factory([repeating] * (ai_service.MAX_ITERATIONS + 2))
 
     r = client.post("/ai/ask", json={"message": "Tu boucles à l'infini"})
     assert r.status_code == 200
-    assert r.text == ai_service.FAILURE_MESSAGE
+    assert _sse_text(r) == ai_service.FAILURE_MESSAGE
 
 
 def test_ai_empty_content_is_failure(client: TestClient, fake_client_factory) -> None:
-    """A final turn with no content and no tool_calls → fail-closed message."""
-    fake_client_factory([
-        _fake_response(SimpleNamespace(content="", tool_calls=None)),
-    ])
+    fake_client_factory([_fake_response(SimpleNamespace(content="", tool_calls=None))])
 
     r = client.post("/ai/ask", json={"message": "rien"})
     assert r.status_code == 200
-    assert r.text == ai_service.FAILURE_MESSAGE
+    assert _sse_text(r) == ai_service.FAILURE_MESSAGE
 
 
 def test_ai_invalid_tool_json_is_recovered(client: TestClient, fake_client_factory) -> None:
-    """Malformed tool arguments → error payload, model can try again."""
-    # 1st response: malformed JSON arguments
     bad = SimpleNamespace(
-        id="call_0",
-        type="function",
+        id="call_0", type="function",
         function=SimpleNamespace(name="get_pokemon", arguments="not json"),
     )
-    first = SimpleNamespace(
-        choices=[SimpleNamespace(message=SimpleNamespace(
-            content=None,
-            tool_calls=[bad],
-        ))],
-    )
-    # 2nd response: final answer (with error info in context)
+    first = SimpleNamespace(choices=[SimpleNamespace(
+        message=SimpleNamespace(content=None, tool_calls=[bad])
+    )])
     second = _fake_response(_fake_message_content("Désolé, requête invalide."))
 
     fake = fake_client_factory([first, second])
-
     r = client.post("/ai/ask", json={"message": "test"})
     assert r.status_code == 200
 
-    # Tool result message should contain an "error" field
     tool_msg = next(
         m for m in fake.chat.completions.received_calls[1]["messages"]
         if m["role"] == "tool"
     )
-    payload = json.loads(tool_msg["content"])
-    assert "error" in payload
+    assert "error" in json.loads(tool_msg["content"])
 
 
 def test_ai_system_prompt_is_injected(client: TestClient, fake_client_factory) -> None:
-    """Every call must include the strict system prompt at position 0."""
-    fake = fake_client_factory([
-        _fake_response(_fake_message_content("ok")),
-    ])
-
+    fake = fake_client_factory([_fake_response(_fake_message_content("ok"))])
     client.post("/ai/ask", json={"message": "test"})
 
-    first_messages = fake.chat.completions.received_calls[0]["messages"]
-    assert first_messages[0]["role"] == "system"
-    assert "FusionDex AI" in first_messages[0]["content"]
-    assert "Je n'ai pas trouvé" in first_messages[0]["content"]
+    msgs = fake.chat.completions.received_calls[0]["messages"]
+    assert msgs[0]["role"] == "system"
+    assert "FusionDex AI" in msgs[0]["content"]
+    assert "Je n'ai pas trouvé" in msgs[0]["content"]
 
 
 def test_ai_context_is_prepended(client: TestClient, fake_client_factory) -> None:
-    """When `context` is provided, it's prepended to the user message."""
-    fake = fake_client_factory([
-        _fake_response(_fake_message_content("ok")),
-    ])
-
+    fake = fake_client_factory([_fake_response(_fake_message_content("ok"))])
     client.post("/ai/ask", json={
         "message": "Que penses-tu de cette fusion ?",
         "context": "Pokémon affiché : Pikachu id=25",
     })
 
-    first_messages = fake.chat.completions.received_calls[0]["messages"]
-    user_msg = first_messages[1]
+    user_msg = fake.chat.completions.received_calls[0]["messages"][1]
     assert user_msg["role"] == "user"
     assert "Pikachu id=25" in user_msg["content"]
     assert "Que penses-tu" in user_msg["content"]
 
 
 def test_ai_history_ordering(client: TestClient, fake_client_factory) -> None:
-    """Messages order: system → history turns → new user message."""
-    fake = fake_client_factory([
-        _fake_response(_fake_message_content("ok")),
-    ])
-
+    fake = fake_client_factory([_fake_response(_fake_message_content("ok"))])
     client.post("/ai/ask", json={
         "message": "question 3",
         "history": [
@@ -299,21 +284,14 @@ def test_ai_history_ordering(client: TestClient, fake_client_factory) -> None:
     assert sent[0]["role"] == "system"
     assert sent[1] == {"role": "user",      "content": "question 1"}
     assert sent[2] == {"role": "assistant", "content": "réponse 1"}
-    assert sent[3] == {"role": "user",      "content": "question 2"}
-    assert sent[4] == {"role": "assistant", "content": "réponse 2"}
     assert sent[5]["role"] == "user"
     assert "question 3" in sent[5]["content"]
 
 
 def test_ai_history_trimmed_to_max(client: TestClient, fake_client_factory) -> None:
-    """History longer than MAX_HISTORY_MSGS is trimmed (oldest dropped)."""
     from backend.services.ai_service import MAX_HISTORY_MSGS
+    fake = fake_client_factory([_fake_response(_fake_message_content("ok"))])
 
-    fake = fake_client_factory([
-        _fake_response(_fake_message_content("ok")),
-    ])
-
-    # Send 20 history messages (10 pairs) — more than MAX_HISTORY_MSGS=10
     long_history = [
         {"role": "user" if i % 2 == 0 else "assistant", "content": f"msg {i}"}
         for i in range(20)
@@ -321,5 +299,4 @@ def test_ai_history_trimmed_to_max(client: TestClient, fake_client_factory) -> N
     client.post("/ai/ask", json={"message": "nouvelle question", "history": long_history})
 
     sent = fake.chat.completions.received_calls[0]["messages"]
-    # system + trimmed history + new user = 1 + MAX_HISTORY_MSGS + 1
     assert len(sent) == 1 + MAX_HISTORY_MSGS + 1

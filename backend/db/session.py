@@ -11,7 +11,13 @@ _DB_URL = (
     f"/{os.getenv('POSTGRES_DB', 'fusiondex_db')}"
 )
 
-engine = create_engine(_DB_URL)
+engine = create_engine(
+    _DB_URL,
+    pool_size=5,        # connexions persistantes
+    max_overflow=10,    # burst jusqu'à 15 connexions totales
+    pool_timeout=30,    # attente max pour obtenir une connexion
+    pool_pre_ping=True, # valide la connexion avant usage (évite les erreurs après idle)
+)
 SessionLocal = sessionmaker(bind=engine)
 
 
