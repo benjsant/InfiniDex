@@ -12,6 +12,7 @@ import type {
   AbilityDetail,
   FusionResult,
   AiRequest,
+  AiProviderInfo,
 } from "@/types/api";
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -119,4 +120,8 @@ export async function askAi(req: AiRequest): Promise<Response> {
   });
   if (!res.ok) throw new Error(`AI error ${res.status}`);
   return res;
+}
+
+export function getAiProvider(): Promise<AiProviderInfo> {
+  return apiFetch<AiProviderInfo>("/ai/provider");
 }

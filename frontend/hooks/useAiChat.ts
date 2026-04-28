@@ -7,6 +7,7 @@ import type { HistoryMessage } from "@/types/api";
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+  toolCalls?: string[];
 }
 
 export function useAiChat() {
@@ -30,7 +31,7 @@ export function useAiChat() {
       setMessages((prev) => [
         ...prev.filter((m) => m.content.trim() !== ""),
         { role: "user", content: message },
-        { role: "assistant", content: "" },
+        { role: "assistant", content: "", toolCalls: [] },
       ]);
       setIsStreaming(true);
 
@@ -40,21 +41,52 @@ export function useAiChat() {
         if (!reader) throw new Error("No response body");
 
         const decoder = new TextDecoder();
+        let buffer = "";
         let done = false;
+
         while (!done) {
           const { value, done: doneReading } = await reader.read();
           done = doneReading;
           if (value) {
-            const chunk = decoder.decode(value, { stream: true });
-            setMessages((cur) => {
-              const updated = [...cur];
-              const last = updated[updated.length - 1];
-              updated[updated.length - 1] = {
-                ...last,
-                content: last.content + chunk,
-              };
-              return updated;
-            });
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            // Last element may be an incomplete line — keep it in the buffer.
+            buffer = lines.pop() ?? "";
+
+            for (const line of lines) {
+              if (!line.startsWith("data: ")) continue;
+              try {
+                const event = JSON.parse(line.slice(6)) as {
+                  type: "tool_call" | "token";
+                  name?: string;
+                  chunk?: string;
+                };
+
+                if (event.type === "tool_call" && event.name) {
+                  setMessages((cur) => {
+                    const updated = [...cur];
+                    const last = updated[updated.length - 1];
+                    updated[updated.length - 1] = {
+                      ...last,
+                      toolCalls: [...(last.toolCalls ?? []), event.name!],
+                    };
+                    return updated;
+                  });
+                } else if (event.type === "token" && event.chunk != null) {
+                  setMessages((cur) => {
+                    const updated = [...cur];
+                    const last = updated[updated.length - 1];
+                    updated[updated.length - 1] = {
+                      ...last,
+                      content: last.content + event.chunk,
+                    };
+                    return updated;
+                  });
+                }
+              } catch {
+                // Malformed SSE line — skip.
+              }
+            }
           }
         }
       } catch (err) {

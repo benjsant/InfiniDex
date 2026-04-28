@@ -1,6 +1,8 @@
-"""API routes for AI assistant — streaming SSE with provider auto-selection."""
+"""API routes for the AI assistant."""
 
 from __future__ import annotations
+
+import json
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -14,29 +16,34 @@ from backend.services.llm_providers import provider_setup_instructions, select_p
 router = APIRouter(prefix="/ai", tags=["AI"])
 
 
+@router.get("/provider")
+def get_ai_provider():
+    """Return the active LLM provider name and model, or 503 if none configured."""
+    p = select_provider()
+    if p is None:
+        raise HTTPException(status_code=503, detail=provider_setup_instructions())
+    return {"name": p.name, "model": p.model}
+
+
 @router.post("/ask")
 async def ask_ai(request: AiRequest, db: Session = Depends(get_db)):
-    """Agent tool-calling streaming SSE.
+    """Agent tool-calling endpoint — SSE stream of AgentEvents.
 
-    Le LLM (DeepSeek si `DEEPSEEK_API_KEY` set, sinon Ollama si `OLLAMA_URL`
-    set) reçoit la liste de tools (BDD Pokémon/fusions/moves/items/tutors),
-    exécute les appels nécessaires, puis stream sa réponse finale. Si aucun
-    tool n'a remonté d'info pertinente, répond *« Je n'ai pas trouvé cette
-    information. »* (fail-closed).
+    Each event is a JSON line: ``data: {"type": "tool_call"|"token", ...}\\n\\n``
 
-    Sans provider configuré, retourne 503 avec instructions de setup.
+    - ``tool_call`` events carry the tool name (emitted before execution).
+    - ``token`` events carry response text chunks.
+
+    Returns 503 with setup instructions if no LLM provider is configured.
     """
     provider = select_provider()
     if provider is None:
         raise HTTPException(status_code=503, detail=provider_setup_instructions())
 
-    async def token_generator():
-        async for token in stream_ai_response(
+    async def event_stream():
+        async for event in stream_ai_response(
             db, request.message, request.context, request.history, provider
         ):
-            yield token
+            yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
 
-    return StreamingResponse(
-        token_generator(),
-        media_type="text/plain; charset=utf-8",
-    )
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
