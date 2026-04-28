@@ -21,7 +21,7 @@ function PokemonPicker({ label, selected, onSelect }: PokemonPickerProps) {
   const [open, setOpen] = useState(false);
 
   const searchQuery = usePokemonSearch(q);
-  const listQuery   = usePokemonList({ page_size: 20 });
+  const listQuery   = usePokemonList({ page_size: 20 }, { enabled: open });
 
   const results = q.trim().length >= 2
     ? (searchQuery.data ?? [])

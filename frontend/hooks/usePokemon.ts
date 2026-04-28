@@ -12,16 +12,15 @@ import {
 // Pokémon data is static between deploys — never refetch in background.
 const STATIC: { staleTime: number } = { staleTime: Infinity };
 
-export function usePokemonList(params?: {
-  type_id?: number;
-  gen?: number;
-  page?: number;
-  page_size?: number;
-}) {
+export function usePokemonList(
+  params?: { type_id?: number; gen?: number; page?: number; page_size?: number },
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: ["pokemon-list", params],
     queryFn: () => getPokemonList(params),
     ...STATIC,
+    ...options,
   });
 }
 

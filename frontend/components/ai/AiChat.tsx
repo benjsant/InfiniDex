@@ -38,7 +38,7 @@ export function AiChat({
   const { data: provider } = useQuery({
     queryKey: ["ai-provider"],
     queryFn: getAiProvider,
-    staleTime: 5 * 60 * 1000,
+    staleTime: Infinity,
     retry: false,
   });
 
@@ -50,9 +50,16 @@ export function AiChat({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-scroll
+  // Scroll to bottom when a new message bubble is added (smooth) or when a
+  // token is appended to the current streaming bubble (instant — avoids the
+  // animation being cancelled and restarted tens of times per second).
+  const prevMessageCountRef = useRef(0);
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const isNewMessage = messages.length > prevMessageCountRef.current;
+    prevMessageCountRef.current = messages.length;
+    bottomRef.current?.scrollIntoView({
+      behavior: isNewMessage ? "smooth" : "instant",
+    });
   }, [messages]);
 
   const handleSubmit = (e: React.FormEvent) => {
