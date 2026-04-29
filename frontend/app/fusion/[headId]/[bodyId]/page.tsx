@@ -18,11 +18,11 @@ export default function FusionResultPage({
   const hId = parseInt(headId, 10);
   const bId = parseInt(bodyId, 10);
 
-  const { data: fusion, isLoading, error } = useFusion(hId, bId);
-  const { data: moves = [] }         = useFusionMoves(hId, bId);
-  const { data: expertMoves = [] }   = useFusionExpertMoves(hId, bId);
-  const { data: sprites = [] }       = useSprites(hId, bId);
-  const { data: spritesReversed = [] } = useSprites(bId, hId);
+  const { data: fusion, isLoading, error }          = useFusion(hId, bId);
+  const { data: moves = [], isLoading: movesLoading }       = useFusionMoves(hId, bId);
+  const { data: expertMoves = [], isLoading: expertLoading } = useFusionExpertMoves(hId, bId);
+  const { data: sprites = [] }                              = useSprites(hId, bId);
+  const { data: spritesReversed = [] }                      = useSprites(bId, hId);
 
   if (isLoading) {
     return (
@@ -140,19 +140,25 @@ export default function FusionResultPage({
       </div>
 
       {/* Moveset */}
-      {(moves.length > 0 || expertMoves.length > 0) && (
-        <div className="rounded-xl bg-[rgb(20,20,28)] border border-[rgb(50,50,70)] p-5 mb-4">
-          <h2 className="text-sm font-semibold text-[rgb(120,120,140)] uppercase tracking-wider mb-4">
-            Capacités apprises
-          </h2>
+      <div className="rounded-xl bg-[rgb(20,20,28)] border border-[rgb(50,50,70)] p-5 mb-4">
+        <h2 className="text-sm font-semibold text-[rgb(120,120,140)] uppercase tracking-wider mb-4">
+          Capacités apprises
+        </h2>
+        {movesLoading || expertLoading ? (
+          <div className="space-y-2 animate-pulse">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-8 rounded bg-[rgb(30,30,42)]" />
+            ))}
+          </div>
+        ) : (
           <FusionMovesetTable
             moves={moves}
             expertMoves={expertMoves}
             headName={fusion.head_name_en}
             bodyName={fusion.body_name_en}
           />
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="flex flex-wrap gap-3">
         <AiSuggestButton

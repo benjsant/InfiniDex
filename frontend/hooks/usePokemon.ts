@@ -32,12 +32,13 @@ export function useTypes() {
   });
 }
 
-export function usePokemonSearch(q: string) {
+export function usePokemonSearch(q: string, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["pokemon-search", q],
     queryFn: () => searchPokemon(q),
     enabled: q.trim().length >= 2,
     ...STATIC,
+    ...options,
   });
 }
 

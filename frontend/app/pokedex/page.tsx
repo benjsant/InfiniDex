@@ -62,7 +62,7 @@ function PokedexContent() {
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <SearchBar
-          onSearch={setQ}
+          onSearch={(v) => { setQ(v); setPage(1); }}
           className="flex-1"
           placeholder="Rechercher (Bulbasaur, Bulbizarre, pikachu…)"
         />

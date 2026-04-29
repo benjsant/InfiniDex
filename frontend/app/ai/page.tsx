@@ -2,12 +2,21 @@
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { AiChat } from "@/components/ai/AiChat";
+import { getAiProvider } from "@/lib/api";
 
 function AiPageInner() {
   const searchParams = useSearchParams();
   const q   = searchParams.get("q")   ?? undefined;
   const ctx = searchParams.get("ctx") ?? undefined;
+
+  const { data: provider } = useQuery({
+    queryKey: ["ai-provider"],
+    queryFn: getAiProvider,
+    staleTime: Infinity,
+    retry: false,
+  });
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 h-[calc(100vh-4rem)] flex flex-col">
@@ -16,7 +25,9 @@ function AiPageInner() {
           Assistant IA
         </h1>
         <p className="text-sm text-[rgb(120,120,140)]">
-          Propulsé par DeepSeek · Spécialiste Pokémon Infinite Fusion
+          {provider
+            ? `${provider.name} · ${provider.model} · Spécialiste Pokémon Infinite Fusion`
+            : "Spécialiste Pokémon Infinite Fusion"}
         </p>
       </div>
       <div className="flex-1 min-h-0">
