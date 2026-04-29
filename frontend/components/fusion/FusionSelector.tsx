@@ -15,13 +15,14 @@ interface PokemonPickerProps {
   label: string;
   selected: PokemonListItem | null;
   onSelect: (p: PokemonListItem) => void;
+  loading?: boolean;
 }
 
-function PokemonPicker({ label, selected, onSelect }: PokemonPickerProps) {
+function PokemonPicker({ label, selected, onSelect, loading = false }: PokemonPickerProps) {
   const [q, setQ]       = useState("");
   const [open, setOpen] = useState(false);
 
-  const searchQuery = usePokemonSearch(q);
+  const searchQuery = usePokemonSearch(q, { enabled: open });
   const listQuery   = usePokemonList({ page_size: 20 }, { enabled: open });
 
   const results = q.trim().length >= 2
@@ -46,7 +47,15 @@ function PokemonPicker({ label, selected, onSelect }: PokemonPickerProps) {
         {label}
       </p>
 
-      {selected ? (
+      {loading ? (
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-[rgb(20,20,28)] border border-[rgb(50,50,70)] animate-pulse">
+          <div className="w-12 h-12 rounded bg-[rgb(40,40,55)] shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="h-3 w-24 rounded bg-[rgb(40,40,55)]" />
+            <div className="h-3 w-16 rounded bg-[rgb(40,40,55)]" />
+          </div>
+        </div>
+      ) : selected ? (
         <div
           className="flex items-center gap-3 p-3 rounded-lg bg-[rgb(20,20,28)] border border-indigo-500 cursor-pointer hover:border-indigo-400 transition-colors"
           onClick={() => setOpen(!open)}
@@ -111,6 +120,7 @@ function PokemonPicker({ label, selected, onSelect }: PokemonPickerProps) {
 export function FusionSelector() {
   const [head, setHead] = useState<PokemonListItem | null>(null);
   const [body, setBody] = useState<PokemonListItem | null>(null);
+  const [preloading, setPreloading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -118,8 +128,12 @@ export function FusionSelector() {
   useEffect(() => {
     const headId = searchParams.get("head");
     const bodyId = searchParams.get("body");
-    if (headId) getPokemon(parseInt(headId, 10)).then(setHead).catch(() => null);
-    if (bodyId) getPokemon(parseInt(bodyId, 10)).then(setBody).catch(() => null);
+    if (!headId && !bodyId) return;
+    setPreloading(true);
+    Promise.all([
+      headId ? getPokemon(parseInt(headId, 10)).then(setHead).catch(() => null) : Promise.resolve(),
+      bodyId ? getPokemon(parseInt(bodyId, 10)).then(setBody).catch(() => null) : Promise.resolve(),
+    ]).finally(() => setPreloading(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const canFuse = head != null && body != null;
@@ -137,7 +151,7 @@ export function FusionSelector() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4 items-start">
-        <PokemonPicker label="Tête (Head)" selected={head} onSelect={setHead} />
+        <PokemonPicker label="Tête (Head)" selected={head} onSelect={setHead} loading={preloading} />
         <button
           onClick={handleSwap}
           disabled={!head && !body}
@@ -146,7 +160,7 @@ export function FusionSelector() {
         >
           ⇄
         </button>
-        <PokemonPicker label="Corps (Body)" selected={body} onSelect={setBody} />
+        <PokemonPicker label="Corps (Body)" selected={body} onSelect={setBody} loading={preloading} />
       </div>
 
       <button

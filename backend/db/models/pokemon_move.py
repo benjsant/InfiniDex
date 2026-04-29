@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Index, Integer, String
 from sqlalchemy.orm import relationship
 
 from backend.db.base import Base
@@ -6,6 +6,9 @@ from backend.db.base import Base
 
 class PokemonMove(Base):
     __tablename__ = "pokemon_move"
+    __table_args__ = (
+        Index("idx_pokemon_move_pokemon_id", "pokemon_id"),
+    )
 
     id         = Column(Integer, primary_key=True)
     pokemon_id = Column(Integer, ForeignKey("pokemon.id", ondelete="CASCADE"),
