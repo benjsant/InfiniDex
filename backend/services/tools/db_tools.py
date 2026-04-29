@@ -128,9 +128,9 @@ async def _get_fusion(db: Session, args: dict) -> dict:
     head_obj = load_pokemon_for_fusion(db, head_id)
     body_obj = load_pokemon_for_fusion(db, body_id)
     if not head_obj:
-        return {"error": f"No Pokémon with id={head_id}"}
+        return {"error": f"head: No Pokémon with id={head_id}"}
     if not body_obj:
-        return {"error": f"No Pokémon with id={body_id}"}
+        return {"error": f"body: No Pokémon with id={body_id}"}
 
     fusion = compute_fusion_from_objects(head_obj, body_obj)
     abilities = compute_fusion_abilities(db, head_obj, body_obj)
