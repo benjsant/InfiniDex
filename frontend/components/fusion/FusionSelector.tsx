@@ -69,7 +69,7 @@ function PokemonPicker({ label, selected, onSelect, loading = false }: PokemonPi
             className="object-contain"
           />
           <div>
-            <p className="font-semibold text-[rgb(220,220,255)]">{selected.name_en}</p>
+            <p className="font-semibold text-[rgb(220,220,255)]">{selected.name_fr ?? selected.name_en}</p>
             <div className="flex gap-1 mt-0.5">
               {t1 && <TypeBadge typeName={t1.name_en} size="sm" />}
               {t2 && <TypeBadge typeName={t2.name_en} size="sm" />}
@@ -102,7 +102,7 @@ function PokemonPicker({ label, selected, onSelect, loading = false }: PokemonPi
                   className="w-full flex items-center gap-2 px-3 py-2 hover:bg-[rgb(30,30,45)] transition-colors text-left"
                 >
                   <span className="text-xs text-[rgb(100,100,120)] w-8">#{p.id}</span>
-                  <span className="text-sm text-[rgb(220,220,255)]">{p.name_en}</span>
+                  <span className="text-sm text-[rgb(220,220,255)]">{p.name_fr ?? p.name_en}</span>
                   <div className="ml-auto flex gap-1">
                     {pt1 && <TypeBadge typeName={pt1.name_en} size="sm" />}
                     {pt2 && <TypeBadge typeName={pt2.name_en} size="sm" />}
@@ -169,7 +169,7 @@ export function FusionSelector() {
         className="w-full py-3 rounded-lg font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-indigo-600 hover:bg-indigo-500 text-white"
       >
         {canFuse
-          ? `⚗️ Fusionner ${head!.name_en} + ${body!.name_en}`
+          ? `⚗️ Fusionner ${head!.name_fr ?? head!.name_en} + ${body!.name_fr ?? body!.name_en}`
           : "Sélectionne deux Pokémon"}
       </button>
     </div>

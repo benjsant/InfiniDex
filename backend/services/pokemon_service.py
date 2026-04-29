@@ -116,22 +116,34 @@ def get_pokemon_moves(db: Session, pokemon_id: int) -> list[PokemonMove]:
 
 
 def get_pokemon_evolutions(db: Session, pokemon_id: int) -> list[PokemonEvolution]:
-    """Evolution rows touching this Pokémon (as source OR target).
+    """Return all evolution links in the same chain as pokemon_id.
 
-    Returns both:
-      - outgoing (this Pokémon evolves into X) — `pokemon_id == id`
-      - incoming (Y evolves into this Pokémon) — `evolves_into_id == id`
+    Walks the chain iteratively (covers baby→stage1→stage2 in 2 passes)
+    so that calling /pokemon/1/evolutions returns both Bulbasaur→Ivysaur
+    and Ivysaur→Venusaur, not just the single direct link.
     """
+    chain_ids: set[int] = {pokemon_id}
+    for _ in range(4):  # max depth guard — deepest IF chain is ≤3 stages
+        rows = (
+            db.query(PokemonEvolution)
+            .filter(
+                PokemonEvolution.pokemon_id.in_(chain_ids)
+                | PokemonEvolution.evolves_into_id.in_(chain_ids)
+            )
+            .all()
+        )
+        expanded = {e.pokemon_id for e in rows} | {e.evolves_into_id for e in rows}
+        if expanded == chain_ids:
+            break
+        chain_ids = expanded
+
     return (
         db.query(PokemonEvolution)
         .options(
             joinedload(PokemonEvolution.evolves_into),
             joinedload(PokemonEvolution.pokemon),
         )
-        .filter(
-            (PokemonEvolution.pokemon_id == pokemon_id)
-            | (PokemonEvolution.evolves_into_id == pokemon_id)
-        )
+        .filter(PokemonEvolution.pokemon_id.in_(chain_ids))
         .all()
     )
 

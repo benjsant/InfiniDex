@@ -36,11 +36,9 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
       <div className="text-center">
         <p className="text-xs text-[rgb(120,120,140)]">#{pokemon.id}</p>
         <p className="text-sm font-semibold text-[rgb(220,220,255)] group-hover:text-indigo-300 transition-colors">
-          {pokemon.name_en}
+          {pokemon.name_fr ?? pokemon.name_en}
         </p>
-        {pokemon.name_fr && (
-          <p className="text-xs text-[rgb(100,100,120)]">{pokemon.name_fr}</p>
-        )}
+        <p className="text-xs text-[rgb(100,100,120)]">{pokemon.name_en}</p>
       </div>
 
       <div className="flex gap-1.5 flex-wrap justify-center">

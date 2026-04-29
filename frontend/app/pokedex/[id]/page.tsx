@@ -87,11 +87,9 @@ export default function PokemonDetailPage({
                 {pokemon.national_id && ` · National #${pokemon.national_id}`}
               </p>
               <h1 className="text-3xl font-bold text-[rgb(220,220,255)]">
-                {pokemon.name_en}
+                {pokemon.name_fr ?? pokemon.name_en}
               </h1>
-              {pokemon.name_fr && (
-                <p className="text-lg text-[rgb(160,160,180)]">{pokemon.name_fr}</p>
-              )}
+              <p className="text-lg text-[rgb(160,160,180)]">{pokemon.name_en}</p>
             </div>
             <AiSuggestButton
               pokemonName={pokemon.name_en}
@@ -113,12 +111,12 @@ export default function PokemonDetailPage({
             <div className="flex flex-wrap gap-2 mt-3 text-sm">
               {normalAbilities.map((a) => (
                 <span key={a.slot} className="px-2 py-1 rounded bg-[rgb(30,30,42)] text-[rgb(200,200,220)]">
-                  {a.name_en}
+                  {a.name_fr ?? a.name_en}
                 </span>
               ))}
               {hiddenAbility && (
                 <span className="px-2 py-1 rounded bg-[rgb(30,30,42)] text-[rgb(160,160,180)] italic">
-                  {hiddenAbility.name_en} (caché)
+                  {hiddenAbility.name_fr ?? hiddenAbility.name_en} (caché)
                 </span>
               )}
             </div>
@@ -186,14 +184,14 @@ export default function PokemonDetailPage({
               href={`/fusion?head=${pokemonId}`}
               className="flex-1 px-4 py-3 rounded-lg bg-[rgb(25,25,35)] border border-[rgb(40,40,55)] hover:border-indigo-500 transition-all text-center"
             >
-              <p className="text-xs text-[rgb(120,120,140)] mb-1">{pokemon.name_en} en tant que…</p>
+              <p className="text-xs text-[rgb(120,120,140)] mb-1">{pokemon.name_fr ?? pokemon.name_en} en tant que…</p>
               <p className="font-semibold text-indigo-400">Tête (Head)</p>
             </Link>
             <Link
               href={`/fusion?body=${pokemonId}`}
               className="flex-1 px-4 py-3 rounded-lg bg-[rgb(25,25,35)] border border-[rgb(40,40,55)] hover:border-indigo-500 transition-all text-center"
             >
-              <p className="text-xs text-[rgb(120,120,140)] mb-1">{pokemon.name_en} en tant que…</p>
+              <p className="text-xs text-[rgb(120,120,140)] mb-1">{pokemon.name_fr ?? pokemon.name_en} en tant que…</p>
               <p className="font-semibold text-purple-400">Corps (Body)</p>
             </Link>
           </div>
