@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useCallback, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { usePokemonSearch, usePokemonList } from "@/hooks/usePokemon";
+import { getPokemon } from "@/lib/api";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import type { PokemonListItem } from "@/types/api";
 import { basePokemonSprite } from "@/lib/constants";
@@ -111,6 +112,15 @@ export function FusionSelector() {
   const [head, setHead] = useState<PokemonListItem | null>(null);
   const [body, setBody] = useState<PokemonListItem | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Pre-select from URL params (?head=ID&?body=ID) — e.g. links from Pokédex page.
+  useEffect(() => {
+    const headId = searchParams.get("head");
+    const bodyId = searchParams.get("body");
+    if (headId) getPokemon(parseInt(headId, 10)).then(setHead).catch(() => null);
+    if (bodyId) getPokemon(parseInt(bodyId, 10)).then(setBody).catch(() => null);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const canFuse = head != null && body != null;
 

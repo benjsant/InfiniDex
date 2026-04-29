@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { FusionSelector } from "@/components/fusion/FusionSelector";
 
 export default function FusionPage() {
@@ -11,7 +12,9 @@ export default function FusionPage() {
       <p className="text-sm text-[rgb(120,120,140)] mb-8">
         Sélectionne la tête et le corps pour calculer les stats, types et voir le sprite de la fusion.
       </p>
-      <FusionSelector />
+      <Suspense>
+        <FusionSelector />
+      </Suspense>
     </div>
   );
 }

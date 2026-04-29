@@ -38,9 +38,9 @@ export default function PokemonDetailPage({
   const [activeTab, setActiveTab] = useState<Tab>("stats");
 
   const { data: pokemon, isLoading } = usePokemon(pokemonId);
-  const { data: moves = [] }        = usePokemonMoves(pokemonId);
-  const { data: evolutions = [] }   = usePokemonEvolutions(pokemonId);
-  const { data: weaknesses = [] }   = usePokemonWeaknesses(pokemonId);
+  const { data: moves = [] }        = usePokemonMoves(pokemonId,    { enabled: activeTab === "moves" });
+  const { data: evolutions = [] }   = usePokemonEvolutions(pokemonId, { enabled: activeTab === "evolutions" });
+  const { data: weaknesses = [] }   = usePokemonWeaknesses(pokemonId, { enabled: activeTab === "weaknesses" });
 
   if (isLoading) return <PageSkeleton />;
   if (!pokemon)  return <NotFound id={pokemonId} />;

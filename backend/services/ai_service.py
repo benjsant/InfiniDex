@@ -25,7 +25,7 @@ from backend.services.tools import TOOL_SPECS, dispatch_tool
 LOGGER = logging.getLogger(__name__)
 
 MAX_ITERATIONS   = 5
-MAX_TOKENS       = 1024
+MAX_TOKENS       = 2048
 TEMPERATURE      = 0.3
 FAILURE_MESSAGE  = "Je n'ai pas trouvé cette information."
 MAX_HISTORY_MSGS = 10

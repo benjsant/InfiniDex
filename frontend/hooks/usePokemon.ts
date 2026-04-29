@@ -50,29 +50,32 @@ export function usePokemon(id: number) {
   });
 }
 
-export function usePokemonMoves(id: number) {
+export function usePokemonMoves(id: number, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["pokemon-moves", id],
     queryFn: () => getPokemonMoves(id),
     enabled: id > 0,
     ...STATIC,
+    ...options,
   });
 }
 
-export function usePokemonEvolutions(id: number) {
+export function usePokemonEvolutions(id: number, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["pokemon-evolutions", id],
     queryFn: () => getPokemonEvolutions(id),
     enabled: id > 0,
     ...STATIC,
+    ...options,
   });
 }
 
-export function usePokemonWeaknesses(id: number) {
+export function usePokemonWeaknesses(id: number, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["pokemon-weaknesses", id],
     queryFn: () => getPokemonWeaknesses(id),
     enabled: id > 0,
     ...STATIC,
+    ...options,
   });
 }
