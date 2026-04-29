@@ -1,6 +1,6 @@
 # API backend
 
-FastAPI exposant 40 endpoints (+ `/health`). Swagger interactif en dev : [http://localhost:58000/docs](http://localhost:58000/docs). Référence auto-générée : [Routes](reference/routes.md).
+FastAPI exposant 41 endpoints (+ `/health`). Swagger interactif en dev : [http://localhost:58000/docs](http://localhost:58000/docs). Référence auto-générée : [Routes](reference/routes.md).
 
 En prod le backend n'est **pas** exposé publiquement — les requêtes passent par le proxy Next.js (`/api/*` sur le domaine public).
 
@@ -8,17 +8,24 @@ En prod le backend n'est **pas** exposé publiquement — les requêtes passent 
 
 ```
 backend/
-  main.py                 # wiring FastAPI + CORS
-  routes/                 # endpoints HTTP (une file par domaine)
+  main.py                 # wiring FastAPI + CORS + StaticCacheMiddleware
+  routes/                 # endpoints HTTP (un fichier par domaine)
   services/               # logique métier + accès DB
+    tools/                # outils de l'agent IA (db_tools.py, wiki_tool.py)
   schemas/                # Pydantic — contrat I/O
+  prompts/
+    system.md             # system prompt LLM (anglais, réponse forcée en français)
   db/
     models/               # SQLAlchemy
     base.py               # engine + session
-  tests/                  # pytest + TestClient (53 tests verts)
+  tests/                  # pytest + TestClient (109 tests collectés)
 ```
 
 Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les routes ne touchent jamais directement SQLAlchemy.
+
+## Cache HTTP
+
+`StaticCacheMiddleware` (dans `main.py`) ajoute `Cache-Control: public, max-age=3600` sur toutes les réponses `GET 200`, **sauf** `/ai/*` et `/health`. Les clients et CDN peuvent mettre en cache les données statiques pendant 1 heure.
 
 ## Endpoints principaux
 
@@ -27,12 +34,12 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 | Méthode | Chemin                                          | Description                               |
 | ------- | ----------------------------------------------- | ----------------------------------------- |
 | GET     | `/pokemon/`                                     | Liste paginée + filtres type/gen/Hoenn    |
-| GET     | `/pokemon/search?q={nom}`                       | Recherche par nom EN ou FR (ilike)        |
+| GET     | `/pokemon/search?q={nom}`                       | Recherche par nom EN ou FR (ilike accent-insensitive) |
 | GET     | `/pokemon/{id}`                                 | Fiche complète (types, talents, stats)    |
 | GET     | `/pokemon/{id}/moves`                           | Learnset (level-up + TM + tutor + egg)    |
 | GET     | `/pokemon/{id}/evolutions`                      | Chaîne pre + post (bidirectionnelle)      |
 | GET     | `/pokemon/{id}/locations`                       | Zones de capture                          |
-| GET     | `/pokemon/{id}/weaknesses`                      | Matchups défensifs                        |
+| GET     | `/pokemon/{id}/weaknesses`                      | Matchups défensifs (multiplicateurs non-neutres uniquement) |
 
 ### Moves
 
@@ -41,7 +48,7 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 | GET     | `/moves/`                            | Liste + filtres (category, type_id, power_min/max) |
 | GET     | `/moves/search?q={nom}`              | Recherche nom EN/FR (accent-insensitive)           |
 | GET     | `/moves/by-type/{type_name}`         | Capacités d'un type (EN ou FR)                     |
-| GET     | `/moves/{id}`                        | Détail complet + descriptions + TM info (si le move est un TM) |
+| GET     | `/moves/{id}`                        | Détail complet + descriptions + TM info            |
 | GET     | `/moves/{id}/tutors`                 | NPCs enseignant ce move (prix + localisation)      |
 
 ### Abilities
@@ -72,19 +79,19 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 
 | Méthode | Chemin                                      | Description                                    |
 | ------- | ------------------------------------------- | ---------------------------------------------- |
-| GET     | `/fusion/{head_id}/{body_id}`               | Calcul de la fusion (stats, types, moves…)     |
-| GET     | `/fusion/{head_id}/{body_id}/moves`         | Learnset de la fusion                          |
-| GET     | `/fusion/{head_id}/{body_id}/abilities`     | Talents combinés                               |
-| GET     | `/fusion/{head_id}/{body_id}/weaknesses`    | Matchups défensifs                             |
-| GET     | `/fusion/{head_id}/{body_id}/expert-moves`  | Moves débloqués par les Move Experts (+ prix Heart Scales par location) |
-| GET     | `/fusion/random`                            | Fusion aléatoire                               |
+| GET     | `/fusion/{head_id}/{body_id}`               | Stats, types et sprite d'une fusion            |
+| GET     | `/fusion/{head_id}/{body_id}/moves`         | Moveset combiné head+body, dédupliqué — chaque move inclut `origin: "head"\|"body"\|"both"` |
+| GET     | `/fusion/{head_id}/{body_id}/abilities`     | Talents combinés selon règles IF (head slot1 + body slot1 + hiddens) |
+| GET     | `/fusion/{head_id}/{body_id}/weaknesses`    | Matchups défensifs de la combinaison de types  |
+| GET     | `/fusion/{head_id}/{body_id}/expert-moves`  | Moves enseignables par Move Expert (Knot/Boon Island) + prix en Heart Scales |
+| GET     | `/fusion/random`                            | Fusion aléatoire (ORDER BY RANDOM() LIMIT 2)   |
 | GET     | `/fusions/involving/{pokemon_id}`           | Toutes les paires où ce Pokémon intervient     |
 
 ### Sprites
 
 | Méthode | Chemin                                     | Description                                   |
 | ------- | ------------------------------------------ | --------------------------------------------- |
-| GET     | `/sprites/{head_id}/{body_id}`             | Liste des variantes + crédits                 |
+| GET     | `/sprites/{head_id}/{body_id}`             | Liste des variantes + crédits (`creators: list[str]`) |
 | GET     | `/sprites/{head_id}/{body_id}/image`       | PNG — default ou `?variant_id=N`              |
 
 ### Méta
@@ -102,24 +109,38 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 | GET     | `/stats/coverage`                   | Audit de complétude DB                         |
 | GET     | `/health`                           | Healthcheck (Docker + CI)                      |
 
-### IA agentique (DeepSeek ou Ollama)
+### IA agentique
 
-| Méthode | Chemin      | Description                                                                 |
-| ------- | ----------- | --------------------------------------------------------------------------- |
-| POST    | `/ai/ask`   | Agent tool-calling — streaming SSE. Provider sélectionné runtime (DeepSeek si `DEEPSEEK_API_KEY`, sinon Ollama si `OLLAMA_URL`, sinon `503` avec instructions de setup). |
+| Méthode | Chemin           | Description                                                                 |
+| ------- | ---------------- | --------------------------------------------------------------------------- |
+| POST    | `/ai/ask`        | Agent tool-calling — réponse en streaming SSE                               |
+| GET     | `/ai/provider`   | Provider actif (`{"name": "DeepSeek", "model": "deepseek-chat"}`)           |
 
-Payload : `{ "message": "...", "context": "..." }` (context optionnel pour injecter la sélection courante — ex. *"Pokémon Dracaufeu id=6, fusion avec Mewtwo id=150"*).
+**Payload `/ai/ask`** : `{ "message": "...", "context": "...", "history": [...] }`
 
-**Fonctionnement** (Phase 1 de la roadmap IA) :
+- `context` (optionnel) : texte injecté avant la question — utilisé par le bouton "Demander à l'IA" pour passer la sélection courante (ex. *"Fusion de Dracaufeu (tête) et Mewtwo (corps). Types: Fire/Psychic. Total: 600."*)
+- `history` (optionnel) : tableau `[{role, content}]` des échanges précédents — tronqué à 10 messages
 
-1. Le LLM reçoit la question + la liste des 5 tools BDD (`get_pokemon`, `get_fusion`, `search_move`, `get_item`, `get_move_tutors`)
-2. Il peut choisir d'appeler 1+ tools → le backend exécute et renvoie les résultats
-3. Boucle jusqu'à ce que le LLM rende une réponse textuelle
-4. **Circuit breaker** : max 5 itérations, sinon *« Je n'ai pas trouvé cette information. »*
-5. **Fail-closed** : si la réponse finale est vide, même message de refus
-6. Le streaming SSE ne concerne que la réponse finale (les tool calls restent internes)
+**Format SSE** — chaque ligne `data: {...}\n\n` contient un événement typé :
 
-Les specs des tools sont dans [backend/services/ai_tools.py](https://github.com/benjsant/FusionDex-IA/blob/main/backend/services/ai_tools.py) et la boucle dans [backend/services/ai_service.py](https://github.com/benjsant/FusionDex-IA/blob/main/backend/services/ai_service.py).
+```json
+{"type": "tool_call", "name": "get_pokemon"}
+{"type": "token", "chunk": "Dracaufeu est un Pokémon de type Feu..."}
+```
+
+Les événements `tool_call` permettent à l'UI d'afficher les outils invoqués (pastilles ⚙). Les `token` sont accumulés pour le rendu Markdown progressif.
+
+**Fonctionnement de la boucle agent** :
+
+1. Le LLM reçoit la question + `TOOL_SPECS` (6 tools : 5 DB + 1 wiki)
+2. Il peut invoquer 1+ tools → le backend exécute et renvoie les résultats JSON
+3. Boucle jusqu'à réponse textuelle ou MAX_ITERATIONS (5)
+4. **Circuit breaker** : si MAX_ITERATIONS atteint → *« Je n'ai pas trouvé cette information. »*
+5. **Fail-closed** : réponse vide → même message de refus
+
+**Provider sélectionné à runtime** : `DEEPSEEK_API_KEY` → DeepSeek · `OLLAMA_URL` → Ollama · Aucun → `503` avec instructions de setup.
+
+Implémentation : [`backend/services/ai_service.py`](https://github.com/benjsant/FusionDex-IA/blob/main/backend/services/ai_service.py) (boucle), [`backend/services/tools/`](https://github.com/benjsant/FusionDex-IA/blob/main/backend/services/tools/) (handlers).
 
 ## CORS
 
@@ -145,7 +166,7 @@ En prod, `CORS_ALLOWED_ORIGINS` doit lister uniquement le domaine public.
 
 ## Tests
 
-53 tests pytest + `TestClient`. Ils nécessitent un dump SQL sous `backend/tests/fixtures/` (actuellement non committé — seul `test_ai.py` tourne en CI).
+109 tests collectés (`uv run pytest --collect-only`). Ils nécessitent un dump SQL sous `backend/tests/fixtures/` (actuellement non committé — seul `test_ai.py` tourne en CI sans fixture).
 
 ```bash
 cd backend
@@ -155,6 +176,6 @@ uv run pytest
 ## Voir aussi
 
 - [Règles de fusion](fusion-rules.md) — sémantique des endpoints `/fusion/*`.
-- [Architecture](architecture.md) — flux de requêtes.
+- [Architecture](architecture.md) — flux de requêtes + boucle agent IA.
 - [Référence routes](reference/routes.md) — signatures + docstrings auto-générées.
 - [Référence schemas](reference/schemas.md) — modèles Pydantic (I/O).
