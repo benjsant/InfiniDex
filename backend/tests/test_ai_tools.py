@@ -108,6 +108,12 @@ async def test_get_fusion_invalid_head(db) -> None:
     assert "head" in result["error"]
 
 
+async def test_get_fusion_invalid_body(db) -> None:
+    result = await dispatch_tool(db, "get_fusion", {"head": 1, "body": 999999})
+    assert "error" in result
+    assert "body" in result["error"]
+
+
 # ─── search_move ─────────────────────────────────────────────────────────────
 
 async def test_search_move_with_tm(db) -> None:

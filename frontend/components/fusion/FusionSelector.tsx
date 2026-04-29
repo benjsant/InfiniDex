@@ -22,7 +22,7 @@ function PokemonPicker({ label, selected, onSelect, loading = false }: PokemonPi
   const [q, setQ]       = useState("");
   const [open, setOpen] = useState(false);
 
-  const searchQuery = usePokemonSearch(q, { enabled: open });
+  const searchQuery = usePokemonSearch(q, { enabled: open && q.trim().length >= 2 });
   const listQuery   = usePokemonList({ page_size: 20 }, { enabled: open });
 
   const results = q.trim().length >= 2
