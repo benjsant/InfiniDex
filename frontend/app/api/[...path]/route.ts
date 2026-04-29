@@ -3,8 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 // Proxy catch-all : toutes les requêtes `/api/*` sont forwardées au backend
 // via le réseau Docker interne. Le browser ne voit JAMAIS l'URL réelle du
 // backend. Env lue à runtime (pas de rebuild nécessaire pour changer la cible).
+// In Docker: BACKEND_INTERNAL_URL=http://backend:8000 (set by docker-compose).
+// In host dev mode: falls back to localhost:FUSIONDEX_BACKEND_PORT (from .env).
 const BACKEND_URL =
-  process.env.BACKEND_INTERNAL_URL || "http://localhost:58000";
+  process.env.BACKEND_INTERNAL_URL ||
+  `http://localhost:${process.env.FUSIONDEX_BACKEND_PORT ?? "58000"}`;
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +26,9 @@ async function proxy(req: NextRequest, path: string[]) {
     method: req.method,
     headers,
     body: isReadOnly ? undefined : await req.arrayBuffer(),
-    redirect: "manual",
+    // Follow redirects server-side so the browser never sees internal Docker
+    // URLs (e.g. Location: http://backend:8000/...) from FastAPI slash-redirects.
+    redirect: "follow",
     // Let GET/HEAD responses be cached by Next.js according to the upstream
     // Cache-Control headers. Force no-store only for mutating requests.
     ...(isReadOnly ? {} : { cache: "no-store" }),
