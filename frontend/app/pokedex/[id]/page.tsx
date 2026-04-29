@@ -17,6 +17,7 @@ import { WeaknessGrid } from "@/components/pokemon/WeaknessGrid";
 import { AiSuggestButton } from "@/components/ai/AiSuggestButton";
 import { basePokemonSprite } from "@/lib/constants";
 import { primaryType, secondaryType, cn } from "@/lib/utils";
+import { FusionSprite } from "@/components/fusion/FusionSprite";
 
 type Tab = "stats" | "moves" | "evolutions" | "weaknesses" | "fusion";
 
@@ -68,15 +69,27 @@ export default function PokemonDetailPage({
     <div className="max-w-4xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row gap-6 mb-6">
-        <div className="flex items-center justify-center w-36 h-36 rounded-xl bg-[rgb(20,20,28)] border border-[rgb(50,50,70)] shrink-0 mx-auto sm:mx-0">
-          <Image
-            src={spriteUrl}
-            alt={pokemon.name_en}
-            width={112}
-            height={112}
-            unoptimized
-            className="object-contain"
-          />
+        {/* Sprites : base + self-fusion */}
+        <div className="flex gap-3 shrink-0 mx-auto sm:mx-0">
+          <div className="flex flex-col items-center gap-1">
+            <div className="flex items-center justify-center w-32 h-32 rounded-xl bg-[rgb(20,20,28)] border border-[rgb(50,50,70)]">
+              <Image
+                src={spriteUrl}
+                alt={pokemon.name_en}
+                width={104}
+                height={104}
+                unoptimized
+                className="object-contain"
+              />
+            </div>
+            <span className="text-[10px] text-[rgb(100,100,120)]">Base</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <div className="flex items-center justify-center w-32 h-32 rounded-xl bg-[rgb(20,20,28)] border border-[rgb(50,50,70)]">
+              <FusionSprite headId={pokemonId} bodyId={pokemonId} size={104} />
+            </div>
+            <span className="text-[10px] text-[rgb(100,100,120)]">Auto-fusion</span>
+          </div>
         </div>
 
         <div className="flex-1">

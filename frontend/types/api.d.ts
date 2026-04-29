@@ -70,9 +70,11 @@ export interface EvolutionOut {
   pokemon_id: number;
   pokemon_name_en: string | null;
   pokemon_name_fr: string | null;
+  pokemon_national_id: number | null;
   evolves_into_id: number;
   evolves_into_name_en: string;
   evolves_into_name_fr: string | null;
+  evolves_into_national_id: number | null;
   trigger_type: string;
   min_level: number | null;
   item_name_en: string | null;
