@@ -13,7 +13,7 @@ import {
 const STATIC: { staleTime: number } = { staleTime: Infinity };
 
 export function usePokemonList(
-  params?: { type_id?: number; gen?: number; page?: number; page_size?: number },
+  params?: { type_id?: number; gen?: number; page?: number; page_size?: number; include_hoenn?: boolean },
   options?: { enabled?: boolean },
 ) {
   return useQuery({

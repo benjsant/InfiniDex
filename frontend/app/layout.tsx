@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Navbar } from "@/components/layout/Navbar";
+import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "FusionDex — Pokédex Intelligent pour Infinite Fusion",
@@ -15,11 +23,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className="dark">
-      <body className="min-h-screen bg-[rgb(15,15,20)] text-[rgb(240,240,255)]">
+    <html lang="fr" className={`dark ${outfit.variable}`}>
+      <body className="min-h-screen bg-[#090c1a] text-[rgb(225,228,255)] font-sans antialiased">
         <Providers>
-          <Navbar />
-          <main className="pt-16">{children}</main>
+          <ErrorBoundary>
+            <Navbar />
+            <main className="pt-16">{children}</main>
+          </ErrorBoundary>
         </Providers>
       </body>
     </html>

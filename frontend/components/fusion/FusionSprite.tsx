@@ -1,16 +1,10 @@
 "use client";
 
-// Fusion sprite = one 96x96 cell cropped from a spritesheet hosted by the
-// Infinite Fusion project itself (same source the official game uses).
-// Layout: 1920x2784 sheet, 20 columns × 29 rows of 96x96 cells.
-// col = body_id % 20, row = body_id / 20  (see DownloadedSettings.rb & BaseSpriteExtracter.rb).
+// Fusion sprite served from the local sprite service via the API proxy.
+// Endpoint: GET /api/sprites/{headId}/{bodyId}/image → PNG (200) or 404.
+// Falls back to a placeholder div when the sprite doesn't exist.
 
-const SHEET_BASE =
-  process.env.NEXT_PUBLIC_FUSION_SPRITES_URL ??
-  "https://infinitefusion.net/customsprites/spritesheets/spritesheets_custom";
-
-const COLS = 20;
-const TILE = 96;
+import { useState } from "react";
 
 export interface FusionSpriteProps {
   headId: number;
@@ -25,26 +19,28 @@ export function FusionSprite({
   size = 128,
   className = "",
 }: FusionSpriteProps) {
-  const col = bodyId % COLS;
-  const row = Math.floor(bodyId / COLS);
-  const scale = size / TILE;
+  const [error, setError] = useState(false);
 
-  const style: React.CSSProperties = {
-    width: size,
-    height: size,
-    backgroundImage: `url("${SHEET_BASE}/${headId}/${headId}.png")`,
-    backgroundPosition: `-${col * size}px -${row * size}px`,
-    backgroundSize: `${COLS * size}px auto`,
-    backgroundRepeat: "no-repeat",
-    imageRendering: "pixelated",
-  };
+  if (error) {
+    return (
+      <div
+        className={className}
+        style={{ width: size, height: size }}
+        title={`Sprite ${headId}/${bodyId} non disponible`}
+      />
+    );
+  }
 
   return (
-    <div
-      role="img"
-      aria-label={`Fusion ${headId}/${bodyId}`}
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`/api/sprites/${headId}/${bodyId}/image`}
+      alt={`Fusion ${headId}/${bodyId}`}
+      width={size}
+      height={size}
+      onError={() => setError(true)}
       className={className}
-      style={style}
+      style={{ imageRendering: "pixelated", objectFit: "contain" }}
     />
   );
 }

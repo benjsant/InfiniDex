@@ -19,13 +19,16 @@ Pipeline en 12 étapes. Données actuelles :
 - [ ] Audit DB — Pokémon sans sprites, moves orphelins, cohérence des fusions
 - [ ] Scheduler (Prefect ou n8n) pour automatiser les refresh
 
-### Base de données — 🚧 ajouts planifiés
+### Base de données — ✅ enrichie
 
-Avant d'exploiter la cascade IA, enrichir les données structurées :
+- [x] **Move tutors** — table `move_tutor` (41 NPCs classiques, prix, localisation)
+- [x] **pokemon_location enrichie** — 55 entrées "gift", 25 entrées "trade", tags `respawn:elite4|gold|none` sur les légendaires
+- [x] **type_effectiveness triple-fusion** — 87 entrées pour les 8 types triple-fusion (id 37–44) ; ces types sont des types custom indépendants, pas calculés multiplicativement
+- [x] **Fix `compute_triple_fusion_weaknesses`** — utilise les IDs de types directement au lieu de décomposer les noms composés
 
-- [ ] **Move tutors** — nouvelle table `move_tutor(move_id, location_id, price, currency, notes)` scrapée depuis le wiki IF
+**Piste ouverte :**
+
 - [ ] **TM location** — nettoyer `tm.location` (texte libre avec bugs de parsing) et la lier via FK à `location(id)`
-- [ ] **Endpoint `/moves/{id}` enrichi** — inclure TM number + location + tutors
 
 ### Backend — ✅ base solide
 
@@ -43,30 +46,37 @@ Avant d'exploiter la cascade IA, enrichir les données structurées :
 - `MAX_TOKENS` IA : 1024 → 2048 (évite troncature sur réponses longues)
 - SSE typé : `ToolCallEvent` + `TokenEvent` (remplacement du texte brut)
 
+**Ajouts récents :**
+
+- [x] Endpoints `GET /moves/tutors/all` et `GET /moves/experts/all` (liste complète pour le frontend)
+- [x] `/moves/{id}/tutors` retourne maintenant `move_name_en` + `move_name_fr`
+
 **Pistes ouvertes :**
 
 - [ ] **CI full pytest** — le reste des tests nécessite un dump SQL fixture à committer sous `backend/tests/fixtures/`
-- [ ] Endpoints pour les nouveaux ajouts BDD (tutors, TM enrichi)
+- [ ] Endpoint `/moves/{id}` enrichi avec TM number + location (après TM location cleanup)
 
-### Frontend — ✅ pages principales complètes
+### Frontend — ✅ complet
 
-Toutes les pages principales livrées : `/pokedex`, `/fusion`, `/moves`, `/types`, `/abilities`, `/ai`. Composants : `EvolutionChain`, `MovesetTable`, `FusionMovesetTable`, `FusionSprite`, `AiChat`, `AiSuggestButton`, `WeaknessGrid`, `PokemonCard`, `TypeBadge`, `StatBar`.
+Toutes les pages livrées : `/pokedex`, `/fusion`, `/moves`, `/moves/tutors`, `/types`, `/abilities`, `/triple-fusions`, `/ai`. Composants : `EvolutionChain`, `MovesetTable`, `FusionMovesetTable`, `FusionSprite`, `AiChat`, `AiSuggestButton`, `WeaknessGrid`, `PokemonCard`, `TypeBadge`, `StatBar`, `CreatorModal`.
 
-**Livraisons récentes (PRs #23 → #31)** :
+**Livraisons récentes :**
 
 - Streaming SSE IA avec pastilles ⚙ tool-call + badge provider
 - Rendu Markdown des réponses IA (react-markdown + styles Tailwind)
 - `staleTime: Infinity` sur tous les hooks — zéro refetch en arrière-plan
 - Double sprite sur la page fusion (variante normale + inversée, cliquable)
-- Crédit artiste sous chaque sprite (🎨 Nom, ou "Auto-généré")
+- Crédit artiste sous chaque sprite (par créateur, ou "Auto-généré")
 - `FusionMovesetTable` : moveset head+body avec pastilles H/B/H+B par origine
 - Requêtes différées par onglet sur la fiche Pokédex (−3 requêtes au chargement)
-- `FusionSelector` pré-sélectionne via `?head=ID` et `?body=ID` (liens depuis Pokédex)
-- Scroll SSE anti-jitter (`prevMessageCountRef` : smooth sur nouveau message, instant sur token)
+- `FusionSelector` pré-sélectionne via `?head=ID` et `?body=ID` + filtre `GameFilter` (Kanto/Hoenn/Tous)
+- [x] Page `/moves/tutors` — 41 tuteurs classiques + Move Experts groupés par île
+- [x] Page `/triple-fusions` — 23 fusions triples avec faiblesses
+- [x] **Responsive mobile/tablette** — hamburger Navbar, tables avec `hidden sm:table-cell`, panels `flex-col md:flex-row`
+- [x] **Design IF-style** — palette navy `#090c1a`, gold `#e8b84b`, tokens CSS `@theme`, grid texture, TypeBadge glow, PokemonCard gradient type, StatBar gradient + glow
 
 **Pistes ouvertes :**
 
-- [ ] Page triple-fusions (tab dédié)
 - [ ] Galerie sprites + crédits (par créateur)
 - [ ] Toggle EN/FR global persistent
 - [ ] Tests Playwright
@@ -76,14 +86,15 @@ Toutes les pages principales livrées : `/pokedex`, `/fusion`, `/moves`, `/types
 
 **Phase 1 ✅** — Tools DB + circuit breaker + fail-closed :
 
-- 5 tools DB : `get_pokemon`, `get_fusion`, `search_move`, `get_item`, `get_move_tutors`
+- 6 tools DB : `get_pokemon`, `get_fusion`, `search_move`, `get_item`, `get_move_tutors`, `search_pokemon_locations`
+- `search_pokemon_locations` : cherche les Pokémon par condition/méthode dans `pokemon_location` (gift, trade, static, wild…)
 - Boucle agent MAX_ITERATIONS=5, fail-closed sur réponse vide ou dépassement
 - Provider pluggable : DeepSeek (prod) / Ollama (local)
-- System prompt externe (`prompts/system.md`) en anglais, réponses forcées en français
+- System prompt externe (`prompts/system.md`) en anglais, réponses forcées en français + règles anti-boucle, guidage `search_pokemon_locations`, section "Key game mechanics" (trade evos, HMs, triple fusion unlock, respawn, OHKO+NoGuard, Hidden Power)
 
 **Phase 2 ✅** — Tool wiki IF + cache :
 
-- `search_wiki` : requête MediaWiki API IF + cache TTL 10 min in-process
+- `search_wiki` (7e outil) : requête MediaWiki API IF + cache TTL 10 min in-process ; fetch page complète si intro < 300 caractères
 - Cascade retrieval : DB → wiki IF (→ futur : web DuckDuckGo)
 
 **Phases restantes :**
@@ -115,9 +126,9 @@ Toutes les pages principales livrées : `/pokedex`, `/fusion`, `/moves`, `/types
 - [ ] TLS + domaine pour la démo publique
 - [ ] Déployer la doc MkDocs (GitHub Pages ?)
 
-### Documentation — ✅ mise à jour (PR #32)
+### Documentation — ✅ mise à jour
 
-Pages MkDocs Material à jour : architecture (section IA agentique + flux SSE), API (41 endpoints, SSE typé, `/ai/provider`), frontend (hooks lazy, FusionMovesetTable, AiChat), roadmap (état réel).
+Pages MkDocs Material à jour : README, ROADMAP, architecture (outils IA, flux SSE), API (41 endpoints + tutors/experts), frontend (design IF, responsive, nouvelles pages), roadmap (état réel), `docs/index.md`.
 
 **Pistes ouvertes :**
 

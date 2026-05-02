@@ -116,22 +116,34 @@ def get_pokemon_moves(db: Session, pokemon_id: int) -> list[PokemonMove]:
 
 
 def get_pokemon_evolutions(db: Session, pokemon_id: int) -> list[PokemonEvolution]:
-    """Evolution rows touching this Pokémon (as source OR target).
+    """Return all evolution links in the same chain as pokemon_id.
 
-    Returns both:
-      - outgoing (this Pokémon evolves into X) — `pokemon_id == id`
-      - incoming (Y evolves into this Pokémon) — `evolves_into_id == id`
+    Walks the chain iteratively (covers baby→stage1→stage2 in 2 passes)
+    so that calling /pokemon/1/evolutions returns both Bulbasaur→Ivysaur
+    and Ivysaur→Venusaur, not just the single direct link.
     """
+    chain_ids: set[int] = {pokemon_id}
+    for _ in range(4):  # max depth guard — deepest IF chain is ≤3 stages
+        rows = (
+            db.query(PokemonEvolution)
+            .filter(
+                PokemonEvolution.pokemon_id.in_(chain_ids)
+                | PokemonEvolution.evolves_into_id.in_(chain_ids)
+            )
+            .all()
+        )
+        expanded = {e.pokemon_id for e in rows} | {e.evolves_into_id for e in rows}
+        if expanded == chain_ids:
+            break
+        chain_ids = expanded
+
     return (
         db.query(PokemonEvolution)
         .options(
             joinedload(PokemonEvolution.evolves_into),
             joinedload(PokemonEvolution.pokemon),
         )
-        .filter(
-            (PokemonEvolution.pokemon_id == pokemon_id)
-            | (PokemonEvolution.evolves_into_id == pokemon_id)
-        )
+        .filter(PokemonEvolution.pokemon_id.in_(chain_ids))
         .all()
     )
 
@@ -146,3 +158,29 @@ def get_pokemon_locations(db: Session, pokemon_id: int) -> list[PokemonLocation]
         .order_by(PokemonLocation.method)
         .all()
     )
+
+
+def search_pokemon_locations(
+    db: Session,
+    condition: str | None = None,
+    method: str | None = None,
+) -> list[PokemonLocation]:
+    """Bulk search of pokemon_location rows by method and/or notes keyword.
+
+    condition: keyword searched case-insensitively in the notes field
+               (e.g. "Legendary", "Starter", "Gift").
+    method:    encounter method filter (wild | gift | trade | static | fishing).
+    """
+    query = (
+        db.query(PokemonLocation)
+        .options(
+            joinedload(PokemonLocation.pokemon),
+            joinedload(PokemonLocation.location),
+        )
+        .join(Pokemon, Pokemon.id == PokemonLocation.pokemon_id)
+    )
+    if method:
+        query = query.filter(PokemonLocation.method == method)
+    if condition:
+        query = query.filter(PokemonLocation.notes.ilike(f"%{condition}%"))
+    return query.order_by(Pokemon.id).all()

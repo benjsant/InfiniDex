@@ -1,27 +1,40 @@
-import { statColor, statBarWidth, formatStatName } from "@/lib/utils";
+import { statBarWidth, formatStatName } from "@/lib/utils";
+import { STAT_LABELS } from "@/lib/constants";
 
 interface StatBarProps {
-  stat: string;   // key matching backend field (hp, attack, sp_attack…)
+  stat: string;
   value: number;
   max?: number;
+  typeColor?: string;
 }
 
-export function StatBar({ stat, value, max = 255 }: StatBarProps) {
+export function StatBar({ stat, value, max = 255, typeColor }: StatBarProps) {
   const width = statBarWidth(value, max);
-  const color = statColor(value);
+  const label = STAT_LABELS[stat] ?? stat;
+
+  // Color: use type color if provided, else fallback to value-based color
+  const barColor = typeColor
+    ? typeColor
+    : value >= 100 ? "#4ade80"
+    : value >= 60  ? "#facc15"
+    : "#f87171";
 
   return (
     <div className="flex items-center gap-3">
-      <span className="w-24 text-right text-xs text-[rgb(120,120,140)] shrink-0">
-        {formatStatName(stat)}
+      <span className="w-20 text-right text-xs shrink-0" style={{ color: "#6b7199" }}>
+        {label}
       </span>
-      <span className="w-8 text-right text-sm font-mono font-semibold text-[rgb(220,220,255)] shrink-0">
+      <span className="w-8 text-right text-sm font-mono font-bold shrink-0" style={{ color: "#e1e4ff" }}>
         {value}
       </span>
-      <div className="flex-1 h-2 rounded-full bg-[rgb(40,40,55)]">
+      <div className="flex-1 h-2 rounded-full" style={{ background: "#1e2240" }}>
         <div
-          className="h-full rounded-full transition-all duration-300"
-          style={{ width: `${width}%`, backgroundColor: color }}
+          className="h-full rounded-full transition-all duration-500"
+          style={{
+            width: `${width}%`,
+            background: `linear-gradient(90deg, ${barColor}cc, ${barColor})`,
+            boxShadow: `0 0 6px ${barColor}60`,
+          }}
         />
       </div>
     </div>

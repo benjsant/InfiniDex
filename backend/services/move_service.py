@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from sqlalchemy.orm import Session, joinedload
 
-from backend.db.models import Location, Move, MoveTutor, PokemonMove, TM, TMLocation
+from backend.db.models import Location, Move, MoveExpertMove, MoveTutor, Pokemon, PokemonMove, TM, TMLocation, Type
 from backend.utils.text import normalize
 
 
@@ -110,6 +110,48 @@ def get_tm_for_move(db: Session, move_id: int) -> TM | None:
         .filter(TM.move_id == move_id)
         .first()
     )
+
+
+def list_all_tutors(db: Session) -> list[MoveTutor]:
+    """All classic move tutors, ordered by location then price."""
+    return (
+        db.query(MoveTutor)
+        .options(joinedload(MoveTutor.location), joinedload(MoveTutor.move))
+        .join(Location, Location.id == MoveTutor.location_id)
+        .order_by(Location.name_en, MoveTutor.price.asc().nullsfirst())
+        .all()
+    )
+
+
+def list_all_expert_moves(db: Session) -> list[dict]:
+    """All Move Expert moves with resolved Pokémon/type requirement names."""
+    rows = (
+        db.query(MoveExpertMove)
+        .options(joinedload(MoveExpertMove.move))
+        .order_by(MoveExpertMove.expert_location, MoveExpertMove.move_id)
+        .all()
+    )
+    all_poke_ids = {pid for r in rows for pid in r.required_pokemon_ids}
+    all_type_ids = {tid for r in rows for tid in r.required_type_ids}
+    pokemon_names = {
+        p.id: (p.name_fr or p.name_en)
+        for p in db.query(Pokemon).filter(Pokemon.id.in_(all_poke_ids)).all()
+    } if all_poke_ids else {}
+    type_names = {
+        t.id: (t.name_fr or t.name_en)
+        for t in db.query(Type).filter(Type.id.in_(all_type_ids)).all()
+    } if all_type_ids else {}
+    return [
+        {
+            "move_id":           r.move_id,
+            "move_name_en":      r.move.name_en,
+            "move_name_fr":      r.move.name_fr,
+            "location":          r.expert_location,
+            "required_pokemon":  [pokemon_names.get(pid, f"#{pid}") for pid in r.required_pokemon_ids],
+            "required_types":    [type_names.get(tid, f"#{tid}") for tid in r.required_type_ids],
+        }
+        for r in rows
+    ]
 
 
 def list_tutors_for_move(db: Session, move_id: int) -> list[MoveTutor]:

@@ -3,6 +3,7 @@
 import { useState, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   usePokemon,
   usePokemonMoves,
@@ -15,8 +16,9 @@ import { MovesetTable } from "@/components/pokemon/MovesetTable";
 import { EvolutionChain } from "@/components/pokemon/EvolutionChain";
 import { WeaknessGrid } from "@/components/pokemon/WeaknessGrid";
 import { AiSuggestButton } from "@/components/ai/AiSuggestButton";
-import { basePokemonSprite } from "@/lib/constants";
+import { basePokemonSprite, typeColor } from "@/lib/constants";
 import { primaryType, secondaryType, cn } from "@/lib/utils";
+import { FusionSprite } from "@/components/fusion/FusionSprite";
 
 type Tab = "stats" | "moves" | "evolutions" | "weaknesses" | "fusion";
 
@@ -64,84 +66,115 @@ export default function PokemonDetailPage({
 
   const baseTotal = stats.reduce((s, st) => s + st.value, 0);
 
+  const primaryColor = t1 ? (typeColor(t1.name_en)) : "#6366f1";
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row gap-6 mb-6">
-        <div className="flex items-center justify-center w-36 h-36 rounded-xl bg-[rgb(20,20,28)] border border-[rgb(50,50,70)] shrink-0 mx-auto sm:mx-0">
-          <Image
-            src={spriteUrl}
-            alt={pokemon.name_en}
-            width={112}
-            height={112}
-            unoptimized
-            className="object-contain"
-          />
-        </div>
+      <div
+        className="rounded-2xl p-4 sm:p-6 mb-6 overflow-hidden relative"
+        style={{
+          background: `linear-gradient(135deg, #111428 50%, ${primaryColor}18)`,
+          border: "1px solid #1e2240",
+          boxShadow: `0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)`,
+        }}
+      >
+        {/* Top accent line */}
+        <div
+          className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl"
+          style={{ background: `linear-gradient(90deg, transparent, ${primaryColor}, transparent)` }}
+        />
 
-        <div className="flex-1">
-          <div className="flex items-start justify-between gap-2 flex-wrap">
-            <div>
-              <p className="text-sm text-[rgb(120,120,140)]">
-                IF #{pokemon.id}
-                {pokemon.national_id && ` · National #${pokemon.national_id}`}
-              </p>
-              <h1 className="text-3xl font-bold text-[rgb(220,220,255)]">
-                {pokemon.name_en}
-              </h1>
-              {pokemon.name_fr && (
-                <p className="text-lg text-[rgb(160,160,180)]">{pokemon.name_fr}</p>
-              )}
-            </div>
-            <AiSuggestButton
-              pokemonName={pokemon.name_en}
-              pokemonId={pokemonId}
-              context={[
-                `Pokémon consulté : ${pokemon.name_en}${pokemon.name_fr ? ` / ${pokemon.name_fr}` : ""} (IF #${pokemon.id}${pokemon.national_id ? `, National #${pokemon.national_id}` : ""})`,
-                `Types : ${[t1, t2].filter(Boolean).map(t => t!.name_en).join(" / ")}`,
-                `Stats : HP ${pokemon.hp} / Atk ${pokemon.attack} / Def ${pokemon.defense} / SpA ${pokemon.sp_attack} / SpD ${pokemon.sp_defense} / Spe ${pokemon.speed}`,
-              ].join(" · ")}
-            />
+        <div className="flex flex-col sm:flex-row gap-5">
+          {/* Sprites */}
+          <div className="flex gap-3 shrink-0 justify-center sm:justify-start">
+            {[
+              { label: "Base", node: <Image src={spriteUrl} alt={pokemon.name_en} width={96} height={96} unoptimized className="object-contain" /> },
+              { label: "Auto-fusion", node: <FusionSprite headId={pokemonId} bodyId={pokemonId} size={96} /> },
+            ].map(({ label, node }) => (
+              <div key={label} className="flex flex-col items-center gap-1">
+                <div
+                  className="flex items-center justify-center w-28 h-28 rounded-xl"
+                  style={{ background: "#0f1225", border: "1px solid #1e2240" }}
+                >
+                  {node}
+                </div>
+                <span className="text-[10px]" style={{ color: "#6b7199" }}>{label}</span>
+              </div>
+            ))}
           </div>
 
-          <div className="flex gap-2 mt-3">
-            {t1 && <TypeBadge typeName={t1.name_en} />}
-            {t2 && <TypeBadge typeName={t2.name_en} />}
-          </div>
-
-          {pokemon.abilities.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3 text-sm">
-              {normalAbilities.map((a) => (
-                <span key={a.slot} className="px-2 py-1 rounded bg-[rgb(30,30,42)] text-[rgb(200,200,220)]">
-                  {a.name_en}
-                </span>
-              ))}
-              {hiddenAbility && (
-                <span className="px-2 py-1 rounded bg-[rgb(30,30,42)] text-[rgb(160,160,180)] italic">
-                  {hiddenAbility.name_en} (caché)
-                </span>
-              )}
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2 flex-wrap">
+              <div>
+                <p className="text-xs font-mono" style={{ color: "#6b7199" }}>
+                  IF #{String(pokemon.id).padStart(3, "0")}
+                  {pokemon.national_id && ` · #${String(pokemon.national_id).padStart(3, "0")} National`}
+                </p>
+                <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: "#e1e4ff" }}>
+                  {pokemon.name_fr ?? pokemon.name_en}
+                </h1>
+                {pokemon.name_fr && (
+                  <p className="text-base" style={{ color: "#6b7199" }}>{pokemon.name_en}</p>
+                )}
+              </div>
+              <AiSuggestButton
+                pokemonName={pokemon.name_en}
+                pokemonId={pokemonId}
+                context={[
+                  `Pokémon consulté : ${pokemon.name_en}${pokemon.name_fr ? ` / ${pokemon.name_fr}` : ""} (IF #${pokemon.id}${pokemon.national_id ? `, National #${pokemon.national_id}` : ""})`,
+                  `Types : ${[t1, t2].filter(Boolean).map(t => t!.name_en).join(" / ")}`,
+                  `Stats : HP ${pokemon.hp} / Atk ${pokemon.attack} / Def ${pokemon.defense} / SpA ${pokemon.sp_attack} / SpD ${pokemon.sp_defense} / Spe ${pokemon.speed}`,
+                ].join(" · ")}
+              />
             </div>
-          )}
+
+            <div className="flex gap-2 mt-3 flex-wrap">
+              {t1 && <TypeBadge typeName={t1.name_en} label={t1.name_fr ?? t1.name_en} />}
+              {t2 && <TypeBadge typeName={t2.name_en} label={t2.name_fr ?? t2.name_en} />}
+            </div>
+
+            {pokemon.abilities.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3 text-sm">
+                {normalAbilities.map((a) => (
+                  <span
+                    key={a.slot}
+                    className="px-2 py-1 rounded-lg text-sm"
+                    style={{ background: "#1e2240", color: "#e1e4ff", border: "1px solid #2d3260" }}
+                  >
+                    {a.name_fr ?? a.name_en}
+                  </span>
+                ))}
+                {hiddenAbility && (
+                  <span
+                    className="px-2 py-1 rounded-lg text-sm italic"
+                    style={{ background: "#1e2240", color: "#6b7199", border: "1px solid #2d3260" }}
+                  >
+                    {hiddenAbility.name_fr ?? hiddenAbility.name_en} (caché)
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-[rgb(40,40,55)] mb-6 overflow-x-auto">
+      <div className="flex gap-0.5 mb-6 overflow-x-auto" style={{ borderBottom: "1px solid #1e2240" }}>
         {TABS.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
-            className={cn(
-              "px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-all -mb-px",
-              activeTab === key
-                ? "border-indigo-500 text-indigo-300"
-                : "border-transparent text-[rgb(120,120,140)] hover:text-[rgb(200,200,220)]",
-            )}
+            className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-all -mb-px"
+            style={{
+              borderBottomColor: activeTab === key ? "#e8b84b" : "transparent",
+              color: activeTab === key ? "#e8b84b" : "#6b7199",
+            }}
           >
             {label}
             {key === "moves" && moves.length > 0 && (
-              <span className="ml-1 text-xs text-[rgb(100,100,120)]">({moves.length})</span>
+              <span className="ml-1 text-xs" style={{ color: "#6b7199" }}>({moves.length})</span>
             )}
           </button>
         ))}
@@ -178,27 +211,27 @@ export default function PokemonDetailPage({
 
       {activeTab === "fusion" && (
         <div className="space-y-4">
-          <p className="text-sm text-[rgb(160,160,180)]">
+          <p className="text-sm" style={{ color: "#6b7199" }}>
             Sélectionne un partenaire pour voir la fusion.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Link
               href={`/fusion?head=${pokemonId}`}
-              className="flex-1 px-4 py-3 rounded-lg bg-[rgb(25,25,35)] border border-[rgb(40,40,55)] hover:border-indigo-500 transition-all text-center"
+              className="flex-1 px-4 py-3 rounded-xl text-center transition-all if-panel if-glow-hover"
             >
-              <p className="text-xs text-[rgb(120,120,140)] mb-1">{pokemon.name_en} en tant que…</p>
-              <p className="font-semibold text-indigo-400">Tête (Head)</p>
+              <p className="text-xs mb-1" style={{ color: "#6b7199" }}>{pokemon.name_fr ?? pokemon.name_en} en tant que…</p>
+              <p className="font-semibold" style={{ color: "#e8b84b" }}>Tête (Head)</p>
             </Link>
             <Link
               href={`/fusion?body=${pokemonId}`}
-              className="flex-1 px-4 py-3 rounded-lg bg-[rgb(25,25,35)] border border-[rgb(40,40,55)] hover:border-indigo-500 transition-all text-center"
+              className="flex-1 px-4 py-3 rounded-xl text-center transition-all if-panel if-glow-hover"
             >
-              <p className="text-xs text-[rgb(120,120,140)] mb-1">{pokemon.name_en} en tant que…</p>
-              <p className="font-semibold text-purple-400">Corps (Body)</p>
+              <p className="text-xs mb-1" style={{ color: "#6b7199" }}>{pokemon.name_fr ?? pokemon.name_en} en tant que…</p>
+              <p className="font-semibold" style={{ color: "#e8b84b" }}>Corps (Body)</p>
             </Link>
           </div>
-          <Link href="/fusion" className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
-            → Ouvrir le calculateur de fusion complet
+          <Link href="/fusion" className="text-sm transition-colors" style={{ color: "#e8b84b" }}>
+            Ouvrir le calculateur de fusion complet <ChevronRight size={14} className="inline" />
           </Link>
         </div>
       )}
@@ -223,9 +256,9 @@ function PageSkeleton() {
 function NotFound({ id }: { id: number }) {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 text-center">
-      <p className="text-[rgb(120,120,140)]">Pokémon #{id} introuvable.</p>
-      <Link href="/pokedex" className="mt-4 text-indigo-400 hover:text-indigo-300 transition-colors block">
-        ← Retour au Pokédex
+      <p style={{ color: "#6b7199" }}>Pokémon #{id} introuvable.</p>
+      <Link href="/pokedex" className="mt-4 block transition-colors" style={{ color: "#e8b84b" }}>
+        <ChevronLeft size={14} className="inline" /> Retour au Pokédex
       </Link>
     </div>
   );

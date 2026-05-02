@@ -25,19 +25,19 @@ theme:
     - content.code.annotate
   palette:
     - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: indigo
-      accent: deep-purple
-      toggle:
-        icon: material/weather-night
-        name: Mode sombre
-    - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: deep-purple
+      primary: deep-purple
+      accent: amber
       toggle:
         icon: material/weather-sunny
         name: Mode clair
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep-purple
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Mode sombre
   icon:
     repo: fontawesome/brands/github
 

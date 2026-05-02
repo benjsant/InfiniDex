@@ -10,6 +10,9 @@ export interface ChatMessage {
   toolCalls?: string[];
 }
 
+// 3 minutes — covers the full agent loop (5 iterations × ~30s worst-case LLM)
+const AI_TIMEOUT_MS = 180_000;
+
 export function useAiChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -19,11 +22,22 @@ export function useAiChat() {
   const messagesRef = useRef<ChatMessage[]>([]);
   messagesRef.current = messages;
 
+  // Abort controller for the current in-flight request.
+  const abortRef = useRef<AbortController | null>(null);
+
   const sendMessage = useCallback(
     async (message: string, context?: string) => {
       setError(null);
 
-      // Completed exchanges = history for this request (exclude empty placeholders).
+      // Cancel any in-flight request before starting a new one.
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      const timeoutId = setTimeout(() => {
+        controller.abort("timeout");
+      }, AI_TIMEOUT_MS);
+
       const history: HistoryMessage[] = messagesRef.current
         .filter((m) => m.content.trim() !== "")
         .map((m) => ({ role: m.role, content: m.content }));
@@ -36,7 +50,7 @@ export function useAiChat() {
       setIsStreaming(true);
 
       try {
-        const res = await askAi({ message, context, history });
+        const res = await askAi({ message, context, history }, controller.signal);
         const reader = res.body?.getReader();
         if (!reader) throw new Error("No response body");
 
@@ -50,7 +64,6 @@ export function useAiChat() {
           if (value) {
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split("\n");
-            // Last element may be an incomplete line — keep it in the buffer.
             buffer = lines.pop() ?? "";
 
             for (const line of lines) {
@@ -90,19 +103,34 @@ export function useAiChat() {
           }
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Erreur inconnue");
+        if (err instanceof Error && err.name === "AbortError") {
+          const isTimeout = (err.message === "timeout" || controller.signal.reason === "timeout");
+          setError(isTimeout
+            ? "La réponse a pris trop de temps. Réessaie."
+            : null  // user-initiated cancel — no error shown
+          );
+        } else {
+          setError(err instanceof Error ? err.message : "Erreur inconnue");
+        }
         setMessages((cur) => cur.slice(0, -1));
       } finally {
+        clearTimeout(timeoutId);
         setIsStreaming(false);
+        abortRef.current = null;
       }
     },
     [],
   );
 
+  const cancel = useCallback(() => {
+    abortRef.current?.abort("user-cancel");
+  }, []);
+
   const reset = useCallback(() => {
+    abortRef.current?.abort();
     setMessages([]);
     setError(null);
   }, []);
 
-  return { messages, isStreaming, error, sendMessage, reset };
+  return { messages, isStreaming, error, sendMessage, cancel, reset };
 }

@@ -20,7 +20,9 @@ from backend.services.tools.db_tools import (
     get_item_tool,
     get_move_tutors_tool,
     get_pokemon_tool,
+    get_triple_fusion_tool,
     search_move_tool,
+    search_pokemon_locations_tool,
 )
 from backend.services.tools.wiki_tool import search_wiki_tool
 
@@ -29,9 +31,11 @@ LOGGER = logging.getLogger(__name__)
 TOOLS: list[Tool] = [
     get_pokemon_tool,
     get_fusion_tool,
+    get_triple_fusion_tool,
     search_move_tool,
     get_item_tool,
     get_move_tutors_tool,
+    search_pokemon_locations_tool,
     search_wiki_tool,
 ]
 

@@ -12,13 +12,16 @@ frontend/
     fusion/             # sélecteur + résultat
     ai/                 # chat IA plein écran
     moves/              # liste référentielle
+    moves/tutors/       # maîtres des capacités + Move Experts
     types/              # liste référentielle
     abilities/          # liste référentielle
+    triple-fusions/     # 23 fusions triples
     api/[...path]/      # proxy catch-all → backend
     sprites-cdn/[...]/  # proxy catch-all → sidecar nginx (PNG)
   components/
     pokemon/            # EvolutionChain, MovesetTable, PokemonCard, StatBar, TypeBadge, WeaknessGrid
-    fusion/             # FusionSelector, FusionSprite, FusionMovesetTable
+                        # (WeaknessGrid : grille matchups défensifs avec multiplicateurs)
+    fusion/             # FusionSelector, FusionSprite, FusionMovesetTable, CreatorModal
     ai/                 # AiChat, AiSuggestButton
     layout/             # Navbar, SearchBar
   hooks/
@@ -46,8 +49,10 @@ frontend/
 | `/fusion/[headId]/[bodyId]`            | Résultat : double sprite + crédit artiste + stats + moveset + fusion IA   |
 | `/ai`                                  | Chat IA plein écran avec suggestions et historique                        |
 | `/moves`                               | Liste + recherche + filtre par type                                       |
-| `/types`                               | Grille des 18 types + matchups                                            |
+| `/moves/tutors`                        | Tuteurs classiques groupés par lieu + Move Experts groupés par île        |
+| `/types`                               | Grille des 27 types (18 standard + 9 triple-fusion) + matchups            |
 | `/abilities`                           | Liste + recherche                                                         |
+| `/triple-fusions`                      | 23 fusions triples disponibles dans le jeu                                |
 
 ## Proxy Next.js
 
@@ -99,6 +104,8 @@ Les hooks sont typés à partir de `types/api.d.ts` — tout changement de sché
 
 Sélecteur head/body avec recherche intégrée. Lit `?head=ID` et `?body=ID` depuis les search params au montage pour pré-sélectionner un Pokémon (utilisé par les liens "Fusionner en tant que Tête" de la fiche Pokédex).
 
+Inclut un filtre de jeu (`GameFilter = "kanto" | "hoenn" | "all"`) qui restreint la liste aux Pokémon de la région concernée. Kanto = IDs 1–151, Hoenn = IDs 152–251 (convention IF), Tous = 572 Pokémon.
+
 ### FusionMovesetTable
 
 Tableau du moveset d'une fusion, groupé par méthode d'apprentissage (niveau, reproduction, donneur, CT, donneur expert). Chaque ligne affiche une pastille d'origine :
@@ -119,6 +126,33 @@ Le scroll distingue l'ajout d'un nouveau message (smooth) de l'arrivée d'un tok
 ### FusionSprite
 
 Sprite de fusion extrait d'un spritesheet 1920×2784 (20 colonnes × 29 lignes de 96×96px) hébergé par Infinite Fusion. Rendu par `background-position` CSS — aucun téléchargement d'image individuelle.
+
+## Design system IF
+
+Le site utilise une palette et des tokens CSS inspirés de Pokémon Infinite Fusion.
+
+### Palette et tokens
+
+```css
+/* définis dans globals.css via @theme */
+--color-gold: #e8b84b;        /* accents, titres, badges actifs */
+--color-bg-deep: #090c1a;     /* fond principal */
+--color-surface: #0f1629;     /* cartes, panneaux */
+```
+
+- `TypeBadge` : fond coloré par type + `box-shadow` glow avec la couleur du type à 50 % d'opacité.
+- `PokemonCard` : gradient `linear-gradient` du type primaire (depuis 60 %) vers transparent.
+- `StatBar` : dégradé horizontal gold → rouge + glow pulsé via `@keyframes`.
+- Texture grid en `background-image` sur le fond via un SVG data-URI (motif losange).
+
+### Responsive
+
+Stratégie mobile-first :
+
+- **Navbar** : hamburger `md:hidden` ouvre un drawer full-width sur mobile. Navigation horizontale classique sur `md:flex`.
+- **Tables** : colonnes secondaires masquées sur mobile via `hidden sm:table-cell` (ex. PP, priorité dans la liste des moves).
+- **Panels** : disposition `flex-col md:flex-row` — stats + sprite empilés sur mobile, côte à côte sur desktop.
+- **Grilles** : `grid-cols-2 sm:grid-cols-3 md:grid-cols-4` pour les listes de cartes.
 
 ## i18n
 

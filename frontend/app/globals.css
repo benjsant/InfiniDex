@@ -1,25 +1,52 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-outfit), system-ui, -apple-system, sans-serif;
+
+  /* IF colour tokens */
+  --color-if-bg:        #090c1a;
+  --color-if-surface:   #0f1225;
+  --color-if-card:      #111428;
+  --color-if-border:    #1e2240;
+  --color-if-border-hi: #2d3260;
+  --color-if-text:      #e1e4ff;
+  --color-if-muted:     #6b7199;
+  --color-if-accent:    #e8b84b;   /* gold */
+  --color-if-accent-hi: #f5d07a;
+}
+
 @layer base {
   body {
-    background-color: rgb(15 15 20);
-    color: rgb(240 240 255);
-    font-family: system-ui, -apple-system, sans-serif;
+    background-color: var(--color-if-bg);
+    color: var(--color-if-text);
+    /* subtle repeating grid texture */
+    background-image:
+      linear-gradient(rgba(30,34,80,0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30,34,80,0.18) 1px, transparent 1px);
+    background-size: 32px 32px;
   }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: var(--color-if-surface); }
+::-webkit-scrollbar-thumb  { background: var(--color-if-border-hi); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-if-accent); }
+
+/* ── Pixel border utility (IF-style panel border) ────────────── */
+.if-panel {
+  border: 1px solid var(--color-if-border);
+  background: var(--color-if-card);
+  border-radius: 12px;
 }
-::-webkit-scrollbar-track {
-  background: rgb(20 20 28);
+.if-panel-hi {
+  border: 1px solid var(--color-if-border-hi);
+  background: var(--color-if-card);
+  border-radius: 12px;
 }
-::-webkit-scrollbar-thumb {
-  background: rgb(60 60 80);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgb(99 102 241);
+
+/* ── Gold accent glow (hover/focus) ──────────────────────────── */
+.if-glow-hover:hover {
+  border-color: var(--color-if-accent) !important;
+  box-shadow: 0 0 12px rgba(232,184,75,0.25);
 }

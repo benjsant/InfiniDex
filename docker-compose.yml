@@ -71,9 +71,13 @@ services:
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       OLLAMA_URL:      ${OLLAMA_URL:-}
       OLLAMA_MODEL:    ${OLLAMA_MODEL:-qwen2.5:3b}
+      # Clé interne Next.js↔Backend. Vide = pas d'enforcement (dev sans clé).
+      # Générer avec : openssl rand -hex 32
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-}
     volumes:
       - ./backend:/app/backend
       - ./data/sprites:/app/data/sprites:ro
+      - /Data/Jeux/JeuxPokemon/InfiniteFusion/Graphics/Battlers/special:/app/data/special_sprites:ro
     ports:
       - "${FUSIONDEX_BACKEND_PORT:-58000}:8000"
     networks:
@@ -113,6 +117,7 @@ services:
       # Le browser n'a jamais connaissance de ces URLs.
       BACKEND_INTERNAL_URL: http://backend:8000
       SPRITES_INTERNAL_URL: http://sprites:80
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-}
     ports:
       - "${FUSIONDEX_FRONTEND_PORT:-53000}:3000"
     networks:

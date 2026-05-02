@@ -12,7 +12,7 @@ from backend.schemas.evolution import EvolutionOut
 from backend.schemas.location import LocationOut
 from backend.schemas.move import PokemonMoveOut
 from backend.schemas.pokemon import AbilityOut, PokemonDetail, PokemonListItem, TypeOut
-from backend.schemas.type_ import TypeOut as TypeOutMove
+from backend.schemas.type_ import TypeOut as FullTypeOut
 from backend.schemas.weakness import WeaknessOut
 from backend.services.pokemon_service import (
     compute_pokemon_weaknesses,
@@ -129,7 +129,7 @@ def get_moves_for_pokemon(
             power=r.move.power,
             accuracy=r.move.accuracy,
             pp=r.move.pp,
-            type=TypeOutMove(
+            type=FullTypeOut(
                 id=r.move.type.id,
                 name_en=r.move.type.name_en,
                 name_fr=r.move.type.name_fr,
@@ -156,9 +156,11 @@ def get_evolutions_for_pokemon(
             pokemon_id=r.pokemon_id,
             pokemon_name_en=r.pokemon.name_en if r.pokemon else None,
             pokemon_name_fr=r.pokemon.name_fr if r.pokemon else None,
+            pokemon_national_id=r.pokemon.national_id if r.pokemon else None,
             evolves_into_id=r.evolves_into_id,
             evolves_into_name_en=r.evolves_into.name_en,
             evolves_into_name_fr=r.evolves_into.name_fr,
+            evolves_into_national_id=r.evolves_into.national_id,
             trigger_type=r.trigger_type,
             min_level=r.min_level,
             item_name_en=r.item_name_en,

@@ -1,46 +1,123 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BookOpen, GitMerge, Zap, Shield, Star, Bot, Layers, GraduationCap, Menu, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const NAV_LINKS = [
-  { href: "/pokedex",    label: "Pokédex" },
-  { href: "/fusion",     label: "Fusion" },
-  { href: "/moves",      label: "Capacités" },
-  { href: "/types",      label: "Types" },
-  { href: "/abilities",  label: "Talents" },
-  { href: "/ai",         label: "IA" },
+const NAV_LINKS: { href: string; label: string; Icon: LucideIcon }[] = [
+  { href: "/pokedex",        label: "Pokédex",        Icon: BookOpen      },
+  { href: "/fusion",         label: "Fusion",         Icon: GitMerge      },
+  { href: "/moves/tutors",   label: "Tuteurs",        Icon: GraduationCap },
+  { href: "/moves",          label: "Capacités",      Icon: Zap           },
+  { href: "/types",          label: "Types",          Icon: Shield        },
+  { href: "/abilities",      label: "Talents",        Icon: Star          },
+  { href: "/triple-fusions", label: "Triple Fusions", Icon: Layers        },
+  { href: "/ai",             label: "IA",             Icon: Bot           },
 ];
+
+function isActive(pathname: string | null, href: string) {
+  return pathname === href || (href !== "/" && !!pathname?.startsWith(href + "/"));
+}
 
 export function Navbar() {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-[rgb(15,15,20)]/95 backdrop-blur border-b border-[rgb(50,50,70)] flex items-center px-4 gap-6">
-      <Link
-        href="/"
-        className="text-lg font-bold text-indigo-400 hover:text-indigo-300 transition-colors whitespace-nowrap mr-4"
+    <>
+      <nav
+        className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center px-4 gap-4"
+        style={{
+          background: "rgba(9,12,26,0.96)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid #1e2240",
+          boxShadow: "0 2px 16px rgba(0,0,0,0.5)",
+        }}
       >
-        FusionDex
-      </Link>
+        {/* Logo */}
+        <Link
+          href="/"
+          className="text-lg font-bold whitespace-nowrap mr-2 transition-colors"
+          style={{ color: "#e8b84b" }}
+          onMouseEnter={(e) => ((e.target as HTMLElement).style.color = "#f5d07a")}
+          onMouseLeave={(e) => ((e.target as HTMLElement).style.color = "#e8b84b")}
+        >
+          FusionDex
+        </Link>
 
-      <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
-        {NAV_LINKS.map(({ href, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className={cn(
-              "px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
-              pathname?.startsWith(href)
-                ? "bg-indigo-600/30 text-indigo-300"
-                : "text-[rgb(160,160,180)] hover:text-white hover:bg-[rgb(30,30,45)]",
-            )}
+        {/* Desktop links */}
+        <div className="hidden md:flex items-center gap-0.5 overflow-x-auto flex-1">
+          {NAV_LINKS.map(({ href, label, Icon }) => {
+            const active = isActive(pathname, href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
+                  active
+                    ? "text-[#e8b84b]"
+                    : "text-[#6b7199] hover:text-[#e1e4ff] hover:bg-[#1e2240]",
+                )}
+                style={active ? { background: "rgba(232,184,75,0.12)" } : undefined}
+              >
+                <Icon size={14} />
+                {label}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Mobile hamburger */}
+        <button
+          className="md:hidden ml-auto p-2 rounded-lg transition-colors"
+          style={{ color: "#6b7199" }}
+          onClick={() => setOpen((v) => !v)}
+          aria-label="Menu"
+        >
+          {open ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      </nav>
+
+      {/* Mobile drawer */}
+      {open && (
+        <div
+          className="fixed inset-0 z-40 md:hidden"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            className="absolute top-16 left-0 right-0 py-2 px-3"
+            style={{
+              background: "rgba(9,12,26,0.98)",
+              borderBottom: "1px solid #1e2240",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+            }}
+            onClick={(e) => e.stopPropagation()}
           >
-            {label}
-          </Link>
-        ))}
-      </div>
-    </nav>
+            {NAV_LINKS.map(({ href, label, Icon }) => {
+              const active = isActive(pathname, href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all"
+                  style={{
+                    color: active ? "#e8b84b" : "#6b7199",
+                    background: active ? "rgba(232,184,75,0.10)" : undefined,
+                  }}
+                >
+                  <Icon size={16} />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -68,6 +68,8 @@ class MoveTutorOut(BaseModel):
     """
     id: int
     move_id: int
+    move_name_en: str
+    move_name_fr: str | None
     location_id: int
     location_name_en: str
     location_name_fr: str | None

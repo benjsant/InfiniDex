@@ -70,9 +70,11 @@ export interface EvolutionOut {
   pokemon_id: number;
   pokemon_name_en: string | null;
   pokemon_name_fr: string | null;
+  pokemon_national_id: number | null;
   evolves_into_id: number;
   evolves_into_name_en: string;
   evolves_into_name_fr: string | null;
+  evolves_into_national_id: number | null;
   trigger_type: string;
   min_level: number | null;
   item_name_en: string | null;
@@ -174,6 +176,77 @@ export interface FusionExpertMoveOut {
   type: TypeOut;
   locations: string[];
   prices_heart_scales: Record<string, number>;
+}
+
+export interface TripleFusionTypeOut {
+  slot: number;
+  name_en: string;
+  name_fr: string | null;
+  is_triple_fusion_type: boolean;
+}
+
+export interface TripleFusionComponentOut {
+  position: number;
+  pokemon_id: number;
+  name_en: string;
+  name_fr: string | null;
+}
+
+export interface TripleFusionAbilityOut {
+  slot: number;
+  is_hidden: boolean;
+  name_en: string;
+  name_fr: string | null;
+}
+
+export interface TripleFusionListItem {
+  id: number;
+  name_en: string;
+  name_fr: string | null;
+  sprite_path: string | null;
+  types: TripleFusionTypeOut[];
+}
+
+export interface TripleFusionDetail extends TripleFusionListItem {
+  hp: number;
+  attack: number;
+  defense: number;
+  sp_attack: number;
+  sp_defense: number;
+  speed: number;
+  evolves_from_id: number | null;
+  evolution_level: number | null;
+  steps_to_hatch: number | null;
+  components: TripleFusionComponentOut[];
+  abilities: TripleFusionAbilityOut[];
+}
+
+export interface MoveTutorOut {
+  id: number;
+  move_id: number;
+  move_name_en: string;
+  move_name_fr: string | null;
+  location_id: number;
+  location_name_en: string;
+  location_name_fr: string | null;
+  price: number | null;
+  currency: "pokedollars" | "free" | "quest";
+  npc_description: string | null;
+}
+
+export interface MoveExpertOut {
+  move_id: number;
+  move_name_en: string;
+  move_name_fr: string | null;
+  location: "knot_island" | "boon_island";
+  required_pokemon: string[];
+  required_types: string[];
+}
+
+export interface CreatorOut {
+  id: number;
+  name: string;
+  sprite_count: number;
 }
 
 export interface HistoryMessage {

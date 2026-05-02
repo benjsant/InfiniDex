@@ -105,7 +105,7 @@ En prod, lister uniquement le domaine public.
 
 ### Assistant IA (DeepSeek ou Ollama local)
 
-L'endpoint `POST /ai/ask` est un agent tool-calling (cf. [API](api.md#ia-agentique-deepseek-ou-ollama)). Il sélectionne automatiquement un provider à runtime :
+L'endpoint `POST /ai/ask` est un agent tool-calling (cf. [API](api.md#ia-agentique)). Il sélectionne automatiquement un provider à runtime :
 
 1. **DeepSeek** si `DEEPSEEK_API_KEY` est défini (priorité, qualité maximale)
 2. **Ollama local** si `OLLAMA_URL` est défini

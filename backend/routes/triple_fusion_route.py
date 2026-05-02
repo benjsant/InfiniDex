@@ -2,8 +2,13 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+
+SPECIAL_SPRITES_DIR = Path("/app/data/special_sprites")
 
 from backend.db.session import get_db
 from backend.schemas.triple_fusion import (
@@ -13,7 +18,12 @@ from backend.schemas.triple_fusion import (
     TripleFusionListItem,
     TripleFusionTypeOut,
 )
-from backend.services.triple_fusion_service import get_triple_fusion, list_triple_fusions
+from backend.schemas.weakness import WeaknessOut
+from backend.services.triple_fusion_service import (
+    compute_triple_fusion_weaknesses,
+    get_triple_fusion,
+    list_triple_fusions,
+)
 
 router = APIRouter(prefix="/triple-fusions", tags=["TripleFusion"])
 
@@ -43,6 +53,29 @@ def list_all(db: Session = Depends(get_db)):
         )
         for tf in list_triple_fusions(db)
     ]
+
+
+@router.get("/{tf_id}/sprite")
+def get_triple_fusion_sprite(tf_id: int, db: Session = Depends(get_db)):
+    """Serve the battle sprite PNG for a triple fusion."""
+    tf = get_triple_fusion(db, tf_id)
+    if not tf:
+        raise HTTPException(status_code=404, detail=f"Triple fusion #{tf_id} not found")
+    ids = sorted(c.pokemon_id for c in tf.components)
+    filename = ".".join(str(i) for i in ids) + ".png"
+    path = SPECIAL_SPRITES_DIR / filename
+    if not path.exists():
+        raise HTTPException(status_code=404, detail=f"Sprite not found: {filename}")
+    return FileResponse(path, media_type="image/png")
+
+
+@router.get("/{tf_id}/weaknesses", response_model=list[WeaknessOut])
+def get_triple_fusion_weaknesses(tf_id: int, db: Session = Depends(get_db)):
+    """Damage multipliers against this triple fusion's type combination."""
+    tf = get_triple_fusion(db, tf_id)
+    if not tf:
+        raise HTTPException(status_code=404, detail=f"Triple fusion #{tf_id} not found")
+    return compute_triple_fusion_weaknesses(db, tf)
 
 
 @router.get("/{tf_id}", response_model=TripleFusionDetail)
