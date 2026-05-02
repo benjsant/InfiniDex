@@ -1,4 +1,16 @@
 import Link from "next/link";
+import { BookOpen, GitMerge, Zap, Shield, Star, Bot, Layers } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+const NAV_CARDS: { href: string; label: string; desc: string; Icon: LucideIcon }[] = [
+  { href: "/pokedex",        label: "Pokédex",        desc: "501 Pokémon IF",                    Icon: BookOpen  },
+  { href: "/fusion",         label: "Fusion",         desc: "Calcule n'importe quelle fusion",   Icon: GitMerge  },
+  { href: "/moves",          label: "Capacités",      desc: "Toutes les attaques IF",            Icon: Zap       },
+  { href: "/types",          label: "Types",          desc: "Tableau d'efficacités Gen 7",       Icon: Shield    },
+  { href: "/abilities",      label: "Talents",        desc: "Tous les talents IF",               Icon: Star      },
+  { href: "/ai",             label: "Assistant IA",   desc: "Pose tes questions sur IF",         Icon: Bot       },
+  { href: "/triple-fusions", label: "Triple Fusions", desc: "Les fusions légendaires secrètes", Icon: Layers    },
+];
 
 export default function HomePage() {
   return (
@@ -11,42 +23,29 @@ export default function HomePage() {
         <span className="text-indigo-400 font-semibold">Pokémon Infinite Fusion</span>
       </p>
       <p className="text-sm text-[rgb(120,120,140)] mb-10 max-w-lg">
-        501 Pokémon · Calculateur de fusions · Assistant IA DeepSeek · Types IF
+        501 Pokémon · Calculateur de fusions · Assistant IA · Types IF
       </p>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-2xl">
-        <NavCard href="/pokedex" emoji="📖" label="Pokédex" desc="501 Pokémon IF" />
-        <NavCard href="/fusion" emoji="⚗️" label="Fusion" desc="Calcule n'importe quelle fusion" />
-        <NavCard href="/moves" emoji="⚡" label="Capacités" desc="Toutes les attaques IF" />
-        <NavCard href="/types" emoji="🔮" label="Types" desc="Tableau d'efficacités Gen 7" />
-        <NavCard href="/ai" emoji="🤖" label="Assistant IA" desc="Pose tes questions à DeepSeek" />
-        <NavCard href="/abilities" emoji="✨" label="Talents" desc="Tous les talents IF" />
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-3xl">
+        {NAV_CARDS.map(({ href, label, desc, Icon }) => (
+          <NavCard key={href} href={href} label={label} desc={desc} Icon={Icon} />
+        ))}
       </div>
     </div>
   );
 }
 
-function NavCard({
-  href,
-  emoji,
-  label,
-  desc,
-}: {
-  href: string;
-  emoji: string;
-  label: string;
-  desc: string;
-}) {
+function NavCard({ href, label, desc, Icon }: { href: string; label: string; desc: string; Icon: LucideIcon }) {
   return (
     <Link
       href={href}
-      className="group flex flex-col items-center gap-2 p-5 rounded-xl bg-[rgb(20,20,28)] border border-[rgb(50,50,70)] hover:border-indigo-500 hover:bg-[rgb(25,25,38)] transition-all duration-200"
+      className="group flex flex-col items-start gap-2 p-4 rounded-xl bg-[rgb(20,20,28)] border border-[rgb(50,50,70)] hover:border-indigo-500 hover:bg-[rgb(25,25,38)] transition-all duration-200"
     >
-      <span className="text-3xl">{emoji}</span>
+      <Icon size={20} className="text-indigo-400 group-hover:text-indigo-300 transition-colors" />
       <span className="font-semibold text-[rgb(220,220,255)] group-hover:text-indigo-400 transition-colors">
         {label}
       </span>
-      <span className="text-xs text-[rgb(120,120,140)] text-center">{desc}</span>
+      <span className="text-xs text-[rgb(120,120,140)] text-left">{desc}</span>
     </Link>
   );
 }

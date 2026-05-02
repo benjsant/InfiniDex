@@ -9,6 +9,10 @@ const BACKEND_URL =
   process.env.BACKEND_INTERNAL_URL ||
   `http://localhost:${process.env.FUSIONDEX_BACKEND_PORT ?? "58000"}`;
 
+// Shared secret between Next.js and FastAPI — never sent to the browser.
+// If not set, the backend runs without key enforcement (dev mode).
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY ?? "";
+
 export const dynamic = "force-dynamic";
 
 async function proxy(req: NextRequest, path: string[]) {
@@ -20,6 +24,9 @@ async function proxy(req: NextRequest, path: string[]) {
   headers.delete("host");
   headers.delete("connection");
   headers.delete("content-length");
+
+  // Inject the internal key — server-side only, never exposed to the browser.
+  if (INTERNAL_API_KEY) headers.set("X-Internal-Key", INTERNAL_API_KEY);
 
   const isReadOnly = ["GET", "HEAD"].includes(req.method);
   const init: RequestInit = {

@@ -3,18 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
+import { Bot, Cog } from "lucide-react";
 import { useAiChat } from "@/hooks/useAiChat";
 import { getAiProvider } from "@/lib/api";
 import type { ChatMessage } from "@/hooks/useAiChat";
-
-const TOOL_LABELS: Record<string, string> = {
-  get_pokemon:      "Pokémon",
-  get_fusion:       "Fusion",
-  search_move:      "Capacité",
-  get_item:         "Objet",
-  get_move_tutors:  "Tuteurs",
-  search_wiki:      "Wiki IF",
-};
+import { AI_TOOL_LABELS } from "@/lib/constants";
 
 const SUGGESTIONS = [
   "Meilleure fusion Dracaufeu ?",
@@ -42,13 +35,9 @@ export function AiChat({
     retry: false,
   });
 
-  // Auto-send initial message with optional Pokémon context from the referring page.
-  useEffect(() => {
-    if (initialMessage) {
-      sendMessage(initialMessage, initialContext);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Intentionally runs on mount only — initial message is a one-shot trigger.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (initialMessage) sendMessage(initialMessage, initialContext); }, []);
 
   // Scroll to bottom when a new message bubble is added (smooth) or when a
   // token is appended to the current streaming bubble (instant — avoids the
@@ -75,7 +64,7 @@ export function AiChat({
       <div className="flex-1 overflow-y-auto space-y-4 min-h-0">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 gap-6">
-            <div className="text-4xl">🤖</div>
+            <div className="text-indigo-400"><Bot size={40} /></div>
             <p className="text-[rgb(160,160,180)] text-sm text-center max-w-xs">
               Pose-moi une question sur Pokémon Infinite Fusion, les stratégies de fusion, les équipes…
             </p>
@@ -154,10 +143,10 @@ export function AiChat({
 }
 
 function ToolPill({ name }: { name: string }) {
-  const label = TOOL_LABELS[name] ?? name;
+  const label = AI_TOOL_LABELS[name] ?? name;
   return (
     <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-indigo-950/60 border border-indigo-800/50 text-indigo-300">
-      <span className="opacity-70">⚙</span>
+      <Cog size={10} className="opacity-70" />
       {label}
     </span>
   );
@@ -170,8 +159,8 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       {!isUser && (
-        <div className="w-7 h-7 rounded-full bg-indigo-700 flex items-center justify-center text-xs shrink-0 mr-2 mt-0.5">
-          🤖
+        <div className="w-7 h-7 rounded-full bg-indigo-700 flex items-center justify-center shrink-0 mr-2 mt-0.5">
+          <Bot size={14} />
         </div>
       )}
       <div className="flex flex-col gap-1 max-w-[80%]">

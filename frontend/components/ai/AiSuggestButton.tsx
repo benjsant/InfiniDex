@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Bot } from "lucide-react";
 
 interface AiSuggestButtonProps {
   pokemonName: string;
@@ -22,7 +23,7 @@ export function AiSuggestButton({ pokemonName, pokemonId, context }: AiSuggestBu
       href={href}
       className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-700/30 border border-indigo-600/40 text-indigo-300 hover:bg-indigo-700/50 hover:text-indigo-200 transition-all text-sm font-medium"
     >
-      🤖 Demander à l&apos;IA
+      <Bot size={14} /> Demander à l&apos;IA
     </Link>
   );
 }

@@ -54,18 +54,22 @@ export function secondaryType(types: PokemonTypeSlot[]): PokemonTypeSlot | undef
 
 // Weakness multiplier display
 export function multiplierLabel(m: number): string {
-  if (m === 0)    return "×0";
-  if (m === 0.25) return "×¼";
-  if (m === 0.5)  return "×½";
-  if (m === 2)    return "×2";
-  if (m === 4)    return "×4";
-  return `×${m}`;
+  const n = Number(m);
+  if (n === 0)     return "×0";
+  if (n <= 0.125)  return "×⅛";
+  if (n === 0.25)  return "×¼";
+  if (n === 0.5)   return "×½";
+  if (n === 2)     return "×2";
+  if (n === 4)     return "×4";
+  if (n === 8)     return "×8";
+  return `×${n}`;
 }
 
 export function multiplierColor(m: number): string {
-  if (m === 0)   return "bg-gray-700 text-gray-300";
-  if (m < 1)     return "bg-green-700 text-green-100";
-  if (m === 2)   return "bg-red-600 text-red-100";
-  if (m >= 4)    return "bg-red-900 text-red-100";
+  const n = Number(m);
+  if (n === 0)   return "bg-gray-700 text-gray-300";
+  if (n < 1)     return "bg-green-700 text-green-100";
+  if (n === 2)   return "bg-red-600 text-red-100";
+  if (n >= 4)    return "bg-red-900 text-red-100";
   return "bg-gray-500 text-white";
 }

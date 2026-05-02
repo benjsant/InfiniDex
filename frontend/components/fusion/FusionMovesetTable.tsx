@@ -32,56 +32,40 @@ function OriginPill({ origin, headName, bodyName }: { origin: "head" | "body" | 
   }
   if (origin === "head") {
     return (
-      <span
-        title={headName}
-        className="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-900/60 border border-indigo-700/40 text-indigo-300"
-      >
+      <span title={headName} className="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-900/60 border border-indigo-700/40 text-indigo-300">
         H
       </span>
     );
   }
   return (
-    <span
-      title={bodyName}
-      className="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-900/60 border border-purple-700/40 text-purple-300"
-    >
+    <span title={bodyName} className="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-900/60 border border-purple-700/40 text-purple-300">
       B
     </span>
   );
 }
 
-function MoveRow({
-  mv,
-  showLevel,
-  headName,
-  bodyName,
-}: {
-  mv: FusionMoveOut;
-  showLevel: boolean;
-  headName: string;
-  bodyName: string;
-}) {
+function MoveRow({ mv, showLevel, headName, bodyName }: { mv: FusionMoveOut; showLevel: boolean; headName: string; bodyName: string }) {
   return (
-    <tr className="border-t border-[rgb(35,35,48)] hover:bg-[rgb(25,25,38)] transition-colors">
+    <tr className="border-t hover:bg-[#1e2240] transition-colors" style={{ borderColor: "#1a1d35" }}>
       {showLevel && (
-        <td className="px-3 py-2 text-[rgb(120,120,140)] font-mono text-xs w-10">
+        <td className="px-2 sm:px-3 py-2 font-mono text-xs w-8" style={{ color: "#6b7199" }}>
           {mv.level ?? "—"}
         </td>
       )}
-      <td className="px-3 py-2 font-medium text-[rgb(220,220,255)]">
-        {mv.name_fr ?? mv.name_en}
+      <td className="px-2 sm:px-3 py-2 font-medium" style={{ color: "#e1e4ff" }}>
+        <span>{mv.name_fr ?? mv.name_en}</span>
         {mv.name_fr && (
-          <span className="ml-1 text-xs text-[rgb(100,100,120)]">({mv.name_en})</span>
+          <span className="ml-1 text-xs hidden sm:inline" style={{ color: "#6b7199" }}>({mv.name_en})</span>
         )}
       </td>
-      <td className="px-3 py-2">
-        <TypeBadge typeName={mv.type.name_en} size="sm" />
+      <td className="px-2 sm:px-3 py-2">
+        <TypeBadge typeName={mv.type.name_en} label={mv.type.name_fr ?? mv.type.name_en} size="sm" />
       </td>
-      <td className="px-3 py-2 text-[rgb(160,160,180)] text-xs">{formatCategory(mv.category)}</td>
-      <td className="px-3 py-2 text-right font-mono text-[rgb(200,200,220)]">{formatPower(mv.power)}</td>
-      <td className="px-3 py-2 text-right font-mono text-[rgb(200,200,220)]">{formatAccuracy(mv.accuracy)}</td>
-      <td className="px-3 py-2 text-right font-mono text-[rgb(200,200,220)]">{mv.pp}</td>
-      <td className="px-3 py-2">
+      <td className="hidden sm:table-cell px-3 py-2 text-xs" style={{ color: "#9aa0c0" }}>{formatCategory(mv.category)}</td>
+      <td className="px-2 sm:px-3 py-2 text-right font-mono text-xs" style={{ color: "#c8cbf0" }}>{formatPower(mv.power)}</td>
+      <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs" style={{ color: "#c8cbf0" }}>{formatAccuracy(mv.accuracy)}</td>
+      <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs" style={{ color: "#c8cbf0" }}>{mv.pp}</td>
+      <td className="px-2 sm:px-3 py-2">
         <OriginPill origin={mv.origin} headName={headName} bodyName={bodyName} />
       </td>
     </tr>
@@ -96,21 +80,21 @@ function ExpertMoveRow({ mv }: { mv: FusionExpertMoveOut }) {
       : "Boon Island";
 
   return (
-    <tr className="border-t border-[rgb(35,35,48)] hover:bg-[rgb(25,25,38)] transition-colors">
-      <td className="px-3 py-2 font-medium text-[rgb(220,220,255)]">
-        {mv.name_fr ?? mv.name_en}
+    <tr className="border-t hover:bg-[#1e2240] transition-colors" style={{ borderColor: "#1a1d35" }}>
+      <td className="px-2 sm:px-3 py-2 font-medium" style={{ color: "#e1e4ff" }}>
+        <span>{mv.name_fr ?? mv.name_en}</span>
         {mv.name_fr && (
-          <span className="ml-1 text-xs text-[rgb(100,100,120)]">({mv.name_en})</span>
+          <span className="ml-1 text-xs hidden sm:inline" style={{ color: "#6b7199" }}>({mv.name_en})</span>
         )}
       </td>
-      <td className="px-3 py-2">
-        <TypeBadge typeName={mv.type.name_en} size="sm" />
+      <td className="px-2 sm:px-3 py-2">
+        <TypeBadge typeName={mv.type.name_en} label={mv.type.name_fr ?? mv.type.name_en} size="sm" />
       </td>
-      <td className="px-3 py-2 text-[rgb(160,160,180)] text-xs">{formatCategory(mv.category)}</td>
-      <td className="px-3 py-2 text-right font-mono text-[rgb(200,200,220)]">{formatPower(mv.power)}</td>
-      <td className="px-3 py-2 text-right font-mono text-[rgb(200,200,220)]">{formatAccuracy(mv.accuracy)}</td>
-      <td className="px-3 py-2 text-right font-mono text-[rgb(200,200,220)]">{mv.pp}</td>
-      <td className="px-3 py-2 text-xs text-[rgb(140,140,180)]">{locationLabel}</td>
+      <td className="hidden sm:table-cell px-3 py-2 text-xs" style={{ color: "#9aa0c0" }}>{formatCategory(mv.category)}</td>
+      <td className="px-2 sm:px-3 py-2 text-right font-mono text-xs" style={{ color: "#c8cbf0" }}>{formatPower(mv.power)}</td>
+      <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs" style={{ color: "#c8cbf0" }}>{formatAccuracy(mv.accuracy)}</td>
+      <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs" style={{ color: "#c8cbf0" }}>{mv.pp}</td>
+      <td className="hidden sm:table-cell px-3 py-2 text-xs" style={{ color: "#9aa0c0" }}>{locationLabel}</td>
     </tr>
   );
 }
@@ -131,7 +115,7 @@ export function FusionMovesetTable({ moves, expertMoves, headName, bodyName }: F
   return (
     <div className="space-y-6">
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-3 text-xs text-[rgb(120,120,140)]">
+      <div className="flex flex-wrap items-center gap-3 text-xs" style={{ color: "#6b7199" }}>
         <span className="font-semibold">Origine :</span>
         <span className="inline-flex items-center gap-1.5">
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-900/60 border border-indigo-700/40 text-indigo-300">H</span>
@@ -147,7 +131,6 @@ export function FusionMovesetTable({ moves, expertMoves, headName, bodyName }: F
         </span>
       </div>
 
-      {/* Regular moves by method */}
       {METHOD_ORDER.map((method) => {
         const group = grouped[method];
         if (!group || group.length === 0) return null;
@@ -156,32 +139,26 @@ export function FusionMovesetTable({ moves, expertMoves, headName, bodyName }: F
 
         return (
           <div key={method}>
-            <h3 className="text-sm font-semibold text-[rgb(160,160,180)] uppercase tracking-wider mb-2">
+            <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "#6b7199" }}>
               {METHOD_LABELS[method]} ({group.length})
             </h3>
-            <div className="overflow-x-auto rounded-lg border border-[rgb(40,40,55)]">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid #1e2240" }}>
+              <table className="w-full text-sm" style={{ minWidth: isLevelUp ? "380px" : "340px" }}>
                 <thead>
-                  <tr className="bg-[rgb(25,25,35)] text-[rgb(120,120,140)] text-xs">
-                    {isLevelUp && <th className="px-3 py-2 text-left w-10">Niv.</th>}
-                    <th className="px-3 py-2 text-left">Capacité</th>
-                    <th className="px-3 py-2 text-left">Type</th>
-                    <th className="px-3 py-2 text-left">Cat.</th>
-                    <th className="px-3 py-2 text-right">Puiss.</th>
-                    <th className="px-3 py-2 text-right">Préc.</th>
-                    <th className="px-3 py-2 text-right">PP</th>
-                    <th className="px-3 py-2 text-left">Origine</th>
+                  <tr className="text-xs" style={{ background: "#0f1225", color: "#6b7199" }}>
+                    {isLevelUp && <th className="px-2 sm:px-3 py-2 text-left w-8">Niv.</th>}
+                    <th className="px-2 sm:px-3 py-2 text-left">Capacité</th>
+                    <th className="px-2 sm:px-3 py-2 text-left">Type</th>
+                    <th className="hidden sm:table-cell px-3 py-2 text-left">Cat.</th>
+                    <th className="px-2 sm:px-3 py-2 text-right">Puiss.</th>
+                    <th className="hidden sm:table-cell px-3 py-2 text-right">Préc.</th>
+                    <th className="hidden sm:table-cell px-3 py-2 text-right">PP</th>
+                    <th className="px-2 sm:px-3 py-2 text-left">Orig.</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sorted.map((mv, i) => (
-                    <MoveRow
-                      key={`${mv.move_id}-${i}`}
-                      mv={mv}
-                      showLevel={isLevelUp}
-                      headName={headName}
-                      bodyName={bodyName}
-                    />
+                    <MoveRow key={`${mv.move_id}-${i}`} mv={mv} showLevel={isLevelUp} headName={headName} bodyName={bodyName} />
                   ))}
                 </tbody>
               </table>
@@ -190,23 +167,22 @@ export function FusionMovesetTable({ moves, expertMoves, headName, bodyName }: F
         );
       })}
 
-      {/* Expert moves */}
       {expertMoves.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-[rgb(160,160,180)] uppercase tracking-wider mb-2">
+          <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "#6b7199" }}>
             Donneur expert ({expertMoves.length})
           </h3>
-          <div className="overflow-x-auto rounded-lg border border-[rgb(40,40,55)]">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid #1e2240" }}>
+            <table className="w-full text-sm" style={{ minWidth: "340px" }}>
               <thead>
-                <tr className="bg-[rgb(25,25,35)] text-[rgb(120,120,140)] text-xs">
-                  <th className="px-3 py-2 text-left">Capacité</th>
-                  <th className="px-3 py-2 text-left">Type</th>
-                  <th className="px-3 py-2 text-left">Cat.</th>
-                  <th className="px-3 py-2 text-right">Puiss.</th>
-                  <th className="px-3 py-2 text-right">Préc.</th>
-                  <th className="px-3 py-2 text-right">PP</th>
-                  <th className="px-3 py-2 text-left">Lieu</th>
+                <tr className="text-xs" style={{ background: "#0f1225", color: "#6b7199" }}>
+                  <th className="px-2 sm:px-3 py-2 text-left">Capacité</th>
+                  <th className="px-2 sm:px-3 py-2 text-left">Type</th>
+                  <th className="hidden sm:table-cell px-3 py-2 text-left">Cat.</th>
+                  <th className="px-2 sm:px-3 py-2 text-right">Puiss.</th>
+                  <th className="hidden sm:table-cell px-3 py-2 text-right">Préc.</th>
+                  <th className="hidden sm:table-cell px-3 py-2 text-right">PP</th>
+                  <th className="hidden sm:table-cell px-3 py-2 text-left">Lieu</th>
                 </tr>
               </thead>
               <tbody>

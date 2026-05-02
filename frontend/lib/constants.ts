@@ -63,6 +63,27 @@ export const STAT_LABELS: Record<string, string> = {
   speed:      "Vitesse",
 };
 
+export const TYPE_FR_NAMES: Record<string, string> = {
+  Normal:   "Normal",
+  Fire:     "Feu",
+  Water:    "Eau",
+  Electric: "Électrik",
+  Grass:    "Plante",
+  Ice:      "Glace",
+  Fighting: "Combat",
+  Poison:   "Poison",
+  Ground:   "Sol",
+  Flying:   "Vol",
+  Psychic:  "Psy",
+  Bug:      "Insecte",
+  Rock:     "Roche",
+  Ghost:    "Spectre",
+  Dragon:   "Dragon",
+  Dark:     "Ténèbres",
+  Steel:    "Acier",
+  Fairy:    "Fée",
+};
+
 export const CATEGORY_LABELS: Record<string, string> = {
   Physical: "Physique",
   Special:  "Spéciale",
@@ -77,10 +98,23 @@ export const METHOD_LABELS: Record<string, string> = {
   before_evolution: "Pré-évolution",
 };
 
+export const AI_TOOL_LABELS: Record<string, string> = {
+  get_pokemon:              "Pokémon",
+  get_fusion:               "Fusion",
+  get_triple_fusion:        "Triple Fusion",
+  search_move:              "Capacité",
+  get_item:                 "Objet",
+  get_move_tutors:          "Tuteurs",
+  search_pokemon_locations: "Localisations",
+  search_wiki:              "Wiki IF",
+};
+
 // Toutes les requêtes sortent vers la même origine que le frontend. Next.js
 // les proxifie vers le backend interne via `rewrites()` (cf. next.config.ts).
 // Le browser ne voit jamais l'URL réelle du backend → rien à extraire du bundle.
 export const API_BASE_URL = "/api";
+
+export const POKEDEX_PAGE_SIZE = 40;
 
 // Base Pokémon sprites — PokeAPI's public sprites repo (national dex id).
 // Long-standing community CDN; avoids redistributing fan-game assets.

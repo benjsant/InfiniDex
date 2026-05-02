@@ -30,21 +30,21 @@ export function MovesetTable({ moves }: MovesetTableProps) {
 
         return (
           <div key={method}>
-            <h3 className="text-sm font-semibold text-[rgb(160,160,180)] uppercase tracking-wider mb-2">
+            <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "#6b7199" }}>
               {METHOD_LABELS[method] ?? method} ({group.length})
             </h3>
-            <div className="overflow-x-auto rounded-lg border border-[rgb(40,40,55)]">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid #1e2240" }}>
+              <table className="w-full text-sm" style={{ minWidth: "400px" }}>
                 <thead>
-                  <tr className="bg-[rgb(25,25,35)] text-[rgb(120,120,140)] text-xs">
-                    {method === "level_up" && <th className="px-3 py-2 text-left">Niv.</th>}
-                    <th className="px-3 py-2 text-left">Capacité</th>
-                    <th className="px-3 py-2 text-left">Type</th>
-                    <th className="px-3 py-2 text-left">Cat.</th>
-                    <th className="px-3 py-2 text-right">Puiss.</th>
-                    <th className="px-3 py-2 text-right">Préc.</th>
-                    <th className="px-3 py-2 text-right">PP</th>
-                    <th className="px-3 py-2 text-left">Source</th>
+                  <tr className="text-xs" style={{ background: "#0f1225", color: "#6b7199" }}>
+                    {method === "level_up" && <th className="px-2 sm:px-3 py-2 text-left w-8">Niv.</th>}
+                    <th className="px-2 sm:px-3 py-2 text-left">Capacité</th>
+                    <th className="px-2 sm:px-3 py-2 text-left">Type</th>
+                    <th className="hidden sm:table-cell px-3 py-2 text-left">Cat.</th>
+                    <th className="px-2 sm:px-3 py-2 text-right">Puiss.</th>
+                    <th className="hidden sm:table-cell px-3 py-2 text-right">Préc.</th>
+                    <th className="hidden sm:table-cell px-3 py-2 text-right">PP</th>
+                    <th className="hidden md:table-cell px-3 py-2 text-left">Source</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -53,43 +53,45 @@ export function MovesetTable({ moves }: MovesetTableProps) {
                     .map((mv, i) => (
                       <tr
                         key={`${mv.move_id}-${i}`}
-                        className="border-t border-[rgb(35,35,48)] hover:bg-[rgb(25,25,38)] transition-colors"
+                        className="border-t hover:bg-[#1e2240] transition-colors"
+                        style={{ borderColor: "#1a1d35" }}
                       >
                         {method === "level_up" && (
-                          <td className="px-3 py-2 text-[rgb(120,120,140)] font-mono text-xs">
+                          <td className="px-2 sm:px-3 py-2 font-mono text-xs w-8" style={{ color: "#6b7199" }}>
                             {mv.level ?? "—"}
                           </td>
                         )}
-                        <td className="px-3 py-2 font-medium text-[rgb(220,220,255)]">
-                          {mv.name_fr ?? mv.name_en}
+                        <td className="px-2 sm:px-3 py-2 font-medium" style={{ color: "#e1e4ff" }}>
+                          <span>{mv.name_fr ?? mv.name_en}</span>
                           {mv.name_fr && (
-                            <span className="ml-1 text-xs text-[rgb(100,100,120)]">
+                            <span className="ml-1 text-xs hidden sm:inline" style={{ color: "#6b7199" }}>
                               ({mv.name_en})
                             </span>
                           )}
                         </td>
-                        <td className="px-3 py-2">
-                          <TypeBadge typeName={mv.type.name_en} size="sm" />
+                        <td className="px-2 sm:px-3 py-2">
+                          <TypeBadge typeName={mv.type.name_en} label={mv.type.name_fr ?? mv.type.name_en} size="sm" />
                         </td>
-                        <td className="px-3 py-2 text-[rgb(160,160,180)] text-xs">
+                        <td className="hidden sm:table-cell px-3 py-2 text-xs" style={{ color: "#9aa0c0" }}>
                           {formatCategory(mv.category)}
                         </td>
-                        <td className="px-3 py-2 text-right font-mono text-[rgb(200,200,220)]">
+                        <td className="px-2 sm:px-3 py-2 text-right font-mono text-xs" style={{ color: "#c8cbf0" }}>
                           {formatPower(mv.power)}
                         </td>
-                        <td className="px-3 py-2 text-right font-mono text-[rgb(200,200,220)]">
+                        <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs" style={{ color: "#c8cbf0" }}>
                           {formatAccuracy(mv.accuracy)}
                         </td>
-                        <td className="px-3 py-2 text-right font-mono text-[rgb(200,200,220)]">
+                        <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs" style={{ color: "#c8cbf0" }}>
                           {mv.pp ?? "—"}
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="hidden md:table-cell px-3 py-2">
                           <span
-                            className={`text-xs px-1.5 py-0.5 rounded ${
+                            className="text-xs px-1.5 py-0.5 rounded"
+                            style={
                               mv.source === "infinite_fusion"
-                                ? "bg-indigo-900/40 text-indigo-300"
-                                : "bg-[rgb(35,35,50)] text-[rgb(120,120,140)]"
-                            }`}
+                                ? { background: "rgba(232,184,75,0.12)", color: "#e8b84b", border: "1px solid rgba(232,184,75,0.3)" }
+                                : { background: "#1e2240", color: "#6b7199" }
+                            }
                           >
                             {mv.source === "infinite_fusion" ? "IF" : "Base"}
                           </span>

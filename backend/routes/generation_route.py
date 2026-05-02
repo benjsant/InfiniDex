@@ -36,6 +36,7 @@ def get_generation(gen_id: int, db: Session = Depends(get_db)):
 @router.get("/{gen_id}/pokemon", response_model=list[PokemonListItem])
 def get_pokemon_for_generation(gen_id: int, db: Session = Depends(get_db)):
     """All Pokémon belonging to a generation."""
-    if not get_generation_by_id(db, gen_id):
+    gen = get_generation_by_id(db, gen_id)
+    if not gen:
         raise HTTPException(status_code=404, detail="Generation not found")
     return [pokemon_to_list_item(p) for p in list_pokemon_in_generation(db, gen_id)]

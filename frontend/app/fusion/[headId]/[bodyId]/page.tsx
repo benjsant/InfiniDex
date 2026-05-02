@@ -2,12 +2,14 @@
 
 import { use } from "react";
 import Link from "next/link";
+import { ChevronLeft, ArrowLeftRight } from "lucide-react";
 import { useFusion, useFusionMoves, useFusionExpertMoves, useSprites } from "@/hooks/useFusion";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import { StatBar } from "@/components/pokemon/StatBar";
 import { AiSuggestButton } from "@/components/ai/AiSuggestButton";
 import { FusionSprite } from "@/components/fusion/FusionSprite";
 import { FusionMovesetTable } from "@/components/fusion/FusionMovesetTable";
+import { CreatorBadge } from "@/components/fusion/CreatorModal";
 
 export default function FusionResultPage({
   params,
@@ -37,8 +39,8 @@ export default function FusionResultPage({
     return (
       <div className="max-w-3xl mx-auto px-4 py-12 text-center">
         <p className="text-[rgb(120,120,140)]">Fusion introuvable.</p>
-        <Link href="/fusion" className="mt-4 text-indigo-400 block hover:text-indigo-300">
-          ← Retour au calculateur
+        <Link href="/fusion" className="mt-4 block transition-colors" style={{ color: "#e8b84b" }}>
+          <ChevronLeft size={14} className="inline" /> Retour au calculateur
         </Link>
       </div>
     );
@@ -64,13 +66,13 @@ export default function FusionResultPage({
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-center gap-2 text-sm text-[rgb(120,120,140)] mb-6">
-        <Link href="/fusion" className="hover:text-indigo-400 transition-colors">Fusion</Link>
+        <Link href="/fusion" className="transition-colors hover:text-[#e8b84b]">Fusion</Link>
         <span>/</span>
         <span className="text-[rgb(200,200,220)]">{fusionName}</span>
       </div>
 
       {/* Main card */}
-      <div className="rounded-xl bg-[rgb(20,20,28)] border border-[rgb(50,50,70)] p-6 mb-6">
+      <div className="rounded-xl p-4 sm:p-6 mb-6" style={{ background: "#111428", border: "1px solid #1e2240" }}>
         {/* Sprites row */}
         <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start mb-6">
           {/* Normal sprite */}
@@ -81,7 +83,7 @@ export default function FusionResultPage({
             creators={defaultSprite?.creators ?? []}
           />
 
-          <div className="hidden sm:flex items-center self-center text-[rgb(60,60,80)] text-2xl">⇄</div>
+          <div className="hidden sm:flex items-center self-center text-[rgb(60,60,80)]"><ArrowLeftRight size={20} /></div>
 
           {/* Reversed sprite */}
           <Link href={`/fusion/${bId}/${hId}`} className="group">
@@ -101,14 +103,14 @@ export default function FusionResultPage({
           <div className="flex gap-2 justify-center sm:justify-start mb-1 text-xs text-[rgb(120,120,140)]">
             <span>
               Tête :{" "}
-              <Link href={`/pokedex/${hId}`} className="text-indigo-400 hover:text-indigo-300">
+              <Link href={`/pokedex/${hId}`} className="transition-colors" style={{ color: "#e8b84b" }}>
                 {fusion.head_name_en} #{hId}
               </Link>
             </span>
-            <span className="text-[rgb(60,60,80)]">·</span>
+            <span style={{ color: "#2d3260" }}>·</span>
             <span>
               Corps :{" "}
-              <Link href={`/pokedex/${bId}`} className="text-purple-400 hover:text-purple-300">
+              <Link href={`/pokedex/${bId}`} className="transition-colors" style={{ color: "#e8b84b" }}>
                 {fusion.body_name_en} #{bId}
               </Link>
             </span>
@@ -186,13 +188,19 @@ function SpriteCard({
 }) {
   return (
     <div className={`flex flex-col items-center gap-2 ${muted ? "opacity-70 hover:opacity-100 transition-opacity" : ""}`}>
-      <div className="w-40 h-40 flex items-center justify-center rounded-xl bg-[rgb(15,15,22)] border border-[rgb(40,40,55)] shrink-0">
+      <div className="w-32 h-32 sm:w-40 sm:h-40 flex items-center justify-center rounded-xl shrink-0" style={{ background: "#090c1a", border: "1px solid #1e2240" }}>
         <FusionSprite headId={headId} bodyId={bodyId} size={128} />
       </div>
       <p className="text-xs text-[rgb(140,140,160)] font-medium">{label}</p>
       {creators.length > 0 ? (
         <p className="text-[10px] text-[rgb(100,100,130)] text-center leading-tight">
-          🎨 {creators.join(", ")}
+          par{" "}
+          {creators.map((c, i) => (
+            <span key={c}>
+              {i > 0 && ", "}
+              <CreatorBadge name={c} />
+            </span>
+          ))}
         </p>
       ) : (
         <p className="text-[10px] text-[rgb(70,70,90)] italic">Auto-généré</p>

@@ -29,6 +29,24 @@ _wiki_cache: dict[str, tuple[float, dict]] = {}
 
 def _strip_wiki_markup(text: str) -> str:
     """Convert wikitext to plain text (best-effort, not a full parser)."""
+    # Wiki tables: {| ... |} — convert rows to readable lines, drop structural markers
+    def _table_to_text(m: re.Match) -> str:
+        lines = []
+        for line in m.group(0).splitlines():
+            line = line.strip()
+            if line.startswith("{|") or line.startswith("|}") or line == "|-":
+                continue
+            # Header cells: ! A !! B  →  A | B
+            if line.startswith("!"):
+                cells = re.split(r"\s*!!\s*", line.lstrip("! "))
+                lines.append(" | ".join(c.strip() for c in cells if c.strip()))
+            # Data cells: | A || B  →  A | B
+            elif line.startswith("|"):
+                cells = re.split(r"\s*\|\|\s*", line.lstrip("| "))
+                lines.append(" | ".join(c.strip() for c in cells if c.strip()))
+        return "\n".join(lines)
+
+    text = re.sub(r"\{\|.*?\|\}", _table_to_text, text, flags=re.DOTALL)
     text = re.sub(r"\{\{[^}]*\}\}", "", text)                            # templates
     text = re.sub(r"\[\[(?:[^|\]]*\|)?([^\]]+)\]\]", r"\1", text)       # [[link|label]]
     text = re.sub(r"'{2,3}", "", text)                                   # bold/italic
@@ -49,10 +67,11 @@ async def fetch_wiki(query: str) -> dict:
 
     Returns:
         dict with keys:
-          - ``found`` (bool)
-          - ``title``, ``url``, ``extract`` (if found)
-          - ``other_results`` — list of alternative page titles (if found)
-          On HTTP/network error: ``{"found": False, "error": "<message>"}``
+
+        - ``found`` (bool)
+        - ``title``, ``url``, ``extract`` (if found)
+        - ``other_results`` — list of alternative page titles (if found)
+        - On HTTP/network error: ``{"found": False, "error": "<message>"}``
     """
     cache_key = query.strip().lower()
     cached = _wiki_cache.get(cache_key)
@@ -86,9 +105,11 @@ async def fetch_wiki(query: str) -> dict:
             # 2. Fetch intro section (section=0) wikitext, strip markup.
             extract = await _fetch_section(client, title, section=0)
 
-            # 3. If intro is empty, grab the full page and truncate.
-            if not extract:
-                extract = await _fetch_section(client, title, section=None)
+            # 3. If intro is empty or very thin (<300 chars), grab the full page.
+            if not extract or len(extract) < 300:
+                full = await _fetch_section(client, title, section=None)
+                if full and len(full) > len(extract or ""):
+                    extract = full
 
             if not extract:
                 result = {

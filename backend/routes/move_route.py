@@ -11,6 +11,8 @@ from backend.schemas.type_ import TypeOut
 from backend.services.move_service import (
     get_move_by_id,
     get_tm_for_move,
+    list_all_expert_moves,
+    list_all_tutors,
     list_moves,
     list_moves_by_type,
     list_tutors_for_move,
@@ -79,6 +81,33 @@ def get_moves_by_type(type_name: str, db: Session = Depends(get_db)):
     return [_move_to_list_item(m) for m in moves]
 
 
+@router.get("/tutors/all", response_model=list[MoveTutorOut])
+def get_all_tutors(db: Session = Depends(get_db)):
+    """All classic move tutors grouped by location, ordered by price."""
+    rows = list_all_tutors(db)
+    return [
+        MoveTutorOut(
+            id=t.id,
+            move_id=t.move_id,
+            move_name_en=t.move.name_en,
+            move_name_fr=t.move.name_fr,
+            location_id=t.location_id,
+            location_name_en=t.location.name_en,
+            location_name_fr=t.location.name_fr,
+            price=t.price,
+            currency=t.currency,
+            npc_description=t.npc_description,
+        )
+        for t in rows
+    ]
+
+
+@router.get("/experts/all")
+def get_all_expert_moves(db: Session = Depends(get_db)):
+    """All Move Expert moves (Knot Island / Boon Island) with unlock conditions."""
+    return list_all_expert_moves(db)
+
+
 @router.get("/{move_id}/tutors", response_model=list[MoveTutorOut])
 def get_move_tutors(move_id: int, db: Session = Depends(get_db)):
     """Locations and prices where this move can be learned from a classic Move Tutor.
@@ -92,6 +121,8 @@ def get_move_tutors(move_id: int, db: Session = Depends(get_db)):
         MoveTutorOut(
             id=t.id,
             move_id=t.move_id,
+            move_name_en=t.move.name_en,
+            move_name_fr=t.move.name_fr,
             location_id=t.location_id,
             location_name_en=t.location.name_en,
             location_name_fr=t.location.name_fr,

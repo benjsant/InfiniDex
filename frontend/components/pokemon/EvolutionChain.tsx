@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import type { EvolutionOut } from "@/types/api";
 import { basePokemonSprite } from "@/lib/constants";
 
@@ -43,46 +44,45 @@ function SpriteNode({ node, isCurrent }: { node: ChainNode; isCurrent: boolean }
   return (
     <Link
       href={`/pokedex/${node.id}`}
-      className={`flex flex-col items-center gap-1.5 group min-w-[72px] ${
-        isCurrent ? "opacity-100" : "opacity-75 hover:opacity-100 transition-opacity"
+      className={`flex flex-col items-center gap-1.5 group ${
+        isCurrent ? "opacity-100" : "opacity-70 hover:opacity-100 transition-opacity"
       }`}
+      style={{ minWidth: "60px" }}
     >
       <div
-        className={`w-16 h-16 flex items-center justify-center rounded-xl border transition-colors ${
-          isCurrent
-            ? "bg-[rgb(30,30,50)] border-indigo-500"
-            : "bg-[rgb(20,20,30)] border-[rgb(40,40,55)] group-hover:border-indigo-400"
-        }`}
+        className="w-14 h-14 flex items-center justify-center rounded-xl transition-colors"
+        style={{
+          background: isCurrent ? "#16192e" : "#111428",
+          border: `1px solid ${isCurrent ? "#e8b84b" : "#1e2240"}`,
+        }}
       >
         <Image
           src={basePokemonSprite(node.nationalId ?? node.id)}
           alt={node.nameFr ?? node.nameEn}
-          width={52}
-          height={52}
+          width={48}
+          height={48}
           unoptimized
           className="object-contain"
           onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
         />
       </div>
-      <p className={`text-xs font-medium text-center leading-tight ${
-        isCurrent ? "text-indigo-300" : "text-[rgb(180,180,210)]"
-      }`}>
+      <p className="text-xs font-medium text-center leading-tight" style={{ color: isCurrent ? "#e8b84b" : "#c8cbf0" }}>
         {node.nameFr ?? node.nameEn}
       </p>
-      <p className="text-[10px] text-[rgb(100,100,120)]">#{node.id}</p>
+      <p className="text-[10px]" style={{ color: "#6b7199" }}>#{node.id}</p>
     </Link>
   );
 }
 
 function Arrow({ condition, ifOverride }: { condition: string; ifOverride: boolean }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-1 px-1 shrink-0">
-      <span className="text-xs text-[rgb(120,120,140)] text-center leading-tight max-w-[72px] whitespace-nowrap">
+    <div className="flex flex-col items-center justify-center gap-1 px-1 shrink-0 max-w-[80px]">
+      <span className="text-xs text-center leading-tight break-words" style={{ color: "#6b7199" }}>
         {condition}
       </span>
-      <span className="text-[rgb(80,80,120)] text-lg">→</span>
+      <ChevronRight size={16} style={{ color: "#2d3260" }} />
       {ifOverride && (
-        <span className="text-[10px] px-1 py-0.5 rounded bg-indigo-900/40 text-indigo-400">IF</span>
+        <span className="text-[10px] px-1 py-0.5 rounded" style={{ background: "rgba(232,184,75,0.12)", color: "#e8b84b" }}>IF</span>
       )}
     </div>
   );

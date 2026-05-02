@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from pydantic import BaseModel
 
 
@@ -8,6 +6,6 @@ class WeaknessOut(BaseModel):
     attacking_type_id: int
     attacking_type_name_en: str
     attacking_type_name_fr: str | None
-    multiplier: Decimal
+    multiplier: float
 
     model_config = {"from_attributes": True}
