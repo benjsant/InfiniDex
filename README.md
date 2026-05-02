@@ -1,105 +1,90 @@
-## 🧬 Description complète du projet
+# FusionDex-IA
 
-FusionAI Dex est un Pokédex intelligent conçu pour le jeu Pokémon Infinite Fusion.
-
-Le projet vise à centraliser, structurer et exploiter les données du jeu à travers une architecture complète allant de la collecte des données jusqu’à leur utilisation via une interface et une API.
-
-### 🔄 Pipeline de données (ETL)
-
-Le projet repose sur un pipeline ETL qui :
-
-- extrait les données depuis les fichiers du jeu (ou sources externes)
-- transforme ces données en un format structuré et exploitable
-- les charge dans une base de données PostgreSQL
-
-Ce pipeline permet d’automatiser la mise à jour et la cohérence des données.
+Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.com/) — 572 Pokémon (501 base + 71 formes), ~176 000 fusions, movepools, types, triple-fusions, Move Experts, maîtres des capacités, et un assistant IA agentique spécialisé.
 
 ---
 
-### 🗄️ Base de données
+## Stack et état
 
-Les données sont stockées dans PostgreSQL, avec une structure permettant :
-
-- de représenter les Pokémon (stats, types, etc.)
-- d’associer les sprites
-- d’évoluer vers des données plus complexes (fusions, capacités, localisation, etc.)
-
----
-
-### 🌐 API Backend
-
-Une API développée avec FastAPI permet :
-
-- d’accéder aux données des Pokémon
-- d’effectuer des recherches
-- de filtrer selon différents critères
-- de servir les données au frontend ou à d’autres services
+| Couche     | Stack                                                | État          |
+| ---------- | ---------------------------------------------------- | ------------- |
+| ETL        | Python 3.12 + `uv` + MediaWiki + PokeAPI             | stable        |
+| Base       | PostgreSQL 16 (relationnelle + `INTEGER[]`)          | stable        |
+| Backend    | FastAPI + SQLAlchemy 2 + Pydantic (41 endpoints)     | stable        |
+| Frontend   | Next.js 15 App Router + TypeScript                   | stable        |
+| IA         | Agent tool-calling DeepSeek/Ollama — 7 outils        | en cours      |
+| Infra      | Docker Compose (dev + prod), proxy Next.js           | stable        |
 
 ---
 
-### 🖥️ Interface Web
+## Lancer en local
 
-Une interface construite avec Next.js permet :
+Pré-requis : Docker + Docker Compose.
 
-- d’explorer les Pokémon
-- de consulter leurs statistiques
-- d’effectuer des recherches simples
-- d’interagir avec les données via l’API
+```bash
+# Cloner le dépôt
+git clone https://github.com/benjsant/FusionDex-IA.git
+cd FusionDex-IA
 
----
+# Copier et remplir les variables d'environnement
+cp .env.example .env
+# Éditer .env — renseigner DEEPSEEK_API_KEY si vous voulez l'IA
 
-### 🧬 Gestion des sprites
+# Démarrer tous les services (db, backend, sprites, frontend)
+docker compose up -d
 
-Le projet intègre les sprites directement depuis les fichiers du jeu :
+# Frontend : http://localhost:53000
+# API Swagger : http://localhost:58000/docs
+```
 
-- sprites des Pokémon
-- potentiellement sprites des fusions
-- affichage dynamique dans l’interface
+Pour la documentation MkDocs :
 
----
-
-### 🤖 Assistant conversationnel IA
-
-Un endpoint `POST /ai/ask` branché sur l'API DeepSeek expose un assistant spécialisé Pokémon Infinite Fusion :
-
-- streaming SSE (le frontend affiche la réponse token par token)
-- payload `{ "message": "...", "context": "..." }` — `context` optionnel pour injecter la sélection courante (Pokémon affiché, fusion en cours)
-- dégradation propre : `503` si `DEEPSEEK_API_KEY` absente, aucun mock silencieux
-
-L'usage cible : aider le joueur à comprendre une fusion (stats, synergies, moves pertinents) plutôt que traduire du langage naturel en SQL. Voir [docs/api.md](docs/api.md#ia-deepseek) et [roadmap.md](docs/roadmap.md) pour les garde-fous restants (quotas, e2e).
+```bash
+docker compose --profile docs up docs
+# Docs : http://localhost:58100
+```
 
 ---
 
-### 🔄 Orchestration et automatisation (évolution)
+## Fonctionnalités
 
-Le projet peut évoluer avec :
-
-- Prefect pour orchestrer les pipelines ETL
-- n8n pour automatiser certaines tâches (notifications, mises à jour)
-
----
-
-### 📈 Évolutions prévues
-
-Le projet est conçu pour évoluer progressivement :
-
-- ajout des fusions Pokémon
-- intégration des capacités (movepool)
-- ajout de données de localisation
-- gestion des mises à jour du jeu
-- amélioration de l’interface utilisateur
+| Page                   | Description                                                                   |
+| ---------------------- | ----------------------------------------------------------------------------- |
+| `/pokedex`             | Liste paginée (40/page) + recherche + filtre par type                         |
+| `/pokedex/[id]`        | Fiche complète : stats, capacités, évolutions, faiblesses, fusion             |
+| `/fusion`              | Sélecteur head/body avec filtre Kanto/Hoenn/Tous + pré-sélection via URL      |
+| `/fusion/[h]/[b]`      | Résultat : sprites, stats, moveset, Move Expert moves, assistant IA           |
+| `/moves`               | Liste référentielle des 676 capacités + recherche + filtre par type           |
+| `/moves/tutors`        | Maîtres des capacités (41 tuteurs classiques) + Move Experts par île          |
+| `/types`               | Grille des 27 types (18 standard + 9 triple-fusion) + matchups                |
+| `/abilities`           | Liste des 178 talents + recherche                                             |
+| `/triple-fusions`      | 23 fusions triples disponibles dans le jeu                                    |
+| `/ai`                  | Chat IA plein écran — agent agentique avec transparence des outils invoqués   |
 
 ---
 
-### 🎯 Objectif global
+## Données
 
-FusionAI Dex a pour objectif de démontrer la capacité à concevoir un projet complet incluant :
+- 572 Pokémon · 676 moves · 178 abilities · 27 types · 70 items
+- 166 090 fusion_sprites · 7 081 créateurs · 23 triple_fusions
+- 40 067 pokemon_move · 1 634 pokemon_location (dont 55 gift, 25 trade)
+- 121 TMs · 65 move_expert_moves · 41 move_tutors
 
-- ingestion et traitement de données
-- modélisation de base de données
-- développement backend
-- création d’API
-- développement frontend
-- intégration d’IA
+---
 
-Le tout dans un contexte concret et évolutif.
+## Architecture rapide
+
+```
+ETL (Python) → PostgreSQL 16 → FastAPI → proxy Next.js → navigateur
+                                   ↑
+                             agent IA (tool-calling)
+                             DB + Wiki IF + web
+```
+
+Documentation complète dans [`docs/`](docs/) (MkDocs Material) :
+
+- [Architecture](docs/architecture.md) — flux de requêtes, services Docker, boucle agent IA
+- [API backend](docs/api.md) — référence des 41 endpoints
+- [Base de données](docs/database.md) — schéma, tables, volumes de données
+- [Frontend](docs/frontend.md) — pages, composants, hooks, design system
+- [Roadmap](ROADMAP.md) — état d'avancement et prochaines étapes

@@ -48,8 +48,10 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 | GET     | `/moves/`                            | Liste + filtres (category, type_id, power_min/max) |
 | GET     | `/moves/search?q={nom}`              | Recherche nom EN/FR (accent-insensitive)           |
 | GET     | `/moves/by-type/{type_name}`         | Capacités d'un type (EN ou FR)                     |
+| GET     | `/moves/tutors/all`                  | Tous les tuteurs classiques (41) pour le frontend  |
+| GET     | `/moves/experts/all`                 | Tous les Move Experts pour le frontend             |
 | GET     | `/moves/{id}`                        | Détail complet + descriptions + TM info            |
-| GET     | `/moves/{id}/tutors`                 | NPCs enseignant ce move (prix + localisation)      |
+| GET     | `/moves/{id}/tutors`                 | NPCs enseignant ce move (prix + localisation + `move_name_en` / `move_name_fr`) |
 
 ### Abilities
 

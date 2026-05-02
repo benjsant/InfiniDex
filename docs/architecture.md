@@ -154,7 +154,8 @@ yield TokenEvent(FAILURE_MESSAGE)  # circuit breaker
 | `search_move` | DB | Recherche de capacité par nom (EN ou FR) |
 | `get_item` | DB | Fiche item par nom |
 | `get_move_tutors` | DB | NPCs enseignant une capacité + prix |
-| `search_wiki` | Wiki IF (HTTP) | Résumé de page wiki avec cache TTL 10 min |
+| `search_pokemon_locations` | DB | Cherche les Pokémon par condition/méthode dans `pokemon_location` |
+| `search_wiki` | Wiki IF (HTTP) | Résumé de page wiki avec cache TTL 10 min — fetch page complète si intro < 300 caractères |
 
 ### Cache et performances
 

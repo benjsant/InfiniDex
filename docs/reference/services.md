@@ -48,3 +48,13 @@ stricte : **pas de HTTP dans les services**, **pas de SQLAlchemy dans les routes
 ## IA (DeepSeek)
 
 ::: backend.services.ai_service
+
+## Wiki IF (client MediaWiki)
+
+::: backend.services.wiki_service
+
+## Outils agent IA
+
+::: backend.services.tools.db_tools
+
+::: backend.services.tools.wiki_tool
