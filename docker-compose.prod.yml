@@ -1,33 +1,64 @@
-# Override pour la prod / démo publique.
+# Production override — appliquer par-dessus docker-compose.yml :
 #
-# Usage :
-#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+#     --env-file .env.prod up -d
 #
-# Effet : seul le service `frontend` a un port mappé sur l'hôte. Backend,
-# sprites (nginx) et Postgres ne sont joignables que via le réseau Docker
-# interne. Le browser passe par Next.js (`/api/*`, `/sprites-cdn/*`) qui
-# proxifie en server-to-server.
+# Architecture résultante :
 #
-# Prérequis : un `.env.prod` avec au minimum
-#   POSTGRES_PASSWORD=<solide>
-#   CORS_ALLOWED_ORIGINS=https://<ton-domaine>
-#   FUSIONDEX_FRONTEND_PORT=<port public, ex: 443 derrière un reverse proxy>
+#   Internet → reverse proxy (Caddy / Nginx, TLS sur l'hôte)
+#                  ↓ port 3000
+#              frontend (Next.js)
+#                  ↓ réseau Docker interne seulement
+#              backend :8000  |  sprites :80  |  db :5432
+#
+# Aucun port backend/db/sprites n'est publié sur l'hôte.
+# Le browser ne voit jamais ces adresses internes.
+#
+# Fichier .env.prod minimum requis :
+#   POSTGRES_PASSWORD=<mot de passe fort>
+#   CORS_ALLOWED_ORIGINS=https://fusiondex.ton-domaine.com
+#   DEEPSEEK_API_KEY=sk-...   (ou OLLAMA_URL)
+#   RATE_LIMIT_AI_RPM=20      (requêtes IA /min/IP — 0 pour désactiver)
 
 services:
   db:
-    ports: !reset []     # pas d'exposition externe en prod
+    ports: !reset []
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
 
   backend:
-    ports: !reset []     # uniquement accessible via le réseau Docker
+    ports: !reset []
     environment:
-      # Défense en profondeur : en prod, on n'autorise que le domaine public.
-      # À surcharger via `.env.prod` → CORS_ALLOWED_ORIGINS=https://…
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      FUSIONDEX_ENV: production          # désactive Swagger UI + ReDoc
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?CORS_ALLOWED_ORIGINS requis dans .env.prod}
+      RATE_LIMIT_AI_RPM: ${RATE_LIMIT_AI_RPM:-20}
+      TRUSTED_PROXY: "1"
+      INTERNAL_API_KEY: "${INTERNAL_API_KEY:?INTERNAL_API_KEY requis — générer avec : openssl rand -hex 32}"
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 512M
 
   sprites:
-    ports: !reset []     # servi via le proxy Next.js (/sprites-cdn/*)
+    ports: !reset []
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 64M
 
   frontend:
-    # Seul service public. Mappage configurable via .env.
     ports:
-      - "${FUSIONDEX_FRONTEND_PORT:-53000}:3000"
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      INTERNAL_API_KEY: "${INTERNAL_API_KEY:?INTERNAL_API_KEY requis — générer avec : openssl rand -hex 32}"
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M

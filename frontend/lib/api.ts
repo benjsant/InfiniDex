@@ -8,6 +8,8 @@ import type {
   TypeOut,
   MoveListItem,
   MoveDetail,
+  MoveTutorOut,
+  MoveExpertOut,
   AbilityListItem,
   AbilityDetail,
   FusionResult,
@@ -16,6 +18,9 @@ import type {
   FusionExpertMoveOut,
   AiRequest,
   AiProviderInfo,
+  TripleFusionListItem,
+  TripleFusionDetail,
+  CreatorOut,
 } from "@/types/api";
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -36,10 +41,12 @@ export function getPokemonList(params?: {
   gen?: number;
   page?: number;
   page_size?: number;
+  include_hoenn?: boolean;
 }): Promise<PokemonListItem[]> {
   const sp = new URLSearchParams();
   if (params?.type_id)   sp.set("type_id", String(params.type_id));
   if (params?.gen)       sp.set("generation_id", String(params.gen));
+  if (params?.include_hoenn === false) sp.set("include_hoenn", "false");
   const pageSize = params?.page_size ?? 40;
   sp.set("limit", String(pageSize));
   if (params?.page && params.page > 1) {
@@ -105,6 +112,14 @@ export function getMovesByType(typeName: string): Promise<MoveListItem[]> {
   return apiFetch<MoveListItem[]>(`/moves/by-type/${encodeURIComponent(typeName)}`);
 }
 
+export function getAllTutors(): Promise<MoveTutorOut[]> {
+  return apiFetch<MoveTutorOut[]>("/moves/tutors/all");
+}
+
+export function getAllExpertMoves(): Promise<MoveExpertOut[]> {
+  return apiFetch<MoveExpertOut[]>("/moves/experts/all");
+}
+
 // ── Abilities ────────────────────────────────────────────────────────────────
 
 export function getAbilities(): Promise<AbilityListItem[]> {
@@ -125,13 +140,38 @@ export function getTypes(): Promise<TypeOut[]> {
   return apiFetch<TypeOut[]>("/types");
 }
 
+// ── Triple fusions ───────────────────────────────────────────────────────────
+
+export function getTripleFusions(): Promise<TripleFusionListItem[]> {
+  return apiFetch<TripleFusionListItem[]>("/triple-fusions/");
+}
+
+export function getTripleFusion(id: number): Promise<TripleFusionDetail> {
+  return apiFetch<TripleFusionDetail>(`/triple-fusions/${id}`);
+}
+
+export function getTripleFusionWeaknesses(id: number): Promise<WeaknessOut[]> {
+  return apiFetch<WeaknessOut[]>(`/triple-fusions/${id}/weaknesses`);
+}
+
+// ── Creators ─────────────────────────────────────────────────────────────────
+
+export function searchCreators(q: string): Promise<CreatorOut[]> {
+  return apiFetch<CreatorOut[]>(`/creators/?q=${encodeURIComponent(q)}&limit=5`);
+}
+
+export function getCreatorSprites(creatorId: number): Promise<SpriteOut[]> {
+  return apiFetch<SpriteOut[]>(`/creators/${creatorId}/sprites`);
+}
+
 // ── AI (streaming) ───────────────────────────────────────────────────────────
 
-export async function askAi(req: AiRequest): Promise<Response> {
+export async function askAi(req: AiRequest, signal?: AbortSignal): Promise<Response> {
   const res = await fetch(`${API_BASE_URL}/ai/ask`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(req),
+    signal,
   });
   if (!res.ok) throw new Error(`AI error ${res.status}`);
   return res;

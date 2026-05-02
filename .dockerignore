@@ -1,0 +1,39 @@
+# Build context exclusions — keeps Docker build context lean.
+# Applied to all Dockerfiles in this repo (backend, etl, docs).
+# Frontend has its own .dockerignore in frontend/.
+
+# Version control
+.git
+.gitignore
+
+# Python caches and virtualenvs
+**/__pycache__
+**/*.pyc
+**/*.pyo
+backend/.venv
+
+# Node / Next.js
+frontend/node_modules
+frontend/.next
+frontend/.turbo
+
+# Data (large — mounted as volumes at runtime, never baked into images)
+data/sprites
+data/*.db
+
+# Dev / editor artifacts
+.env
+.env.*
+!.env.example
+**/.DS_Store
+*.swp
+*.swo
+
+# Docs (not needed for app images)
+docs
+mkdocs.yml
+
+# Test outputs
+.pytest_cache
+**/.coverage
+htmlcov
