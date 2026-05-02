@@ -4,16 +4,19 @@ on:
   pull_request:
     paths:
       - 'backend/**'
+      - 'docker/init_postgres.sql'
       - '.github/workflows/backend-ci.yml'
   push:
     branches: [main]
     paths:
       - 'backend/**'
+      - 'docker/init_postgres.sql'
       - '.github/workflows/backend-ci.yml'
 
 jobs:
+  # ── Job 1 : tests sans DB (rapide, tourne sur toute PR) ─────────────────────
   smoke:
-    name: Import + lightweight tests
+    name: Import + DB-free tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,7 +35,7 @@ jobs:
         working-directory: backend
         run: uv sync --frozen
 
-      - name: Verify app imports (pytest collect)
+      - name: Verify imports (pytest collect)
         working-directory: backend
         run: uv run pytest --collect-only -q
 
@@ -40,6 +43,67 @@ jobs:
         working-directory: backend
         run: uv run pytest tests/test_ai.py tests/test_llm_providers.py -v
 
-  # Full pytest suite requires a populated DB (572 Pokémon dataset from ETL).
-  # To enable, commit a SQL fixture dump under e.g. backend/tests/fixtures/
-  # and wire a postgres service + psql restore step here.
+  # ── Job 2 : suite complète avec Postgres + fixture ──────────────────────────
+  integration:
+    name: Full test suite (Postgres + fixture)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: fusiondex_db
+          # fusiondex_user est créé superuser par l'image officielle Docker,
+          # ce qui est requis pour SET session_replication_role lors du restore.
+          POSTGRES_USER: fusiondex_user
+          POSTGRES_PASSWORD: fusiondex_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.10.12"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install backend deps
+        working-directory: backend
+        run: uv sync --frozen
+
+      - name: Create schema
+        env:
+          PGPASSWORD: fusiondex_password
+        run: |
+          psql -h localhost -U fusiondex_user -d fusiondex_db \
+               -f docker/init_postgres.sql
+
+      - name: Restore data fixture
+        env:
+          PGPASSWORD: fusiondex_password
+        run: |
+          gunzip -c backend/tests/fixtures/seed.sql.gz \
+            | psql -h localhost -U fusiondex_user -d fusiondex_db
+
+      - name: Run full test suite
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: "5432"
+          POSTGRES_DB: fusiondex_db
+          POSTGRES_USER: fusiondex_user
+          POSTGRES_PASSWORD: fusiondex_password
+          # Pas de sprites réels en CI — les tests vérifient l'API, pas les fichiers
+          SPRITES_DIR: /tmp/sprites
+        working-directory: backend
+        run: uv run pytest tests/ -v --tb=short
