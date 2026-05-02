@@ -124,6 +124,38 @@ services:
       - backend
     restart: unless-stopped
 
+  # Service optionnel : Prefect worker pour la vérification hebdomadaire.
+  # Démarre uniquement sur demande :
+  #   docker compose --profile prefect up -d prefect-worker
+  # Variables optionnelles dans .env :
+  #   DISCORD_WEBHOOK_URL, GITHUB_TOKEN, IF_GAME_REPO
+  prefect-worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.etl
+    container_name: fusiondex_prefect
+    profiles: ["prefect"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PYTHONPATH: /app
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-fusiondex_db}
+      POSTGRES_USER: ${POSTGRES_USER:-fusiondex_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fusiondex_password}
+      IF_GAME_REPO: ${IF_GAME_REPO:-jonlanglet/Pokemon-Infinite-Fusion}
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+    volumes:
+      - ./etl:/app/etl
+      - ./data:/app/data
+    networks:
+      - backend
+    restart: unless-stopped
+    command: ["python", "-m", "etl.flows.weekly_update"]
+
   # Service optionnel : LLM local Ollama pour fallback IA sans clé DeepSeek.
   # Démarre uniquement sur demande :
   #   docker compose --profile ollama up -d ollama
