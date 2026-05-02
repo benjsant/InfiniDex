@@ -30,7 +30,7 @@ DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 VERSION_FILE = DATA_DIR / "game_last_version.txt"
 
 # Repo GitHub officiel du jeu (configurable via env si fork/miroir).
-IF_GAME_REPO    = os.getenv("IF_GAME_REPO", "jonlanglet/Pokemon-Infinite-Fusion")
+IF_GAME_REPO    = os.getenv("IF_GAME_REPO", "infinitefusion/infinitefusion-e18")
 DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK_URL", "")
 GITHUB_TOKEN    = os.getenv("GITHUB_TOKEN", "")
 

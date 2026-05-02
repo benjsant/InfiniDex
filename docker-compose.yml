@@ -145,7 +145,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-fusiondex_db}
       POSTGRES_USER: ${POSTGRES_USER:-fusiondex_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fusiondex_password}
-      IF_GAME_REPO: ${IF_GAME_REPO:-jonlanglet/Pokemon-Infinite-Fusion}
+      IF_GAME_REPO: ${IF_GAME_REPO:-infinitefusion/infinitefusion-e18}
       DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
     volumes:
