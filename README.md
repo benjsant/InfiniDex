@@ -1,5 +1,7 @@
 # FusionDex-IA
 
+![FusionDex-IA banner](img/banner.png)
+
 Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.com/) — 572 Pokémon (501 base + 71 formes), ~176 000 fusions, movepools, types, triple-fusions, Move Experts, maîtres des capacités, et un assistant IA agentique spécialisé.
 
 ---
