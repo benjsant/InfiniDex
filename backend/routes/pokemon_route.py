@@ -55,6 +55,7 @@ def pokemon_to_list_item(p: Pokemon) -> PokemonListItem:
         types=_serialize_types(p.types),
         sprite_path=p.sprite_path,
         is_hoenn_only=p.is_hoenn_only,
+        is_legendary=p.is_legendary,
         pokepedia_url=p.pokepedia_url,
     )
 
@@ -67,6 +68,7 @@ def get_pokemon_list(
     type_id: int | None = Query(None, ge=1, description="Filter by type (id)"),
     generation_id: int | None = Query(None, ge=1, description="Filter by generation"),
     include_hoenn: bool = Query(True, description="Include Hoenn-only Pokémon"),
+    legendary: bool = Query(False, description="Only legendary Pokémon"),
 ):
     """List Pokémon in the Infinite Fusion game, with pagination and filters."""
     pokemons = list_pokemon(
@@ -76,6 +78,7 @@ def get_pokemon_list(
         type_id=type_id,
         generation_id=generation_id,
         include_hoenn=include_hoenn,
+        legendary_only=legendary,
     )
     return [pokemon_to_list_item(p) for p in pokemons]
 
@@ -106,6 +109,7 @@ def get_pokemon(p: Pokemon = Depends(get_pokemon_or_404)):
         speed=p.speed,
         base_experience=p.base_experience,
         is_hoenn_only=p.is_hoenn_only,
+        is_legendary=p.is_legendary,
         sprite_path=p.sprite_path,
         pokepedia_url=p.pokepedia_url,
         types=_serialize_types(p.types),

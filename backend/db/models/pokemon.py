@@ -20,6 +20,7 @@ class Pokemon(Base):
     speed           = Column(Integer, nullable=False)
     base_experience = Column(Integer)
     is_hoenn_only   = Column(Boolean, nullable=False, default=False)
+    is_legendary    = Column(Boolean, nullable=False, default=False)
     sprite_path     = Column(Text)
     pokepedia_url   = Column(Text)
 

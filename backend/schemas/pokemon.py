@@ -26,6 +26,7 @@ class PokemonListItem(BaseModel):
     types: list[TypeOut]
     sprite_path: str | None
     is_hoenn_only: bool
+    is_legendary: bool
     pokepedia_url: str | None
 
     model_config = {"from_attributes": True}
@@ -45,6 +46,7 @@ class PokemonDetail(BaseModel):
     speed: int
     base_experience: int | None
     is_hoenn_only: bool
+    is_legendary: bool
     sprite_path: str | None
     pokepedia_url: str | None
     types: list[TypeOut]

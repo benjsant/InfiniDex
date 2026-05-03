@@ -17,8 +17,9 @@ def list_pokemon(
     type_id: int | None = None,
     generation_id: int | None = None,
     include_hoenn: bool = True,
+    legendary_only: bool = False,
 ) -> list[Pokemon]:
-    """Paginated list of Pokémon with type / generation / Hoenn-only filters."""
+    """Paginated list of Pokémon with type / generation / Hoenn-only / legendary filters."""
     query = db.query(Pokemon).options(joinedload(Pokemon.types))
     if type_id is not None:
         sub = db.query(PokemonType.pokemon_id).filter(PokemonType.type_id == type_id)
@@ -27,6 +28,8 @@ def list_pokemon(
         query = query.filter(Pokemon.generation_id == generation_id)
     if not include_hoenn:
         query = query.filter(Pokemon.is_hoenn_only.is_(False))
+    if legendary_only:
+        query = query.filter(Pokemon.is_legendary.is_(True))
     query = query.order_by(Pokemon.id).offset(offset)
     if limit is not None:
         query = query.limit(limit)
