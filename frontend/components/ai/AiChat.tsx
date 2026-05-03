@@ -3,11 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
-import { Bot, Cog } from "lucide-react";
+import { Bot, Cog, Globe, Database, BookOpen } from "lucide-react";
 import { useAiChat } from "@/hooks/useAiChat";
 import { getAiProvider } from "@/lib/api";
 import type { ChatMessage } from "@/hooks/useAiChat";
-import { AI_TOOL_LABELS } from "@/lib/constants";
+import { AI_TOOL_LABELS, AI_SOURCE_LABELS, AI_SOURCE_COLORS } from "@/lib/constants";
 
 const SUGGESTIONS = [
   "Meilleure fusion Dracaufeu ?",
@@ -152,6 +152,23 @@ function ToolPill({ name }: { name: string }) {
   );
 }
 
+const SOURCE_ICONS: Record<string, React.ReactNode> = {
+  db:   <Database size={9} className="opacity-70" />,
+  wiki: <BookOpen size={9} className="opacity-70" />,
+  web:  <Globe    size={9} className="opacity-70" />,
+};
+
+function SourceBadge({ source }: { source: string }) {
+  const label  = AI_SOURCE_LABELS[source] ?? source;
+  const colors = AI_SOURCE_COLORS[source] ?? "bg-zinc-900/60 border-zinc-700/50 text-zinc-300";
+  return (
+    <span className={`inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full border ${colors}`}>
+      {SOURCE_ICONS[source]}
+      {label}
+    </span>
+  );
+}
+
 function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
   const toolCalls = message.toolCalls ?? [];
@@ -168,6 +185,13 @@ function MessageBubble({ message }: { message: ChatMessage }) {
           <div className="flex flex-wrap gap-1">
             {toolCalls.map((tc, i) => (
               <ToolPill key={i} name={tc} />
+            ))}
+          </div>
+        )}
+        {(message.sources ?? []).length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {(message.sources ?? []).map((src) => (
+              <SourceBadge key={src} source={src} />
             ))}
           </div>
         )}

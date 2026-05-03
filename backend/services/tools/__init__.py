@@ -24,6 +24,7 @@ from backend.services.tools.db_tools import (
     search_move_tool,
     search_pokemon_locations_tool,
 )
+from backend.services.tools.web_tool import search_web_tool
 from backend.services.tools.wiki_tool import search_wiki_tool
 
 LOGGER = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ TOOLS: list[Tool] = [
     get_move_tutors_tool,
     search_pokemon_locations_tool,
     search_wiki_tool,
+    search_web_tool,
 ]
 
 _TOOL_MAP: dict[str, Tool] = {t.name: t for t in TOOLS}
