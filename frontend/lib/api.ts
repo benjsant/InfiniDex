@@ -42,11 +42,13 @@ export function getPokemonList(params?: {
   page?: number;
   page_size?: number;
   include_hoenn?: boolean;
+  legendary?: boolean;
 }): Promise<PokemonListItem[]> {
   const sp = new URLSearchParams();
   if (params?.type_id)   sp.set("type_id", String(params.type_id));
   if (params?.gen)       sp.set("generation_id", String(params.gen));
   if (params?.include_hoenn === false) sp.set("include_hoenn", "false");
+  if (params?.legendary) sp.set("legendary", "true");
   const pageSize = params?.page_size ?? 40;
   sp.set("limit", String(pageSize));
   if (params?.page && params.page > 1) {

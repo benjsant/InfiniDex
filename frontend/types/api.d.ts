@@ -30,6 +30,7 @@ export interface PokemonListItem {
   types: PokemonTypeSlot[];
   sprite_path: string | null;
   is_hoenn_only: boolean;
+  is_legendary: boolean;
 }
 
 export interface PokemonDetail {
@@ -46,6 +47,7 @@ export interface PokemonDetail {
   speed: number;
   base_experience: number | null;
   is_hoenn_only: boolean;
+  is_legendary: boolean;
   sprite_path: string | null;
   types: PokemonTypeSlot[];
   abilities: PokemonAbilitySlot[];

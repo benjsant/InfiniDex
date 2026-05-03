@@ -25,6 +25,7 @@ function PokedexContent() {
   const [typeId, setTypeId] = useState<number | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [game, setGame] = useState<"kanto" | "hoenn" | "all">("kanto");
+  const [legendaryOnly, setLegendaryOnly] = useState(false);
 
   const handleSearch = useCallback((v: string) => { setQ(v); setPage(1); }, []);
   const handleGame   = useCallback((v: "kanto" | "hoenn" | "all") => { setGame(v); setPage(1); }, []);
@@ -35,7 +36,7 @@ function PokedexContent() {
   const hoennOnly    = game === "hoenn";
 
   const typesQuery  = useTypes();
-  const listQuery   = usePokemonList({ page, page_size: PAGE_SIZE, type_id: typeId, include_hoenn: includeHoenn });
+  const listQuery   = usePokemonList({ page, page_size: PAGE_SIZE, type_id: typeId, include_hoenn: includeHoenn, legendary: legendaryOnly || undefined });
   const searchQuery = usePokemonSearch(q);
 
   const pokemons = isSearching ? searchQuery.data ?? [] : listQuery.data ?? [];
@@ -50,8 +51,9 @@ function PokedexContent() {
   // (l'endpoint /search ne prend pas de type_id ni include_hoenn).
   const filtered = useMemo(() => {
     let result = pokemons;
-    if (isSearching && hoennOnly)      result = result.filter((p) => p.is_hoenn_only);
+    if (isSearching && hoennOnly)        result = result.filter((p) => p.is_hoenn_only);
     if (isSearching && game === "kanto") result = result.filter((p) => !p.is_hoenn_only);
+    if (legendaryOnly)                   result = result.filter((p) => p.is_legendary);
     if (isSearching && typeId) {
       const target = types.find((t) => t.id === typeId);
       if (target) {
@@ -105,6 +107,12 @@ function PokedexContent() {
             </option>
           ))}
         </select>
+        <button
+          onClick={() => { setLegendaryOnly((v) => !v); setPage(1); }}
+          className={`px-3 py-2 rounded-lg border text-sm font-semibold transition-colors ${legendaryOnly ? "bg-yellow-500/20 border-yellow-500 text-yellow-300" : "bg-[rgb(30,30,42)] border-[rgb(50,50,70)] text-[rgb(140,140,170)] hover:border-yellow-500 hover:text-yellow-300"}`}
+        >
+          ★ Légendaires
+        </button>
       </div>
 
       {isLoading ? (
