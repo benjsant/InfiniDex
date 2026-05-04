@@ -29,8 +29,8 @@ export default function FusionResultPage({
   if (isLoading) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8 animate-pulse space-y-4">
-        <div className="h-8 w-64 bg-[rgb(30,30,42)] rounded" />
-        <div className="h-48 w-48 bg-[rgb(30,30,42)] rounded-xl mx-auto" />
+        <div className="h-8 w-64 bg-if-input rounded" />
+        <div className="h-48 w-48 bg-if-input rounded-xl mx-auto" />
       </div>
     );
   }
@@ -38,8 +38,8 @@ export default function FusionResultPage({
   if (error || !fusion) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12 text-center">
-        <p className="text-[rgb(120,120,140)]">Fusion introuvable.</p>
-        <Link href="/fusion" className="mt-4 block transition-colors" style={{ color: "#e8b84b" }}>
+        <p className="text-if-text-xs">Fusion introuvable.</p>
+        <Link href="/fusion" className="mt-4 block transition-colors" style={{ color: "var(--color-if-accent)" }}>
           <ChevronLeft size={14} className="inline" /> Retour au calculateur
         </Link>
       </div>
@@ -65,14 +65,14 @@ export default function FusionResultPage({
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-2 text-sm text-[rgb(120,120,140)] mb-6">
+      <div className="flex items-center gap-2 text-sm text-if-text-xs mb-6">
         <Link href="/fusion" className="transition-colors hover:text-[#e8b84b]">Fusion</Link>
         <span>/</span>
-        <span className="text-[rgb(200,200,220)]">{fusionName}</span>
+        <span className="text-if-text-dim">{fusionName}</span>
       </div>
 
       {/* Main card */}
-      <div className="rounded-xl p-4 sm:p-6 mb-6" style={{ background: "#111428", border: "1px solid #1e2240" }}>
+      <div className="rounded-xl p-4 sm:p-6 mb-6" style={{ background: "var(--color-if-card)", border: "1px solid var(--color-if-border)" }}>
         {/* Sprites row */}
         <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start mb-6">
           {/* Normal sprite */}
@@ -83,7 +83,7 @@ export default function FusionResultPage({
             creators={defaultSprite?.creators ?? []}
           />
 
-          <div className="hidden sm:flex items-center self-center text-[rgb(60,60,80)]"><ArrowLeftRight size={20} /></div>
+          <div className="hidden sm:flex items-center self-center text-if-border-hi"><ArrowLeftRight size={20} /></div>
 
           {/* Reversed sprite */}
           <Link href={`/fusion/${bId}/${hId}`} className="group">
@@ -99,18 +99,18 @@ export default function FusionResultPage({
 
         {/* Name + types */}
         <div className="text-center sm:text-left">
-          <h1 className="text-2xl font-bold text-[rgb(220,220,255)] mb-1">{fusionName}</h1>
-          <div className="flex gap-2 justify-center sm:justify-start mb-1 text-xs text-[rgb(120,120,140)]">
+          <h1 className="text-2xl font-bold text-if-text-hi mb-1">{fusionName}</h1>
+          <div className="flex gap-2 justify-center sm:justify-start mb-1 text-xs text-if-text-xs">
             <span>
               Tête :{" "}
-              <Link href={`/pokedex/${hId}`} className="transition-colors" style={{ color: "#e8b84b" }}>
+              <Link href={`/pokedex/${hId}`} className="transition-colors" style={{ color: "var(--color-if-accent)" }}>
                 {fusion.head_name_en} #{hId}
               </Link>
             </span>
-            <span style={{ color: "#2d3260" }}>·</span>
+            <span style={{ color: "var(--color-if-border-hi)" }}>·</span>
             <span>
               Corps :{" "}
-              <Link href={`/pokedex/${bId}`} className="transition-colors" style={{ color: "#e8b84b" }}>
+              <Link href={`/pokedex/${bId}`} className="transition-colors" style={{ color: "var(--color-if-accent)" }}>
                 {fusion.body_name_en} #{bId}
               </Link>
             </span>
@@ -123,33 +123,33 @@ export default function FusionResultPage({
       </div>
 
       {/* Stats */}
-      <div className="rounded-xl bg-[rgb(20,20,28)] border border-[rgb(50,50,70)] p-5 mb-4">
-        <h2 className="text-sm font-semibold text-[rgb(120,120,140)] uppercase tracking-wider mb-4">
+      <div className="rounded-xl bg-if-deep border border-if-border-mid p-5 mb-4">
+        <h2 className="text-sm font-semibold text-if-text-xs uppercase tracking-wider mb-4">
           Statistiques fusionnées
         </h2>
         <div className="space-y-3 max-w-md">
           {stats.map(({ key, value }) => (
             <StatBar key={key} stat={key} value={value} />
           ))}
-          <div className="flex items-center gap-3 pt-2 border-t border-[rgb(40,40,55)]">
-            <span className="w-24 text-right text-xs text-[rgb(120,120,140)]">Total</span>
-            <span className="text-sm font-bold font-mono text-[rgb(220,220,255)]">{baseTotal}</span>
+          <div className="flex items-center gap-3 pt-2 border-t border-if-border-lo">
+            <span className="w-24 text-right text-xs text-if-text-xs">Total</span>
+            <span className="text-sm font-bold font-mono text-if-text-hi">{baseTotal}</span>
           </div>
         </div>
-        <p className="text-xs text-[rgb(80,80,100)] mt-4">
+        <p className="text-xs text-if-muted mt-4">
           Physique (HP/Atk/Déf/Vit) = ⌊Body×⅔ + Head×⅓⌋ · Spécial (AtkSpé/DéfSpé) = ⌊Head×⅔ + Body×⅓⌋
         </p>
       </div>
 
       {/* Moveset */}
-      <div className="rounded-xl bg-[rgb(20,20,28)] border border-[rgb(50,50,70)] p-5 mb-4">
-        <h2 className="text-sm font-semibold text-[rgb(120,120,140)] uppercase tracking-wider mb-4">
+      <div className="rounded-xl bg-if-deep border border-if-border-mid p-5 mb-4">
+        <h2 className="text-sm font-semibold text-if-text-xs uppercase tracking-wider mb-4">
           Capacités apprises
         </h2>
         {movesLoading || expertLoading ? (
           <div className="space-y-2 animate-pulse">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-8 rounded bg-[rgb(30,30,42)]" />
+              <div key={i} className="h-8 rounded bg-if-input" />
             ))}
           </div>
         ) : (
@@ -188,12 +188,12 @@ function SpriteCard({
 }) {
   return (
     <div className={`flex flex-col items-center gap-2 ${muted ? "opacity-70 hover:opacity-100 transition-opacity" : ""}`}>
-      <div className="w-32 h-32 sm:w-40 sm:h-40 flex items-center justify-center rounded-xl shrink-0" style={{ background: "#090c1a", border: "1px solid #1e2240" }}>
+      <div className="w-32 h-32 sm:w-40 sm:h-40 flex items-center justify-center rounded-xl shrink-0" style={{ background: "var(--color-if-bg)", border: "1px solid var(--color-if-border)" }}>
         <FusionSprite headId={headId} bodyId={bodyId} size={128} />
       </div>
-      <p className="text-xs text-[rgb(140,140,160)] font-medium">{label}</p>
+      <p className="text-xs text-if-text-xs font-medium">{label}</p>
       {creators.length > 0 ? (
-        <p className="text-[10px] text-[rgb(100,100,130)] text-center leading-tight">
+        <p className="text-[10px] text-if-muted text-center leading-tight">
           par{" "}
           {creators.map((c, i) => (
             <span key={c}>
@@ -203,7 +203,7 @@ function SpriteCard({
           ))}
         </p>
       ) : (
-        <p className="text-[10px] text-[rgb(70,70,90)] italic">Auto-généré</p>
+        <p className="text-[10px] text-if-muted italic">Auto-généré</p>
       )}
     </div>
   );

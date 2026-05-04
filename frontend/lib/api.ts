@@ -21,6 +21,7 @@ import type {
   TripleFusionListItem,
   TripleFusionDetail,
   CreatorOut,
+  FusionInvolvingOut,
 } from "@/types/api";
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -82,6 +83,14 @@ export function getPokemonWeaknesses(id: number): Promise<WeaknessOut[]> {
 
 export function getFusion(headId: number, bodyId: number): Promise<FusionResult> {
   return apiFetch<FusionResult>(`/fusion/${headId}/${bodyId}`);
+}
+
+export function getFusionsInvolving(pokemonId: number, limit = 24): Promise<FusionInvolvingOut[]> {
+  return apiFetch<FusionInvolvingOut[]>(`/fusions/involving/${pokemonId}?limit=${limit}`);
+}
+
+export function getRandomFusion(): Promise<{ head_id: number; body_id: number }> {
+  return apiFetch<{ head_id: number; body_id: number }>("/fusion/random");
 }
 
 export function getFusionMoves(headId: number, bodyId: number): Promise<FusionMoveOut[]> {

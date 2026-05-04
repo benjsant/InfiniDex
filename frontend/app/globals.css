@@ -3,37 +3,77 @@
 @theme {
   --font-sans: var(--font-outfit), system-ui, -apple-system, sans-serif;
 
-  /* IF colour tokens */
-  --color-if-bg:        #090c1a;
-  --color-if-surface:   #0f1225;
-  --color-if-card:      #111428;
-  --color-if-border:    #1e2240;
-  --color-if-border-hi: #2d3260;
-  --color-if-text:      #e1e4ff;
-  --color-if-muted:     #6b7199;
-  --color-if-accent:    #e8b84b;   /* gold */
-  --color-if-accent-hi: #f5d07a;
+  /* ── Core surfaces ───────────────────────────────────────────────── */
+  --color-if-bg:         #090c1a;   /* page background */
+  --color-if-surface:    #0f1225;   /* table headers, thead */
+  --color-if-card:       #111428;   /* cards, panels */
+  --color-if-deep:       #0e0e16;   /* modals, deepest layers */
+  --color-if-elevated:   #191926;   /* hover states, elevated elements */
+  --color-if-input:      #1e1e2a;   /* input fields, dropdowns */
+
+  /* ── Borders ─────────────────────────────────────────────────────── */
+  --color-if-border-lo:  #1a1d35;   /* subtle (table rows) */
+  --color-if-border:     #1e2240;   /* standard */
+  --color-if-border-mid: #323246;   /* medium contrast */
+  --color-if-border-hi:  #2d3260;   /* high contrast */
+
+  /* ── Text ────────────────────────────────────────────────────────── */
+  --color-if-text:       #e1e4ff;   /* primary text */
+  --color-if-text-hi:    #dcdcff;   /* bright headings */
+  --color-if-text-dim:   #c8cbf0;   /* secondary text */
+  --color-if-text-lo:    #a0a0b4;   /* low-contrast text */
+  --color-if-text-xs:    #78788c;   /* very muted (labels, captions) */
+  --color-if-muted:      #6b7199;   /* muted text */
+
+  /* ── Accent (gold) ───────────────────────────────────────────────── */
+  --color-if-accent:     #e8b84b;
+  --color-if-accent-hi:  #f5d07a;
+}
+
+/* ── Light theme overrides ────────────────────────────────────────── */
+[data-theme="light"] {
+  --color-if-bg:         #f0f2ff;
+  --color-if-surface:    #e4e6f8;
+  --color-if-card:       #ffffff;
+  --color-if-deep:       #dde0f8;
+  --color-if-elevated:   #f5f6ff;
+  --color-if-input:      #eceeff;
+  --color-if-border-lo:  #d8daff;
+  --color-if-border:     #c8ccee;
+  --color-if-border-mid: #b0b4d8;
+  --color-if-border-hi:  #9499c8;
+  --color-if-text:       #1a1c35;
+  --color-if-text-hi:    #0d0f28;
+  --color-if-text-dim:   #2a2d4a;
+  --color-if-text-lo:    #4a4e70;
+  --color-if-text-xs:    #6a6e90;
+  --color-if-muted:      #5a5e80;
 }
 
 @layer base {
   body {
     background-color: var(--color-if-bg);
     color: var(--color-if-text);
-    /* subtle repeating grid texture */
     background-image:
       linear-gradient(rgba(30,34,80,0.18) 1px, transparent 1px),
       linear-gradient(90deg, rgba(30,34,80,0.18) 1px, transparent 1px);
     background-size: 32px 32px;
   }
+
+  [data-theme="light"] body {
+    background-image:
+      linear-gradient(rgba(100,120,220,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(100,120,220,0.07) 1px, transparent 1px);
+  }
 }
 
-/* ── Scrollbar ───────────────────────────────────────────────── */
+/* ── Scrollbar ───────────────────────────────────────────────────── */
 ::-webkit-scrollbar        { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track  { background: var(--color-if-surface); }
 ::-webkit-scrollbar-thumb  { background: var(--color-if-border-hi); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-if-accent); }
 
-/* ── Pixel border utility (IF-style panel border) ────────────── */
+/* ── Panel utilities ─────────────────────────────────────────────── */
 .if-panel {
   border: 1px solid var(--color-if-border);
   background: var(--color-if-card);
@@ -45,8 +85,24 @@
   border-radius: 12px;
 }
 
-/* ── Gold accent glow (hover/focus) ──────────────────────────── */
+/* ── Gold accent glow (hover/focus) ──────────────────────────────── */
 .if-glow-hover:hover {
   border-color: var(--color-if-accent) !important;
   box-shadow: 0 0 12px rgba(232,184,75,0.25);
+}
+
+/* ── Navbar / drawer backgrounds (with alpha) ────────────────────── */
+.if-navbar-bg {
+  background: rgba(9, 12, 26, 0.96);
+  backdrop-filter: blur(12px);
+}
+.if-drawer-bg {
+  background: rgba(9, 12, 26, 0.98);
+}
+
+[data-theme="light"] .if-navbar-bg {
+  background: rgba(240, 242, 255, 0.96);
+}
+[data-theme="light"] .if-drawer-bg {
+  background: rgba(240, 242, 255, 0.98);
 }

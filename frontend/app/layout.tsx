@@ -23,8 +23,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" className={`dark ${outfit.variable}`}>
-      <body className="min-h-screen bg-[#090c1a] text-[rgb(225,228,255)] font-sans antialiased">
+    <html lang="fr" className={outfit.variable} suppressHydrationWarning>
+      {/* Inline script avoids flash of wrong theme on hydration */}
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem('theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');})();`,
+          }}
+        />
+      </head>
+      <body className="min-h-screen bg-if-bg text-if-text font-sans antialiased">
         <Providers>
           <ErrorBoundary>
             <Navbar />

@@ -51,7 +51,7 @@ function multiplierBg(m: number): string {
   if (m === 0.25) return "bg-green-950 text-green-200";
   if (m === 2)   return "bg-red-900/60 text-red-300";
   if (m === 4)   return "bg-red-950 text-red-200";
-  return "bg-[rgb(20,20,28)] text-[rgb(80,80,100)]";
+  return "bg-if-deep text-if-muted";
 }
 
 function multiplierText(m: number): string {
@@ -66,10 +66,10 @@ function multiplierText(m: number): string {
 export default function TypesPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-2 text-[rgb(220,220,255)]">
+      <h1 className="text-2xl font-bold mb-2 text-if-text-hi">
         Tableau d&apos;efficacité des types
       </h1>
-      <p className="text-sm text-[rgb(120,120,140)] mb-6">
+      <p className="text-sm text-if-text-xs mb-6">
         Génération 7 / Infinite Fusion · Lignes = attaquant · Colonnes = défenseur
       </p>
 
@@ -77,7 +77,7 @@ export default function TypesPage() {
         <table className="text-xs border-collapse">
           <thead>
             <tr>
-              <th className="sticky left-0 z-10 bg-[rgb(15,15,20)] p-2 text-[rgb(80,80,100)] min-w-[90px]">
+              <th className="sticky left-0 z-10 bg-if-deep p-2 text-if-muted min-w-[90px]">
                 ATK \ DEF
               </th>
               {TYPES_FR.map((t, i) => (
@@ -91,8 +91,8 @@ export default function TypesPage() {
             {TYPES_EN.map((atkEn, ri) => {
               const atkFr = TYPES_FR[ri];
               return (
-                <tr key={atkEn} className="hover:bg-[rgb(22,22,32)]">
-                  <td className="sticky left-0 z-10 bg-[rgb(15,15,20)] p-1">
+                <tr key={atkEn} className="hover:bg-if-surface">
+                  <td className="sticky left-0 z-10 bg-if-deep p-1">
                     <TypeBadge typeName={atkFr} size="sm" />
                   </td>
                   {TYPES_EN.map((defEn, ci) => {
@@ -131,7 +131,7 @@ function LegendItem({ color, label }: { color: string; label: string }) {
       <span className={`w-5 h-5 rounded flex items-center justify-center font-bold ${color}`}>
         ×
       </span>
-      <span className="text-[rgb(120,120,140)]">{label}</span>
+      <span className="text-if-text-xs">{label}</span>
     </div>
   );
 }

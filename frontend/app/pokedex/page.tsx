@@ -71,13 +71,13 @@ function PokedexContent() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-5">
-        <h1 className="text-2xl font-bold text-[rgb(220,220,255)]">Pokédex</h1>
-        <div className="flex rounded-lg overflow-hidden border border-[rgb(50,50,70)] text-xs font-semibold">
+        <h1 className="text-2xl font-bold text-if-text-hi">Pokédex</h1>
+        <div className="flex rounded-lg overflow-hidden border border-if-border-mid text-xs font-semibold">
           {(["kanto", "hoenn", "all"] as const).map((v) => (
             <button
               key={v}
               onClick={() => handleGame(v)}
-              className={`px-3 py-1.5 transition-colors ${game === v ? "bg-indigo-600 text-white" : "bg-[rgb(25,25,38)] text-[rgb(140,140,170)] hover:bg-[rgb(35,35,50)]"}`}
+              className={`px-3 py-1.5 transition-colors ${game === v ? "bg-indigo-600 text-white" : "bg-if-elevated text-if-text-xs hover:bg-if-elevated"}`}
             >
               {v === "kanto" ? "IF Kanto (501)" : v === "hoenn" ? "IF Hoenn (71)" : "Tous (572)"}
             </button>
@@ -98,7 +98,7 @@ function PokedexContent() {
             setTypeId(v ? Number(v) : undefined);
             setPage(1);
           }}
-          className="px-3 py-2 rounded-lg bg-[rgb(30,30,42)] border border-[rgb(50,50,70)] text-[rgb(220,220,255)] focus:outline-none focus:border-indigo-500"
+          className="px-3 py-2 rounded-lg bg-if-input border border-if-border-mid text-if-text-hi focus:outline-none focus:border-indigo-500"
         >
           <option value="">Tous les types</option>
           {types.map((t) => (
@@ -109,7 +109,7 @@ function PokedexContent() {
         </select>
         <button
           onClick={() => { setLegendaryOnly((v) => !v); setPage(1); }}
-          className={`px-3 py-2 rounded-lg border text-sm font-semibold transition-colors ${legendaryOnly ? "bg-yellow-500/20 border-yellow-500 text-yellow-300" : "bg-[rgb(30,30,42)] border-[rgb(50,50,70)] text-[rgb(140,140,170)] hover:border-yellow-500 hover:text-yellow-300"}`}
+          className={`px-3 py-2 rounded-lg border text-sm font-semibold transition-colors ${legendaryOnly ? "bg-yellow-500/20 border-yellow-500 text-yellow-300" : "bg-if-input border-if-border-mid text-if-text-xs hover:border-yellow-500 hover:text-yellow-300"}`}
         >
           ★ Légendaires
         </button>
@@ -118,10 +118,10 @@ function PokedexContent() {
       {isLoading ? (
         <SkeletonGrid />
       ) : filtered.length === 0 ? (
-        <p className="text-center text-[rgb(120,120,140)] py-12">Aucun Pokémon trouvé.</p>
+        <p className="text-center text-if-text-xs py-12">Aucun Pokémon trouvé.</p>
       ) : (
         <>
-          <p className="text-sm text-[rgb(120,120,140)] mb-4">
+          <p className="text-sm text-if-text-xs mb-4">
             {filtered.length} Pokémon{isSearching ? ` pour "${q}"` : ""}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
@@ -133,15 +133,15 @@ function PokedexContent() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-4 py-2 rounded-lg bg-[rgb(30,30,42)] border border-[rgb(50,50,70)] text-[rgb(160,160,180)] disabled:opacity-40 hover:border-indigo-500 hover:text-white transition-all"
+                className="px-4 py-2 rounded-lg bg-if-input border border-if-border-mid text-if-text-lo disabled:opacity-40 hover:border-indigo-500 hover:text-white transition-all"
               >
                 <ChevronLeft size={16} className="inline" /> Précédent
               </button>
-              <span className="px-4 py-2 text-[rgb(120,120,140)]">Page {page}</span>
+              <span className="px-4 py-2 text-if-text-xs">Page {page}</span>
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={pokemons.length < PAGE_SIZE}
-                className="px-4 py-2 rounded-lg bg-[rgb(30,30,42)] border border-[rgb(50,50,70)] text-[rgb(160,160,180)] disabled:opacity-40 hover:border-indigo-500 hover:text-white transition-all"
+                className="px-4 py-2 rounded-lg bg-if-input border border-if-border-mid text-if-text-lo disabled:opacity-40 hover:border-indigo-500 hover:text-white transition-all"
               >
                 Suivant <ChevronRight size={16} className="inline" />
               </button>
@@ -157,7 +157,7 @@ function SkeletonGrid() {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
       {Array.from({ length: 40 }).map((_, i) => (
-        <div key={i} className="h-40 rounded-xl bg-[rgb(25,25,35)] border border-[rgb(40,40,55)] animate-pulse" />
+        <div key={i} className="h-40 rounded-xl bg-if-elevated border border-if-border-lo animate-pulse" />
       ))}
     </div>
   );

@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, GitMerge, Zap, Shield, Star, Bot, Layers, GraduationCap, Users, Menu, X } from "lucide-react";
+import { BookOpen, GitMerge, Zap, Shield, Star, Bot, Layers, GraduationCap, Users, Menu, X, Sun, Moon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/lib/theme";
 
 const NAV_LINKS: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: "/pokedex",        label: "Pokédex",        Icon: BookOpen      },
@@ -26,25 +27,18 @@ function isActive(pathname: string | null, href: string) {
 export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { theme, toggle } = useTheme();
 
   return (
     <>
       <nav
-        className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center px-4 gap-4"
-        style={{
-          background: "rgba(9,12,26,0.96)",
-          backdropFilter: "blur(12px)",
-          borderBottom: "1px solid #1e2240",
-          boxShadow: "0 2px 16px rgba(0,0,0,0.5)",
-        }}
+        className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center px-4 gap-4 if-navbar-bg border-b border-if-border"
+        style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.3)" }}
       >
         {/* Logo */}
         <Link
           href="/"
-          className="text-lg font-bold whitespace-nowrap mr-2 transition-colors"
-          style={{ color: "#e8b84b" }}
-          onMouseEnter={(e) => ((e.target as HTMLElement).style.color = "#f5d07a")}
-          onMouseLeave={(e) => ((e.target as HTMLElement).style.color = "#e8b84b")}
+          className="text-lg font-bold whitespace-nowrap mr-2 text-if-accent hover:text-if-accent-hi transition-colors"
         >
           FusionDex
         </Link>
@@ -60,10 +54,9 @@ export function Navbar() {
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
                   active
-                    ? "text-[#e8b84b]"
-                    : "text-[#6b7199] hover:text-[#e1e4ff] hover:bg-[#1e2240]",
+                    ? "text-if-accent bg-[rgba(232,184,75,0.12)]"
+                    : "text-if-muted hover:text-if-text hover:bg-if-elevated",
                 )}
-                style={active ? { background: "rgba(232,184,75,0.12)" } : undefined}
               >
                 <Icon size={14} />
                 {label}
@@ -72,10 +65,18 @@ export function Navbar() {
           })}
         </div>
 
+        {/* Theme toggle */}
+        <button
+          onClick={toggle}
+          aria-label={theme === "dark" ? "Passer en mode clair" : "Passer en mode sombre"}
+          className="p-2 rounded-lg text-if-muted hover:text-if-text hover:bg-if-elevated transition-colors shrink-0"
+        >
+          {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
+
         {/* Mobile hamburger */}
         <button
-          className="md:hidden ml-auto p-2 rounded-lg transition-colors"
-          style={{ color: "#6b7199" }}
+          className="md:hidden p-2 rounded-lg text-if-muted hover:text-if-text transition-colors"
           onClick={() => setOpen((v) => !v)}
           aria-label="Menu"
         >
@@ -90,12 +91,8 @@ export function Navbar() {
           onClick={() => setOpen(false)}
         >
           <div
-            className="absolute top-16 left-0 right-0 py-2 px-3"
-            style={{
-              background: "rgba(9,12,26,0.98)",
-              borderBottom: "1px solid #1e2240",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
-            }}
+            className="absolute top-16 left-0 right-0 py-2 px-3 if-drawer-bg border-b border-if-border"
+            style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}
             onClick={(e) => e.stopPropagation()}
           >
             {NAV_LINKS.map(({ href, label, Icon }) => {
@@ -105,11 +102,12 @@ export function Navbar() {
                   key={href}
                   href={href}
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all"
-                  style={{
-                    color: active ? "#e8b84b" : "#6b7199",
-                    background: active ? "rgba(232,184,75,0.10)" : undefined,
-                  }}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all",
+                    active
+                      ? "text-if-accent bg-[rgba(232,184,75,0.10)]"
+                      : "text-if-muted hover:text-if-text hover:bg-if-elevated",
+                  )}
                 >
                   <Icon size={16} />
                   {label}

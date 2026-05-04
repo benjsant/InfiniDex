@@ -67,7 +67,7 @@ export function AiChat({
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 gap-6">
             <div className="text-indigo-400"><Bot size={40} /></div>
-            <p className="text-[rgb(160,160,180)] text-sm text-center max-w-xs">
+            <p className="text-if-text-lo text-sm text-center max-w-xs">
               Pose-moi une question sur Pokémon Infinite Fusion, les stratégies de fusion, les équipes…
             </p>
             <div className="flex flex-wrap gap-2 justify-center">
@@ -75,7 +75,7 @@ export function AiChat({
                 <button
                   key={s}
                   onClick={() => sendMessage(s)}
-                  className="text-xs px-3 py-1.5 rounded-full bg-[rgb(25,25,38)] border border-[rgb(50,50,70)] text-[rgb(160,160,200)] hover:border-indigo-500 hover:text-indigo-300 transition-all"
+                  className="text-xs px-3 py-1.5 rounded-full bg-if-elevated border border-if-border-mid text-[rgb(160,160,200)] hover:border-indigo-500 hover:text-indigo-300 transition-all"
                 >
                   {s}
                 </button>
@@ -105,12 +105,12 @@ export function AiChat({
       </div>
 
       {/* Input */}
-      <div className="border-t border-[rgb(40,40,55)] pt-4 mt-4">
+      <div className="border-t border-if-border-lo pt-4 mt-4">
         <div className="flex items-center justify-between mb-2 min-h-[20px]">
           {messages.length > 0 ? (
             <button
               onClick={reset}
-              className="text-xs text-[rgb(100,100,120)] hover:text-[rgb(160,160,180)] transition-colors"
+              className="text-xs text-if-muted hover:text-if-text-lo transition-colors"
             >
               Effacer la conversation
             </button>
@@ -124,7 +124,7 @@ export function AiChat({
               <Eye size={14} />
             </button>
             {provider && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[rgb(20,20,35)] border border-[rgb(45,45,65)] text-[rgb(100,100,140)]">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-if-deep border border-if-border text-if-muted">
                 {provider.name} · {provider.model}
               </span>
             )}
@@ -139,7 +139,7 @@ export function AiChat({
             onChange={(e) => setInput(e.target.value)}
             disabled={isStreaming}
             placeholder="Pose ta question…"
-            className="flex-1 px-4 py-2 rounded-lg bg-[rgb(25,25,38)] border border-[rgb(50,50,70)] text-[rgb(220,220,255)] placeholder:text-[rgb(80,80,100)] focus:outline-none focus:border-indigo-500 disabled:opacity-50 transition-colors"
+            className="flex-1 px-4 py-2 rounded-lg bg-if-elevated border border-if-border-mid text-if-text-hi placeholder:text-if-muted focus:outline-none focus:border-indigo-500 disabled:opacity-50 transition-colors"
           />
           <button
             type="submit"
@@ -215,8 +215,8 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         <div
           className={`px-4 py-2.5 rounded-xl text-sm leading-relaxed ${
             isUser
-              ? "bg-indigo-600/30 text-[rgb(220,220,255)] rounded-br-sm whitespace-pre-wrap"
-              : "bg-[rgb(25,25,38)] text-[rgb(200,200,220)] rounded-bl-sm prose prose-sm prose-invert max-w-none"
+              ? "bg-indigo-600/30 text-if-text-hi rounded-br-sm whitespace-pre-wrap"
+              : "bg-if-elevated text-if-text-dim rounded-bl-sm prose prose-sm prose-invert max-w-none"
           }`}
         >
           {isUser ? (
@@ -228,7 +228,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
                 ul:     ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-0.5">{children}</ul>,
                 ol:     ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-0.5">{children}</ol>,
                 li:     ({ children }) => <li>{children}</li>,
-                strong: ({ children }) => <strong className="font-semibold text-[rgb(220,220,255)]">{children}</strong>,
+                strong: ({ children }) => <strong className="font-semibold text-if-text-hi">{children}</strong>,
                 code:   ({ children }) => <code className="bg-[rgb(15,15,28)] px-1 py-0.5 rounded text-indigo-300 text-xs font-mono">{children}</code>,
               }}
             >

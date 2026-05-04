@@ -21,10 +21,10 @@ function AiPageInner() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 h-[calc(100vh-4rem)] flex flex-col">
       <div className="mb-4">
-        <h1 className="text-2xl font-bold text-[rgb(220,220,255)]">
+        <h1 className="text-2xl font-bold text-if-text-hi">
           Assistant IA
         </h1>
-        <p className="text-sm text-[rgb(120,120,140)]">
+        <p className="text-sm text-if-text-xs">
           {provider
             ? `${provider.name} · ${provider.model} · Spécialiste Pokémon Infinite Fusion`
             : "Spécialiste Pokémon Infinite Fusion"}

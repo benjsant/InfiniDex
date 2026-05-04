@@ -52,8 +52,8 @@ function SpriteNode({ node, isCurrent }: { node: ChainNode; isCurrent: boolean }
       <div
         className="w-14 h-14 flex items-center justify-center rounded-xl transition-colors"
         style={{
-          background: isCurrent ? "#16192e" : "#111428",
-          border: `1px solid ${isCurrent ? "#e8b84b" : "#1e2240"}`,
+          background: isCurrent ? "var(--color-if-surface)" : "var(--color-if-card)",
+          border: `1px solid ${isCurrent ? "var(--color-if-accent)" : "var(--color-if-border)"}`,
         }}
       >
         <Image
@@ -66,10 +66,10 @@ function SpriteNode({ node, isCurrent }: { node: ChainNode; isCurrent: boolean }
           onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
         />
       </div>
-      <p className="text-xs font-medium text-center leading-tight" style={{ color: isCurrent ? "#e8b84b" : "#c8cbf0" }}>
+      <p className="text-xs font-medium text-center leading-tight" style={{ color: isCurrent ? "var(--color-if-accent)" : "var(--color-if-text-dim)" }}>
         {node.nameFr ?? node.nameEn}
       </p>
-      <p className="text-[10px]" style={{ color: "#6b7199" }}>#{node.id}</p>
+      <p className="text-[10px]" style={{ color: "var(--color-if-muted)" }}>#{node.id}</p>
     </Link>
   );
 }
@@ -77,12 +77,12 @@ function SpriteNode({ node, isCurrent }: { node: ChainNode; isCurrent: boolean }
 function Arrow({ condition, ifOverride }: { condition: string; ifOverride: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center gap-1 px-1 shrink-0 max-w-[80px]">
-      <span className="text-xs text-center leading-tight break-words" style={{ color: "#6b7199" }}>
+      <span className="text-xs text-center leading-tight break-words" style={{ color: "var(--color-if-muted)" }}>
         {condition}
       </span>
-      <ChevronRight size={16} style={{ color: "#2d3260" }} />
+      <ChevronRight size={16} style={{ color: "var(--color-if-border-hi)" }} />
       {ifOverride && (
-        <span className="text-[10px] px-1 py-0.5 rounded" style={{ background: "rgba(232,184,75,0.12)", color: "#e8b84b" }}>IF</span>
+        <span className="text-[10px] px-1 py-0.5 rounded" style={{ background: "rgba(232,184,75,0.12)", color: "var(--color-if-accent)" }}>IF</span>
       )}
     </div>
   );
@@ -91,7 +91,7 @@ function Arrow({ condition, ifOverride }: { condition: string; ifOverride: boole
 export function EvolutionChain({ pokemonId, evolutions }: EvolutionChainProps) {
   if (evolutions.length === 0) {
     return (
-      <p className="text-[rgb(120,120,140)] text-sm">
+      <p className="text-if-text-xs text-sm">
         Ce Pokémon n&apos;a pas d&apos;évolution dans Infinite Fusion.
       </p>
     );

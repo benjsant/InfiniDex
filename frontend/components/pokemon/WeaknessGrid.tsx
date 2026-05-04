@@ -25,7 +25,7 @@ export function WeaknessGrid({ weaknesses }: WeaknessGridProps) {
         <Section label="Faiblesses" items={weak} />
       )}
       {relevant.length === 0 && (
-        <p className="text-[rgb(120,120,140)] text-sm">
+        <p className="text-if-text-xs text-sm">
           Aucune faiblesse ou résistance particulière.
         </p>
       )}
@@ -42,13 +42,13 @@ function Section({
 }) {
   return (
     <div>
-      <h4 className="text-xs font-semibold text-[rgb(120,120,140)] uppercase tracking-wider mb-2">
+      <h4 className="text-xs font-semibold text-if-text-xs uppercase tracking-wider mb-2">
         {label}
       </h4>
       <div className="flex flex-wrap gap-2">
         {items.map((w) => (
           <div key={w.attacking_type_id} className="flex items-center gap-1">
-            <span className="text-xs text-[rgb(200,200,220)]">
+            <span className="text-xs text-if-text-dim">
               {w.attacking_type_name_fr ?? w.attacking_type_name_en}
             </span>
             <span
