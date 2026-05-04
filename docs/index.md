@@ -10,7 +10,7 @@
 | Base       | PostgreSQL 16 (tables relationnelles + `INTEGER[]`) | ✅ stable |
 | Backend    | FastAPI + SQLAlchemy 2 + Pydantic           | ✅ stable  |
 | Frontend   | Next.js 15 App Router + TypeScript          | ✅ stable  |
-| IA         | Agent tool-calling DeepSeek/Ollama — 7 outils | ✅ stable  |
+| IA         | Agent tool-calling DeepSeek/Ollama — 8 outils | ✅ stable  |
 | Infra      | Docker Compose (dev + prod), Next.js proxy  | ✅ stable  |
 
 ## Par où commencer

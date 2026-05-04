@@ -28,7 +28,7 @@ Pipeline en 12 étapes. Données actuelles :
 
 **Piste ouverte :**
 
-- [ ] **TM location** — nettoyer `tm.location` (texte libre avec bugs de parsing) et la lier via FK à `location(id)`
+- [x] **TM location** — texte libre remplacé par les lignes FK `tm_location` (lieu + notes structurés)
 
 ### Backend — ✅ base solide
 
@@ -58,7 +58,7 @@ Pipeline en 12 étapes. Données actuelles :
 
 ### Frontend — ✅ complet
 
-Toutes les pages livrées : `/pokedex`, `/fusion`, `/moves`, `/moves/tutors`, `/types`, `/abilities`, `/triple-fusions`, `/ai`. Composants : `EvolutionChain`, `MovesetTable`, `FusionMovesetTable`, `FusionSprite`, `AiChat`, `AiSuggestButton`, `WeaknessGrid`, `PokemonCard`, `TypeBadge`, `StatBar`, `CreatorModal`.
+Toutes les pages livrées. Composants : `EvolutionChain`, `MovesetTable`, `FusionMovesetTable`, `FusionSprite`, `AiChat`, `AiSuggestButton`, `PromptModal`, `WeaknessGrid`, `PokemonCard`, `TypeBadge`, `StatBar`, `CreatorModal`.
 
 **Livraisons récentes :**
 
@@ -69,41 +69,48 @@ Toutes les pages livrées : `/pokedex`, `/fusion`, `/moves`, `/moves/tutors`, `/
 - Crédit artiste sous chaque sprite (par créateur, ou "Auto-généré")
 - `FusionMovesetTable` : moveset head+body avec pastilles H/B/H+B par origine
 - Requêtes différées par onglet sur la fiche Pokédex (−3 requêtes au chargement)
-- `FusionSelector` pré-sélectionne via `?head=ID` et `?body=ID` + filtre `GameFilter` (Kanto/Hoenn/Tous)
 - [x] Page `/moves/tutors` — 41 tuteurs classiques + Move Experts groupés par île
 - [x] Page `/triple-fusions` — 23 fusions triples avec faiblesses
-- [x] **Responsive mobile/tablette** — hamburger Navbar, tables avec `hidden sm:table-cell`, panels `flex-col md:flex-row`
-- [x] **Design IF-style** — palette navy `#090c1a`, gold `#e8b84b`, tokens CSS `@theme`, grid texture, TypeBadge glow, PokemonCard gradient type, StatBar gradient + glow
+- [x] **Responsive mobile/tablette** — hamburger Navbar, tables `hidden sm:table-cell`, panels `flex-col md:flex-row`
+- [x] **Design IF-style** — palette navy/gold, tokens CSS `@theme`, grid texture, TypeBadge glow, PokemonCard gradient type
+- [x] **Toggle thème sombre/clair** — 16 tokens CSS, `ThemeProvider`, persistance `localStorage`, anti-flash script
+- [x] **Page `/moves/[id]`** — fiche capacité (type, catégorie, puissance, PP, description FR/EN)
+- [x] **Page `/abilities/[id]`** — fiche talent (description FR/EN, badge "Modifié IF", notes)
+- [x] **Galerie créateurs** `/creators` + `/creators/[id]` — sprites cliquables → fusion
+- [x] **Fusions impliquant un Pokémon** — grille de 24 fusions dans l'onglet Fusion de la fiche Pokédex
+- [x] **Bouton fusion aléatoire** — icône Shuffle dans `FusionSelector` → `GET /fusion/random`
+- [x] **Pagination** `/moves` (50/page) et `/abilities` (40/page)
+- [x] **Transparence IA** — badges source (DB/Wiki/Web), compteur de tokens, `PromptModal` (system prompt + outils)
 
-**Pistes ouvertes :**
+**Piste ouverte :**
 
-- [ ] Galerie sprites + crédits (par créateur)
 - [ ] Toggle EN/FR global persistent
-- [ ] Tests Playwright
-- [ ] UI transparence IA (sources, tokens, prompt envoyé)
 
-### IA — 🚀 phases 1 et 2 livrées
+### IA — ✅ phases 1, 2 et 3 livrées
 
 **Phase 1 ✅** — Tools DB + circuit breaker + fail-closed :
 
 - 6 tools DB : `get_pokemon`, `get_fusion`, `search_move`, `get_item`, `get_move_tutors`, `search_pokemon_locations`
-- `search_pokemon_locations` : cherche les Pokémon par condition/méthode dans `pokemon_location` (gift, trade, static, wild…)
 - Boucle agent MAX_ITERATIONS=5, fail-closed sur réponse vide ou dépassement
 - Provider pluggable : DeepSeek (prod) / Ollama (local)
-- System prompt externe (`prompts/system.md`) en anglais, réponses forcées en français + règles anti-boucle, guidage `search_pokemon_locations`, section "Key game mechanics" (trade evos, HMs, triple fusion unlock, respawn, OHKO+NoGuard, Hidden Power)
 
 **Phase 2 ✅** — Tool wiki IF + cache :
 
-- `search_wiki` (7e outil) : requête MediaWiki API IF + cache TTL 10 min in-process ; fetch page complète si intro < 300 caractères
-- Cascade retrieval : DB → wiki IF (→ futur : web DuckDuckGo)
+- `search_wiki` (7e outil) : MediaWiki API IF + cache TTL 10 min
+- Cascade retrieval : DB → wiki IF
+
+**Phase 3 ✅** — Fallback web + streaming réel + transparence :
+
+- `search_web` (8e outil) : DuckDuckGo via `ddgs`, scopé "Pokémon Infinite Fusion", dernier recours
+- Streaming token-par-token réel (plus de buffer — `stream=True` avec assembly des deltas)
+- Événements SSE typés : `tool_call` · `token` · `source` · `usage` (total tokens)
+- `PromptModal` côté frontend : system prompt + liste des outils + politique de contexte
 
 **Phases restantes :**
 
 | Phase | Scope | État |
 |-------|-------|------|
-| 3 | Tool DuckDuckGo (fallback web) + rate-limit | ⬜ à faire |
-| 4 | UI transparence (sources, tokens, prompt affiché) | ⬜ à faire |
-| 5 | Privacy layer (PII redactor) + provider OpenAI/Anthropic | ⬜ à faire |
+| 4 | Privacy layer (PII redactor) + provider OpenAI/Anthropic | ⬜ à faire |
 
 **Contraintes maintenues :**
 
@@ -128,7 +135,7 @@ Toutes les pages livrées : `/pokedex`, `/fusion`, `/moves`, `/moves/tutors`, `/
 
 ### Documentation — ✅ mise à jour
 
-Pages MkDocs Material à jour : README, ROADMAP, architecture (outils IA, flux SSE), API (41 endpoints + tutors/experts), frontend (design IF, responsive, nouvelles pages), roadmap (état réel), `docs/index.md`.
+Pages MkDocs Material à jour : README, ROADMAP, architecture, API, frontend (thème, nouvelles pages, IA phase 3), roadmap.
 
 **Pistes ouvertes :**
 

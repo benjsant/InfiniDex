@@ -7,52 +7,61 @@ Next.js 15 (App Router) + TypeScript. Rendu SSR par défaut, déploiement en mod
 ```
 frontend/
   app/
-    (routes pages)
-    pokedex/            # liste + fiche avec onglets lazy
-    fusion/             # sélecteur + résultat
+    pokedex/            # liste paginée + fiche (onglets lazy)
+    pokedex/[id]/       # fiche Pokémon (Stats · Capacités · Évolutions · Faiblesses · Fusion)
+    fusion/             # sélecteur + bouton aléatoire
+    fusion/[headId]/[bodyId]/  # résultat : sprite + stats + moveset
     ai/                 # chat IA plein écran
-    moves/              # liste référentielle
+    moves/              # liste paginée (50/page) + recherche + filtre type/catégorie
+    moves/[id]/         # fiche capacité (description, stats, type)
     moves/tutors/       # maîtres des capacités + Move Experts
-    types/              # liste référentielle
-    abilities/          # liste référentielle
-    triple-fusions/     # 23 fusions triples
+    abilities/          # liste paginée (40/page) + détail inline
+    abilities/[id]/     # fiche talent (description, notes IF-modified)
+    types/              # tableau d'efficacité 18 × 18
+    triple-fusions/     # 23 fusions triples légendaires
+    creators/           # galerie créateurs de sprites (pagination 48/page)
+    creators/[id]/      # galerie sprites d'un créateur
     api/[...path]/      # proxy catch-all → backend
     sprites-cdn/[...]/  # proxy catch-all → sidecar nginx (PNG)
   components/
     pokemon/            # EvolutionChain, MovesetTable, PokemonCard, StatBar, TypeBadge, WeaknessGrid
-                        # (WeaknessGrid : grille matchups défensifs avec multiplicateurs)
-    fusion/             # FusionSelector, FusionSprite, FusionMovesetTable, CreatorModal
-    ai/                 # AiChat, AiSuggestButton
-    layout/             # Navbar, SearchBar
+    fusion/             # FusionSelector (+ random), FusionSprite, FusionMovesetTable, CreatorModal
+    ai/                 # AiChat (source badges, token counter), AiSuggestButton, PromptModal
+    layout/             # Navbar (theme toggle), SearchBar, ErrorBoundary
   hooks/
     usePokemon.ts       # usePokemon, usePokemonList, usePokemonMoves, usePokemonEvolutions,
                         # usePokemonWeaknesses, usePokemonSearch, useTypes
     useFusion.ts        # useFusion, useFusionMoves, useFusionExpertMoves, useSprites
     useMoves.ts         # useMoves, useMove, useMovesByType
-    useAiChat.ts        # gestion état SSE + streaming tokens
+    useAiChat.ts        # gestion état SSE + streaming tokens + source/usage events
   lib/
     api.ts              # client fetch centralisé (toutes les fonctions API)
     constants.ts        # API_BASE_URL, TYPE_COLORS, METHOD_LABELS, basePokemonSprite()
     utils.ts            # cn(), formatters, primaryType(), secondaryType()
+    theme.tsx           # ThemeProvider + useTheme hook (dark/light)
   types/
-    api.d.ts            # miroir des schémas Pydantic (PokemonListItem, FusionResult, SpriteOut…)
+    api.d.ts            # miroir des schémas Pydantic (PokemonListItem, FusionResult, FusionInvolvingOut…)
 ```
 
 ## Pages
 
-| Route                                  | Contenu                                                                   |
-| -------------------------------------- | ------------------------------------------------------------------------- |
-| `/`                                    | Landing                                                                   |
-| `/pokedex`                             | Liste paginée (40/page) + recherche accent-insensitive + filtre par type  |
-| `/pokedex/[id]`                        | Fiche avec onglets : Stats · Capacités · Évolutions · Faiblesses · Fusion |
-| `/fusion`                              | Sélecteur head/body (pré-sélection via `?head=ID&?body=ID`)               |
-| `/fusion/[headId]/[bodyId]`            | Résultat : double sprite + crédit artiste + stats + moveset + fusion IA   |
-| `/ai`                                  | Chat IA plein écran avec suggestions et historique                        |
-| `/moves`                               | Liste + recherche + filtre par type                                       |
-| `/moves/tutors`                        | Tuteurs classiques groupés par lieu + Move Experts groupés par île        |
-| `/types`                               | Grille des 27 types (18 standard + 9 triple-fusion) + matchups            |
-| `/abilities`                           | Liste + recherche                                                         |
-| `/triple-fusions`                      | 23 fusions triples disponibles dans le jeu                                |
+| Route                                  | Contenu                                                                       |
+| -------------------------------------- | ----------------------------------------------------------------------------- |
+| `/`                                    | Landing — grille des modules                                                  |
+| `/pokedex`                             | Liste paginée (40/page) + recherche accent-insensitive + filtres type/légendaire |
+| `/pokedex/[id]`                        | Fiche avec onglets : Stats · Capacités · Évolutions · Faiblesses · Fusion     |
+| `/fusion`                              | Sélecteur head/body + bouton fusion aléatoire (🔀)                            |
+| `/fusion/[headId]/[bodyId]`            | Résultat : double sprite + crédit artiste + stats + moveset + fusion IA       |
+| `/ai`                                  | Chat IA plein écran avec suggestions, pastilles ⚙ outils, badges sources     |
+| `/moves`                               | Liste paginée (50/page) + recherche + filtre type/catégorie                   |
+| `/moves/[id]`                          | Fiche capacité : type, catégorie, puissance, PP, description FR/EN            |
+| `/moves/tutors`                        | Tuteurs classiques groupés par lieu + Move Experts groupés par île            |
+| `/abilities`                           | Liste paginée (40/page) + panneau détail inline + lien fiche complète         |
+| `/abilities/[id]`                      | Fiche talent : description FR/EN, badge "Modifié IF", notes                  |
+| `/types`                               | Grille d'efficacité 18 × 18 types Gen 7                                       |
+| `/triple-fusions`                      | 23 fusions triples légendaires avec stats et faiblesses                       |
+| `/creators`                            | Galerie paginée des créateurs de sprites (recherche)                          |
+| `/creators/[id]`                       | Grille de tous les sprites d'un créateur, cliquables vers la fusion           |
 
 ## Proxy Next.js
 
@@ -66,8 +75,6 @@ Deux bénéfices :
 1. **Zéro fuite d'URL backend** dans le bundle client. Le navigateur ne voit que `/api/*`.
 2. **Config runtime** : `BACKEND_INTERNAL_URL` est lu à chaque requête (pas d'env bakée au build), on peut changer la cible sans rebuild.
 
-Implémentation : [frontend/app/api/[...path]/route.ts](https://github.com/benjsant/FusionDex-IA/blob/main/frontend/app/api/%5B...path%5D/route.ts) et [frontend/app/sprites-cdn/[...path]/route.ts](https://github.com/benjsant/FusionDex-IA/blob/main/frontend/app/sprites-cdn/%5B...path%5D/route.ts).
-
 !!! note "Pourquoi pas `next.config.ts` rewrites ?"
     Next.js standalone fige les destinations de rewrite dans `.next/required-server-files.json` au build. Les route handlers, eux, évaluent `process.env` à chaque requête — c'est ce qu'on veut.
 
@@ -77,23 +84,21 @@ Toutes les données Pokémon sont statiques entre deux déploiements. Tous les h
 
 Les requêtes de détail sont **déclenchées à la demande** :
 
-- **Onglets Pokédex** : `usePokemonMoves`, `usePokemonEvolutions`, `usePokemonWeaknesses` n'envoient leur requête que lorsque l'onglet correspondant est actif (`enabled: activeTab === "moves"`). Économie de 3 requêtes par première visite.
-- **Dropdown FusionSelector** : `usePokemonList` n'est activé qu'à l'ouverture du dropdown (`enabled: open`).
+- **Onglets Pokédex** : `usePokemonMoves`, `usePokemonEvolutions`, `usePokemonWeaknesses`, `getFusionsInvolving` n'envoient leur requête que lorsque l'onglet correspondant est actif.
+- **Dropdown FusionSelector** : `usePokemonList` n'est activé qu'à l'ouverture du dropdown.
 
-## Hooks
+## Hooks & fonctions API clés
 
-| Hook | Fichier | Déclenché quand |
-|------|---------|-----------------|
+| Hook / Fonction API | Fichier | Déclenché quand |
+|---------------------|---------|-----------------|
 | `usePokemon(id)` | usePokemon.ts | toujours (fiche ouverte) |
 | `usePokemonMoves(id, opts)` | usePokemon.ts | onglet "Capacités" actif |
 | `usePokemonEvolutions(id, opts)` | usePokemon.ts | onglet "Évolutions" actif |
 | `usePokemonWeaknesses(id, opts)` | usePokemon.ts | onglet "Faiblesses" actif |
+| `getFusionsInvolving(id, 24)` | api.ts | onglet "Fusion" actif |
+| `getRandomFusion()` | api.ts | clic bouton Shuffle |
 | `usePokemonList(params, opts)` | usePokemon.ts | dropdown ouvert |
-| `usePokemonSearch(q)` | usePokemon.ts | `q.length >= 2` |
 | `useFusion(hId, bId)` | useFusion.ts | toujours (page fusion) |
-| `useFusionMoves(hId, bId)` | useFusion.ts | toujours (page fusion) |
-| `useFusionExpertMoves(hId, bId)` | useFusion.ts | toujours (page fusion) |
-| `useSprites(hId, bId)` | useFusion.ts | toujours (page fusion) |
 | `useAiChat()` | useAiChat.ts | message envoyé |
 
 Les hooks sont typés à partir de `types/api.d.ts` — tout changement de schéma backend casse la compilation (fail-fast).
@@ -102,13 +107,13 @@ Les hooks sont typés à partir de `types/api.d.ts` — tout changement de sché
 
 ### FusionSelector
 
-Sélecteur head/body avec recherche intégrée. Lit `?head=ID` et `?body=ID` depuis les search params au montage pour pré-sélectionner un Pokémon (utilisé par les liens "Fusionner en tant que Tête" de la fiche Pokédex).
+Sélecteur head/body avec recherche intégrée. Lit `?head=ID` et `?body=ID` depuis les search params au montage pour pré-sélectionner un Pokémon.
 
-Inclut un filtre de jeu (`GameFilter = "kanto" | "hoenn" | "all"`) qui restreint la liste aux Pokémon de la région concernée. Kanto = IDs 1–151, Hoenn = IDs 152–251 (convention IF), Tous = 572 Pokémon.
+Inclut un filtre de jeu (`GameFilter = "kanto" | "hoenn" | "all"`) et un **bouton fusion aléatoire** (icône Shuffle) qui appelle `GET /fusion/random` et redirige directement vers la page résultat.
 
 ### FusionMovesetTable
 
-Tableau du moveset d'une fusion, groupé par méthode d'apprentissage (niveau, reproduction, donneur, CT, donneur expert). Chaque ligne affiche une pastille d'origine :
+Tableau du moveset d'une fusion, groupé par méthode d'apprentissage. Chaque ligne affiche une pastille d'origine :
 
 - **H** (indigo) — capacité apprise par le Pokémon tête uniquement
 - **B** (violet) — capacité apprise par le Pokémon corps uniquement
@@ -116,12 +121,14 @@ Tableau du moveset d'une fusion, groupé par méthode d'apprentissage (niveau, r
 
 ### AiChat
 
-Chat IA avec streaming SSE. Gère deux types d'événements :
+Chat IA avec streaming SSE. Gère quatre types d'événements :
 
-- `tool_call` → pastille ⚙ affichée avant la réponse (transparence des outils invoqués)
-- `token` → chunk accumulé dans la bulle de réponse avec `scrollIntoView` progressif
+- `tool_call` → pastille ⚙ affichée avant la réponse (transparence des outils)
+- `token` → chunk accumulé dans la bulle de réponse
+- `source` → badges colorés DB/Wiki/Web sous la réponse
+- `usage` → compteur de tokens affiché à côté des sources
 
-Le scroll distingue l'ajout d'un nouveau message (smooth) de l'arrivée d'un token (instant) via `prevMessageCountRef` — évite le jitter visuel pendant le streaming.
+Le composant expose un bouton 👁 (Eye) qui ouvre `PromptModal` — transparency layer affichant le system prompt complet, la liste des outils disponibles et la politique de contexte.
 
 ### FusionSprite
 
@@ -129,57 +136,57 @@ Sprite de fusion extrait d'un spritesheet 1920×2784 (20 colonnes × 29 lignes d
 
 ## Design system IF
 
-Le site utilise une palette et des tokens CSS inspirés de Pokémon Infinite Fusion.
+### Thème sombre / clair
 
-### Palette et tokens
+Le site supporte un toggle dark/light persistant dans `localStorage`. Implémenté via :
 
-```css
-/* définis dans globals.css via @theme */
---color-gold: #e8b84b;        /* accents, titres, badges actifs */
---color-bg-deep: #090c1a;     /* fond principal */
---color-surface: #0f1629;     /* cartes, panneaux */
-```
+- **CSS variables** : 16 tokens dans `globals.css` via `@theme` (Tailwind v4), overridés dans `[data-theme="light"]`
+- **ThemeProvider** (`lib/theme.tsx`) : contexte React + `useTheme()` hook
+- **Anti-flash script** : script inline dans `<head>` qui lit `localStorage` avant hydration React
+- **Toggle** : bouton ☀/🌙 dans la Navbar
 
-- `TypeBadge` : fond coloré par type + `box-shadow` glow avec la couleur du type à 50 % d'opacité.
-- `PokemonCard` : gradient `linear-gradient` du type primaire (depuis 60 %) vers transparent.
-- `StatBar` : dégradé horizontal gold → rouge + glow pulsé via `@keyframes`.
-- Texture grid en `background-image` sur le fond via un SVG data-URI (motif losange).
+Tokens principaux (dark → light) :
+
+| Token | Sombre | Clair |
+|-------|--------|-------|
+| `--color-if-bg` | `#090c1a` | `#f0f2ff` |
+| `--color-if-card` | `#111428` | `#ffffff` |
+| `--color-if-text` | `#e1e4ff` | `#1a1c35` |
+| `--color-if-muted` | `#6b7199` | `#5a5e80` |
+| `--color-if-accent` | `#e8b84b` | `#e8b84b` |
+
+### Composants visuels
+
+- `TypeBadge` : fond coloré par type + `box-shadow` glow avec la couleur du type.
+- `PokemonCard` : gradient `linear-gradient` du type primaire.
+- `StatBar` : dégradé horizontal avec couleur selon la valeur (vert ≥ 100, jaune ≥ 60, rouge sinon).
+- `.if-panel` / `.if-panel-hi` : classes utilitaires pour les cartes avec border et fond tokenisés.
+- `.if-glow-hover` : glow gold au survol.
+- Grid texture en `background-image` (adaptée en mode clair).
 
 ### Responsive
 
 Stratégie mobile-first :
 
-- **Navbar** : hamburger `md:hidden` ouvre un drawer full-width sur mobile. Navigation horizontale classique sur `md:flex`.
-- **Tables** : colonnes secondaires masquées sur mobile via `hidden sm:table-cell` (ex. PP, priorité dans la liste des moves).
-- **Panels** : disposition `flex-col md:flex-row` — stats + sprite empilés sur mobile, côte à côte sur desktop.
-- **Grilles** : `grid-cols-2 sm:grid-cols-3 md:grid-cols-4` pour les listes de cartes.
+- **Navbar** : hamburger `md:hidden` ouvre un drawer full-width sur mobile.
+- **Tables** : colonnes secondaires masquées via `hidden sm:table-cell`.
+- **Panels** : `flex-col md:flex-row` — empilés sur mobile, côte à côte sur desktop.
+- **Grilles** : `grid-cols-2 sm:grid-cols-3 md:grid-cols-4` pour les cartes Pokémon.
 
 ## i18n
 
-Le projet est bilingue EN/FR côté données (colonnes `name_en` / `name_fr`). L'UI affiche en priorité le nom français quand disponible, avec le nom anglais entre parenthèses. L'assistant IA répond toujours en français (règle dans le system prompt).
+Le projet est bilingue EN/FR côté données (colonnes `name_en` / `name_fr`). L'UI affiche en priorité le nom français. L'assistant IA répond toujours en français (règle dans le system prompt).
 
-## Dev
-
-```bash
-cd frontend
-npm install
-npm run dev    # http://localhost:3000
-```
-
-Pour lancer avec le backend dockerisé :
+## Build & Dev
 
 ```bash
-docker compose up -d            # lance tout
-# Le frontend est sur http://localhost:53000
+# Tout via Docker
+docker compose up -d --build frontend
+
+# Rebuild après changement de dépendances npm
+docker run --rm -v ./frontend:/app -w /app node:22-alpine npm install --package-lock-only
+docker compose up -d --build frontend
 ```
-
-## Build
-
-```bash
-docker compose build frontend
-```
-
-Le Dockerfile multi-stage n'a **aucun** `ARG` pointant vers le backend : tout passe par les env runtime (`BACKEND_INTERNAL_URL`, `SPRITES_INTERNAL_URL`).
 
 ## Voir aussi
 
