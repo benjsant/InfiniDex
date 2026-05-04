@@ -3,11 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
-import { Bot, Cog } from "lucide-react";
+import { Bot, Cog, Globe, Database, BookOpen, Eye } from "lucide-react";
 import { useAiChat } from "@/hooks/useAiChat";
 import { getAiProvider } from "@/lib/api";
 import type { ChatMessage } from "@/hooks/useAiChat";
-import { AI_TOOL_LABELS } from "@/lib/constants";
+import { AI_TOOL_LABELS, AI_SOURCE_LABELS, AI_SOURCE_COLORS } from "@/lib/constants";
+import { PromptModal } from "@/components/ai/PromptModal";
 
 const SUGGESTIONS = [
   "Meilleure fusion Dracaufeu ?",
@@ -25,6 +26,7 @@ export function AiChat({
 }) {
   const { messages, isStreaming, error, sendMessage, reset } = useAiChat();
   const [input, setInput] = useState("");
+  const [showPrompt, setShowPrompt] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
 
@@ -65,7 +67,7 @@ export function AiChat({
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 gap-6">
             <div className="text-indigo-400"><Bot size={40} /></div>
-            <p className="text-[rgb(160,160,180)] text-sm text-center max-w-xs">
+            <p className="text-if-text-lo text-sm text-center max-w-xs">
               Pose-moi une question sur Pokémon Infinite Fusion, les stratégies de fusion, les équipes…
             </p>
             <div className="flex flex-wrap gap-2 justify-center">
@@ -73,7 +75,7 @@ export function AiChat({
                 <button
                   key={s}
                   onClick={() => sendMessage(s)}
-                  className="text-xs px-3 py-1.5 rounded-full bg-[rgb(25,25,38)] border border-[rgb(50,50,70)] text-[rgb(160,160,200)] hover:border-indigo-500 hover:text-indigo-300 transition-all"
+                  className="text-xs px-3 py-1.5 rounded-full bg-if-elevated border border-if-border-mid text-[rgb(160,160,200)] hover:border-indigo-500 hover:text-indigo-300 transition-all"
                 >
                   {s}
                 </button>
@@ -103,22 +105,32 @@ export function AiChat({
       </div>
 
       {/* Input */}
-      <div className="border-t border-[rgb(40,40,55)] pt-4 mt-4">
+      <div className="border-t border-if-border-lo pt-4 mt-4">
         <div className="flex items-center justify-between mb-2 min-h-[20px]">
           {messages.length > 0 ? (
             <button
               onClick={reset}
-              className="text-xs text-[rgb(100,100,120)] hover:text-[rgb(160,160,180)] transition-colors"
+              className="text-xs text-if-muted hover:text-if-text-lo transition-colors"
             >
               Effacer la conversation
             </button>
           ) : <span />}
-          {provider && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[rgb(20,20,35)] border border-[rgb(45,45,65)] text-[rgb(100,100,140)]">
-              {provider.name} · {provider.model}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowPrompt(true)}
+              title="Voir le prompt envoyé au LLM"
+              className="p-1 rounded text-[rgb(80,80,110)] hover:text-indigo-400 transition-colors"
+            >
+              <Eye size={14} />
+            </button>
+            {provider && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-if-deep border border-if-border text-if-muted">
+                {provider.name} · {provider.model}
+              </span>
+            )}
+          </div>
         </div>
+        {showPrompt && <PromptModal onClose={() => setShowPrompt(false)} />}
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input
             ref={inputRef}
@@ -127,7 +139,7 @@ export function AiChat({
             onChange={(e) => setInput(e.target.value)}
             disabled={isStreaming}
             placeholder="Pose ta question…"
-            className="flex-1 px-4 py-2 rounded-lg bg-[rgb(25,25,38)] border border-[rgb(50,50,70)] text-[rgb(220,220,255)] placeholder:text-[rgb(80,80,100)] focus:outline-none focus:border-indigo-500 disabled:opacity-50 transition-colors"
+            className="flex-1 px-4 py-2 rounded-lg bg-if-elevated border border-if-border-mid text-if-text-hi placeholder:text-if-muted focus:outline-none focus:border-indigo-500 disabled:opacity-50 transition-colors"
           />
           <button
             type="submit"
@@ -145,8 +157,25 @@ export function AiChat({
 function ToolPill({ name }: { name: string }) {
   const label = AI_TOOL_LABELS[name] ?? name;
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-indigo-950/60 border border-indigo-800/50 text-indigo-300">
+    <span className="if-tool-pill">
       <Cog size={10} className="opacity-70" />
+      {label}
+    </span>
+  );
+}
+
+const SOURCE_ICONS: Record<string, React.ReactNode> = {
+  db:   <Database size={9} className="opacity-70" />,
+  wiki: <BookOpen size={9} className="opacity-70" />,
+  web:  <Globe    size={9} className="opacity-70" />,
+};
+
+function SourceBadge({ source }: { source: string }) {
+  const label  = AI_SOURCE_LABELS[source] ?? source;
+  const colors = AI_SOURCE_COLORS[source] ?? "bg-zinc-900/60 border-zinc-700/50 text-zinc-300";
+  return (
+    <span className={`inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full border ${colors}`}>
+      {SOURCE_ICONS[source]}
       {label}
     </span>
   );
@@ -171,11 +200,23 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             ))}
           </div>
         )}
+        {(message.sources ?? []).length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {(message.sources ?? []).map((src) => (
+              <SourceBadge key={src} source={src} />
+            ))}
+            {message.totalTokens != null && (
+              <span className="inline-flex items-center text-[9px] px-1.5 py-0.5 rounded-full bg-zinc-900/40 border border-zinc-700/30 text-zinc-500">
+                {message.totalTokens.toLocaleString()} tokens
+              </span>
+            )}
+          </div>
+        )}
         <div
           className={`px-4 py-2.5 rounded-xl text-sm leading-relaxed ${
             isUser
-              ? "bg-indigo-600/30 text-[rgb(220,220,255)] rounded-br-sm whitespace-pre-wrap"
-              : "bg-[rgb(25,25,38)] text-[rgb(200,200,220)] rounded-bl-sm prose prose-sm prose-invert max-w-none"
+              ? "bg-indigo-600/30 text-if-text-hi rounded-br-sm whitespace-pre-wrap"
+              : "bg-if-elevated text-if-text-dim rounded-bl-sm prose prose-sm prose-invert max-w-none"
           }`}
         >
           {isUser ? (
@@ -187,8 +228,8 @@ function MessageBubble({ message }: { message: ChatMessage }) {
                 ul:     ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-0.5">{children}</ul>,
                 ol:     ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-0.5">{children}</ol>,
                 li:     ({ children }) => <li>{children}</li>,
-                strong: ({ children }) => <strong className="font-semibold text-[rgb(220,220,255)]">{children}</strong>,
-                code:   ({ children }) => <code className="bg-[rgb(15,15,28)] px-1 py-0.5 rounded text-indigo-300 text-xs font-mono">{children}</code>,
+                strong: ({ children }) => <strong className="font-semibold text-if-text-hi">{children}</strong>,
+                code:   ({ children }) => <code className="bg-if-deep px-1 py-0.5 rounded text-indigo-400 text-xs font-mono">{children}</code>,
               }}
             >
               {message.content}

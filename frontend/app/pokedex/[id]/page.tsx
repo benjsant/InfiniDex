@@ -10,6 +10,9 @@ import {
   usePokemonEvolutions,
   usePokemonWeaknesses,
 } from "@/hooks/usePokemon";
+import { useQuery } from "@tanstack/react-query";
+import { getFusionsInvolving } from "@/lib/api";
+import type { FusionInvolvingOut } from "@/types/api";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import { StatBar } from "@/components/pokemon/StatBar";
 import { MovesetTable } from "@/components/pokemon/MovesetTable";
@@ -43,6 +46,12 @@ export default function PokemonDetailPage({
   const { data: moves = [] }        = usePokemonMoves(pokemonId,    { enabled: activeTab === "moves" });
   const { data: evolutions = [] }   = usePokemonEvolutions(pokemonId, { enabled: activeTab === "evolutions" });
   const { data: weaknesses = [] }   = usePokemonWeaknesses(pokemonId, { enabled: activeTab === "weaknesses" });
+  const { data: fusions = [], isLoading: fusionsLoading } = useQuery({
+    queryKey: ["fusions-involving", pokemonId],
+    queryFn: () => getFusionsInvolving(pokemonId, 100),
+    enabled: activeTab === "fusion",
+    staleTime: Infinity,
+  });
 
   if (isLoading) return <PageSkeleton />;
   if (!pokemon)  return <NotFound id={pokemonId} />;
@@ -74,8 +83,8 @@ export default function PokemonDetailPage({
       <div
         className="rounded-2xl p-4 sm:p-6 mb-6 overflow-hidden relative"
         style={{
-          background: `linear-gradient(135deg, #111428 50%, ${primaryColor}18)`,
-          border: "1px solid #1e2240",
+          background: `linear-gradient(135deg, var(--color-if-card) 50%, ${primaryColor}18)`,
+          border: "1px solid var(--color-if-border)",
           boxShadow: `0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)`,
         }}
       >
@@ -95,11 +104,11 @@ export default function PokemonDetailPage({
               <div key={label} className="flex flex-col items-center gap-1">
                 <div
                   className="flex items-center justify-center w-28 h-28 rounded-xl"
-                  style={{ background: "#0f1225", border: "1px solid #1e2240" }}
+                  style={{ background: "var(--color-if-surface)", border: "1px solid var(--color-if-border)" }}
                 >
                   {node}
                 </div>
-                <span className="text-[10px]" style={{ color: "#6b7199" }}>{label}</span>
+                <span className="text-[10px]" style={{ color: "var(--color-if-muted)" }}>{label}</span>
               </div>
             ))}
           </div>
@@ -108,15 +117,15 @@ export default function PokemonDetailPage({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2 flex-wrap">
               <div>
-                <p className="text-xs font-mono" style={{ color: "#6b7199" }}>
+                <p className="text-xs font-mono" style={{ color: "var(--color-if-muted)" }}>
                   IF #{String(pokemon.id).padStart(3, "0")}
                   {pokemon.national_id && ` · #${String(pokemon.national_id).padStart(3, "0")} National`}
                 </p>
-                <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: "#e1e4ff" }}>
+                <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: "var(--color-if-text)" }}>
                   {pokemon.name_fr ?? pokemon.name_en}
                 </h1>
                 {pokemon.name_fr && (
-                  <p className="text-base" style={{ color: "#6b7199" }}>{pokemon.name_en}</p>
+                  <p className="text-base" style={{ color: "var(--color-if-muted)" }}>{pokemon.name_en}</p>
                 )}
               </div>
               <AiSuggestButton
@@ -141,7 +150,7 @@ export default function PokemonDetailPage({
                   <span
                     key={a.slot}
                     className="px-2 py-1 rounded-lg text-sm"
-                    style={{ background: "#1e2240", color: "#e1e4ff", border: "1px solid #2d3260" }}
+                    style={{ background: "var(--color-if-border)", color: "var(--color-if-text)", border: "1px solid #2d3260" }}
                   >
                     {a.name_fr ?? a.name_en}
                   </span>
@@ -149,7 +158,7 @@ export default function PokemonDetailPage({
                 {hiddenAbility && (
                   <span
                     className="px-2 py-1 rounded-lg text-sm italic"
-                    style={{ background: "#1e2240", color: "#6b7199", border: "1px solid #2d3260" }}
+                    style={{ background: "var(--color-if-border)", color: "var(--color-if-muted)", border: "1px solid #2d3260" }}
                   >
                     {hiddenAbility.name_fr ?? hiddenAbility.name_en} (caché)
                   </span>
@@ -161,20 +170,20 @@ export default function PokemonDetailPage({
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-0.5 mb-6 overflow-x-auto" style={{ borderBottom: "1px solid #1e2240" }}>
+      <div className="flex gap-0.5 mb-6 overflow-x-auto" style={{ borderBottom: "1px solid var(--color-if-border)" }}>
         {TABS.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
             className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-all -mb-px"
             style={{
-              borderBottomColor: activeTab === key ? "#e8b84b" : "transparent",
-              color: activeTab === key ? "#e8b84b" : "#6b7199",
+              borderBottomColor: activeTab === key ? "var(--color-if-accent)" : "transparent",
+              color: activeTab === key ? "var(--color-if-accent)" : "var(--color-if-muted)",
             }}
           >
             {label}
             {key === "moves" && moves.length > 0 && (
-              <span className="ml-1 text-xs" style={{ color: "#6b7199" }}>({moves.length})</span>
+              <span className="ml-1 text-xs" style={{ color: "var(--color-if-muted)" }}>({moves.length})</span>
             )}
           </button>
         ))}
@@ -186,9 +195,9 @@ export default function PokemonDetailPage({
           {stats.map(({ key, value }) => (
             <StatBar key={key} stat={key} value={value} />
           ))}
-          <div className="flex items-center gap-3 pt-2 border-t border-[rgb(40,40,55)]">
-            <span className="w-24 text-right text-xs text-[rgb(120,120,140)]">Total</span>
-            <span className="w-8 text-right text-sm font-bold font-mono text-[rgb(220,220,255)]">
+          <div className="flex items-center gap-3 pt-2 border-t border-if-border-lo">
+            <span className="w-24 text-right text-xs text-if-text-xs">Total</span>
+            <span className="w-8 text-right text-sm font-bold font-mono text-if-text-hi">
               {baseTotal}
             </span>
           </div>
@@ -198,7 +207,7 @@ export default function PokemonDetailPage({
       {activeTab === "moves" && (
         moves.length > 0
           ? <MovesetTable moves={moves} />
-          : <p className="text-[rgb(120,120,140)] text-sm">Aucune capacité chargée.</p>
+          : <p className="text-if-text-xs text-sm">Aucune capacité chargée.</p>
       )}
 
       {activeTab === "evolutions" && (
@@ -210,29 +219,46 @@ export default function PokemonDetailPage({
       )}
 
       {activeTab === "fusion" && (
-        <div className="space-y-4">
-          <p className="text-sm" style={{ color: "#6b7199" }}>
-            Sélectionne un partenaire pour voir la fusion.
-          </p>
+        <div className="space-y-6">
+          {/* Quick links */}
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
               href={`/fusion?head=${pokemonId}`}
               className="flex-1 px-4 py-3 rounded-xl text-center transition-all if-panel if-glow-hover"
             >
-              <p className="text-xs mb-1" style={{ color: "#6b7199" }}>{pokemon.name_fr ?? pokemon.name_en} en tant que…</p>
-              <p className="font-semibold" style={{ color: "#e8b84b" }}>Tête (Head)</p>
+              <p className="text-xs mb-1 text-if-muted">{pokemon.name_fr ?? pokemon.name_en} en tant que…</p>
+              <p className="font-semibold text-if-accent">Tête (Head)</p>
             </Link>
             <Link
               href={`/fusion?body=${pokemonId}`}
               className="flex-1 px-4 py-3 rounded-xl text-center transition-all if-panel if-glow-hover"
             >
-              <p className="text-xs mb-1" style={{ color: "#6b7199" }}>{pokemon.name_fr ?? pokemon.name_en} en tant que…</p>
-              <p className="font-semibold" style={{ color: "#e8b84b" }}>Corps (Body)</p>
+              <p className="text-xs mb-1 text-if-muted">{pokemon.name_fr ?? pokemon.name_en} en tant que…</p>
+              <p className="font-semibold text-if-accent">Corps (Body)</p>
             </Link>
           </div>
-          <Link href="/fusion" className="text-sm transition-colors" style={{ color: "#e8b84b" }}>
-            Ouvrir le calculateur de fusion complet <ChevronRight size={14} className="inline" />
-          </Link>
+
+          {/* Fusions involving this Pokémon */}
+          <div>
+            <h3 className="text-sm font-semibold text-if-muted uppercase tracking-wider mb-3">
+              Aperçu des fusions ({fusionsLoading ? "…" : `${fusions.length} affichées`})
+            </h3>
+            {fusionsLoading ? (
+              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 animate-pulse">
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div key={i} className="h-16 bg-if-elevated rounded-lg" />
+                ))}
+              </div>
+            ) : fusions.length > 0 ? (
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                {fusions.map((f) => (
+                  <FusionCard key={`${f.head_id}-${f.body_id}`} fusion={f} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-if-text-xs">Aucune fusion trouvée.</p>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -243,21 +269,37 @@ function PageSkeleton() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 animate-pulse">
       <div className="flex gap-6 mb-6">
-        <div className="w-36 h-36 rounded-xl bg-[rgb(25,25,35)]" />
+        <div className="w-36 h-36 rounded-xl bg-if-elevated" />
         <div className="flex-1 space-y-3">
-          <div className="h-4 w-20 bg-[rgb(35,35,50)] rounded" />
-          <div className="h-8 w-48 bg-[rgb(35,35,50)] rounded" />
+          <div className="h-4 w-20 bg-if-elevated rounded" />
+          <div className="h-8 w-48 bg-if-elevated rounded" />
         </div>
       </div>
     </div>
   );
 }
 
+function FusionCard({ fusion }: { fusion: FusionInvolvingOut }) {
+  const partnerName = fusion.partner_name_fr ?? fusion.partner_name_en ?? "?";
+  return (
+    <Link
+      href={`/fusion/${fusion.head_id}/${fusion.body_id}`}
+      className="flex flex-col items-center gap-1 p-2 rounded-lg if-panel hover:border-indigo-500 hover:bg-if-elevated transition-all"
+      title={`${fusion.head_id === fusion.body_id ? "Auto-fusion" : partnerName}`}
+    >
+      <FusionSprite headId={fusion.head_id} bodyId={fusion.body_id} size={48} />
+      <span className="text-[9px] text-if-text-xs text-center leading-tight truncate w-full">
+        {partnerName}
+      </span>
+    </Link>
+  );
+}
+
 function NotFound({ id }: { id: number }) {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 text-center">
-      <p style={{ color: "#6b7199" }}>Pokémon #{id} introuvable.</p>
-      <Link href="/pokedex" className="mt-4 block transition-colors" style={{ color: "#e8b84b" }}>
+      <p style={{ color: "var(--color-if-muted)" }}>Pokémon #{id} introuvable.</p>
+      <Link href="/pokedex" className="mt-4 block transition-colors" style={{ color: "var(--color-if-accent)" }}>
         <ChevronLeft size={14} className="inline" /> Retour au Pokédex
       </Link>
     </div>

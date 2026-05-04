@@ -20,8 +20,8 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
       href={`/pokedex/${pokemon.id}`}
       className="group relative flex flex-col items-center gap-2 pt-3 pb-3 px-2 rounded-xl transition-all duration-200 overflow-hidden"
       style={{
-        background: `linear-gradient(160deg, #111428 60%, ${color1}18)`,
-        border: `1px solid #1e2240`,
+        background: `linear-gradient(160deg, var(--color-if-card) 60%, ${color1}18)`,
+        border: `1px solid var(--color-if-border)`,
         boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
       }}
       onMouseEnter={(e) => {
