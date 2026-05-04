@@ -186,8 +186,8 @@ async def stream_ai_response(
             elif ev["type"] == "usage":
                 total_tokens += ev.get("total_tokens", 0)
 
-        if got_text:
-            # Final text response — emit sources + usage then stop.
+        if got_text and not tool_calls:
+            # Pure-text turn — final answer, no tools were called.
             if not assistant_parts:
                 yield TokenEvent(type="token", chunk=FAILURE_MESSAGE)
             if sources_used:
@@ -197,8 +197,13 @@ async def stream_ai_response(
             return
 
         if not tool_calls:
+            # No text and no tool calls — fail closed.
             yield TokenEvent(type="token", chunk=FAILURE_MESSAGE)
             return
+
+        # Tool calls are present (model may have emitted a preamble text like
+        # "Je vais chercher…" before the call — that text was already streamed;
+        # the tool dispatch continues normally on the next iteration).
 
         # Append the assistant's tool-call turn.
         messages.append({

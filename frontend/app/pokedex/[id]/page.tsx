@@ -48,7 +48,7 @@ export default function PokemonDetailPage({
   const { data: weaknesses = [] }   = usePokemonWeaknesses(pokemonId, { enabled: activeTab === "weaknesses" });
   const { data: fusions = [], isLoading: fusionsLoading } = useQuery({
     queryKey: ["fusions-involving", pokemonId],
-    queryFn: () => getFusionsInvolving(pokemonId, 24),
+    queryFn: () => getFusionsInvolving(pokemonId, 100),
     enabled: activeTab === "fusion",
     staleTime: Infinity,
   });
@@ -83,7 +83,7 @@ export default function PokemonDetailPage({
       <div
         className="rounded-2xl p-4 sm:p-6 mb-6 overflow-hidden relative"
         style={{
-          background: `linear-gradient(135deg, #111428 50%, ${primaryColor}18)`,
+          background: `linear-gradient(135deg, var(--color-if-card) 50%, ${primaryColor}18)`,
           border: "1px solid var(--color-if-border)",
           boxShadow: `0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)`,
         }}
@@ -241,7 +241,7 @@ export default function PokemonDetailPage({
           {/* Fusions involving this Pokémon */}
           <div>
             <h3 className="text-sm font-semibold text-if-muted uppercase tracking-wider mb-3">
-              Fusions existantes ({fusionsLoading ? "…" : fusions.length})
+              Aperçu des fusions ({fusionsLoading ? "…" : `${fusions.length} affichées`})
             </h3>
             {fusionsLoading ? (
               <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 animate-pulse">

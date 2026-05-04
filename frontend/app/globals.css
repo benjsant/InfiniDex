@@ -91,6 +91,40 @@
   box-shadow: 0 0 12px rgba(232,184,75,0.25);
 }
 
+/* ── Light mode interactive (indigo) overrides ───────────────────── */
+[data-theme="light"] .text-indigo-400              { color: #4338ca; }
+[data-theme="light"] .text-indigo-300              { color: #4f46e5; }
+[data-theme="light"] .hover\:text-indigo-400:hover { color: #4338ca; }
+[data-theme="light"] .hover\:text-indigo-300:hover { color: #4f46e5; }
+
+/* Prose markdown in light mode — don't use inverted (dark) palette */
+[data-theme="light"] .prose-invert {
+  --tw-prose-body:     var(--color-if-text-dim);
+  --tw-prose-headings: var(--color-if-text-hi);
+  --tw-prose-bold:     var(--color-if-text-hi);
+  --tw-prose-links:    #4338ca;
+  --tw-prose-code:     #4338ca;
+  --tw-prose-bullets:  var(--color-if-muted);
+}
+
+/* Tool pill used in AiChat — proper theming */
+.if-tool-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.625rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #818cf8;
+}
+[data-theme="light"] .if-tool-pill {
+  background: rgba(67, 56, 202, 0.08);
+  border-color: rgba(67, 56, 202, 0.25);
+  color: #4338ca;
+}
+
 /* ── Navbar / drawer backgrounds (with alpha) ────────────────────── */
 .if-navbar-bg {
   background: rgba(9, 12, 26, 0.96);

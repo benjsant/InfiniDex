@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Search } from "lucide-react";
 import { useMoves } from "@/hooks/useMoves";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import { SearchBar } from "@/components/layout/SearchBar";
@@ -101,6 +101,7 @@ export default function MovesPage() {
                 <th className="px-2 sm:px-3 py-2 text-right">Puiss.</th>
                 <th className="hidden sm:table-cell px-3 py-2 text-right">Préc.</th>
                 <th className="hidden sm:table-cell px-3 py-2 text-right">PP</th>
+                <th className="px-2 py-2 w-8" />
               </tr>
             </thead>
             <tbody>
@@ -131,6 +132,15 @@ export default function MovesPage() {
                   </td>
                   <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs text-if-text-dim">
                     {mv.pp ?? "—"}
+                  </td>
+                  <td className="px-2 py-2 text-center">
+                    <Link
+                      href={`/moves/${mv.id}`}
+                      className="inline-flex items-center justify-center w-6 h-6 rounded hover:bg-indigo-500/20 text-if-muted hover:text-indigo-400 transition-colors"
+                      title={mv.name_fr ?? mv.name_en}
+                    >
+                      <Search size={13} />
+                    </Link>
                   </td>
                 </tr>
               ))}

@@ -157,7 +157,7 @@ export function AiChat({
 function ToolPill({ name }: { name: string }) {
   const label = AI_TOOL_LABELS[name] ?? name;
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-indigo-950/60 border border-indigo-800/50 text-indigo-300">
+    <span className="if-tool-pill">
       <Cog size={10} className="opacity-70" />
       {label}
     </span>
@@ -229,7 +229,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
                 ol:     ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-0.5">{children}</ol>,
                 li:     ({ children }) => <li>{children}</li>,
                 strong: ({ children }) => <strong className="font-semibold text-if-text-hi">{children}</strong>,
-                code:   ({ children }) => <code className="bg-[rgb(15,15,28)] px-1 py-0.5 rounded text-indigo-300 text-xs font-mono">{children}</code>,
+                code:   ({ children }) => <code className="bg-if-deep px-1 py-0.5 rounded text-indigo-400 text-xs font-mono">{children}</code>,
               }}
             >
               {message.content}

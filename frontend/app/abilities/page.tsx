@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import { Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getAbilities, getAbility } from "@/lib/api";
 import { SearchBar } from "@/components/layout/SearchBar";
@@ -77,9 +78,10 @@ export default function AbilitiesPage() {
                 <Link
                   href={`/abilities/${a.id}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="text-xs text-if-muted hover:text-indigo-400 transition-colors ml-2 shrink-0"
+                  className="inline-flex items-center justify-center w-7 h-7 rounded hover:bg-indigo-500/20 text-if-muted hover:text-indigo-400 transition-colors ml-2 shrink-0"
+                  title={a.name_fr ?? a.name_en}
                 >
-                  Détail →
+                  <Search size={14} />
                 </Link>
               </button>
             ))
