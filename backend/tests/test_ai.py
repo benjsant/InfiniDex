@@ -37,7 +37,7 @@ def _sse_tool_calls(response) -> list[str]:
     return [e["name"] for e in _sse_events(response) if e.get("type") == "tool_call"]
 
 
-# ─── Fake LLM infrastructure ─────────────────────────────────────────────────
+# ─── Fake LLM infrastructure — streaming-compatible ──────────────────────────
 
 def _fake_message_content(text: str):
     return SimpleNamespace(content=text, tool_calls=None)
@@ -59,6 +59,64 @@ def _fake_response(message):
     return SimpleNamespace(choices=[SimpleNamespace(message=message)])
 
 
+async def _aiter_chunks(chunks):
+    """Async generator that yields fake SSE streaming chunks."""
+    for chunk in chunks:
+        yield chunk
+
+
+def _to_stream(response):
+    """Convert a fake non-streaming response into a fake async streaming iterable.
+
+    Produces delta chunks that match the shape expected by _stream_turn:
+      - content chunks: chunk.choices[0].delta.content
+      - tool_call chunks: chunk.choices[0].delta.tool_calls
+      - final usage chunk: chunk.choices=[], chunk.usage.total_tokens
+    """
+    msg = response.choices[0].message
+    chunks = []
+
+    if msg.tool_calls:
+        for i, tc in enumerate(msg.tool_calls):
+            chunks.append(SimpleNamespace(
+                choices=[SimpleNamespace(
+                    delta=SimpleNamespace(
+                        content=None,
+                        tool_calls=[SimpleNamespace(
+                            index=i,
+                            id=tc.id,
+                            type="function",
+                            function=SimpleNamespace(
+                                name=tc.function.name,
+                                arguments=tc.function.arguments,
+                            ),
+                        )],
+                    )
+                )],
+                usage=None,
+            ))
+    elif msg.content:
+        chunks.append(SimpleNamespace(
+            choices=[SimpleNamespace(
+                delta=SimpleNamespace(content=msg.content, tool_calls=None)
+            )],
+            usage=None,
+        ))
+    else:
+        # Empty content — single chunk with empty string (falsy → _stream_turn emits "empty")
+        chunks.append(SimpleNamespace(
+            choices=[SimpleNamespace(
+                delta=SimpleNamespace(content="", tool_calls=None)
+            )],
+            usage=None,
+        ))
+
+    # Final usage-only chunk (stream_options include_usage)
+    chunks.append(SimpleNamespace(choices=[], usage=SimpleNamespace(total_tokens=50)))
+
+    return _aiter_chunks(chunks)
+
+
 class FakeCompletions:
     def __init__(self, responses: list):
         self._responses = list(responses)
@@ -68,7 +126,11 @@ class FakeCompletions:
         self.received_calls.append(kwargs)
         if not self._responses:
             raise AssertionError("FakeCompletions ran out of scripted responses")
-        return self._responses.pop(0)
+        response = self._responses.pop(0)
+        # Our ai_service always uses stream=True; wrap the response accordingly.
+        if kwargs.get("stream"):
+            return _to_stream(response)
+        return response
 
 
 class FakeClient:
@@ -252,7 +314,7 @@ def test_ai_system_prompt_is_injected(client: TestClient, fake_client_factory) -
     msgs = fake.chat.completions.received_calls[0]["messages"]
     assert msgs[0]["role"] == "system"
     assert "FusionDex AI" in msgs[0]["content"]
-    assert "Je n'ai pas trouvé" in msgs[0]["content"]  # fail-closed phrase (in both EN prompt + FR reply rule)
+    assert "Je n'ai pas trouvé" in msgs[0]["content"]
 
 
 def test_ai_context_is_prepended(client: TestClient, fake_client_factory) -> None:

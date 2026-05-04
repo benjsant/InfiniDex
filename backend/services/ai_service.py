@@ -1,10 +1,11 @@
-"""AI service — tool-calling agent loop with fail-closed guarantee.
+"""AI service — tool-calling agent loop with real token streaming.
 
 Flow:
-  1. LLM receives the question + TOOL_SPECS
-  2. LLM may request tool calls → backend executes, returns results, loops
-  3. When LLM produces a text response → yield token events to stream to UI
-  4. After MAX_ITERATIONS with no text → fail-closed refusal token event
+  1. LLM receives the question + TOOL_SPECS (stream=True throughout)
+  2. If the stream contains tool_call deltas → assemble, dispatch, loop
+  3. If the stream contains content tokens → yield them as they arrive
+  4. After the final text turn → yield a SourceEvent listing sources used
+  5. After MAX_ITERATIONS with no text → fail-closed refusal
 
 Yields typed AgentEvent dicts. The route formats them as SSE.
 """
@@ -30,6 +31,12 @@ TEMPERATURE      = 0.3
 FAILURE_MESSAGE  = "Je n'ai pas trouvé cette information."
 MAX_HISTORY_MSGS = 10
 
+# Source classification for SourceEvent
+_DB_TOOLS = frozenset({
+    "get_pokemon", "get_fusion", "get_triple_fusion",
+    "search_move", "get_item", "get_move_tutors", "search_pokemon_locations",
+})
+
 
 # ─── Event types ─────────────────────────────────────────────────────────────
 
@@ -43,7 +50,85 @@ class TokenEvent(TypedDict):
     chunk: str
 
 
-AgentEvent = ToolCallEvent | TokenEvent
+class SourceEvent(TypedDict):
+    type: Literal["source"]
+    sources: list[str]  # e.g. ["db", "wiki", "web"]
+
+
+class UsageEvent(TypedDict):
+    type: Literal["usage"]
+    total_tokens: int
+
+
+AgentEvent = ToolCallEvent | TokenEvent | SourceEvent | UsageEvent
+
+
+# ─── Single-turn streamer ─────────────────────────────────────────────────────
+
+async def _stream_turn(provider: LLMProvider, messages: list[dict]):
+    """Stream one LLM turn and yield internal events.
+
+    Yields dicts with key 'type':
+      {"type": "token",      "chunk": str}          — text token
+      {"type": "tool_calls", "calls": list[dict]}   — assembled tool calls
+      {"type": "empty"}                              — no output
+    """
+    tool_calls_by_idx: dict[int, dict] = {}
+    has_tokens     = False
+    has_tool_calls = False
+    usage_data:  dict | None = None
+
+    stream = await provider.client.chat.completions.create(
+        model=provider.model,
+        messages=messages,
+        tools=TOOL_SPECS,
+        tool_choice="auto",
+        max_tokens=MAX_TOKENS,
+        temperature=TEMPERATURE,
+        stream=True,
+        stream_options={"include_usage": True},
+    )
+
+    async for chunk in stream:
+        if not chunk.choices:
+            # Final usage-only chunk (from stream_options include_usage)
+            if chunk.usage:
+                usage_data = {"total_tokens": chunk.usage.total_tokens}
+            continue
+        delta = chunk.choices[0].delta
+
+        if delta.tool_calls:
+            has_tool_calls = True
+            for tc in delta.tool_calls:
+                idx = tc.index
+                if idx not in tool_calls_by_idx:
+                    tool_calls_by_idx[idx] = {
+                        "id":   tc.id or "",
+                        "type": "function",
+                        "function": {
+                            "name":      (tc.function.name      or "") if tc.function else "",
+                            "arguments": (tc.function.arguments or "") if tc.function else "",
+                        },
+                    }
+                else:
+                    if tc.id:
+                        tool_calls_by_idx[idx]["id"] = tc.id
+                    if tc.function:
+                        if tc.function.name:
+                            tool_calls_by_idx[idx]["function"]["name"]      += tc.function.name
+                        if tc.function.arguments:
+                            tool_calls_by_idx[idx]["function"]["arguments"] += tc.function.arguments
+
+        elif delta.content:
+            has_tokens = True
+            yield {"type": "token", "chunk": delta.content}
+
+    if has_tool_calls:
+        yield {"type": "tool_calls", "calls": [tool_calls_by_idx[i] for i in sorted(tool_calls_by_idx)]}
+    elif not has_tokens:
+        yield {"type": "empty"}
+    if usage_data:
+        yield {"type": "usage", **usage_data}
 
 
 # ─── Agent loop ──────────────────────────────────────────────────────────────
@@ -55,11 +140,12 @@ async def stream_ai_response(
     history: list[HistoryMessage] | None = None,
     provider: LLMProvider | None = None,
 ) -> AsyncIterator[AgentEvent]:
-    """Agent loop: tool calls → results → loop → yield token events.
+    """Agent loop — streams tokens as they arrive, emits source attribution.
 
     Yields:
-        ToolCallEvent when a tool is invoked (for UI transparency).
-        TokenEvent with the final response chunks (or FAILURE_MESSAGE).
+        ToolCallEvent  — before each tool dispatch (UI transparency).
+        TokenEvent     — text chunks as they arrive from the LLM.
+        SourceEvent    — after the final response, listing sources used.
     """
     provider = provider or select_provider()
     if provider is None:
@@ -69,58 +155,95 @@ async def stream_ai_response(
                  provider.name, provider.model, len(history or []))
 
     trimmed_history = (history or [])[-MAX_HISTORY_MSGS:]
-    user_content = f"[Contexte: {context}]\n\n{message}" if context else message
+    user_content    = f"[Contexte: {context}]\n\n{message}" if context else message
 
     messages: list[dict] = [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system",  "content": SYSTEM_PROMPT},
         *[{"role": m.role, "content": m.content} for m in trimmed_history],
         {"role": "user",   "content": user_content},
     ]
 
+    sources_used: set[str] = set()
+    total_tokens = 0
+
     for iteration in range(MAX_ITERATIONS):
         LOGGER.debug("agent iteration=%d/%d", iteration + 1, MAX_ITERATIONS)
 
-        response = await provider.client.chat.completions.create(
-            model=provider.model,
-            messages=messages,
-            tools=TOOL_SPECS,
-            tool_choice="auto",
-            max_tokens=MAX_TOKENS,
-            temperature=TEMPERATURE,
-        )
-        msg = response.choices[0].message
+        tool_calls: list[dict] = []
+        got_text = False
+        assistant_parts: list[str] = []
 
-        if not msg.tool_calls:
-            content = (msg.content or "").strip()
-            yield TokenEvent(type="token", chunk=content if content else FAILURE_MESSAGE)
+        async for ev in _stream_turn(provider, messages):
+            if ev["type"] == "token":
+                got_text = True
+                chunk: str = ev["chunk"]
+                assistant_parts.append(chunk)
+                yield TokenEvent(type="token", chunk=chunk)
+
+            elif ev["type"] == "tool_calls":
+                tool_calls = ev["calls"]
+
+            elif ev["type"] == "usage":
+                total_tokens += ev.get("total_tokens", 0)
+
+        if got_text and not tool_calls:
+            # Pure-text turn — final answer, no tools were called.
+            if not assistant_parts:
+                yield TokenEvent(type="token", chunk=FAILURE_MESSAGE)
+            if sources_used:
+                yield SourceEvent(type="source", sources=sorted(sources_used))
+            if total_tokens:
+                yield UsageEvent(type="usage", total_tokens=total_tokens)
             return
 
+        if not tool_calls:
+            # No text and no tool calls — fail closed.
+            yield TokenEvent(type="token", chunk=FAILURE_MESSAGE)
+            return
+
+        # Tool calls are present (model may have emitted a preamble text like
+        # "Je vais chercher…" before the call — that text was already streamed;
+        # the tool dispatch continues normally on the next iteration).
+
+        # Append the assistant's tool-call turn.
         messages.append({
-            "role": "assistant",
-            "content": msg.content or "",
+            "role":    "assistant",
+            "content": "".join(assistant_parts),
             "tool_calls": [
                 {
-                    "id": tc.id,
+                    "id":   tc["id"],
                     "type": "function",
-                    "function": {"name": tc.function.name, "arguments": tc.function.arguments},
+                    "function": {
+                        "name":      tc["function"]["name"],
+                        "arguments": tc["function"]["arguments"],
+                    },
                 }
-                for tc in msg.tool_calls
+                for tc in tool_calls
             ],
         })
 
-        for tc in msg.tool_calls:
-            yield ToolCallEvent(type="tool_call", name=tc.function.name)
+        # Dispatch each tool, tracking sources.
+        for tc in tool_calls:
+            name = tc["function"]["name"]
+            yield ToolCallEvent(type="tool_call", name=name)
+
+            if name in _DB_TOOLS:
+                sources_used.add("db")
+            elif name == "search_wiki":
+                sources_used.add("wiki")
+            elif name == "search_web":
+                sources_used.add("web")
 
             try:
-                args = json.loads(tc.function.arguments) if tc.function.arguments else {}
+                args = json.loads(tc["function"]["arguments"]) if tc["function"]["arguments"] else {}
             except json.JSONDecodeError as exc:
-                result = {"error": f"Invalid JSON arguments: {exc}"}
+                result: dict = {"error": f"Invalid JSON arguments: {exc}"}
             else:
-                result = await dispatch_tool(db, tc.function.name, args)
+                result = await dispatch_tool(db, name, args)
 
             messages.append({
                 "role":         "tool",
-                "tool_call_id": tc.id,
+                "tool_call_id": tc["id"],
                 "content":      json.dumps(result, ensure_ascii=False),
             })
 
