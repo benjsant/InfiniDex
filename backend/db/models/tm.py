@@ -10,7 +10,7 @@ class TM(Base):
     id       = Column(Integer, primary_key=True)
     number   = Column(Integer, nullable=False, unique=True)
     move_id  = Column(Integer, ForeignKey("move.id"), nullable=False)
-    location = Column(Text)  # human-readable text summary ready to display (e.g. "Route 13 (Surf)")
+    location = Column(Text)  # deprecated: use TMLocation rows via .locations instead
 
     move      = relationship("Move", back_populates="tm")
     locations = relationship("TMLocation", back_populates="tm", cascade="all, delete-orphan")

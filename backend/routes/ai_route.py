@@ -10,8 +10,10 @@ from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
 from backend.schemas.ai import AiRequest
-from backend.services.ai_service import stream_ai_response
+from backend.services.ai_service import MAX_HISTORY_MSGS, stream_ai_response
 from backend.services.llm_providers import provider_setup_instructions, select_provider
+from backend.services.prompt import SYSTEM_PROMPT
+from backend.services.tools import TOOL_SPECS
 
 router = APIRouter(prefix="/ai", tags=["AI"])
 
@@ -23,6 +25,22 @@ def get_ai_provider():
     if p is None:
         raise HTTPException(status_code=503, detail=provider_setup_instructions())
     return {"name": p.name, "model": p.model}
+
+
+@router.get("/prompt")
+def get_ai_prompt():
+    """Return the system prompt and tool descriptions for UI transparency."""
+    return {
+        "system_prompt": SYSTEM_PROMPT,
+        "tools": [
+            {
+                "name":        spec["function"]["name"],
+                "description": spec["function"]["description"],
+            }
+            for spec in TOOL_SPECS
+        ],
+        "max_history_messages": MAX_HISTORY_MSGS,
+    }
 
 
 @router.post("/ask")

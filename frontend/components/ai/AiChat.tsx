@@ -3,11 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
-import { Bot, Cog, Globe, Database, BookOpen } from "lucide-react";
+import { Bot, Cog, Globe, Database, BookOpen, Eye } from "lucide-react";
 import { useAiChat } from "@/hooks/useAiChat";
 import { getAiProvider } from "@/lib/api";
 import type { ChatMessage } from "@/hooks/useAiChat";
 import { AI_TOOL_LABELS, AI_SOURCE_LABELS, AI_SOURCE_COLORS } from "@/lib/constants";
+import { PromptModal } from "@/components/ai/PromptModal";
 
 const SUGGESTIONS = [
   "Meilleure fusion Dracaufeu ?",
@@ -25,6 +26,7 @@ export function AiChat({
 }) {
   const { messages, isStreaming, error, sendMessage, reset } = useAiChat();
   const [input, setInput] = useState("");
+  const [showPrompt, setShowPrompt] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
 
@@ -113,12 +115,22 @@ export function AiChat({
               Effacer la conversation
             </button>
           ) : <span />}
-          {provider && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-[rgb(20,20,35)] border border-[rgb(45,45,65)] text-[rgb(100,100,140)]">
-              {provider.name} · {provider.model}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowPrompt(true)}
+              title="Voir le prompt envoyé au LLM"
+              className="p-1 rounded text-[rgb(80,80,110)] hover:text-indigo-400 transition-colors"
+            >
+              <Eye size={14} />
+            </button>
+            {provider && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[rgb(20,20,35)] border border-[rgb(45,45,65)] text-[rgb(100,100,140)]">
+                {provider.name} · {provider.model}
+              </span>
+            )}
+          </div>
         </div>
+        {showPrompt && <PromptModal onClose={() => setShowPrompt(false)} />}
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input
             ref={inputRef}

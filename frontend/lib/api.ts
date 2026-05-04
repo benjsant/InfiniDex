@@ -195,3 +195,13 @@ export async function askAi(req: AiRequest, signal?: AbortSignal): Promise<Respo
 export function getAiProvider(): Promise<AiProviderInfo> {
   return apiFetch<AiProviderInfo>("/ai/provider");
 }
+
+export interface AiPromptInfo {
+  system_prompt: string;
+  tools: { name: string; description: string }[];
+  max_history_messages: number;
+}
+
+export function getAiPrompt(): Promise<AiPromptInfo> {
+  return apiFetch<AiPromptInfo>("/ai/prompt");
+}

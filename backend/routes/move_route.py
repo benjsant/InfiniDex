@@ -144,19 +144,25 @@ def get_move(move_id: int, db: Session = Depends(get_db)):
     tm_info: TMInfo | None = None
     tm = get_tm_for_move(db, move.id)
     if tm is not None:
-        tm_info = TMInfo(
-            number=tm.number,
-            location_summary=tm.location,
-            locations=[
-                TMLocationOut(
-                    location_id=tl.location_id,
-                    location_name_en=tl.location.name_en,
-                    location_name_fr=tl.location.name_fr,
-                    notes=tl.notes,
-                )
-                for tl in tm.locations
-            ],
-        )
+        tl_rows = [
+            TMLocationOut(
+                location_id=tl.location_id,
+                location_name_en=tl.location.name_en,
+                location_name_fr=tl.location.name_fr,
+                notes=tl.notes,
+            )
+            for tl in tm.locations
+        ]
+        # Derive the human-readable summary from structured FK data.
+        # Falls back to the legacy text field only when no tm_location rows exist.
+        if tl_rows:
+            summary = ", ".join(
+                loc.location_name_en + (f" ({loc.notes})" if loc.notes else "")
+                for loc in tl_rows
+            )
+        else:
+            summary = tm.location  # legacy fallback
+        tm_info = TMInfo(number=tm.number, location_summary=summary, locations=tl_rows)
 
     return MoveDetail(
         id=move.id,
