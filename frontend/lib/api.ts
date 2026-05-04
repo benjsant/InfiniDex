@@ -162,6 +162,19 @@ export function searchCreators(q: string): Promise<CreatorOut[]> {
   return apiFetch<CreatorOut[]>(`/creators/?q=${encodeURIComponent(q)}&limit=5`);
 }
 
+export function getCreators(params?: { q?: string; limit?: number; offset?: number }): Promise<CreatorOut[]> {
+  const sp = new URLSearchParams();
+  if (params?.q)      sp.set("q", params.q);
+  if (params?.limit)  sp.set("limit",  String(params.limit));
+  if (params?.offset) sp.set("offset", String(params.offset));
+  const qs = sp.toString() ? `?${sp}` : "";
+  return apiFetch<CreatorOut[]>(`/creators/${qs}`);
+}
+
+export function getCreator(id: number): Promise<CreatorOut> {
+  return apiFetch<CreatorOut>(`/creators/${id}`);
+}
+
 export function getCreatorSprites(creatorId: number): Promise<SpriteOut[]> {
   return apiFetch<SpriteOut[]>(`/creators/${creatorId}/sprites`);
 }

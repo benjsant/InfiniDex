@@ -193,6 +193,11 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             {(message.sources ?? []).map((src) => (
               <SourceBadge key={src} source={src} />
             ))}
+            {message.totalTokens != null && (
+              <span className="inline-flex items-center text-[9px] px-1.5 py-0.5 rounded-full bg-zinc-900/40 border border-zinc-700/30 text-zinc-500">
+                {message.totalTokens.toLocaleString()} tokens
+              </span>
+            )}
           </div>
         )}
         <div

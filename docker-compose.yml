@@ -188,6 +188,27 @@ services:
         ollama pull "${OLLAMA_MODEL:-qwen2.5:3b}" || true
         wait $$SERVE_PID
 
+  # Service optionnel : tests e2e Playwright (Chromium).
+  # Tourne contre le frontend déjà lancé sur le réseau Docker interne.
+  # Usage :
+  #   docker compose up -d          # démarre db + backend + frontend
+  #   docker compose --profile playwright run --rm playwright
+  # Les résultats s'affichent dans le terminal (reporter list).
+  playwright:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.playwright
+    container_name: fusiondex_playwright
+    profiles: ["playwright"]
+    depends_on:
+      frontend:
+        condition: service_started
+    environment:
+      BASE_URL: http://frontend:3000
+    networks:
+      - backend
+    restart: "no"
+
   # Service optionnel : documentation MkDocs Material avec hot-reload.
   # Démarre uniquement sur demande :
   #   docker compose --profile docs up docs

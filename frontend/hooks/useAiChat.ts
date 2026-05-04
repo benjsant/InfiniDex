@@ -9,6 +9,7 @@ export interface ChatMessage {
   content: string;
   toolCalls?: string[];
   sources?: string[];
+  totalTokens?: number;
 }
 
 // 3 minutes — covers the full agent loop (5 iterations × ~30s worst-case LLM)
@@ -71,10 +72,11 @@ export function useAiChat() {
               if (!line.startsWith("data: ")) continue;
               try {
                 const event = JSON.parse(line.slice(6)) as {
-                  type: "tool_call" | "token" | "source";
+                  type: "tool_call" | "token" | "source" | "usage";
                   name?: string;
                   chunk?: string;
                   sources?: string[];
+                  total_tokens?: number;
                 };
 
                 if (event.type === "tool_call" && event.name) {
@@ -102,6 +104,13 @@ export function useAiChat() {
                     const updated = [...cur];
                     const last = updated[updated.length - 1];
                     updated[updated.length - 1] = { ...last, sources: event.sources };
+                    return updated;
+                  });
+                } else if (event.type === "usage" && event.total_tokens != null) {
+                  setMessages((cur) => {
+                    const updated = [...cur];
+                    const last = updated[updated.length - 1];
+                    updated[updated.length - 1] = { ...last, totalTokens: event.total_tokens };
                     return updated;
                   });
                 }

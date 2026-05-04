@@ -1,0 +1,18 @@
+# Image officielle Playwright — contient Chromium, Firefox, WebKit + leurs deps système.
+# Le projet n'a pas besoin d'installer de browser sur la machine hôte.
+FROM mcr.microsoft.com/playwright:v1.52.0-noble
+
+WORKDIR /app
+
+# Dépendances Node — layer mis en cache tant que package.json ne change pas.
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --include=dev
+
+# Config et tests
+COPY frontend/playwright.config.ts ./
+COPY frontend/e2e/ ./e2e/
+
+# Par défaut : exécuter tous les tests Chromium.
+# La variable BASE_URL est injectée par docker-compose.
+ENTRYPOINT ["npx", "playwright", "test"]
+CMD ["--project=chromium"]

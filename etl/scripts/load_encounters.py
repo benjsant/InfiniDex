@@ -90,10 +90,12 @@ def load_encounters(conn) -> None:
             resolved_any = False
             for candidate in candidate_names:
                 pid: int | None = None
-                if e.get("national_id") and len(candidate_names) == 1:
+                # Name lookup first — handles alternate forms correctly
+                # (alternate forms share national_id with base form but have distinct names).
+                pid = by_name.get(candidate.lower())
+                # national_id fallback only when name didn't match and there's one candidate
+                if pid is None and e.get("national_id") and len(candidate_names) == 1:
                     pid = by_national.get(e["national_id"])
-                if pid is None:
-                    pid = by_name.get(candidate.lower())
                 if pid is None:
                     continue
                 try:

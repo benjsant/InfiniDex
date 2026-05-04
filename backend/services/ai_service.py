@@ -55,7 +55,12 @@ class SourceEvent(TypedDict):
     sources: list[str]  # e.g. ["db", "wiki", "web"]
 
 
-AgentEvent = ToolCallEvent | TokenEvent | SourceEvent
+class UsageEvent(TypedDict):
+    type: Literal["usage"]
+    total_tokens: int
+
+
+AgentEvent = ToolCallEvent | TokenEvent | SourceEvent | UsageEvent
 
 
 # ─── Single-turn streamer ─────────────────────────────────────────────────────
@@ -71,6 +76,7 @@ async def _stream_turn(provider: LLMProvider, messages: list[dict]):
     tool_calls_by_idx: dict[int, dict] = {}
     has_tokens     = False
     has_tool_calls = False
+    usage_data:  dict | None = None
 
     stream = await provider.client.chat.completions.create(
         model=provider.model,
@@ -80,10 +86,14 @@ async def _stream_turn(provider: LLMProvider, messages: list[dict]):
         max_tokens=MAX_TOKENS,
         temperature=TEMPERATURE,
         stream=True,
+        stream_options={"include_usage": True},
     )
 
     async for chunk in stream:
         if not chunk.choices:
+            # Final usage-only chunk (from stream_options include_usage)
+            if chunk.usage:
+                usage_data = {"total_tokens": chunk.usage.total_tokens}
             continue
         delta = chunk.choices[0].delta
 
@@ -117,6 +127,8 @@ async def _stream_turn(provider: LLMProvider, messages: list[dict]):
         yield {"type": "tool_calls", "calls": [tool_calls_by_idx[i] for i in sorted(tool_calls_by_idx)]}
     elif not has_tokens:
         yield {"type": "empty"}
+    if usage_data:
+        yield {"type": "usage", **usage_data}
 
 
 # ─── Agent loop ──────────────────────────────────────────────────────────────
@@ -152,6 +164,7 @@ async def stream_ai_response(
     ]
 
     sources_used: set[str] = set()
+    total_tokens = 0
 
     for iteration in range(MAX_ITERATIONS):
         LOGGER.debug("agent iteration=%d/%d", iteration + 1, MAX_ITERATIONS)
@@ -170,12 +183,17 @@ async def stream_ai_response(
             elif ev["type"] == "tool_calls":
                 tool_calls = ev["calls"]
 
+            elif ev["type"] == "usage":
+                total_tokens += ev.get("total_tokens", 0)
+
         if got_text:
-            # Final text response — emit sources then stop.
+            # Final text response — emit sources + usage then stop.
             if not assistant_parts:
                 yield TokenEvent(type="token", chunk=FAILURE_MESSAGE)
             if sources_used:
                 yield SourceEvent(type="source", sources=sorted(sources_used))
+            if total_tokens:
+                yield UsageEvent(type="usage", total_tokens=total_tokens)
             return
 
         if not tool_calls:
