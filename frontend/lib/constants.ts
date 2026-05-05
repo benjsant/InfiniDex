@@ -109,6 +109,18 @@ export const AI_TOOL_LABELS: Record<string, string> = {
   search_wiki:              "Wiki IF",
 };
 
+export const AI_SOURCE_LABELS: Record<string, string> = {
+  db:   "Base de données",
+  wiki: "Wiki IF",
+  web:  "Web",
+};
+
+export const AI_SOURCE_COLORS: Record<string, string> = {
+  db:   "bg-indigo-950/60 border-indigo-700/50 text-indigo-300",
+  wiki: "bg-amber-950/60 border-amber-700/50 text-amber-300",
+  web:  "bg-emerald-950/60 border-emerald-700/50 text-emerald-300",
+};
+
 // Toutes les requêtes sortent vers la même origine que le frontend. Next.js
 // les proxifie vers le backend interne via `rewrites()` (cf. next.config.ts).
 // Le browser ne voit jamais l'URL réelle du backend → rien à extraire du bundle.
