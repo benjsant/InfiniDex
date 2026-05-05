@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { BookOpen, GitMerge, Zap, Shield, Star, Bot, Layers, GraduationCap, Menu, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { GlobalSearch } from "@/components/layout/GlobalSearch";
 
 const NAV_LINKS: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: "/pokedex",        label: "Pokédex",        Icon: BookOpen      },
@@ -71,9 +72,14 @@ export function Navbar() {
           })}
         </div>
 
+        {/* Global search */}
+        <div className="ml-auto">
+          <GlobalSearch />
+        </div>
+
         {/* Mobile hamburger */}
         <button
-          className="md:hidden ml-auto p-2 rounded-lg transition-colors"
+          className="md:hidden p-2 rounded-lg transition-colors"
           style={{ color: "#6b7199" }}
           onClick={() => setOpen((v) => !v)}
           aria-label="Menu"

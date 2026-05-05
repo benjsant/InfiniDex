@@ -40,6 +40,61 @@ jobs:
         working-directory: backend
         run: uv run pytest tests/test_ai.py tests/test_llm_providers.py -v
 
-  # Full pytest suite requires a populated DB (572 Pokémon dataset from ETL).
-  # To enable, commit a SQL fixture dump under e.g. backend/tests/fixtures/
-  # and wire a postgres service + psql restore step here.
+  full:
+    name: Full pytest suite
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: fusiondex_test
+          POSTGRES_USER: fusiondex_user
+          POSTGRES_PASSWORD: testpassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: fusiondex_test
+      POSTGRES_USER: fusiondex_user
+      POSTGRES_PASSWORD: testpassword
+      SPRITES_DIR: tests/fixtures/sprites
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.10.12"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install backend deps
+        working-directory: backend
+        run: uv sync --frozen
+
+      - name: Restore fixture DB
+        env:
+          PGPASSWORD: testpassword
+        run: |
+          psql -h localhost -U fusiondex_user -d fusiondex_test \
+            --set ON_ERROR_STOP=1 -f backend/tests/fixtures/schema.sql
+          psql -h localhost -U fusiondex_user -d fusiondex_test \
+            --set ON_ERROR_STOP=1 -f backend/tests/fixtures/data.sql
+          psql -h localhost -U fusiondex_user -d fusiondex_test \
+            --set ON_ERROR_STOP=1 -f backend/tests/fixtures/sprites_sample.sql
+
+      - name: Run full test suite
+        working-directory: backend
+        run: uv run pytest -v --tb=short

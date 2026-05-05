@@ -1,15 +1,17 @@
 """Shared pytest fixtures.
 
-Tests run against the live dev Postgres (data loaded by the ETL pipeline).
-They assume the database is populated with the canonical 572 Pokémon dataset.
+Two modes:
+  - DB-free (CI smoke job): only test_ai.py + test_llm_providers.py
+  - Full  (CI full job + local dev): all tests against PostgreSQL populated
+    with backend/tests/fixtures/{schema,data,sprites_sample}.sql
 
-Run from the repo root (required — SPRITES_DIR is relative to cwd):
+Local run (from repo root):
     POSTGRES_PASSWORD=changeme backend/.venv/bin/pytest backend/tests/
 
-POSTGRES_HOST defaults to 'localhost'.
-POSTGRES_PORT defaults to the value of FUSIONDEX_DB_PORT from the environment
-(set in .env), falling back to 55432, so the custom Docker-exposed port is
-picked up automatically without requiring an extra env var at the CLI.
+POSTGRES_HOST  defaults to 'localhost'.
+POSTGRES_PORT  defaults to FUSIONDEX_DB_PORT env var, fallback 55432.
+SPRITES_DIR    defaults to 'data/sprites'; set to 'tests/fixtures/sprites'
+               in CI to serve the minimal test PNG without the full dataset.
 """
 
 from __future__ import annotations

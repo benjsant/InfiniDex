@@ -18,7 +18,7 @@ def test_fusion_bulba_charmander(client: TestClient) -> None:
 
 
 def test_fusion_not_found(client: TestClient) -> None:
-    r = client.get("/fusion/9999/1")
+    r = client.get("/fusion/999/1")  # 999 is within valid range but not in IF
     assert r.status_code == 404
 
 

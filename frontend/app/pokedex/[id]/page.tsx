@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState, useMemo, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -41,6 +41,9 @@ export default function PokemonDetailPage({
   const { id } = use(params);
   const pokemonId = parseInt(id, 10);
   const [activeTab, setActiveTab] = useState<Tab>("stats");
+  const [spritePage, setSpritePage] = useState(1);
+
+  const SPRITES_PER_PAGE = 48;
 
   const { data: pokemon, isLoading } = usePokemon(pokemonId);
   const { data: moves = [] }        = usePokemonMoves(pokemonId,    { enabled: activeTab === "moves" });
@@ -58,6 +61,12 @@ export default function PokemonDetailPage({
     enabled: activeTab === "fusion",
     staleTime: Infinity,
   });
+
+  const spriteTotalPages = Math.ceil(customSprites.length / SPRITES_PER_PAGE);
+  const spritesPage = useMemo(
+    () => customSprites.slice((spritePage - 1) * SPRITES_PER_PAGE, spritePage * SPRITES_PER_PAGE),
+    [customSprites, spritePage, SPRITES_PER_PAGE],
+  );
 
   if (isLoading) return <PageSkeleton />;
   if (!pokemon)  return <NotFound id={pokemonId} />;
@@ -246,9 +255,14 @@ export default function PokemonDetailPage({
 
           {/* Custom sprites grid */}
           <div>
-            <h3 className="text-sm font-semibold text-if-muted uppercase tracking-wider mb-3">
-              Sprites customs ({spritesLoading ? "…" : `${customSprites.length}`})
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-if-muted uppercase tracking-wider">
+                Sprites customs ({spritesLoading ? "…" : customSprites.length})
+              </h3>
+              {spriteTotalPages > 1 && (
+                <SpritePagination page={spritePage} totalPages={spriteTotalPages} onChange={(p) => { setSpritePage(p); }} />
+              )}
+            </div>
             {spritesLoading ? (
               <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 animate-pulse">
                 {Array.from({ length: 8 }).map((_, i) => (
@@ -256,11 +270,18 @@ export default function PokemonDetailPage({
                 ))}
               </div>
             ) : customSprites.length > 0 ? (
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-                {customSprites.map((s) => (
-                  <CustomSpriteCard key={s.id} sprite={s} />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                  {spritesPage.map((s) => (
+                    <CustomSpriteCard key={s.id} sprite={s} />
+                  ))}
+                </div>
+                {spriteTotalPages > 1 && (
+                  <div className="flex justify-center mt-3">
+                    <SpritePagination page={spritePage} totalPages={spriteTotalPages} onChange={(p) => { setSpritePage(p); }} />
+                  </div>
+                )}
+              </>
             ) : (
               <p className="text-sm text-if-text-xs">Aucun sprite custom disponible.</p>
             )}
@@ -336,6 +357,28 @@ function FusionCard({ fusion }: { fusion: FusionInvolvingOut }) {
         {partnerName}
       </span>
     </Link>
+  );
+}
+
+function SpritePagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        onClick={() => onChange(page - 1)}
+        disabled={page === 1}
+        className="p-1 rounded text-if-muted hover:text-if-text disabled:opacity-30 transition-colors"
+      >
+        <ChevronLeft size={14} />
+      </button>
+      <span className="text-xs text-if-muted px-1">{page} / {totalPages}</span>
+      <button
+        onClick={() => onChange(page + 1)}
+        disabled={page === totalPages}
+        className="p-1 rounded text-if-muted hover:text-if-text disabled:opacity-30 transition-colors"
+      >
+        <ChevronRight size={14} />
+      </button>
+    </div>
   );
 }
 

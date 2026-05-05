@@ -55,8 +55,14 @@ def _to_type_out(t) -> TypeOut | None:
     )
 
 
-# 572 IF Pokémon + room for future expansions; rejects clearly invalid IDs fast.
-_ID = Path(ge=1, le=2000)
+def _id_path() -> int:
+    """Factory for Path(ge=1, le=2000).
+
+    Must NOT be shared between parameters — FastAPI mutates FieldInfo aliases
+    in-place during route registration, so a shared instance causes body_id to
+    resolve from the {head_id} path segment instead of {body_id}.
+    """
+    return Path(ge=1, le=2000)
 
 
 def _load_pair_or_404(db: Session, head_id: int, body_id: int):
@@ -78,7 +84,7 @@ def get_random_fusion(db: Session = Depends(get_db)):
 
 
 @router.get("/{head_id}/{body_id}", response_model=FusionResult)
-def get_fusion(head_id: int = _ID, body_id: int = _ID, db: Session = Depends(get_db)):
+def get_fusion(head_id: int = _id_path(), body_id: int = _id_path(), db: Session = Depends(get_db)):
     """
     Stats, types, and sprite of a fusion.
 
@@ -114,7 +120,7 @@ def get_fusion(head_id: int = _ID, body_id: int = _ID, db: Session = Depends(get
 
 
 @router.get("/{head_id}/{body_id}/moves", response_model=list[FusionMoveOut])
-def get_fusion_moves(head_id: int = _ID, body_id: int = _ID, db: Session = Depends(get_db)):
+def get_fusion_moves(head_id: int = _id_path(), body_id: int = _id_path(), db: Session = Depends(get_db)):
     """Combined head + body moveset, deduplicated per move (origin='head'|'body'|'both')."""
     head, body = _load_pair_or_404(db, head_id, body_id)
     rows = compute_fusion_moves(db, head.id, body.id)
@@ -138,14 +144,14 @@ def get_fusion_moves(head_id: int = _ID, body_id: int = _ID, db: Session = Depen
 
 
 @router.get("/{head_id}/{body_id}/abilities", response_model=list[FusionAbilityOut])
-def get_fusion_abilities(head_id: int = _ID, body_id: int = _ID, db: Session = Depends(get_db)):
+def get_fusion_abilities(head_id: int = _id_path(), body_id: int = _id_path(), db: Session = Depends(get_db)):
     """Abilities available for the fusion (IF rule: head slot 1 + body slot 1 + hidden abilities)."""
     head, body = _load_pair_or_404(db, head_id, body_id)
     return [FusionAbilityOut(**a) for a in compute_fusion_abilities(db, head, body)]
 
 
 @router.get("/{head_id}/{body_id}/weaknesses", response_model=list[WeaknessOut])
-def get_fusion_weaknesses(head_id: int = _ID, body_id: int = _ID, db: Session = Depends(get_db)):
+def get_fusion_weaknesses(head_id: int = _id_path(), body_id: int = _id_path(), db: Session = Depends(get_db)):
     """Damage multipliers against the fusion's types (non-neutral only)."""
     head, body = _load_pair_or_404(db, head_id, body_id)
     return compute_fusion_weaknesses(db, head, body)
@@ -155,7 +161,7 @@ def get_fusion_weaknesses(head_id: int = _ID, body_id: int = _ID, db: Session = 
     "/{head_id}/{body_id}/expert-moves",
     response_model=list[FusionExpertMoveOut],
 )
-def get_fusion_expert_moves(head_id: int = _ID, body_id: int = _ID, db: Session = Depends(get_db)):
+def get_fusion_expert_moves(head_id: int = _id_path(), body_id: int = _id_path(), db: Session = Depends(get_db)):
     """Moves teachable to this fusion by a Move Expert (Knot / Boon Island)."""
     head, body = _load_pair_or_404(db, head_id, body_id)
     rows = compute_fusion_expert_moves(db, head, body)
