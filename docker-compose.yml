@@ -143,6 +143,17 @@ services:
     networks:
       - backend
     restart: unless-stopped
+    # Garde-fou mémoire — qwen2.5:3b nécessite ~3 GB (2 GB poids + runtime).
+    # Sans limite explicite, Docker sur Windows/WSL2 peut laisser le container
+    # mourir silencieusement par OOM sans message d'erreur visible.
+    # Avec mem_limit, Docker signale proprement "Killed" au lieu d'un timeout.
+    # ⚠ Windows / WSL2 : si Docker Desktop plafonne WSL2 à 2 GB (défaut sur
+    #   certaines configs), ajouter dans %UserProfile%\.wslconfig :
+    #     [wsl2]
+    #     memory=6GB
+    #   puis relancer : wsl --shutdown && redémarrer Docker Desktop.
+    mem_limit: "4g"
+    memswap_limit: "4g"   # désactive le swap (évite thrashing disque si OOM)
     # Pull le modèle par défaut au boot. `ollama serve` démarre en
     # background ; le `pull` attend que le serveur soit prêt puis tire
     # le modèle ; enfin `wait` reprend le PID du serveur.

@@ -13,6 +13,7 @@ import type {
   AbilityListItem,
   AbilityDetail,
   FusionResult,
+  FusionInvolvingOut,
   SpriteOut,
   FusionMoveOut,
   FusionExpertMoveOut,
@@ -90,8 +91,16 @@ export function getFusionExpertMoves(headId: number, bodyId: number): Promise<Fu
   return apiFetch<FusionExpertMoveOut[]>(`/fusion/${headId}/${bodyId}/expert-moves`);
 }
 
+export function getFusionsInvolving(pokemonId: number, limit = 24): Promise<FusionInvolvingOut[]> {
+  return apiFetch<FusionInvolvingOut[]>(`/fusions/involving/${pokemonId}?limit=${limit}`);
+}
+
 export function getSprites(headId: number, bodyId: number): Promise<SpriteOut[]> {
   return apiFetch<SpriteOut[]>(`/sprites/${headId}/${bodyId}`);
+}
+
+export function getSpritesByPokemon(pokemonId: number): Promise<SpriteOut[]> {
+  return apiFetch<SpriteOut[]>(`/sprites/by_pokemon/${pokemonId}`);
 }
 
 // ── Moves ────────────────────────────────────────────────────────────────────
@@ -179,4 +188,14 @@ export async function askAi(req: AiRequest, signal?: AbortSignal): Promise<Respo
 
 export function getAiProvider(): Promise<AiProviderInfo> {
   return apiFetch<AiProviderInfo>("/ai/provider");
+}
+
+export interface AiPromptInfo {
+  system_prompt: string;
+  tools: { name: string; description: string }[];
+  max_history_messages: number;
+}
+
+export function getAiPrompt(): Promise<AiPromptInfo> {
+  return apiFetch<AiPromptInfo>("/ai/prompt");
 }

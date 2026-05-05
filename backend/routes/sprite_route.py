@@ -8,9 +8,39 @@ from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
 from backend.schemas.sprite import SpriteOut
-from backend.services.sprite_service import list_sprites_for_pair, resolve_sprite_file
+from backend.services.sprite_service import (
+    list_custom_sprites_for_pokemon,
+    list_sprites_for_pair,
+    resolve_sprite_file,
+)
 
 router = APIRouter(prefix="/sprites", tags=["Sprites"])
+
+
+@router.get("/by_pokemon/{pokemon_id}", response_model=list[SpriteOut])
+def get_custom_sprites_for_pokemon(
+    pokemon_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    List one custom sprite per fusion pair involving this Pokémon (head or body).
+
+    Returns the default custom sprite for each pair, sorted by head_id then body_id.
+    """
+    sprites = list_custom_sprites_for_pokemon(db, pokemon_id)
+    return [
+        SpriteOut(
+            id=s.id,
+            head_id=s.head_id,
+            body_id=s.body_id,
+            sprite_path=s.sprite_path,
+            is_custom=s.is_custom,
+            is_default=s.is_default,
+            source=s.source,
+            creators=[c.creator.name for c in s.creators],
+        )
+        for s in sprites
+    ]
 
 
 @router.get("/{head_id}/{body_id}", response_model=list[SpriteOut])

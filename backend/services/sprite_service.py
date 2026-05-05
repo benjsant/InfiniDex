@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 
 from backend.db.models import FusionSprite, FusionSpriteCreator
@@ -20,6 +21,33 @@ def list_sprites_for_pair(db: Session, head_id: int, body_id: int) -> list[Fusio
         )
         .filter(FusionSprite.head_id == head_id, FusionSprite.body_id == body_id)
         .order_by(FusionSprite.is_default.desc(), FusionSprite.sprite_path)
+        .all()
+    )
+
+
+def list_custom_sprites_for_pokemon(db: Session, pokemon_id: int) -> list[FusionSprite]:
+    """One default custom sprite per (head_id, body_id) pair involving pokemon_id."""
+    # DISTINCT ON picks the first row per pair when ordered by is_default DESC — PostgreSQL only.
+    subq = (
+        db.query(FusionSprite.id)
+        .filter(
+            or_(FusionSprite.head_id == pokemon_id, FusionSprite.body_id == pokemon_id),
+            FusionSprite.is_custom == True,  # noqa: E712
+        )
+        .order_by(
+            FusionSprite.head_id,
+            FusionSprite.body_id,
+            FusionSprite.is_default.desc(),
+            FusionSprite.id,
+        )
+        .distinct(FusionSprite.head_id, FusionSprite.body_id)
+        .subquery()
+    )
+    return (
+        db.query(FusionSprite)
+        .options(joinedload(FusionSprite.creators).joinedload(FusionSpriteCreator.creator))
+        .filter(FusionSprite.id.in_(subq))
+        .order_by(FusionSprite.head_id, FusionSprite.body_id)
         .all()
     )
 

@@ -184,6 +184,7 @@ def fake_client_factory(monkeypatch):
 
 def test_ai_provider_returns_name_and_model(client: TestClient, monkeypatch) -> None:
     monkeypatch.setenv("DEEPSEEK_API_KEY", "sk-test")
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     monkeypatch.delenv("OLLAMA_URL", raising=False)
     r = client.get("/ai/provider")
     assert r.status_code == 200
@@ -193,6 +194,7 @@ def test_ai_provider_returns_name_and_model(client: TestClient, monkeypatch) -> 
 
 def test_ai_provider_503_when_none_configured(client: TestClient, monkeypatch) -> None:
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     monkeypatch.delenv("OLLAMA_URL", raising=False)
     r = client.get("/ai/provider")
     assert r.status_code == 503
@@ -202,12 +204,13 @@ def test_ai_provider_503_when_none_configured(client: TestClient, monkeypatch) -
 
 def test_ai_no_provider_configured(client: TestClient, monkeypatch) -> None:
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     monkeypatch.delenv("OLLAMA_URL", raising=False)
     r = client.post("/ai/ask", json={"message": "salut"})
     assert r.status_code == 503
     detail = r.json()["detail"]
     assert detail["error"] == "No LLM provider configured"
-    assert {opt["provider"] for opt in detail["options"]} == {"deepseek", "ollama"}
+    assert {opt["provider"] for opt in detail["options"]} == {"deepseek", "openrouter", "ollama"}
 
 
 def test_ai_direct_answer_no_tool_call(client: TestClient, fake_client_factory) -> None:

@@ -11,8 +11,8 @@ import {
   usePokemonWeaknesses,
 } from "@/hooks/usePokemon";
 import { useQuery } from "@tanstack/react-query";
-import { getFusionsInvolving } from "@/lib/api";
-import type { FusionInvolvingOut } from "@/types/api";
+import { getFusionsInvolving, getSpritesByPokemon } from "@/lib/api";
+import type { FusionInvolvingOut, SpriteOut } from "@/types/api";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import { StatBar } from "@/components/pokemon/StatBar";
 import { MovesetTable } from "@/components/pokemon/MovesetTable";
@@ -49,6 +49,12 @@ export default function PokemonDetailPage({
   const { data: fusions = [], isLoading: fusionsLoading } = useQuery({
     queryKey: ["fusions-involving", pokemonId],
     queryFn: () => getFusionsInvolving(pokemonId, 100),
+    enabled: activeTab === "fusion",
+    staleTime: Infinity,
+  });
+  const { data: customSprites = [], isLoading: spritesLoading } = useQuery({
+    queryKey: ["custom-sprites", pokemonId],
+    queryFn: () => getSpritesByPokemon(pokemonId),
     enabled: activeTab === "fusion",
     staleTime: Infinity,
   });
@@ -238,6 +244,28 @@ export default function PokemonDetailPage({
             </Link>
           </div>
 
+          {/* Custom sprites grid */}
+          <div>
+            <h3 className="text-sm font-semibold text-if-muted uppercase tracking-wider mb-3">
+              Sprites customs ({spritesLoading ? "…" : `${customSprites.length}`})
+            </h3>
+            {spritesLoading ? (
+              <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 animate-pulse">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="h-16 bg-if-elevated rounded-lg" />
+                ))}
+              </div>
+            ) : customSprites.length > 0 ? (
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                {customSprites.map((s) => (
+                  <CustomSpriteCard key={s.id} sprite={s} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-if-text-xs">Aucun sprite custom disponible.</p>
+            )}
+          </div>
+
           {/* Fusions involving this Pokémon */}
           <div>
             <h3 className="text-sm font-semibold text-if-muted uppercase tracking-wider mb-3">
@@ -276,6 +304,22 @@ function PageSkeleton() {
         </div>
       </div>
     </div>
+  );
+}
+
+function CustomSpriteCard({ sprite }: { sprite: SpriteOut }) {
+  const label = sprite.creators.length > 0 ? sprite.creators[0] : `${sprite.head_id}×${sprite.body_id}`;
+  return (
+    <Link
+      href={`/fusion/${sprite.head_id}/${sprite.body_id}`}
+      className="flex flex-col items-center gap-1 p-2 rounded-lg if-panel hover:border-indigo-500 hover:bg-if-elevated transition-all"
+      title={`${sprite.head_id}×${sprite.body_id}${sprite.creators.length > 0 ? ` · ${sprite.creators.join(", ")}` : ""}`}
+    >
+      <FusionSprite headId={sprite.head_id} bodyId={sprite.body_id} size={48} />
+      <span className="text-[9px] text-if-text-xs text-center leading-tight truncate w-full">
+        {label}
+      </span>
+    </Link>
   );
 }
 
