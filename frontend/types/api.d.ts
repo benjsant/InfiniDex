@@ -150,6 +150,15 @@ export interface SpriteOut {
   creators: string[];
 }
 
+export interface FusionInvolvingOut {
+  head_id: number;
+  body_id: number;
+  role: "head" | "body";
+  partner_id: number;
+  partner_name_en: string | null;
+  partner_name_fr: string | null;
+}
+
 export interface FusionMoveOut {
   move_id: number;
   name_en: string;

@@ -1,20 +1,13 @@
-"""LLM provider abstraction — DeepSeek (cloud) + Ollama (local).
+"""LLM provider abstraction — DeepSeek · OpenRouter · Ollama.
 
-Allows the agent to switch between a cloud provider (DeepSeek, best quality)
-and a local fallback (Ollama with a small quantized model) without touching
-the tool-calling loop code.
+Runtime selection via env (first match wins):
+  1. DEEPSEEK_API_KEY   → DeepSeekProvider   (cloud, best quality)
+  2. OPENROUTER_API_KEY → OpenRouterProvider  (cloud, free tier available)
+  3. OLLAMA_URL         → OllamaProvider      (local, no key required)
+  4. None               → 503 with setup instructions
 
-Runtime selection via env:
-  - DEEPSEEK_API_KEY set  → DeepSeekProvider
-  - else, OLLAMA_URL set  → OllamaProvider
-  - else                  → None (route returns 503 with setup instructions)
-
-Both providers expose the same interface (an OpenAI-compatible client
-+ a model name) because DeepSeek and Ollama both speak the OpenAI Chat
-Completions protocol.
-
-Anticipates Phase 5 v1.1 (pluggable provider) — adding Anthropic or another
-provider simply means creating a new `LLMProvider` subclass.
+All three expose the same OpenAI Chat Completions-compatible interface,
+so the tool-calling loop in ai_service.py never needs to know which is active.
 """
 
 from __future__ import annotations
@@ -66,6 +59,40 @@ class DeepSeekProvider(LLMProvider):
         return self._client
 
 
+class OpenRouterProvider(LLMProvider):
+    """Cloud — OpenRouter (https://openrouter.ai/), OpenAI-compatible.
+
+    Free-tier models available with the `:free` suffix (e.g. `deepseek/deepseek-chat-v3-0324:free`).
+    Override via OPENROUTER_MODEL. HTTP-Referer header required by OpenRouter ToS.
+    """
+
+    BASE_URL      = "https://openrouter.ai/api/v1"
+    DEFAULT_MODEL = "deepseek/deepseek-chat-v3-0324:free"
+
+    def __init__(self, api_key: str, model: str | None = None) -> None:
+        self._model = model or self.DEFAULT_MODEL
+        self._client = AsyncOpenAI(
+            api_key=api_key,
+            base_url=self.BASE_URL,
+            default_headers={
+                "HTTP-Referer": "https://github.com/benjsant/FusionDex-IA",
+                "X-Title":      "FusionDex-IA",
+            },
+        )
+
+    @property
+    def name(self) -> str:
+        return "openrouter"
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    @property
+    def client(self) -> AsyncOpenAI:
+        return self._client
+
+
 class OllamaProvider(LLMProvider):
     """Local — Ollama server with OpenAI-compatible endpoint (`/v1`).
 
@@ -96,20 +123,22 @@ class OllamaProvider(LLMProvider):
 # ─── Runtime selection ───────────────────────────────────────────────────────
 
 def select_provider() -> LLMProvider | None:
-    """Return the first available provider based on environment.
+    """Return the first available provider based on environment (first match wins).
 
     Order:
-      1. `DEEPSEEK_API_KEY` set → DeepSeek
-      2. `OLLAMA_URL` set → Ollama (model from `OLLAMA_MODEL`, default `qwen2.5:3b`)
-      3. None — route should return 503 with instructions
+      1. DEEPSEEK_API_KEY   → DeepSeek
+      2. OPENROUTER_API_KEY → OpenRouter (model from OPENROUTER_MODEL, default free DeepSeek)
+      3. OLLAMA_URL         → Ollama    (model from OLLAMA_MODEL, default qwen2.5:3b)
+      4. None               → route returns 503 with instructions
     """
-    deepseek_key = os.getenv("DEEPSEEK_API_KEY")
-    if deepseek_key:
-        return DeepSeekProvider(deepseek_key)
+    if key := os.getenv("DEEPSEEK_API_KEY"):
+        return DeepSeekProvider(key)
 
-    ollama_url = os.getenv("OLLAMA_URL")
-    if ollama_url:
-        return OllamaProvider(ollama_url, os.getenv("OLLAMA_MODEL"))
+    if key := os.getenv("OPENROUTER_API_KEY"):
+        return OpenRouterProvider(key, os.getenv("OPENROUTER_MODEL"))
+
+    if url := os.getenv("OLLAMA_URL"):
+        return OllamaProvider(url, os.getenv("OLLAMA_MODEL"))
 
     return None
 
@@ -127,6 +156,17 @@ def provider_setup_instructions() -> dict:
                     "Add `DEEPSEEK_API_KEY=sk-...` to .env",
                     "docker compose restart backend",
                 ],
+            },
+            {
+                "provider": "openrouter",
+                "label":    "OpenRouter (cloud, free tier available)",
+                "steps":    [
+                    "Create a free key at https://openrouter.ai/",
+                    "Add `OPENROUTER_API_KEY=sk-or-...` to .env",
+                    "Optionally set OPENROUTER_MODEL (default: deepseek/deepseek-chat-v3-0324:free)",
+                    "docker compose restart backend",
+                ],
+                "note":     "Free models have rate limits; paid models available on the same key.",
             },
             {
                 "provider": "ollama",
