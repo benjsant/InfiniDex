@@ -10,92 +10,91 @@ Pipeline complet en 12 étapes, factorisé en helpers :
 - `etl/utils/io.py` — `load_json` / `save_json`
 - Héritage des moves de pré-évolutions (`enrich_evolution_movesets.py`)
 
-**Données finales** : 572 Pokémon · 676 moves · 178 abilities · 40067 pokemon_move · 166090 fusion_sprite · 7081 créateurs · 23 triple_fusion · 1634 pokemon_location
+**Données finales** : 572 Pokémon · 676 moves · 178 abilities · 40 067 pokemon_move · 166 090 fusion_sprite · 7 081 créateurs · 23 triple_fusion · 1 634 pokemon_location
 
 **Pistes restantes**
-- Audit DB — Pokémon sans sprites, moves orphelins, cohérence des fusions
-- Scheduler (Prefect ou n8n) pour automatiser les refresh
+- [ ] Audit DB — Pokémon sans sprites, moves orphelins, cohérence des fusions
+- [ ] Scheduler (Prefect ou n8n) pour automatiser les refresh
 
 ## Base de données — ✅ stable
 
-**Données finales enrichies** :
 - [x] **Move tutors** — table `move_tutor` (41 tuteurs classiques, NPC + prix + localisation)
 - [x] **pokemon_location enrichie** — 55 entrées "gift", 25 entrées "trade", tags `respawn:elite4|gold|none` sur les légendaires
-- [x] **type_effectiveness** — 87 entrées ajoutées pour les 8 types triple-fusion (IDs 37-44), types custom indépendants
+- [x] **type_effectiveness** — 87 entrées pour les 8 types triple-fusion (IDs 37–44), types custom indépendants
 - [x] **Fix triple fusion weaknesses** — `compute_triple_fusion_weaknesses` utilise les IDs de type directement
-- [ ] **TM location cleanup** — normaliser `tm.location` (texte libre avec bugs de parsing) et lier via FK à `location(id)`
-
-## Backend FastAPI — ✅ base solide
-
-**36 endpoints + `/health`** couvrant Pokémon, moves, abilities, types, fusions, sprites, triple-fusions, générations, créateurs, stats, IA. **53 tests pytest** (voir [backend/tests/](backend/tests/)).
-
-**Optimisations DB** (PR #9 en cours) — index `idx_fusion_sprite_body` (seq scan 7.8ms → BitmapOr 2.76ms sur `/fusions/involving`), contrainte partielle `uq_fusion_sprite_default`, `compute_fusion_abilities` 2→1 query.
-
-**Endpoints ajoutés**
-- [x] `/moves/tutors/all` — tous les tuteurs classiques pour le frontend
-- [x] `/moves/experts/all` — tous les Move Experts pour le frontend
-- [x] `/moves/{id}/tutors` retourne aussi `move_name_en` et `move_name_fr`
+- [x] **TM location** — texte libre remplacé par lignes FK `tm_location` (lieu + notes structurés)
 
 **Pistes restantes**
-- [ ] **CI full pytest** — le workflow actuel ne lance que `test_ai.py` (les autres ont besoin d'un dump SQL committé sous `backend/tests/fixtures/`)
-- [ ] Endpoints pour les nouveaux ajouts BDD (TM enrichi)
+- [ ] Endpoint `GET /sprites/by_pokemon/{id}?custom_only=true` — nécessaire pour la grille de sprites customs frontend
 
-## Frontend Next.js — ✅ stable
+## Backend FastAPI — ✅ stable
 
-Pages en place : `/pokedex` + `/pokedex/[id]`, `/fusion` + `/fusion/[headId]/[bodyId]`, `/moves`, `/moves/tutors`, `/types`, `/abilities`, `/ai`, `/triple-fusions`. Proxy runtime `/api/*` + `/sprites-cdn/*`. Composants : EvolutionChain, MovesetTable, PokemonCard, FusionSprite, AiChat, CreatorModal, WeaknessGrid, etc. Hooks typés : useFusion, useMoves, usePokemon, useAiChat.
+**41 endpoints + `/health`** couvrant Pokémon, moves, abilities, types, fusions, sprites, triple-fusions, générations, créateurs, stats, IA. **21 tests pytest** DB-free en CI (voir [backend/tests/](backend/tests/)).
 
-**Fonctionnalités ajoutées**
-- [x] Page `/moves/tutors` — Maîtres des Capacités (tuteurs classiques groupés par lieu + Move Experts par île)
-- [x] Page `/triple-fusions` — liste des 23 fusions triples
-- [x] `FusionSelector` — filtre Kanto/Hoenn/Tous (`GameFilter = "kanto" | "hoenn" | "all"`)
-- [x] Responsive mobile — hamburger + drawer full-width (`md:hidden`), `hidden sm:table-cell`, `flex-col md:flex-row`
-- [x] Design IF-style — palette gold `#e8b84b`, fond `#090c1a`, tokens CSS `@theme`, grid texture, TypeBadge avec glow, PokemonCard avec gradient de type, StatBar avec gradient + glow
-- [x] `search_pokemon_locations` — outil IA pour chercher les Pokémon par condition/méthode
+**Livrés**
+- [x] `/moves/tutors/all` + `/moves/experts/all` — listes complètes pour le frontend
+- [x] `/moves/{id}/tutors` retourne `move_name_en` + `move_name_fr`
+- [x] `/fusions/involving/{id}` — fusions impliquant un Pokémon (avec limit)
+- [x] `/fusion/random` — fusion aléatoire head+body
+- [x] Streaming SSE typé — `tool_call · token · source · usage`
+- [x] Fix agent loop — `got_text and not tool_calls` (court-circuit sur preamble text + tool calls)
+- [x] System prompt renforcé — règle database-first explicite, outils obligatoires par sujet
 
 **Pistes restantes**
-- [ ] Galerie sprites + crédits (par créateur)
-- [ ] Toggle EN/FR global persistent
+- [ ] `GET /sprites/by_pokemon/{id}?custom_only=true` — sprites custom d'un Pokémon (pour la grille frontend)
+- [ ] CI full pytest — dump SQL fixture à committer sous `backend/tests/fixtures/`
+
+## Frontend Next.js — ✅ complet
+
+Toutes les pages livrées. Theme dark/light persistant. Design IF-style (palette navy/gold, tokens CSS `@theme`, grid texture). Responsive mobile-first.
+
+**Pages**
+
+| Route | Contenu |
+|-------|---------|
+| `/` | Landing — grille des modules |
+| `/pokedex` | Liste paginée (40/page) + recherche + filtres type/légendaire |
+| `/pokedex/[id]` | Onglets Stats · Capacités · Évolutions · Faiblesses · Fusion (100 aperçus) |
+| `/fusion` | Sélecteur head/body + bouton fusion aléatoire |
+| `/fusion/[headId]/[bodyId]` | Stats + double sprite + moveset + suggestion IA |
+| `/ai` | Chat IA plein écran — badges source, compteur tokens, PromptModal |
+| `/moves` | Liste paginée (50/page) + filtre type/catégorie + icône loupe |
+| `/moves/[id]` | Fiche capacité — type, catégorie, puissance, PP, description FR/EN |
+| `/moves/tutors` | Tuteurs classiques groupés par lieu + Move Experts par île |
+| `/abilities` | Liste paginée (40/page) + panel détail inline + icône loupe |
+| `/abilities/[id]` | Fiche talent — description FR/EN, badge "Modifié IF", notes |
+| `/types` | Grille d'efficacité 18×18 Gen 7 |
+| `/triple-fusions` | 23 fusions triples légendaires avec stats et faiblesses |
+| `/creators` | Galerie paginée (48/page) + recherche |
+| `/creators/[id]` | Grille sprites d'un créateur, cliquables vers la fusion |
+
+**Composants clés**
+- `MovesetTable` — icône `Info` par capacité → description inline lazy-fetchée
+- `AiChat` — streaming SSE, pastilles ⚙ tool-call, badges DB/Wiki/Web, compteur tokens, `PromptModal`
+- `FusionSelector` — bouton aléatoire (🔀), filtre Kanto/Hoenn/Tous
+- `ThemeProvider` + anti-flash script — toggle ☀/🌙 persisté en `localStorage`
+
+**Pistes restantes**
+- [ ] Grille sprites customs dans l'onglet Fusion (attend l'endpoint backend)
+- [ ] Toggle EN/FR global persistant
 - [ ] Tests Playwright
-- [ ] UI transparence IA (cf. section IA ci-dessous)
 
-## IA — 🚧 en cours : phases avancées (transparence, privacy)
-
-L'objectif n'est plus un simple chat générique branché sur DeepSeek, mais un **assistant agentique** qui interroge la BDD, le wiki IF et le web de façon structurée, avec refus explicite en cas d'absence de donnée et transparence sur ce qui est envoyé au LLM.
-
-### Principes de conception
-
-1. **Tool calling natif** — DeepSeek (OpenAI-compatible function calling) choisit quels tools appeler
-2. **Cascade de retrieval** — DB interne → wiki IF (MediaWiki API) → web (DuckDuckGo)
-3. **Fail-closed** — si aucun tool ne remonte d'info pertinente, réponse explicite `"Je n'ai pas trouvé cette information."` — jamais d'invention
-4. **Transparence** — l'UI montre quels tools ont été appelés, quelles sources, combien de tokens
-5. **Privacy first** — couche de redaction PII (noms de créateurs, futurs usernames) **avant** envoi au LLM
-6. **Provider pluggable** — interface `LLMProvider` abstraite, implémentations DeepSeek / OpenAI / Anthropic / Ollama
-
-### Phases d'implémentation
-
-Chaque phase = une PR + un post LinkedIn *building in public*.
+## IA — ✅ phases 1–3 livrées
 
 | Phase | Scope | État |
 |-------|-------|------|
-| 1 | **Tools DB + refus strict** | ✅ livré — 7 tools (`get_pokemon`, `get_fusion`, `search_move`, `get_item`, `get_move_tutors`, `search_wiki`, `search_pokemon_locations`), boucle tool-call, system prompt anti-hallucination, circuit breaker (max 5 tool calls/turn) |
-| 2 | **Tool MediaWiki IF** | ✅ livré — `search_wiki` avec cache TTL 10 min, fetch page complète si intro < 300 caractères |
-| 3 | **Tool DuckDuckGo** | non démarré — fallback dernier recours, rate-limit, summarize les résultats avant ré-injection |
-| 4 | **UI transparence** | non démarré — afficher les sources utilisées, compteur tokens, bouton « voir le prompt envoyé » |
-| 5 | **Privacy layer + provider pluggable** | partiellement livré — `LLMProvider` ABC + DeepSeek/Ollama ; PII redactor non démarré |
+| 1 | Tools DB + refus strict | ✅ — 8 tools, boucle agent MAX_ITERATIONS=5, fail-closed |
+| 2 | Tool `search_wiki` (MediaWiki IF) | ✅ — cache TTL 10 min, fetch page complète si intro courte |
+| 3 | Tool `search_web` (DuckDuckGo) + streaming réel + transparence | ✅ — SSE token-par-token, SourceEvent, UsageEvent, PromptModal |
+| 4 | Privacy layer (PII redactor) + provider OpenAI/Anthropic | ⬜ à faire |
 
-### Contraintes techniques
+**Fix livré (PR #37)** — agent loop corrigé : quand DeepSeek streame du texte de preamble *avant* ses tool_calls dans le même tour SSE, `got_text = True` court-circuitait le dispatch. Fix : `if got_text and not tool_calls`.
 
-- **Latence** : cascade complète ≤ 6s (SLA cible). Si dépassé, un mode `/ai/ask-fast` (DB only) reste disponible.
-- **Coûts** : compter tokens par session, alerte si > seuil configurable.
-- **Context window** : DeepSeek chat = 64k tokens. Compression/troncation des tool results si besoin.
-- **Boucles infinies** : max 5 tool calls/turn, sinon fail-closed.
-
-### Précisions use-case
-
-L'assistant cible 3 usages (par ordre de priorité) :
-1. **Expliquer une fusion** — "Pourquoi cette fusion a tel type ?", "Quels moves intéressants ?"
-2. **Recommandations stratégiques** — "Donne-moi une fusion anti-Psychic avec Pikachu en head"
-3. **Q&A mécaniques IF** — "Comment fonctionnent les Move Experts ?", "Où est le Mystic Water ?"
+**Contraintes maintenues**
+- Latence cascade ≤ 6s
+- MAX_ITERATIONS = 5 (circuit breaker)
+- MAX_TOKENS = 2048
+- MAX_HISTORY_MSGS = 10
 
 ## Infra — ✅ v1 stable
 
@@ -103,32 +102,35 @@ L'assistant cible 3 usages (par ordre de priorité) :
 - Ports env-driven (préfixe 5)
 - Proxy Next.js `/api/*` et `/sprites-cdn/*` (masque les URLs backend)
 - CORS defense-in-depth côté FastAPI
-- CI GitHub Actions — smoke test sur PR backend
+- CI GitHub Actions — 21 tests DB-free sur chaque PR backend
 
 **Pistes restantes**
 - [ ] Dump SQL fixture → full pytest en CI
-- [ ] Choix de l'hébergement (Fly.io, Railway, VPS ?)
+- [ ] Choix hébergement (Fly.io, Railway, VPS ?)
 - [ ] TLS + domaine pour la démo publique
 - [ ] Déployer la doc MkDocs (GitHub Pages ?)
 
-## Documentation — 🚧 en cours
+## Documentation — ✅ à jour
 
-MVP documentaire livré (PR #8) : 9 pages MkDocs Material + référence auto-générée via `mkdocstrings`. Build strict vert. Hébergée via profil Compose `docs` sur `:58100`.
+9 pages MkDocs Material : index, architecture, database, development, api, frontend, fusion-rules, roadmap, reference. Hébergée via profil Compose `docs` sur `:58100`.
 
 **Pistes restantes**
-- [ ] Diagrammes Mermaid enrichis (séquences, ERD complet)
-- [ ] Guide contributeur (`CONTRIBUTING.md`)
 - [ ] Captures d'écran frontend
-- [ ] Page dédiée à l'architecture IA agentique (après phase 1)
+- [ ] Diagrammes Mermaid — séquence SSE, ERD complet
+- [ ] `CONTRIBUTING.md`
+
+## Prochaines étapes (ordre de priorité)
+
+1. **`GET /sprites/by_pokemon/{id}?custom_only=true`** — endpoint backend + grille frontend dans l'onglet Fusion
+2. **Déploiement** — choix hébergement, TLS, domaine public
+3. **Toggle EN/FR** — persistant globalement
+4. **Phase 4 IA** — PII redactor + support provider Anthropic/OpenAI
+5. **CI full pytest** — dump SQL fixture committé
 
 ## Cap v1.0
 
-Les critères pour désarchiver les plans initiaux et considérer l'app complète :
-
-- Frontend stable (toutes les pages principales, pas de bugs bloquants)
-- **IA agentique phase 1-2 livrée** (tool calling DB + wiki IF + refus strict)
-- CI full verte (dump fixture committé)
-- Déploiement public accessible
-- Documentation à jour sur chaque page
-
-Les phases 3-5 IA (DDG, transparence, privacy) sont cibles **v1.1** — amélioration continue post-lancement.
+- ✅ Frontend stable (toutes les pages en place)
+- ✅ IA agentique phases 1–3 livrées
+- ✅ Documentation à jour
+- [ ] CI full verte (dump fixture committé)
+- [ ] Déploiement public accessible
