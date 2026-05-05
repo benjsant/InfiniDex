@@ -2,8 +2,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict y3PGcarii0pU8faMb9Hg7B3NVkEM337him0TGj6ICbSB2Zy88oUdze9r6fUmIMo
-
 -- Dumped from database version 15.17 (Debian 15.17-1.pgdg13+1)
 -- Dumped by pg_dump version 15.17 (Debian 15.17-1.pgdg13+1)
 

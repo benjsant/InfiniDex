@@ -1,12 +1,7 @@
-pg_dump: warning: there are circular foreign-key constraints on this table:
-pg_dump: detail: triple_fusion
-pg_dump: hint: You might not be able to restore the dump without using --disable-triggers or temporarily dropping the constraints.
-pg_dump: hint: Consider using a full dump instead of a --data-only dump to avoid this problem.
 --
 -- PostgreSQL database dump
 --
 
-\restrict DV5YGDR8p5ldRLzA5Ad6XTEZCTDEgkRxHrA99kYfcVmNH31DhI0LNxZfJvvCGF2
 
 -- Dumped from database version 15.17 (Debian 15.17-1.pgdg13+1)
 -- Dumped by pg_dump version 15.17 (Debian 15.17-1.pgdg13+1)

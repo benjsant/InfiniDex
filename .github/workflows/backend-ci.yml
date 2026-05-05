@@ -89,11 +89,11 @@ jobs:
           PGPASSWORD: testpassword
         run: |
           psql -h localhost -U fusiondex_user -d fusiondex_test \
-            -f backend/tests/fixtures/schema.sql
+            --set ON_ERROR_STOP=1 -f backend/tests/fixtures/schema.sql
           psql -h localhost -U fusiondex_user -d fusiondex_test \
-            -f backend/tests/fixtures/data.sql
+            --set ON_ERROR_STOP=1 -f backend/tests/fixtures/data.sql
           psql -h localhost -U fusiondex_user -d fusiondex_test \
-            -f backend/tests/fixtures/sprites_sample.sql
+            --set ON_ERROR_STOP=1 -f backend/tests/fixtures/sprites_sample.sql
 
       - name: Run full test suite
         working-directory: backend
