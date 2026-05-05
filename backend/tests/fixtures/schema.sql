@@ -1620,5 +1620,4 @@ ALTER TABLE ONLY public.type_effectiveness
 -- PostgreSQL database dump complete
 --
 
-\unrestrict y3PGcarii0pU8faMb9Hg7B3NVkEM337him0TGj6ICbSB2Zy88oUdze9r6fUmIMo
 
