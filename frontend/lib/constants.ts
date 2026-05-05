@@ -107,6 +107,7 @@ export const AI_TOOL_LABELS: Record<string, string> = {
   get_move_tutors:          "Tuteurs",
   search_pokemon_locations: "Localisations",
   search_wiki:              "Wiki IF",
+  search_web:               "Web",
 };
 
 export const AI_SOURCE_LABELS: Record<string, string> = {

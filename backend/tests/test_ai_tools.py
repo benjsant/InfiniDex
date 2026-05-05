@@ -190,6 +190,35 @@ async def test_search_wiki_missing_arg(db) -> None:
     assert "error" in result
 
 
+# ─── search_web ──────────────────────────────────────────────────────────────
+
+async def test_search_web_found(db) -> None:
+    fake = {
+        "found": True,
+        "results": [
+            {"title": "Randomizer Guide", "url": "https://example.com", "snippet": "Enable via Options menu..."},
+        ],
+    }
+    with patch("backend.services.tools.web_tool._do_search", new=AsyncMock(return_value=fake)):
+        result = await dispatch_tool(db, "search_web", {"query": "infinite fusion randomizer"})
+    assert result["found"] is True
+    assert isinstance(result["results"], list)
+
+
+async def test_search_web_not_found(db) -> None:
+    with patch(
+        "backend.services.tools.web_tool._do_search",
+        new=AsyncMock(return_value={"found": False, "query": "xyzzy"}),
+    ):
+        result = await dispatch_tool(db, "search_web", {"query": "xyzzy"})
+    assert result["found"] is False
+
+
+async def test_search_web_missing_arg(db) -> None:
+    result = await dispatch_tool(db, "search_web", {})
+    assert "error" in result
+
+
 # ─── dispatch safety ─────────────────────────────────────────────────────────
 
 async def test_dispatch_unknown_tool(db) -> None:

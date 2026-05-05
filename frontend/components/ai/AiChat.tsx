@@ -200,7 +200,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             ))}
           </div>
         )}
-        {(message.sources ?? []).length > 0 && (
+        {((message.sources ?? []).length > 0 || message.totalTokens != null) && (
           <div className="flex flex-wrap gap-1">
             {(message.sources ?? []).map((src) => (
               <SourceBadge key={src} source={src} />

@@ -37,7 +37,7 @@ Pipeline complet en 12 étapes, factorisé en helpers :
 - [x] `/moves/{id}/tutors` retourne aussi `move_name_en` et `move_name_fr`
 
 **Pistes restantes**
-- [ ] **CI full pytest** — le workflow actuel ne lance que `test_ai.py` (les autres ont besoin d'un dump SQL committé sous `backend/tests/fixtures/`)
+- [x] **CI full pytest** — dump SQL committé sous `backend/tests/fixtures/`, workflow `full` avec postgres:16
 - [ ] Endpoints pour les nouveaux ajouts BDD (TM enrichi)
 
 ## Frontend Next.js — ✅ stable
@@ -80,8 +80,8 @@ Chaque phase = une PR + un post LinkedIn *building in public*.
 | 1 | **Tools DB + refus strict** | ✅ livré — 7 tools (`get_pokemon`, `get_fusion`, `search_move`, `get_item`, `get_move_tutors`, `search_wiki`, `search_pokemon_locations`), boucle tool-call, system prompt anti-hallucination, circuit breaker (max 5 tool calls/turn) |
 | 2 | **Tool MediaWiki IF** | ✅ livré — `search_wiki` avec cache TTL 10 min, fetch page complète si intro < 300 caractères |
 | 3 | **Tool DuckDuckGo** | non démarré — fallback dernier recours, rate-limit, summarize les résultats avant ré-injection |
-| 4 | **UI transparence** | non démarré — afficher les sources utilisées, compteur tokens, bouton « voir le prompt envoyé » |
-| 5 | **Privacy layer + provider pluggable** | partiellement livré — `LLMProvider` ABC + DeepSeek/Ollama ; PII redactor non démarré |
+| 4 | **UI transparence** | ✅ livré — tool pills en temps réel, source badges (db/wiki/web), compteur tokens, bouton « voir le prompt » + PromptModal (system prompt + outils) |
+| 5 | **Privacy layer + provider pluggable** | partiellement livré — `LLMProvider` ABC + DeepSeek/OpenRouter/Ollama ; PII redactor non démarré |
 
 ### Contraintes techniques
 
@@ -106,7 +106,7 @@ L'assistant cible 3 usages (par ordre de priorité) :
 - CI GitHub Actions — smoke test sur PR backend
 
 **Pistes restantes**
-- [ ] Dump SQL fixture → full pytest en CI
+- [x] Dump SQL fixture → full pytest en CI
 - [ ] Choix de l'hébergement (Fly.io, Railway, VPS ?)
 - [ ] TLS + domaine pour la démo publique
 - [ ] Déployer la doc MkDocs (GitHub Pages ?)
