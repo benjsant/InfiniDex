@@ -116,7 +116,7 @@ export default function FusionResultPage({
             </span>
           </div>
           <div className="flex gap-2 justify-center sm:justify-start">
-            <TypeBadge typeName={fusion.type1.name_en} />
+            {fusion.type1 && <TypeBadge typeName={fusion.type1.name_en} />}
             {fusion.type2 && <TypeBadge typeName={fusion.type2.name_en} />}
           </div>
         </div>
@@ -166,7 +166,7 @@ export default function FusionResultPage({
         <AiSuggestButton
           pokemonName={fusionName}
           pokemonId={hId}
-          context={`Fusion de ${fusion.head_name_en} (tête) et ${fusion.body_name_en} (corps). Types: ${fusion.type1.name_en}${fusion.type2 ? "/" + fusion.type2.name_en : ""}. Total: ${baseTotal}.`}
+          context={`Fusion de ${fusion.head_name_en} (tête) et ${fusion.body_name_en} (corps). Types: ${fusion.type1?.name_en ?? "?"}${fusion.type2 ? "/" + fusion.type2.name_en : ""}. Total: ${baseTotal}.`}
         />
       </div>
     </div>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, GitMerge, Zap, Shield, Star, Bot, Layers, GraduationCap, Menu, X } from "lucide-react";
+import { BookOpen, GitMerge, Zap, Shield, Star, Bot, Layers, GraduationCap, Palette, Menu, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GlobalSearch } from "@/components/layout/GlobalSearch";
@@ -16,6 +16,7 @@ const NAV_LINKS: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: "/types",          label: "Types",          Icon: Shield        },
   { href: "/abilities",      label: "Talents",        Icon: Star          },
   { href: "/triple-fusions", label: "Triple Fusions", Icon: Layers        },
+  { href: "/creators",       label: "Créateurs",      Icon: Palette       },
   { href: "/ai",             label: "IA",             Icon: Bot           },
 ];
 

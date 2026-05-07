@@ -29,7 +29,7 @@ class FusionSpriteCreator(Base):
 
     fusion_sprite_id = Column(Integer, ForeignKey("fusion_sprite.id", ondelete="CASCADE"),
                               primary_key=True)
-    creator_id       = Column(Integer, ForeignKey("creator.id"), primary_key=True)
+    creator_id       = Column(Integer, ForeignKey("creator.id", ondelete="CASCADE"), primary_key=True)
 
     fusion_sprite = relationship("FusionSprite", back_populates="creators")
     creator       = relationship("Creator", back_populates="sprites")

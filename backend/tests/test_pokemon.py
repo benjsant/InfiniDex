@@ -101,3 +101,24 @@ def test_locations_endpoint_structure(client: TestClient) -> None:
     r = client.get("/pokemon/1/locations")
     assert r.status_code == 200
     assert isinstance(r.json(), list)
+
+
+def test_weaknesses_include_immunities(client: TestClient) -> None:
+    """Immunities (multiplier=0.0) are included in the weaknesses response.
+    Gengar (Ghost/Poison) is immune to Normal and Fighting."""
+    r = client.get("/pokemon/94/weaknesses")  # Gengar
+    assert r.status_code == 200
+    by_type = {w["attacking_type_name_en"]: float(w["multiplier"]) for w in r.json()}
+    assert by_type.get("Normal") == 0.0
+    assert by_type.get("Fighting") == 0.0
+
+
+def test_weaknesses_resistances(client: TestClient) -> None:
+    """Resistances (multiplier=0.5) are returned alongside weaknesses.
+    Charizard (Fire/Flying) resists Bug, Steel, Grass, Fighting, Ground."""
+    r = client.get("/pokemon/6/weaknesses")  # Charizard
+    assert r.status_code == 200
+    by_type = {w["attacking_type_name_en"]: float(w["multiplier"]) for w in r.json()}
+    # Fire/Flying resists Bug (0.25x), Steel (0.5x), Grass (0.25x)
+    assert by_type.get("Bug") == 0.25
+    assert by_type.get("Grass") == 0.25

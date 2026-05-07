@@ -30,6 +30,7 @@ export interface PokemonListItem {
   types: PokemonTypeSlot[];
   sprite_path: string | null;
   is_hoenn_only: boolean;
+  pokepedia_url: string | null;
 }
 
 export interface PokemonDetail {
@@ -47,6 +48,7 @@ export interface PokemonDetail {
   base_experience: number | null;
   is_hoenn_only: boolean;
   sprite_path: string | null;
+  pokepedia_url: string | null;
   types: PokemonTypeSlot[];
   abilities: PokemonAbilitySlot[];
 }
@@ -55,10 +57,10 @@ export interface PokemonMoveOut {
   move_id: number;
   name_en: string;
   name_fr: string | null;
-  category: string | null;
+  category: string;
   power: number | null;
   accuracy: number | null;
-  pp: number | null;
+  pp: number;
   type: TypeOut;
   method: string;
   level: number | null;
@@ -95,16 +97,30 @@ export interface MoveListItem {
   name_en: string;
   name_fr: string | null;
   type: TypeOut;
-  category: string | null;
+  category: string;
   power: number | null;
   accuracy: number | null;
-  pp: number | null;
+  pp: number;
+}
+
+export interface TMLocationOut {
+  location_id: number;
+  location_name_en: string;
+  location_name_fr: string | null;
+  notes: string | null;
+}
+
+export interface TMInfo {
+  number: number;
+  location_summary: string | null;
+  locations: TMLocationOut[];
 }
 
 export interface MoveDetail extends MoveListItem {
   description_en: string | null;
   description_fr: string | null;
   source: string;
+  tm: TMInfo | null;
 }
 
 export interface AbilityListItem {
@@ -116,8 +132,6 @@ export interface AbilityListItem {
 export interface AbilityDetail extends AbilityListItem {
   description_en: string | null;
   description_fr: string | null;
-  if_modified: boolean;
-  if_notes: string | null;
 }
 
 // FusionResult — stats are flat (not nested), types are TypeOut objects
@@ -134,7 +148,7 @@ export interface FusionResult {
   sp_attack: number;
   sp_defense: number;
   speed: number;
-  type1: TypeOut;
+  type1: TypeOut | null;
   type2: TypeOut | null;
   sprite_path: string;
 }

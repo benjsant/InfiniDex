@@ -169,6 +169,12 @@ export function searchCreators(q: string): Promise<CreatorOut[]> {
   return apiFetch<CreatorOut[]>(`/creators/?q=${encodeURIComponent(q)}&limit=5`);
 }
 
+export function listCreators(q: string, limit: number, offset: number): Promise<CreatorOut[]> {
+  const params = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+  if (q.trim()) params.set("q", q.trim());
+  return apiFetch<CreatorOut[]>(`/creators/?${params}`);
+}
+
 export function getCreatorSprites(creatorId: number): Promise<SpriteOut[]> {
   return apiFetch<SpriteOut[]>(`/creators/${creatorId}/sprites`);
 }

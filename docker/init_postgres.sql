@@ -82,20 +82,6 @@ CREATE TABLE IF NOT EXISTS tm (
     location TEXT                       -- résumé texte prêt à afficher
 );
 
--- 5bis. tm_location  (jonction TM ↔ lieu, N-N — un TM peut être trouvé
--- à plusieurs endroits : ex TM13 au Celadon Game Corner ET via la mission
--- Team Rocket)
---   notes : contexte laissé libre par le wiki (ex : "Surf", "Gym",
---           "Dept. Store", "Team Rocket mission", "Required Surf")
-CREATE TABLE IF NOT EXISTS tm_location (
-    id          SERIAL  PRIMARY KEY,
-    tm_id       INTEGER NOT NULL REFERENCES tm(id) ON DELETE CASCADE,
-    location_id INTEGER NOT NULL REFERENCES location(id),
-    notes       TEXT,
-    UNIQUE (tm_id, location_id, notes)
-);
-
-
 -- ============================================================
 -- BLOC 3 — Pokémon de base
 -- ============================================================
@@ -163,8 +149,8 @@ CREATE TABLE IF NOT EXISTS pokemon_ability (
 --    if_notes    → description lisible de la condition IF
 CREATE TABLE IF NOT EXISTS pokemon_evolution (
     id              SERIAL       PRIMARY KEY,
-    pokemon_id      INTEGER      NOT NULL REFERENCES pokemon(id),         -- Pokémon de départ
-    evolves_into_id INTEGER      NOT NULL REFERENCES pokemon(id),         -- Pokémon cible
+    pokemon_id      INTEGER      NOT NULL REFERENCES pokemon(id) ON DELETE CASCADE,  -- Pokémon de départ
+    evolves_into_id INTEGER      NOT NULL REFERENCES pokemon(id) ON DELETE CASCADE,  -- Pokémon cible
     trigger_type    VARCHAR(20)  NOT NULL CHECK (
                         trigger_type IN ('level_up', 'use_item', 'trade', 'friendship', 'other')
                     ),
@@ -189,15 +175,27 @@ CREATE TABLE IF NOT EXISTS location (
     region  VARCHAR(50)   -- 'Kanto', 'Johto', 'Other'
 );
 
+-- 10bis. tm_location  (jonction TM ↔ lieu, N-N — un TM peut être trouvé
+-- à plusieurs endroits : ex TM13 au Celadon Game Corner ET via la mission
+-- Team Rocket)
+--   notes : contexte laissé libre par le wiki (ex : "Surf", "Gym",
+--           "Dept. Store", "Team Rocket mission", "Required Surf")
+CREATE TABLE IF NOT EXISTS tm_location (
+    id          SERIAL  PRIMARY KEY,
+    tm_id       INTEGER NOT NULL REFERENCES tm(id) ON DELETE CASCADE,
+    location_id INTEGER NOT NULL REFERENCES location(id) ON DELETE RESTRICT,
+    notes       TEXT,
+    UNIQUE (tm_id, location_id, notes)
+);
+
 -- 11. pokemon_location  (où trouver chaque Pokémon dans IF)
 --     method : 'wild' | 'gift' | 'trade' | 'static' | 'fishing' | 'headbutt'
 CREATE TABLE IF NOT EXISTS pokemon_location (
     id          SERIAL      PRIMARY KEY,
     pokemon_id  INTEGER     NOT NULL REFERENCES pokemon(id) ON DELETE CASCADE,
-    location_id INTEGER     NOT NULL REFERENCES location(id),
-    method      VARCHAR(20) CHECK (
-                    method IN ('wild', 'gift', 'trade', 'static', 'fishing', 'headbutt')
-                ),
+    location_id INTEGER     NOT NULL REFERENCES location(id) ON DELETE RESTRICT,
+    method      VARCHAR(20) NOT NULL DEFAULT 'wild'
+                            CHECK (method IN ('wild', 'gift', 'trade', 'static', 'fishing', 'headbutt')),
     notes       TEXT,
     UNIQUE (pokemon_id, location_id, method)
 );
@@ -267,7 +265,7 @@ CREATE TABLE IF NOT EXISTS triple_fusion_type (
 -- 15. triple_fusion_component  (les 3 Pokémon de base qui composent la triple fusion)
 CREATE TABLE IF NOT EXISTS triple_fusion_component (
     triple_fusion_id INTEGER NOT NULL REFERENCES triple_fusion(id) ON DELETE CASCADE,
-    pokemon_id       INTEGER NOT NULL REFERENCES pokemon(id),
+    pokemon_id       INTEGER NOT NULL REFERENCES pokemon(id) ON DELETE RESTRICT,
     position         INTEGER NOT NULL CHECK (position IN (1, 2, 3)),
     PRIMARY KEY (triple_fusion_id, position)
 );
@@ -321,7 +319,7 @@ CREATE TABLE IF NOT EXISTS fusion_sprite (
 --     Un sprite custom peut avoir plusieurs créateurs
 CREATE TABLE IF NOT EXISTS fusion_sprite_creator (
     fusion_sprite_id INTEGER NOT NULL REFERENCES fusion_sprite(id) ON DELETE CASCADE,
-    creator_id       INTEGER NOT NULL REFERENCES creator(id),
+    creator_id       INTEGER NOT NULL REFERENCES creator(id) ON DELETE CASCADE,
     PRIMARY KEY (fusion_sprite_id, creator_id)
 );
 
@@ -418,7 +416,7 @@ CREATE TABLE IF NOT EXISTS move_expert_move (
 CREATE TABLE IF NOT EXISTS move_tutor (
     id              SERIAL       PRIMARY KEY,
     move_id         INTEGER      NOT NULL REFERENCES move(id) ON DELETE CASCADE,
-    location_id     INTEGER      NOT NULL REFERENCES location(id),
+    location_id     INTEGER      NOT NULL REFERENCES location(id) ON DELETE RESTRICT,
     price           INTEGER,     -- NULL si gratuit ou quête ; en ₽ sinon
     currency        VARCHAR(20)  NOT NULL
                                  CHECK (currency IN ('pokedollars', 'free', 'quest')),
@@ -457,11 +455,14 @@ CREATE INDEX IF NOT EXISTS idx_move_category         ON move(category);
 
 -- localisations
 CREATE INDEX IF NOT EXISTS idx_pokemon_location_pok  ON pokemon_location(pokemon_id);
+CREATE INDEX IF NOT EXISTS idx_pokemon_location_loc  ON pokemon_location(location_id);
 CREATE INDEX IF NOT EXISTS idx_location_region       ON location(region);
 
 -- triple fusions
 CREATE INDEX IF NOT EXISTS idx_tf_evolves_from       ON triple_fusion(evolves_from_id);
 CREATE INDEX IF NOT EXISTS idx_tf_type_fusion        ON triple_fusion_type(triple_fusion_id);
+CREATE INDEX IF NOT EXISTS idx_tf_type_type          ON triple_fusion_type(type_id);
+CREATE INDEX IF NOT EXISTS idx_tf_ability_ability    ON triple_fusion_ability(ability_id);
 CREATE INDEX IF NOT EXISTS idx_tf_component_fusion   ON triple_fusion_component(triple_fusion_id);
 CREATE INDEX IF NOT EXISTS idx_tf_component_pokemon  ON triple_fusion_component(pokemon_id);
 

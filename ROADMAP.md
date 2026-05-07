@@ -53,10 +53,10 @@ Pages en place : `/pokedex` + `/pokedex/[id]`, `/fusion` + `/fusion/[headId]/[bo
 - [x] `search_pokemon_locations` — outil IA pour chercher les Pokémon par condition/méthode
 
 **Pistes restantes**
-- [ ] Galerie sprites + crédits (par créateur)
+- [x] Galerie sprites + crédits (par créateur) — page `/creators` avec 7081 créateurs, recherche, modal sprites
 - [ ] Toggle EN/FR global persistent
 - [ ] Tests Playwright
-- [ ] UI transparence IA (cf. section IA ci-dessous)
+- [x] UI transparence IA — ToolPill, SourceBadge, token count, PromptModal
 
 ## IA — 🚧 en cours : phases avancées (transparence, privacy)
 
@@ -109,7 +109,7 @@ L'assistant cible 3 usages (par ordre de priorité) :
 - [x] Dump SQL fixture → full pytest en CI
 - [ ] Choix de l'hébergement (Fly.io, Railway, VPS ?)
 - [ ] TLS + domaine pour la démo publique
-- [ ] Déployer la doc MkDocs (GitHub Pages ?)
+- [x] Déployer la doc MkDocs (GitHub Pages) — workflow `docs.yml`, URL `benjsant.github.io/FusionDex-IA`
 
 ## Documentation — 🚧 en cours
 
@@ -117,7 +117,7 @@ MVP documentaire livré (PR #8) : 9 pages MkDocs Material + référence auto-gé
 
 **Pistes restantes**
 - [ ] Diagrammes Mermaid enrichis (séquences, ERD complet)
-- [ ] Guide contributeur (`CONTRIBUTING.md`)
+- [x] Guide contributeur (`CONTRIBUTING.md`)
 - [ ] Captures d'écran frontend
 - [ ] Page dédiée à l'architecture IA agentique (après phase 1)
 

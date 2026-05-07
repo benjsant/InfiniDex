@@ -424,7 +424,7 @@ CREATE TABLE public.pokemon_location (
     id integer NOT NULL,
     pokemon_id integer NOT NULL,
     location_id integer NOT NULL,
-    method character varying(20),
+    method character varying(20) DEFAULT 'wild'::character varying NOT NULL,
     notes text,
     CONSTRAINT pokemon_location_method_check CHECK (((method)::text = ANY ((ARRAY['wild'::character varying, 'gift'::character varying, 'trade'::character varying, 'static'::character varying, 'fishing'::character varying, 'headbutt'::character varying])::text[])))
 );
@@ -1331,6 +1331,8 @@ CREATE INDEX idx_tf_evolves_from ON public.triple_fusion USING btree (evolves_fr
 --
 
 CREATE INDEX idx_tf_type_fusion ON public.triple_fusion_type USING btree (triple_fusion_id);
+CREATE INDEX idx_tf_type_type ON public.triple_fusion_type USING btree (type_id);
+CREATE INDEX idx_tf_ability_ability ON public.triple_fusion_ability USING btree (ability_id);
 
 
 --
@@ -1381,7 +1383,7 @@ ALTER TABLE ONLY public.fusion_sprite
 --
 
 ALTER TABLE ONLY public.fusion_sprite_creator
-    ADD CONSTRAINT fusion_sprite_creator_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creator(id);
+    ADD CONSTRAINT fusion_sprite_creator_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.creator(id) ON DELETE CASCADE;
 
 
 --
@@ -1413,7 +1415,7 @@ ALTER TABLE ONLY public.move_expert_move
 --
 
 ALTER TABLE ONLY public.move_tutor
-    ADD CONSTRAINT move_tutor_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.location(id);
+    ADD CONSTRAINT move_tutor_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.location(id) ON DELETE RESTRICT;
 
 
 --
@@ -1453,7 +1455,7 @@ ALTER TABLE ONLY public.pokemon_ability
 --
 
 ALTER TABLE ONLY public.pokemon_evolution
-    ADD CONSTRAINT pokemon_evolution_evolves_into_id_fkey FOREIGN KEY (evolves_into_id) REFERENCES public.pokemon(id);
+    ADD CONSTRAINT pokemon_evolution_evolves_into_id_fkey FOREIGN KEY (evolves_into_id) REFERENCES public.pokemon(id) ON DELETE CASCADE;
 
 
 --
@@ -1461,7 +1463,7 @@ ALTER TABLE ONLY public.pokemon_evolution
 --
 
 ALTER TABLE ONLY public.pokemon_evolution
-    ADD CONSTRAINT pokemon_evolution_pokemon_id_fkey FOREIGN KEY (pokemon_id) REFERENCES public.pokemon(id);
+    ADD CONSTRAINT pokemon_evolution_pokemon_id_fkey FOREIGN KEY (pokemon_id) REFERENCES public.pokemon(id) ON DELETE CASCADE;
 
 
 --
@@ -1477,7 +1479,7 @@ ALTER TABLE ONLY public.pokemon
 --
 
 ALTER TABLE ONLY public.pokemon_location
-    ADD CONSTRAINT pokemon_location_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.location(id);
+    ADD CONSTRAINT pokemon_location_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.location(id) ON DELETE RESTRICT;
 
 
 --
@@ -1525,7 +1527,7 @@ ALTER TABLE ONLY public.pokemon_type
 --
 
 ALTER TABLE ONLY public.tm_location
-    ADD CONSTRAINT tm_location_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.location(id);
+    ADD CONSTRAINT tm_location_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.location(id) ON DELETE RESTRICT;
 
 
 --
@@ -1565,7 +1567,7 @@ ALTER TABLE ONLY public.triple_fusion_ability
 --
 
 ALTER TABLE ONLY public.triple_fusion_component
-    ADD CONSTRAINT triple_fusion_component_pokemon_id_fkey FOREIGN KEY (pokemon_id) REFERENCES public.pokemon(id);
+    ADD CONSTRAINT triple_fusion_component_pokemon_id_fkey FOREIGN KEY (pokemon_id) REFERENCES public.pokemon(id) ON DELETE RESTRICT;
 
 
 --

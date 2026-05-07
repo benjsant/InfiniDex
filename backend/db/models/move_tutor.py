@@ -16,7 +16,7 @@ class MoveTutor(Base):
 
     id              = Column(Integer, primary_key=True)
     move_id         = Column(Integer, ForeignKey("move.id", ondelete="CASCADE"), nullable=False)
-    location_id     = Column(Integer, ForeignKey("location.id"), nullable=False)
+    location_id     = Column(Integer, ForeignKey("location.id", ondelete="RESTRICT"), nullable=False)
     price           = Column(Integer)                  # NULL if free or quest reward
     currency        = Column(String(20), nullable=False)  # 'pokedollars' | 'free' | 'quest'
     npc_description = Column(Text)

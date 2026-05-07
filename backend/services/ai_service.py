@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 
 from backend.schemas.ai import HistoryMessage
 from backend.services.llm_providers import LLMProvider, select_provider
+from backend.services.pii_redactor import redact as pii_redact
 from backend.services.prompt import SYSTEM_PROMPT
 from backend.services.tools import TOOL_SPECS, dispatch_tool
 
@@ -244,7 +245,7 @@ async def stream_ai_response(
             messages.append({
                 "role":         "tool",
                 "tool_call_id": tc["id"],
-                "content":      json.dumps(result, ensure_ascii=False),
+                "content":      json.dumps(pii_redact(result), ensure_ascii=False),
             })
 
     LOGGER.warning("agent reached MAX_ITERATIONS=%d without final response", MAX_ITERATIONS)

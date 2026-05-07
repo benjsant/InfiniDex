@@ -23,7 +23,7 @@ class TMLocation(Base):
 
     id          = Column(Integer, primary_key=True)
     tm_id       = Column(Integer, ForeignKey("tm.id", ondelete="CASCADE"), nullable=False)
-    location_id = Column(Integer, ForeignKey("location.id"), nullable=False)
+    location_id = Column(Integer, ForeignKey("location.id", ondelete="RESTRICT"), nullable=False)
     notes       = Column(Text)  # "(Surf)", "(Gym)", "(Dept. Store)", ...
 
     tm       = relationship("TM", back_populates="locations")

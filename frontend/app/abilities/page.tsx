@@ -109,14 +109,6 @@ export default function AbilitiesPage() {
                 {detail.description_en}
               </p>
             )}
-            {detail.if_modified && (
-              <div className="mt-3 px-2 py-1.5 rounded" style={{ background: "rgba(232,184,75,0.08)", border: "1px solid rgba(232,184,75,0.25)" }}>
-                <p className="text-xs font-semibold text-if-accent">Modifié dans IF</p>
-                {detail.if_notes && (
-                  <p className="text-xs mt-0.5 text-if-text-dim">{detail.if_notes}</p>
-                )}
-              </div>
-            )}
             <Link
               href={`/abilities/${detail.id}`}
               className="mt-3 block text-xs text-indigo-400 hover:text-indigo-300 transition-colors"

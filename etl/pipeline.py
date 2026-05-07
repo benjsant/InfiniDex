@@ -2,21 +2,31 @@
 FusionDex ETL pipeline orchestrator.
 
 Steps:
-  1.  extract_pokedex_if       — 572 Pokémon from IF wiki (501 in-game + 71 Hoenn-only)
-  2a. extract_stats_pokeapi    — stats + name_fr + evolutions from PokeAPI
-  2b. extract_pokepedia_names  — name_en → Pokepedia slug + gen7 URL mapping
-  3.  extract_moves_if         — 676 moves + 121 TMs + 40 tutors + 57 expert tutors from IF wiki
-  3b. enrich_moves_fr          — add name_fr + description_fr to moves via PokeAPI
-  4.  extract_abilities_if     — 178 abilities from IF wiki
-  4b. enrich_abilities_fr      — add name_fr + description_fr to abilities via PokeAPI
-  5.  extract_encounters_if    — wild/static/legendary encounters (location + method + level)
-  6.  scrapy (if_movesets)     — movesets from Pokepedia (USUL Gen 7)
-                                  level_up (USUL col) + tm + breeding + tutor
-  7.  transform_merge_movesets — merge base movesets + IF overrides
-  8.  load_db                  — load all data into PostgreSQL
-  8b. fix_pokemon_types        — fix Pokémon types from PokeAPI (overrides wiki data)
-  9.  seed_type_effectiveness  — 18×18 type chart with FR names from table_type.csv
-  9b. load_encounters          — load locations + pokemon_location from encounters_if.json
+  1.   extract_pokedex_if       — 572 Pokémon from IF wiki (501 in-game + 71 Hoenn-only)
+  2a.  extract_stats_pokeapi    — stats + name_fr + evolutions from PokeAPI
+  2b.  extract_pokepedia_names  — name_en → Pokepedia slug + gen7 URL mapping
+  3.   extract_moves_if         — 676 moves + 121 TMs + 40 tutors + 57 expert tutors from IF wiki
+  3b.  enrich_moves_fr          — add name_fr + description_fr to moves via PokeAPI
+  4.   extract_abilities_if     — 178 abilities from IF wiki
+  4b.  enrich_abilities_fr      — add name_fr + description_fr to abilities via PokeAPI
+  5.   extract_encounters_if    — wild/static/legendary encounters (location + method + level)
+  6.   scrapy (if_movesets)     — movesets from Pokepedia (USUL Gen 7)
+                                   level_up (USUL col) + tm + breeding + tutor
+  7.   transform_merge_movesets — merge base movesets + IF overrides
+  8.   load_db                  — load all data into PostgreSQL
+  8b.  fix_pokemon_types        — fix Pokémon types from PokeAPI (overrides wiki data)
+  8c.  enrich_evolution_movesets — inherit moves from pre-evolutions
+  8d.  fix_national_ids         — fix national_id (IF dex diverges from national after #251)
+  8e.  fix_stats_and_fr_names   — re-sync stats + name_fr with corrected national_ids
+  8f.  fix_tms_from_pokeapi     — fill TM learnability gaps from PokeAPI
+  9.   seed_type_effectiveness  — 18×18 type chart with FR names from table_type.csv
+  9b.  load_encounters          — load locations + pokemon_location from encounters_if.json
+  9c.  enrich_pokemon_fr        — enrich pokemon.pokepedia_url from Pokepedia mapping
+  9d.  load_items               — fusion + evolution + valuable items from IF wiki
+  9e.  load_move_tutors         — move tutors (NPC teachers) from IF wiki
+  9e-bis. fix_tutors_from_pokeapi — fill tutor learnability gaps from PokeAPI
+  9f.  load_tm_locations        — TM locations from IF wiki
+  9g.  fix_move_experts         — move_expert_move (Knot Island + Boon Island) from IF wiki
   10.  extract_sprites          — download spritesheets from infinitefusion.net
                                    crop 96×96 cells → data/sprites/{h}.{b}.png
   11a. extract_triple_fusions   — 23 post-game triple fusions from IF wiki
@@ -182,6 +192,24 @@ def main(force: bool = False) -> None:
         "Step 8c/10 — Inherit moves from pre-evolutions",
     )
 
+    # Step 8d — Fix national_id (IF dex diverges from national dex after #251)
+    run(
+        ["python", str(SCRIPTS_DIR / "fix_national_ids.py")],
+        "Step 8d — Fix pokemon.national_id via PokeAPI name lookup",
+    )
+
+    # Step 8e — Re-sync stats + name_fr + base_experience with corrected national_ids
+    run(
+        ["python", str(SCRIPTS_DIR / "fix_stats_and_fr_names.py")],
+        "Step 8e — Re-sync stats + FR names after national_id correction",
+    )
+
+    # Step 8f — Fill TM learnability gaps from PokeAPI
+    run(
+        ["python", str(SCRIPTS_DIR / "fix_tms_from_pokeapi.py")],
+        "Step 8f — Fill TM learners from PokeAPI (idempotent)",
+    )
+
     # Step 9 — Seed types FR + type effectiveness (après load_db pour DO UPDATE name_fr)
     run(
         ["python", str(SCRIPTS_DIR / "seed_type_effectiveness.py")],
@@ -198,6 +226,36 @@ def main(force: bool = False) -> None:
     run(
         ["python", str(SCRIPTS_DIR / "enrich_pokemon_fr.py")],
         "Step 9c/10 — Enrich pokemon.pokepedia_url from Pokepedia mapping",
+    )
+
+    # Step 9d — Load items (fusion + evolution + valuables) from IF wiki
+    run(
+        ["python", str(SCRIPTS_DIR / "load_items.py")],
+        "Step 9d — Load items (fusion/evolution/valuable) from IF wiki",
+    )
+
+    # Step 9e — Load move tutors from IF wiki
+    run(
+        ["python", str(SCRIPTS_DIR / "load_move_tutors.py")],
+        "Step 9e — Load move tutors from IF wiki",
+    )
+
+    # Step 9e-bis — Fill tutor learnability gaps from PokeAPI (needs tutors in DB)
+    run(
+        ["python", str(SCRIPTS_DIR / "fix_tutors_from_pokeapi.py")],
+        "Step 9e-bis — Fill tutor learners from PokeAPI (idempotent)",
+    )
+
+    # Step 9f — Load TM locations from IF wiki
+    run(
+        ["python", str(SCRIPTS_DIR / "load_tm_locations.py")],
+        "Step 9f — Load TM locations from IF wiki",
+    )
+
+    # Step 9g — Load move expert moves (Knot Island + Boon Island) from IF wiki
+    run(
+        ["python", str(SCRIPTS_DIR / "fix_move_experts.py")],
+        "Step 9g — Load move_expert_move from IF wiki",
     )
 
     # Step 10 — Download & extract fusion sprites from infinitefusion.net
