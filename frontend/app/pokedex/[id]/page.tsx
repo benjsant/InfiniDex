@@ -11,7 +11,7 @@ import {
   usePokemonWeaknesses,
 } from "@/hooks/usePokemon";
 import { useQuery } from "@tanstack/react-query";
-import { getFusionsInvolving, getSpritesByPokemon } from "@/lib/api";
+import { getFusionsInvolving, getPokemonLocations, getSpritesByPokemon } from "@/lib/api";
 import type { FusionInvolvingOut, SpriteOut } from "@/types/api";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import { StatBar } from "@/components/pokemon/StatBar";
@@ -23,13 +23,14 @@ import { basePokemonSprite, typeColor } from "@/lib/constants";
 import { primaryType, secondaryType, cn } from "@/lib/utils";
 import { FusionSprite } from "@/components/fusion/FusionSprite";
 
-type Tab = "stats" | "moves" | "evolutions" | "weaknesses" | "fusion";
+type Tab = "stats" | "moves" | "evolutions" | "weaknesses" | "locations" | "fusion";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "stats",      label: "Stats" },
   { key: "moves",      label: "Capacités" },
   { key: "evolutions", label: "Évolutions" },
   { key: "weaknesses", label: "Faiblesses" },
+  { key: "locations",  label: "Localisation" },
   { key: "fusion",     label: "Fusion" },
 ];
 
@@ -49,6 +50,12 @@ export default function PokemonDetailPage({
   const { data: moves = [] }        = usePokemonMoves(pokemonId,    { enabled: activeTab === "moves" });
   const { data: evolutions = [] }   = usePokemonEvolutions(pokemonId, { enabled: activeTab === "evolutions" });
   const { data: weaknesses = [] }   = usePokemonWeaknesses(pokemonId, { enabled: activeTab === "weaknesses" });
+  const { data: locations = [] }    = useQuery({
+    queryKey: ["pokemon-locations", pokemonId],
+    queryFn: () => getPokemonLocations(pokemonId),
+    enabled: activeTab === "locations",
+    staleTime: Infinity,
+  });
   const { data: fusions = [], isLoading: fusionsLoading } = useQuery({
     queryKey: ["fusions-involving", pokemonId],
     queryFn: () => getFusionsInvolving(pokemonId, 100),
@@ -231,6 +238,33 @@ export default function PokemonDetailPage({
 
       {activeTab === "weaknesses" && (
         <WeaknessGrid weaknesses={weaknesses} />
+      )}
+
+      {activeTab === "locations" && (
+        locations.length === 0
+          ? <p className="text-if-text-xs text-sm">Aucune localisation connue pour ce Pokémon.</p>
+          : (
+            <div className="space-y-2">
+              {locations.map((loc) => (
+                <div
+                  key={loc.location_id}
+                  className="flex items-center justify-between px-4 py-3 rounded-xl"
+                  style={{ background: "var(--color-if-surface)", border: "1px solid var(--color-if-border)" }}
+                >
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: "var(--color-if-text)" }}>{loc.location_name}</p>
+                    {loc.notes && <p className="text-xs mt-0.5" style={{ color: "var(--color-if-muted)" }}>{loc.notes}</p>}
+                  </div>
+                  <span
+                    className="text-xs px-2 py-1 rounded-lg font-mono capitalize"
+                    style={{ background: "var(--color-if-border)", color: "var(--color-if-accent)" }}
+                  >
+                    {loc.method}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )
       )}
 
       {activeTab === "fusion" && (

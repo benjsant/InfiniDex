@@ -9,7 +9,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
-from backend.schemas.ai import AiRequest
+from backend.schemas.ai import AiPromptInfo, AiProviderInfo, AiRequest
 from backend.services.ai_service import MAX_HISTORY_MSGS, stream_ai_response
 from backend.services.llm_providers import provider_setup_instructions, select_provider
 from backend.services.prompt import SYSTEM_PROMPT
@@ -18,7 +18,7 @@ from backend.services.tools import TOOL_SPECS
 router = APIRouter(prefix="/ai", tags=["AI"])
 
 
-@router.get("/provider")
+@router.get("/provider", response_model=AiProviderInfo)
 def get_ai_provider():
     """Return the active LLM provider name and model, or 503 if none configured."""
     p = select_provider()
@@ -27,7 +27,7 @@ def get_ai_provider():
     return {"name": p.name, "model": p.model}
 
 
-@router.get("/prompt")
+@router.get("/prompt", response_model=AiPromptInfo)
 def get_ai_prompt():
     """Return the system prompt and tool descriptions for UI transparency."""
     return {

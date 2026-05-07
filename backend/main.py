@@ -115,10 +115,7 @@ class AiRateLimitMiddleware(BaseHTTPMiddleware):
                 headers={"Retry-After": "60"},
             )
         hits.append(now)
-        if hits:
-            self._window[ip] = hits
-        elif ip in self._window:
-            del self._window[ip]
+        self._window[ip] = hits
         return await call_next(request)
 
 
