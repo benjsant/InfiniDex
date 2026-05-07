@@ -94,6 +94,30 @@ def test_fusion_random(client: TestClient) -> None:
     assert "sprite_path" in f
 
 
+def test_fusion_self(client: TestClient) -> None:
+    """Self-fusion (head_id == body_id) is valid in Infinite Fusion."""
+    r = client.get("/fusion/25/25")  # Pikachu × Pikachu
+    assert r.status_code == 200
+    f = r.json()
+    assert f["head_name_en"] == "Pikachu"
+    assert f["body_name_en"] == "Pikachu"
+    # Self-fusion with mono-type → type2 is null
+    assert f["type2"] is None
+    # Stats are well-defined
+    assert f["hp"] > 0
+
+
+def test_fusion_weaknesses_include_immunities(client: TestClient) -> None:
+    """Immunities (multiplier=0.0) appear in fusion weaknesses.
+    Ghost/Poison fusion is immune to Normal and Fighting."""
+    # Gengar (94) head × Bulbasaur (1) body → Ghost/Poison
+    r = client.get("/fusion/94/1/weaknesses")
+    assert r.status_code == 200
+    by_type = {w["attacking_type_name_en"]: float(w["multiplier"]) for w in r.json()}
+    assert by_type.get("Normal") == 0.0
+    assert by_type.get("Fighting") == 0.0
+
+
 def test_fusion_expert_moves_heart_scale_prices(client: TestClient) -> None:
     """Expert moves expose Heart Scale prices per location (Knot=2, Boon=10)."""
     # Umbreon (197) × Bulbasaur (1) — docs example, qualifies for several rules

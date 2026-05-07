@@ -9,25 +9,32 @@ import type { SpriteOut } from "@/types/api";
 
 interface CreatorModalProps {
   name: string;
+  creatorId?: number;
+  spriteCount?: number;
   onClose: () => void;
 }
 
-export function CreatorModal({ name, onClose }: CreatorModalProps) {
-  // Resolve name → id
+export function CreatorModal({ name, creatorId, spriteCount, onClose }: CreatorModalProps) {
+  // If id is provided directly (from gallery page), skip the search round-trip
   const { data: creators = [] } = useQuery({
     queryKey: ["creator-search", name],
     queryFn: () => searchCreators(name),
     staleTime: Infinity,
+    enabled: creatorId == null,
   });
 
-  const creator = creators.find(
+  const resolvedId = creatorId ?? creators.find(
     (c) => c.name.toLowerCase() === name.toLowerCase()
-  ) ?? creators[0];
+  )?.id ?? creators[0]?.id;
+
+  const resolvedCount = spriteCount ?? creators.find(
+    (c) => c.name.toLowerCase() === name.toLowerCase()
+  )?.sprite_count ?? creators[0]?.sprite_count;
 
   const { data: sprites = [], isLoading } = useQuery<SpriteOut[]>({
-    queryKey: ["creator-sprites", creator?.id],
-    queryFn: () => getCreatorSprites(creator!.id),
-    enabled: !!creator,
+    queryKey: ["creator-sprites", resolvedId],
+    queryFn: () => getCreatorSprites(resolvedId!),
+    enabled: resolvedId != null,
     staleTime: Infinity,
   });
 
@@ -52,9 +59,9 @@ export function CreatorModal({ name, onClose }: CreatorModalProps) {
           <Palette size={16} className="text-indigo-400 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-[rgb(220,220,255)] truncate">{name}</p>
-            {creator && (
+            {resolvedCount != null && (
               <p className="text-xs text-[rgb(100,100,130)]">
-                {creator.sprite_count} sprite{creator.sprite_count > 1 ? "s" : ""} dans la base
+                {resolvedCount} sprite{resolvedCount > 1 ? "s" : ""} dans la base
               </p>
             )}
           </div>
@@ -69,7 +76,7 @@ export function CreatorModal({ name, onClose }: CreatorModalProps) {
 
         {/* Grid */}
         <div className="overflow-y-auto p-4">
-          {isLoading || !creator ? (
+          {isLoading || resolvedId == null ? (
             <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
               {Array.from({ length: 24 }).map((_, i) => (
                 <div key={i} className="aspect-square rounded-lg bg-[rgb(25,25,35)] animate-pulse" />

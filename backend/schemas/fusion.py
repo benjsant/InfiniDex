@@ -49,7 +49,7 @@ class FusionResult(BaseModel):
     sp_defense: int
     speed: int
     # Types: head gives type1, body gives type2
-    type1: TypeOut
+    type1: TypeOut | None
     type2: TypeOut | None
     # Sprite path pattern: "{head_id}.{body_id}.png"
     sprite_path: str

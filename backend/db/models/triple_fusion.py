@@ -39,8 +39,8 @@ class TripleFusionType(Base):
 
     triple_fusion_id = Column(Integer, ForeignKey("triple_fusion.id", ondelete="CASCADE"),
                               primary_key=True)
-    type_id          = Column(Integer, ForeignKey("type.id"), primary_key=True)
-    slot             = Column(Integer, nullable=False)   # 1 to 4
+    slot             = Column(Integer, primary_key=True)  # 1 to 4 — PK réelle (SQL: PRIMARY KEY (triple_fusion_id, slot))
+    type_id          = Column(Integer, ForeignKey("type.id"), nullable=False)
 
     triple_fusion = relationship("TripleFusion", back_populates="types")
     type          = relationship("Type")
@@ -51,8 +51,8 @@ class TripleFusionComponent(Base):
 
     triple_fusion_id = Column(Integer, ForeignKey("triple_fusion.id", ondelete="CASCADE"),
                               primary_key=True)
-    pokemon_id       = Column(Integer, ForeignKey("pokemon.id"), primary_key=True)
-    position         = Column(Integer, nullable=False)   # 1, 2 or 3
+    position         = Column(Integer, primary_key=True)  # 1, 2 or 3 — PK réelle (SQL: PRIMARY KEY (triple_fusion_id, position))
+    pokemon_id       = Column(Integer, ForeignKey("pokemon.id", ondelete="RESTRICT"), nullable=False)
 
     triple_fusion = relationship("TripleFusion", back_populates="components")
     pokemon       = relationship("Pokemon", back_populates="triple_fusion_components")
@@ -63,8 +63,8 @@ class TripleFusionAbility(Base):
 
     triple_fusion_id = Column(Integer, ForeignKey("triple_fusion.id", ondelete="CASCADE"),
                               primary_key=True)
-    ability_id       = Column(Integer, ForeignKey("ability.id"), primary_key=True)
-    slot             = Column(Integer, nullable=False)   # 1, 2 (normal) or 3 (hidden)
+    slot             = Column(Integer, primary_key=True)  # 1, 2 (normal) or 3 (hidden) — PK réelle (SQL: PRIMARY KEY (triple_fusion_id, slot))
+    ability_id       = Column(Integer, ForeignKey("ability.id"), nullable=False)
     is_hidden        = Column(Boolean, nullable=False, default=False)
 
     triple_fusion = relationship("TripleFusion", back_populates="abilities")

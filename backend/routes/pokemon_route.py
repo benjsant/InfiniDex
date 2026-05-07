@@ -11,8 +11,8 @@ from backend.routes.deps import get_pokemon_or_404
 from backend.schemas.evolution import EvolutionOut
 from backend.schemas.location import LocationOut
 from backend.schemas.move import PokemonMoveOut
-from backend.schemas.pokemon import AbilityOut, PokemonDetail, PokemonListItem, TypeOut
-from backend.schemas.type_ import TypeOut as FullTypeOut
+from backend.schemas.pokemon import AbilityOut, PokemonDetail, PokemonListItem, PokemonTypeOut
+from backend.schemas.type_ import TypeOut
 from backend.schemas.weakness import WeaknessOut
 from backend.services.pokemon_service import (
     compute_pokemon_weaknesses,
@@ -26,9 +26,9 @@ from backend.services.pokemon_service import (
 router = APIRouter(prefix="/pokemon", tags=["Pokemon"])
 
 
-def _serialize_types(types_rel) -> list[TypeOut]:
+def _serialize_types(types_rel) -> list[PokemonTypeOut]:
     return [
-        TypeOut(slot=pt.slot, name_en=pt.type.name_en, name_fr=pt.type.name_fr)
+        PokemonTypeOut(slot=pt.slot, name_en=pt.type.name_en, name_fr=pt.type.name_fr)
         for pt in sorted(types_rel, key=lambda x: x.slot)
     ]
 
@@ -129,7 +129,7 @@ def get_moves_for_pokemon(
             power=r.move.power,
             accuracy=r.move.accuracy,
             pp=r.move.pp,
-            type=FullTypeOut(
+            type=TypeOut(
                 id=r.move.type.id,
                 name_en=r.move.type.name_en,
                 name_fr=r.move.type.name_fr,

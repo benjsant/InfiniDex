@@ -147,3 +147,56 @@ def test_ability_search(client: TestClient) -> None:
     r = client.get("/abilities/search?q=blaze")
     assert r.status_code == 200
     assert any(a["name_en"] == "Blaze" for a in r.json())
+
+
+def test_ability_detail(client: TestClient) -> None:
+    """Detail endpoint returns EN/FR descriptions."""
+    r = client.get("/abilities/1")  # Adaptability
+    assert r.status_code == 200
+    a = r.json()
+    assert a["id"] == 1
+    assert a["name_en"] == "Adaptability"
+    assert a["name_fr"] is not None
+    assert a["description_en"] is not None
+    assert a["description_fr"] is not None
+
+
+def test_ability_detail_not_found(client: TestClient) -> None:
+    r = client.get("/abilities/999999")
+    assert r.status_code == 404
+
+
+def test_type_by_id(client: TestClient) -> None:
+    """Type by numeric ID returns correct fields."""
+    r = client.get("/types/1")  # Bug
+    assert r.status_code == 200
+    t = r.json()
+    assert t["id"] == 1
+    assert t["name_en"] == "Bug"
+    assert t["name_fr"] is not None
+    assert t["is_triple_fusion_type"] is False
+
+
+def test_type_triple_fusion_flag(client: TestClient) -> None:
+    """Triple-fusion-only types are correctly flagged."""
+    r = client.get("/types/")
+    assert r.status_code == 200
+    types = r.json()
+    triple = [t for t in types if t["is_triple_fusion_type"]]
+    standard = [t for t in types if not t["is_triple_fusion_type"]]
+    assert len(standard) >= 18
+    assert len(triple) >= 8
+    # All triple-fusion types must have composite names (contain "/")
+    assert all("/" in t["name_en"] for t in triple)
+
+
+def test_type_by_id_not_found(client: TestClient) -> None:
+    r = client.get("/types/9999")
+    assert r.status_code == 404
+
+
+def test_power_min_greater_than_max_returns_empty(client: TestClient) -> None:
+    """power_min > power_max is not an error — returns empty list."""
+    r = client.get("/moves/?power_min=100&power_max=50")
+    assert r.status_code == 200
+    assert r.json() == []

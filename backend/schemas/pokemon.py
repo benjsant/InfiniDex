@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class TypeOut(BaseModel):
+class PokemonTypeOut(BaseModel):
     slot: int
     name_en: str
     name_fr: str | None
@@ -23,7 +23,7 @@ class PokemonListItem(BaseModel):
     national_id: int | None
     name_en: str
     name_fr: str | None
-    types: list[TypeOut]
+    types: list[PokemonTypeOut]
     sprite_path: str | None
     is_hoenn_only: bool
     pokepedia_url: str | None
@@ -47,7 +47,7 @@ class PokemonDetail(BaseModel):
     is_hoenn_only: bool
     sprite_path: str | None
     pokepedia_url: str | None
-    types: list[TypeOut]
+    types: list[PokemonTypeOut]
     abilities: list[AbilityOut]
 
     model_config = {"from_attributes": True}
