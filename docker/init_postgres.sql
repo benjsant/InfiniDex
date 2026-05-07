@@ -102,8 +102,7 @@ CREATE TABLE IF NOT EXISTS pokemon (
     base_experience INTEGER,
     is_hoenn_only   BOOLEAN      NOT NULL DEFAULT FALSE,
     sprite_path     TEXT,                  -- chemin local ou clé S3
-    pokepedia_url   TEXT,                  -- lien Pokepedia Gen 7 (ex: /Bulbizarre/Génération_7)
-    is_legendary    BOOLEAN NOT NULL DEFAULT FALSE
+    pokepedia_url   TEXT                   -- lien Pokepedia Gen 7 (ex: /Bulbizarre/Génération_7)
 );
 
 -- 7. pokemon_type  (jusqu'à 2 types pour les Pokémon standards)

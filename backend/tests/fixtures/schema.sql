@@ -358,8 +358,7 @@ CREATE TABLE public.pokemon (
     base_experience integer,
     is_hoenn_only boolean DEFAULT false NOT NULL,
     sprite_path text,
-    pokepedia_url text,
-    is_legendary boolean DEFAULT false NOT NULL
+    pokepedia_url text
 );
 
 
