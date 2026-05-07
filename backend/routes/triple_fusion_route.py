@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
-SPECIAL_SPRITES_DIR = Path("/app/data/special_sprites")
+SPECIAL_SPRITES_DIR = Path(os.environ.get("SPECIAL_SPRITES_DIR", "/app/data/special_sprites"))
 
 from backend.db.session import get_db
 from backend.schemas.triple_fusion import (

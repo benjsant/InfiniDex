@@ -18,7 +18,7 @@ def get_pg_connection():
         port=int(os.getenv("POSTGRES_PORT", "5432")),
         dbname=os.getenv("POSTGRES_DB", "fusiondex_db"),
         user=os.getenv("POSTGRES_USER", "fusiondex_user"),
-        password=os.getenv("POSTGRES_PASSWORD", "fusiondex_password"),
+        password=os.getenv("POSTGRES_PASSWORD", "changeme"),
     )
 
 
@@ -46,7 +46,7 @@ def pg_connection() -> Iterator[psycopg2.extensions.connection]:
 def get_engine():
     url = (
         f"postgresql://{os.getenv('POSTGRES_USER', 'fusiondex_user')}"
-        f":{os.getenv('POSTGRES_PASSWORD', 'fusiondex_password')}"
+        f":{os.getenv('POSTGRES_PASSWORD', 'changeme')}"
         f"@{os.getenv('POSTGRES_HOST', 'db')}"
         f":{os.getenv('POSTGRES_PORT', '5432')}"
         f"/{os.getenv('POSTGRES_DB', 'fusiondex_db')}"

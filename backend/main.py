@@ -106,8 +106,7 @@ class AiRateLimitMiddleware(BaseHTTPMiddleware):
         now = time.monotonic()
         cutoff = now - 60.0
 
-        hits = self._window.get(ip, [])
-        hits = [t for t in hits if t > cutoff]
+        hits = [t for t in self._window.get(ip, []) if t > cutoff]
         if len(hits) >= self._rpm:
             from fastapi.responses import JSONResponse
             return JSONResponse(
@@ -116,7 +115,10 @@ class AiRateLimitMiddleware(BaseHTTPMiddleware):
                 headers={"Retry-After": "60"},
             )
         hits.append(now)
-        self._window[ip] = hits
+        if hits:
+            self._window[ip] = hits
+        elif ip in self._window:
+            del self._window[ip]
         return await call_next(request)
 
 

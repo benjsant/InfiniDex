@@ -61,6 +61,18 @@ class PokemonMoveOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class MoveExpertOut(BaseModel):
+    """A Move Expert move (Knot / Boon Island) with unlock requirements."""
+    move_id: int
+    move_name_en: str
+    move_name_fr: str | None
+    location: str                    # 'knot_island' | 'boon_island'
+    required_pokemon: list[str]      # resolved names (FR or EN)
+    required_types: list[str]        # resolved names (FR or EN)
+
+    model_config = {"from_attributes": True}
+
+
 class MoveTutorOut(BaseModel):
     """A NPC that teaches a specific move, with location and price.
 
