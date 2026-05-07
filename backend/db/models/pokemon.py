@@ -22,7 +22,6 @@ class Pokemon(Base):
     is_hoenn_only   = Column(Boolean, nullable=False, default=False)
     sprite_path     = Column(Text)
     pokepedia_url   = Column(Text)
-    is_legendary    = Column(Boolean, nullable=False, default=False)
 
     generation               = relationship("Generation", back_populates="pokemon")
     types                    = relationship("PokemonType", back_populates="pokemon",
