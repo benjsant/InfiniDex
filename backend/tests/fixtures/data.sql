@@ -8403,579 +8403,579 @@ COPY public.move_tutor (id, move_id, location_id, price, currency, npc_descripti
 -- Data for Name: pokemon; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY public.pokemon (id, national_id, name_en, name_fr, generation_id, hp, attack, defense, sp_attack, sp_defense, speed, base_experience, is_hoenn_only, sprite_path, pokepedia_url) FROM stdin;
-13	13	Weedle	Aspicot	1	40	35	30	20	20	50	39	f	13.13.png	https://www.pokepedia.fr/Aspicot/Génération_7
-14	14	Kakuna	Coconfort	1	45	25	50	25	25	35	72	f	14.14.png	https://www.pokepedia.fr/Coconfort/Génération_7
-15	15	Beedrill	Dardargnan	1	65	90	40	45	80	75	178	f	15.15.png	https://www.pokepedia.fr/Dardargnan/Génération_7
-16	16	Pidgey	Roucool	1	40	45	40	35	35	56	50	f	16.16.png	https://www.pokepedia.fr/Roucool/Génération_7
-17	17	Pidgeotto	Roucoups	1	63	60	55	50	50	71	122	f	17.17.png	https://www.pokepedia.fr/Roucoups/Génération_7
-18	18	Pidgeot	Roucarnage	1	83	80	75	70	70	101	216	f	18.18.png	https://www.pokepedia.fr/Roucarnage/Génération_7
-19	19	Rattata	Rattata	1	30	56	35	25	35	72	51	f	19.19.png	https://www.pokepedia.fr/Rattata/Génération_7
-20	20	Raticate	Rattatac	1	55	81	60	50	70	97	145	f	20.20.png	https://www.pokepedia.fr/Rattatac/Génération_7
-21	21	Spearow	Piafabec	1	40	60	30	31	31	70	52	f	21.21.png	https://www.pokepedia.fr/Piafabec/Génération_7
-22	22	Fearow	Rapasdepic	1	65	90	65	61	61	100	155	f	22.22.png	https://www.pokepedia.fr/Rapasdepic/Génération_7
-23	23	Ekans	Abo	1	35	60	44	40	54	55	58	f	23.23.png	https://www.pokepedia.fr/Abo/Génération_7
-24	24	Arbok	Arbok	1	60	95	69	65	79	80	157	f	24.24.png	https://www.pokepedia.fr/Arbok/Génération_7
-25	25	Pikachu	Pikachu	1	35	55	40	50	50	90	112	f	25.25.png	https://www.pokepedia.fr/Pikachu/Génération_7
-26	26	Raichu	Raichu	1	60	90	55	90	80	110	218	f	26.26.png	https://www.pokepedia.fr/Raichu/Génération_7
-27	27	Sandshrew	Sabelette	1	50	75	85	20	30	40	60	f	27.27.png	https://www.pokepedia.fr/Sabelette/Génération_7
-28	28	Sandslash	Sablaireau	1	75	100	110	45	55	65	158	f	28.28.png	https://www.pokepedia.fr/Sablaireau/Génération_7
-29	29	Nidoran♀	Nidoran♀	1	55	47	52	40	40	41	55	f	29.29.png	https://www.pokepedia.fr/Nidoran♀/Génération_7
-30	30	Nidorina	Nidorina	1	70	62	67	55	55	56	128	f	30.30.png	https://www.pokepedia.fr/Nidorina/Génération_7
-31	31	Nidoqueen	Nidoqueen	1	90	92	87	75	85	76	227	f	31.31.png	https://www.pokepedia.fr/Nidoqueen/Génération_7
-32	32	Nidoran♂	Nidoran♂	1	46	57	40	40	40	50	55	f	32.32.png	https://www.pokepedia.fr/Nidoran♂/Génération_7
-33	33	Nidorino	Nidorino	1	61	72	57	55	55	65	128	f	33.33.png	https://www.pokepedia.fr/Nidorino/Génération_7
-34	34	Nidoking	Nidoking	1	81	102	77	85	75	85	227	f	34.34.png	https://www.pokepedia.fr/Nidoking/Génération_7
-35	35	Clefairy	Mélofée	1	70	45	48	60	65	35	113	f	35.35.png	https://www.pokepedia.fr/Mélofée/Génération_7
-36	36	Clefable	Mélodelfe	1	95	70	73	95	90	60	217	f	36.36.png	https://www.pokepedia.fr/Mélodelfe/Génération_7
-37	37	Vulpix	Goupix	1	38	41	40	50	65	65	60	f	37.37.png	https://www.pokepedia.fr/Goupix/Génération_7
-38	38	Ninetales	Feunard	1	73	76	75	81	100	100	177	f	38.38.png	https://www.pokepedia.fr/Feunard/Génération_7
-39	39	Jigglypuff	Rondoudou	1	115	45	20	45	25	20	95	f	39.39.png	https://www.pokepedia.fr/Rondoudou/Génération_7
-40	40	Wigglytuff	Grodoudou	1	140	70	45	85	50	45	196	f	40.40.png	https://www.pokepedia.fr/Grodoudou/Génération_7
-41	41	Zubat	Nosferapti	1	40	45	35	30	40	55	49	f	41.41.png	https://www.pokepedia.fr/Nosferapti/Génération_7
-42	42	Golbat	Nosferalto	1	75	80	70	65	75	90	159	f	42.42.png	https://www.pokepedia.fr/Nosferalto/Génération_7
-43	43	Oddish	Mystherbe	1	45	50	55	75	65	30	64	f	43.43.png	https://www.pokepedia.fr/Mystherbe/Génération_7
-44	44	Gloom	Ortide	1	60	65	70	85	75	40	138	f	44.44.png	https://www.pokepedia.fr/Ortide/Génération_7
-45	45	Vileplume	Rafflesia	1	75	80	85	110	90	50	221	f	45.45.png	https://www.pokepedia.fr/Rafflesia/Génération_7
-46	46	Paras	Paras	1	35	70	55	45	55	25	57	f	46.46.png	https://www.pokepedia.fr/Paras/Génération_7
-47	47	Parasect	Parasect	1	60	95	80	60	80	30	142	f	47.47.png	https://www.pokepedia.fr/Parasect/Génération_7
-48	48	Venonat	Mimitoss	1	60	55	50	40	55	45	61	f	48.48.png	https://www.pokepedia.fr/Mimitoss/Génération_7
-49	49	Venomoth	Aéromite	1	70	65	60	90	75	90	158	f	49.49.png	https://www.pokepedia.fr/Aéromite/Génération_7
-50	50	Diglett	Taupiqueur	1	10	55	25	35	45	95	53	f	50.50.png	https://www.pokepedia.fr/Taupiqueur/Génération_7
-67	67	Machoke	Machopeur	1	80	100	70	50	60	45	142	f	67.67.png	https://www.pokepedia.fr/Machopeur/Génération_7
-68	68	Machamp	Mackogneur	1	90	130	80	65	85	55	227	f	68.68.png	https://www.pokepedia.fr/Mackogneur/Génération_7
-69	69	Bellsprout	Chétiflor	1	50	75	35	70	30	40	60	f	69.69.png	https://www.pokepedia.fr/Chétiflor/Génération_7
-70	70	Weepinbell	Boustiflor	1	65	90	50	85	45	55	137	f	70.70.png	https://www.pokepedia.fr/Boustiflor/Génération_7
-71	71	Victreebel	Empiflor	1	80	105	65	100	70	70	221	f	71.71.png	https://www.pokepedia.fr/Empiflor/Génération_7
-72	72	Tentacool	Tentacool	1	40	40	35	50	100	70	67	f	72.72.png	https://www.pokepedia.fr/Tentacool/Génération_7
-73	73	Tentacruel	Tentacruel	1	80	70	65	80	120	100	180	f	73.73.png	https://www.pokepedia.fr/Tentacruel/Génération_7
-74	74	Geodude	Racaillou	1	40	80	100	30	30	20	60	f	74.74.png	https://www.pokepedia.fr/Racaillou/Génération_7
-75	75	Graveler	Gravalanch	1	55	95	115	45	45	35	137	f	75.75.png	https://www.pokepedia.fr/Gravalanch/Génération_7
-76	76	Golem	Grolem	1	80	120	130	55	65	45	223	f	76.76.png	https://www.pokepedia.fr/Grolem/Génération_7
-77	77	Ponyta	Ponyta	1	50	85	55	65	65	90	82	f	77.77.png	https://www.pokepedia.fr/Ponyta/Génération_7
-78	78	Rapidash	Galopa	1	65	100	70	80	80	105	175	f	78.78.png	https://www.pokepedia.fr/Galopa/Génération_7
-79	79	Slowpoke	Ramoloss	1	90	65	65	40	40	15	63	f	79.79.png	https://www.pokepedia.fr/Ramoloss/Génération_7
-80	80	Slowbro	Flagadoss	1	95	75	110	100	80	30	172	f	80.80.png	https://www.pokepedia.fr/Flagadoss/Génération_7
-81	81	Magnemite	Magnéti	1	25	35	70	95	55	45	65	f	81.81.png	https://www.pokepedia.fr/Magnéti/Génération_7
-82	82	Magneton	Magnéton	1	50	60	95	120	70	70	163	f	82.82.png	https://www.pokepedia.fr/Magnéton/Génération_7
-83	83	Farfetch'd	Canarticho	1	52	90	55	58	62	60	132	f	83.83.png	https://www.pokepedia.fr/Canarticho/Génération_7
-84	84	Doduo	Doduo	1	35	85	45	35	35	75	62	f	84.84.png	https://www.pokepedia.fr/Doduo/Génération_7
-85	85	Dodrio	Dodrio	1	60	110	70	60	60	110	165	f	85.85.png	https://www.pokepedia.fr/Dodrio/Génération_7
-86	86	Seel	Otaria	1	65	45	55	45	70	45	65	f	86.86.png	https://www.pokepedia.fr/Otaria/Génération_7
-87	87	Dewgong	Lamantine	1	90	70	80	70	95	70	166	f	87.87.png	https://www.pokepedia.fr/Lamantine/Génération_7
-88	88	Grimer	Tadmorv	1	80	80	50	40	50	25	65	f	88.88.png	https://www.pokepedia.fr/Tadmorv/Génération_7
-89	89	Muk	Grotadmorv	1	105	105	75	65	100	50	175	f	89.89.png	https://www.pokepedia.fr/Grotadmorv/Génération_7
-90	90	Shellder	Kokiyas	1	30	65	100	45	25	40	61	f	90.90.png	https://www.pokepedia.fr/Kokiyas/Génération_7
-91	91	Cloyster	Crustabri	1	50	95	180	85	45	70	184	f	91.91.png	https://www.pokepedia.fr/Crustabri/Génération_7
-92	92	Gastly	Fantominus	1	30	35	30	100	35	80	62	f	92.92.png	https://www.pokepedia.fr/Fantominus/Génération_7
-93	93	Haunter	Spectrum	1	45	50	45	115	55	95	142	f	93.93.png	https://www.pokepedia.fr/Spectrum/Génération_7
-94	94	Gengar	Ectoplasma	1	60	65	60	130	75	110	225	f	94.94.png	https://www.pokepedia.fr/Ectoplasma/Génération_7
-95	95	Onix	Onix	1	35	45	160	30	45	70	77	f	95.95.png	https://www.pokepedia.fr/Onix/Génération_7
-96	96	Drowzee	Soporifik	1	60	48	45	43	90	42	66	f	96.96.png	https://www.pokepedia.fr/Soporifik/Génération_7
-97	97	Hypno	Hypnomade	1	85	73	70	73	115	67	169	f	97.97.png	https://www.pokepedia.fr/Hypnomade/Génération_7
-98	98	Krabby	Krabby	1	30	105	90	25	25	50	65	f	98.98.png	https://www.pokepedia.fr/Krabby/Génération_7
-99	99	Kingler	Krabboss	1	55	130	115	50	50	75	166	f	99.99.png	https://www.pokepedia.fr/Krabboss/Génération_7
-100	100	Voltorb	Voltorbe	1	40	30	50	55	55	100	66	f	100.100.png	https://www.pokepedia.fr/Voltorbe/Génération_7
-120	120	Staryu	Stari	1	30	45	55	70	55	85	68	f	120.120.png	https://www.pokepedia.fr/Stari/Génération_7
-121	121	Starmie	Staross	1	60	75	85	100	85	115	182	f	121.121.png	https://www.pokepedia.fr/Staross/Génération_7
-122	122	Mr. Mime	M. Mime	1	40	45	65	100	120	90	161	f	122.122.png	https://www.pokepedia.fr/M._Mime/Génération_7
-123	123	Scyther	Insécateur	1	70	110	80	55	80	105	100	f	123.123.png	https://www.pokepedia.fr/Insécateur/Génération_7
-124	124	Jynx	Lippoutou	1	65	50	35	115	95	95	159	f	124.124.png	https://www.pokepedia.fr/Lippoutou/Génération_7
-125	125	Electabuzz	Élektek	1	65	83	57	95	85	105	172	f	125.125.png	https://www.pokepedia.fr/Élektek/Génération_7
-126	126	Magmar	Magmar	1	65	95	57	100	85	93	173	f	126.126.png	https://www.pokepedia.fr/Magmar/Génération_7
-127	127	Pinsir	Scarabrute	1	65	125	100	55	70	85	175	f	127.127.png	https://www.pokepedia.fr/Scarabrute/Génération_7
-128	128	Tauros	Tauros	1	75	100	95	40	70	110	172	f	128.128.png	https://www.pokepedia.fr/Tauros/Génération_7
-129	129	Magikarp	Magicarpe	1	20	10	55	15	20	80	40	f	129.129.png	https://www.pokepedia.fr/Magicarpe/Génération_7
-130	130	Gyarados	Léviator	1	95	125	79	60	100	81	189	f	130.130.png	https://www.pokepedia.fr/Léviator/Génération_7
-131	131	Lapras	Lokhlass	1	130	85	80	85	95	60	187	f	131.131.png	https://www.pokepedia.fr/Lokhlass/Génération_7
-132	132	Ditto	Métamorph	1	48	48	48	48	48	48	101	f	132.132.png	https://www.pokepedia.fr/Métamorph/Génération_7
-133	133	Eevee	Évoli	1	55	55	50	45	65	55	65	f	133.133.png	https://www.pokepedia.fr/Évoli/Génération_7
-134	134	Vaporeon	Aquali	1	130	65	60	110	95	65	184	f	134.134.png	https://www.pokepedia.fr/Aquali/Génération_7
-135	135	Jolteon	Voltali	1	65	65	60	110	95	130	184	f	135.135.png	https://www.pokepedia.fr/Voltali/Génération_7
-136	136	Flareon	Pyroli	1	65	130	60	95	110	65	184	f	136.136.png	https://www.pokepedia.fr/Pyroli/Génération_7
-137	137	Porygon	Porygon	1	65	60	70	85	75	40	79	f	137.137.png	https://www.pokepedia.fr/Porygon/Génération_7
-138	138	Omanyte	Amonita	1	35	40	100	90	55	35	71	f	138.138.png	https://www.pokepedia.fr/Amonita/Génération_7
-139	139	Omastar	Amonistar	1	70	60	125	115	70	55	173	f	139.139.png	https://www.pokepedia.fr/Amonistar/Génération_7
-140	140	Kabuto	Kabuto	1	30	80	90	55	45	55	71	f	140.140.png	https://www.pokepedia.fr/Kabuto/Génération_7
-141	141	Kabutops	Kabutops	1	60	115	105	65	70	80	173	f	141.141.png	https://www.pokepedia.fr/Kabutops/Génération_7
-142	142	Aerodactyl	Ptéra	1	80	105	65	60	75	130	180	f	142.142.png	https://www.pokepedia.fr/Ptéra/Génération_7
-143	143	Snorlax	Ronflex	1	160	110	65	65	110	30	189	f	143.143.png	https://www.pokepedia.fr/Ronflex/Génération_7
-147	147	Dratini	Minidraco	1	41	64	45	50	50	50	60	f	147.147.png	https://www.pokepedia.fr/Minidraco/Génération_7
-148	148	Dragonair	Draco	1	61	84	65	70	70	70	147	f	148.148.png	https://www.pokepedia.fr/Draco/Génération_7
-149	149	Dragonite	Dracolosse	1	91	134	95	100	100	80	270	f	149.149.png	https://www.pokepedia.fr/Dracolosse/Génération_7
-173	173	Cleffa	Mélo	2	50	25	28	45	55	15	44	f	173.173.png	https://www.pokepedia.fr/Mélo/Génération_7
-174	174	Igglybuff	Toudoudou	2	90	30	15	40	20	15	42	f	174.174.png	https://www.pokepedia.fr/Toudoudou/Génération_7
-175	175	Togepi	Togepi	2	35	20	65	40	65	20	49	f	175.175.png	https://www.pokepedia.fr/Togepi/Génération_7
-176	176	Togetic	Togetic	2	55	40	85	80	105	40	142	f	176.176.png	https://www.pokepedia.fr/Togetic/Génération_7
-177	177	Natu	Natu	2	40	50	45	70	45	70	64	f	177.177.png	https://www.pokepedia.fr/Natu/Génération_7
-178	178	Xatu	Xatu	2	65	75	70	95	70	95	165	f	178.178.png	https://www.pokepedia.fr/Xatu/Génération_7
-179	179	Mareep	Wattouat	2	55	40	40	65	45	35	56	f	179.179.png	https://www.pokepedia.fr/Wattouat/Génération_7
-180	180	Flaaffy	Lainergie	2	70	55	55	80	60	45	128	f	180.180.png	https://www.pokepedia.fr/Lainergie/Génération_7
-181	181	Ampharos	Pharamp	2	90	75	85	115	90	55	230	f	181.181.png	https://www.pokepedia.fr/Pharamp/Génération_7
-182	182	Bellossom	Joliflor	2	75	80	95	90	100	50	221	f	182.182.png	https://www.pokepedia.fr/Joliflor/Génération_7
-183	183	Marill	Marill	2	70	20	50	20	50	40	88	f	183.183.png	https://www.pokepedia.fr/Marill/Génération_7
-184	184	Azumarill	Azumarill	2	100	50	80	60	80	50	189	f	184.184.png	https://www.pokepedia.fr/Azumarill/Génération_7
-185	185	Sudowoodo	Simularbre	2	70	100	115	30	65	30	144	f	185.185.png	https://www.pokepedia.fr/Simularbre/Génération_7
-186	186	Politoed	Tarpaud	2	90	75	75	90	100	70	225	f	186.186.png	https://www.pokepedia.fr/Tarpaud/Génération_7
-187	187	Hoppip	Granivol	2	35	35	40	35	55	50	50	f	187.187.png	https://www.pokepedia.fr/Granivol/Génération_7
-188	188	Skiploom	Floravol	2	55	45	50	45	65	80	119	f	188.188.png	https://www.pokepedia.fr/Floravol/Génération_7
-189	189	Jumpluff	Cotovol	2	75	55	70	55	95	110	207	f	189.189.png	https://www.pokepedia.fr/Cotovol/Génération_7
-190	190	Aipom	Capumain	2	55	70	55	40	55	85	72	f	190.190.png	https://www.pokepedia.fr/Capumain/Génération_7
-191	191	Sunkern	Tournegrin	2	30	30	30	30	30	30	36	f	191.191.png	https://www.pokepedia.fr/Tournegrin/Génération_7
-385	287	Slakoth	Parecool	3	60	60	60	35	35	30	56	f	385.385.png	https://www.pokepedia.fr/Jirachi/Génération_7
-386	288	Vigoroth	Vigoroth	3	80	80	80	55	55	90	154	f	386.386.png	https://www.pokepedia.fr/Deoxys/Génération_7
-387	320	Wailmer	Wailmer	3	130	70	35	70	35	60	80	f	387.387.png	https://www.pokepedia.fr/Tortipouss/Génération_7
-388	403	Shinx	Lixy	3	45	65	34	40	34	45	53	f	388.388.png	https://www.pokepedia.fr/Boskara/Génération_7
-389	404	Luxio	Luxio	3	60	85	49	60	49	60	127	f	389.389.png	https://www.pokepedia.fr/Torterra/Génération_7
-390	304	Aron	Galekid	3	50	70	100	40	40	30	66	f	390.390.png	https://www.pokepedia.fr/Ouisticram/Génération_7
-391	305	Lairon	Galegon	3	60	90	140	50	50	40	151	f	391.391.png	https://www.pokepedia.fr/Chimpenfeu/Génération_7
-392	328	Trapinch	Kraknoix	3	45	100	45	45	45	10	58	f	392.392.png	https://www.pokepedia.fr/Simiabraz/Génération_7
-393	329	Vibrava	Vibraninf	3	50	70	50	50	50	70	119	f	393.393.png	https://www.pokepedia.fr/Tiplouf/Génération_7
-394	349	Feebas	Barpau	3	20	15	20	10	55	80	40	f	394.394.png	https://www.pokepedia.fr/Prinplouf/Génération_7
-395	371	Bagon	Draby	3	45	75	60	40	30	50	60	f	395.395.png	https://www.pokepedia.fr/Pingoléon/Génération_7
-396	372	Shelgon	Drackhaus	3	65	95	100	60	50	50	147	f	396.396.png	https://www.pokepedia.fr/Étourmi/Génération_7
-397	599	Klink	Tic	3	40	55	70	45	60	30	60	f	397.397.png	https://www.pokepedia.fr/Étourvol/Génération_7
-398	600	Klang	Clic	3	60	80	95	70	85	50	154	f	398.398.png	https://www.pokepedia.fr/Étouraptor/Génération_7
-399	570	Zorua	Zorua	3	40	65	40	80	40	65	66	f	399.399.png	https://www.pokepedia.fr/Keunotor/Génération_7
-400	406	Budew	Rozbouton	3	40	30	35	50	70	55	56	f	400.400.png	https://www.pokepedia.fr/Castorno/Génération_7
-415	611	Fraxure	Incisache	3	66	117	70	40	50	67	144	f	415.415.png	https://www.pokepedia.fr/Apitrini/Génération_7
-416	622	Golett	Gringolem	3	59	74	50	35	50	35	61	f	416.416.png	https://www.pokepedia.fr/Apireine/Génération_7
-417	661	Fletchling	Passerouge	3	45	50	43	40	38	62	56	f	417.417.png	https://www.pokepedia.fr/Pachirisu/Génération_7
-418	662	Fletchinder	Braisillon	3	62	73	55	56	52	84	134	f	418.418.png	https://www.pokepedia.fr/Mustébouée/Génération_7
-419	636	Larvesta	Pyronille	3	55	85	55	50	55	60	72	f	419.419.png	https://www.pokepedia.fr/Mustéflott/Génération_7
-420	618	Stunfisk	Limonde	3	109	66	84	81	99	32	165	f	420.420.png	https://www.pokepedia.fr/Ceribou/Génération_7
-421	302	Sableye	Ténéfix	3	50	75	75	65	65	50	133	f	421.421.png	https://www.pokepedia.fr/Ceriflor/Génération_7
-422	543	Venipede	Venipatte	3	30	45	59	30	39	57	52	f	422.422.png	https://www.pokepedia.fr/Sancoki/Génération_7
-423	544	Whirlipede	Scobolide	3	40	55	99	40	79	47	126	f	423.423.png	https://www.pokepedia.fr/Tritosor/Génération_7
-424	545	Scolipede	Brutapode	3	60	100	89	55	69	112	218	f	424.424.png	https://www.pokepedia.fr/Capidextre/Génération_7
-425	696	Tyrunt	Ptyranidur	3	58	89	77	45	45	48	72	f	425.425.png	https://www.pokepedia.fr/Baudrive/Génération_7
-426	697	Tyrantrum	Rexillius	3	82	121	119	69	59	71	182	f	426.426.png	https://www.pokepedia.fr/Grodrive/Génération_7
-427	361	Snorunt	Stalgamin	3	50	50	50	50	50	50	60	f	427.427.png	https://www.pokepedia.fr/Laporeille/Génération_7
-428	362	Glalie	Oniglali	3	80	80	80	80	80	80	168	f	428.428.png	https://www.pokepedia.fr/Lockpin/Génération_7
-429	478	Froslass	Momartik	3	70	80	70	80	70	110	168	f	429.429.png	https://www.pokepedia.fr/Magirêve/Génération_7
-430	741	Oricorio	Plumeline	3	75	70	70	98	70	93	167	f	430.430.png	https://www.pokepedia.fr/Corboss/Génération_7
-434	568	Trubbish	Miamiasme	3	50	50	62	40	62	65	66	f	434.434.png	https://www.pokepedia.fr/Moufouette/Génération_7
-435	569	Garbodor	Miasmax	3	80	95	82	60	82	75	166	f	435.435.png	https://www.pokepedia.fr/Moufflair/Génération_7
-436	318	Carvanha	Carvanha	3	45	90	20	65	20	65	61	f	436.436.png	https://www.pokepedia.fr/Archéomire/Génération_7
-437	319	Sharpedo	Sharpedo	3	70	120	40	95	40	95	161	f	437.437.png	https://www.pokepedia.fr/Archéodong/Génération_7
-438	708	Phantump	Brocélôme	3	43	70	48	50	60	38	62	f	438.438.png	https://www.pokepedia.fr/Manzaï/Génération_7
-439	709	Trevenant	Desséliande	3	85	110	76	65	82	56	166	f	439.439.png	https://www.pokepedia.fr/Mime_Jr./Génération_7
-192	192	Sunflora	Héliatronc	2	75	75	55	105	85	30	149	f	192.192.png	https://www.pokepedia.fr/Héliatronc/Génération_7
-193	193	Yanma	Yanma	2	65	65	45	75	45	95	78	f	193.193.png	https://www.pokepedia.fr/Yanma/Génération_7
-194	194	Wooper	Axoloto	2	55	45	45	25	25	15	42	f	194.194.png	https://www.pokepedia.fr/Axoloto/Génération_7
-195	195	Quagsire	Maraiste	2	95	85	85	65	65	35	151	f	195.195.png	https://www.pokepedia.fr/Maraiste/Génération_7
-196	196	Espeon	Mentali	2	65	65	60	130	95	110	184	f	196.196.png	https://www.pokepedia.fr/Mentali/Génération_7
-197	197	Umbreon	Noctali	2	95	65	110	60	130	65	184	f	197.197.png	https://www.pokepedia.fr/Noctali/Génération_7
-198	198	Murkrow	Cornèbre	2	60	85	42	85	42	91	81	f	198.198.png	https://www.pokepedia.fr/Cornèbre/Génération_7
-199	199	Slowking	Roigada	2	95	75	80	100	110	30	172	f	199.199.png	https://www.pokepedia.fr/Roigada/Génération_7
-200	200	Misdreavus	Feuforêve	2	60	60	60	85	85	85	87	f	200.200.png	https://www.pokepedia.fr/Feuforêve/Génération_7
-226	226	Mantine	Démanta	2	85	40	70	80	140	70	170	f	226.226.png	https://www.pokepedia.fr/Démanta/Génération_7
-227	227	Skarmory	Airmure	2	65	80	140	40	70	70	163	f	227.227.png	https://www.pokepedia.fr/Airmure/Génération_7
-228	228	Houndour	Malosse	2	45	60	30	80	50	65	66	f	228.228.png	https://www.pokepedia.fr/Malosse/Génération_7
-229	229	Houndoom	Démolosse	2	75	90	50	110	80	95	175	f	229.229.png	https://www.pokepedia.fr/Démolosse/Génération_7
-230	230	Kingdra	Hyporoi	2	75	95	95	95	95	85	243	f	230.230.png	https://www.pokepedia.fr/Hyporoi/Génération_7
-231	231	Phanpy	Phanpy	2	90	60	60	40	40	40	66	f	231.231.png	https://www.pokepedia.fr/Phanpy/Génération_7
-232	232	Donphan	Donphan	2	90	120	120	60	60	50	175	f	232.232.png	https://www.pokepedia.fr/Donphan/Génération_7
-233	233	Porygon2	Porygon2	2	85	80	90	105	95	60	180	f	233.233.png	https://www.pokepedia.fr/Porygon2/Génération_7
-234	234	Stantler	Cerfrousse	2	73	95	62	85	65	85	163	f	234.234.png	https://www.pokepedia.fr/Cerfrousse/Génération_7
-235	235	Smeargle	Queulorior	2	55	20	35	20	45	75	88	f	235.235.png	https://www.pokepedia.fr/Queulorior/Génération_7
-236	236	Tyrogue	Debugant	2	35	35	35	35	35	35	42	f	236.236.png	https://www.pokepedia.fr/Debugant/Génération_7
-237	237	Hitmontop	Kapoera	2	50	95	95	35	110	70	159	f	237.237.png	https://www.pokepedia.fr/Kapoera/Génération_7
-238	238	Smoochum	Lippouti	2	45	30	15	85	65	65	61	f	238.238.png	https://www.pokepedia.fr/Lippouti/Génération_7
-239	239	Elekid	Élekid	2	45	63	37	65	55	95	72	f	239.239.png	https://www.pokepedia.fr/Élekid/Génération_7
-241	241	Miltank	Écrémeuh	2	95	80	105	40	70	100	172	f	241.241.png	https://www.pokepedia.fr/Écrémeuh/Génération_7
-242	242	Blissey	Leuphorie	2	255	10	10	75	135	55	608	f	242.242.png	https://www.pokepedia.fr/Leuphorie/Génération_7
-246	246	Larvitar	Embrylex	2	50	64	50	45	50	41	60	f	246.246.png	https://www.pokepedia.fr/Embrylex/Génération_7
-247	247	Pupitar	Ymphect	2	70	84	70	65	70	51	144	f	247.247.png	https://www.pokepedia.fr/Ymphect/Génération_7
-248	248	Tyranitar	Tyranocif	2	100	134	110	95	100	61	270	f	248.248.png	https://www.pokepedia.fr/Tyranocif/Génération_7
-274	473	Mamoswine	Mammochon	3	110	130	80	70	60	80	239	f	274.274.png	https://www.pokepedia.fr/Pifeuil/Génération_7
-275	474	Porygon-Z	Porygon-Z	3	85	80	70	135	75	90	241	f	275.275.png	https://www.pokepedia.fr/Tengalice/Génération_7
-276	252	Treecko	Arcko	3	40	45	35	65	55	70	62	f	276.276.png	https://www.pokepedia.fr/Nirondelle/Génération_7
-277	253	Grovyle	Massko	3	50	65	45	85	65	95	142	f	277.277.png	https://www.pokepedia.fr/Hélédelle/Génération_7
-278	254	Sceptile	Jungko	3	70	85	65	105	85	120	239	f	278.278.png	https://www.pokepedia.fr/Goélise/Génération_7
-279	255	Torchic	Poussifeu	3	45	60	40	70	50	45	62	f	279.279.png	https://www.pokepedia.fr/Bekipan/Génération_7
-280	256	Combusken	Galifeu	3	60	85	60	85	60	55	142	f	280.280.png	https://www.pokepedia.fr/Tarsal/Génération_7
-281	257	Blaziken	Braségali	3	80	120	70	110	70	80	239	f	281.281.png	https://www.pokepedia.fr/Kirlia/Génération_7
-282	258	Mudkip	Gobou	3	50	70	50	50	50	40	62	f	282.282.png	https://www.pokepedia.fr/Gardevoir/Génération_7
-283	259	Marshtomp	Flobio	3	70	85	70	60	70	50	142	f	283.283.png	https://www.pokepedia.fr/Arakdo/Génération_7
-284	260	Swampert	Laggron	3	100	110	90	85	90	60	241	f	284.284.png	https://www.pokepedia.fr/Maskadra/Génération_7
-285	280	Ralts	Tarsal	3	28	25	25	45	35	40	40	f	285.285.png	https://www.pokepedia.fr/Balignon/Génération_7
-286	281	Kirlia	Kirlia	3	38	35	35	65	55	50	97	f	286.286.png	https://www.pokepedia.fr/Chapignon/Génération_7
-287	282	Gardevoir	Gardevoir	3	68	65	65	125	115	80	233	f	287.287.png	https://www.pokepedia.fr/Parecool/Génération_7
-288	475	Gallade	Gallame	3	68	125	65	65	115	80	233	f	288.288.png	https://www.pokepedia.fr/Vigoroth/Génération_7
-289	292	Shedinja	Munja	3	1	90	45	30	30	40	83	f	289.289.png	https://www.pokepedia.fr/Monaflèmit/Génération_7
-290	352	Kecleon	Kecleon	3	60	90	70	60	120	40	154	f	290.290.png	https://www.pokepedia.fr/Ningale/Génération_7
-291	374	Beldum	Terhal	3	40	55	80	35	60	30	60	f	291.291.png	https://www.pokepedia.fr/Ninjask/Génération_7
-292	375	Metang	Métang	3	60	75	100	55	80	50	147	f	292.292.png	https://www.pokepedia.fr/Munja/Génération_7
-293	376	Metagross	Métalosse	3	80	135	130	95	90	70	270	f	293.293.png	https://www.pokepedia.fr/Chuchmur/Génération_7
-240	240	Magby	Magby	2	45	75	37	70	55	83	73	f	240.240.png	https://www.pokepedia.fr/Magby/Génération_7
-294	399	Bidoof	Keunotor	3	59	45	40	35	40	31	50	f	294.294.png	https://www.pokepedia.fr/Ramboum/Génération_7
-295	442	Spiritomb	Spiritomb	3	50	92	108	92	108	35	170	f	295.295.png	https://www.pokepedia.fr/Brouhabam/Génération_7
-296	448	Lucario	Lucario	3	70	110	70	115	70	90	184	f	296.296.png	https://www.pokepedia.fr/Makuhita/Génération_7
-297	443	Gible	Griknot	3	58	70	45	40	45	42	60	f	297.297.png	https://www.pokepedia.fr/Hariyama/Génération_7
-298	444	Gabite	Carmache	3	68	90	65	50	55	82	144	f	298.298.png	https://www.pokepedia.fr/Azurill/Génération_7
-299	445	Garchomp	Carchacrok	3	108	130	95	80	85	102	270	f	299.299.png	https://www.pokepedia.fr/Tarinor/Génération_7
-300	303	Mawile	Mysdibule	3	50	85	85	55	55	50	133	f	300.300.png	https://www.pokepedia.fr/Skitty/Génération_7
-321	392	Infernape	Simiabraz	3	76	104	71	104	71	108	240	f	321.321.png	https://www.pokepedia.fr/Wailord/Génération_7
-322	393	Piplup	Tiplouf	3	53	51	53	61	56	40	63	f	322.322.png	https://www.pokepedia.fr/Chamallot/Génération_7
-323	394	Prinplup	Prinplouf	3	64	66	68	81	76	50	142	f	323.323.png	https://www.pokepedia.fr/Camérupt/Génération_7
-324	395	Empoleon	Pingoléon	3	84	86	88	111	101	60	239	f	324.324.png	https://www.pokepedia.fr/Chartor/Génération_7
-325	299	Nosepass	Tarinor	3	30	45	135	45	90	30	75	f	325.325.png	https://www.pokepedia.fr/Spoink/Génération_7
-326	476	Probopass	Tarinorme	3	60	55	145	75	150	40	184	f	326.326.png	https://www.pokepedia.fr/Groret/Génération_7
-327	679	Honedge	Monorpale	3	45	80	100	35	37	28	65	f	327.327.png	https://www.pokepedia.fr/Spinda/Génération_7
-328	680	Doublade	Dimoclès	3	59	110	150	45	49	35	157	f	328.328.png	https://www.pokepedia.fr/Kraknoix/Génération_7
-329	681	Aegislash	Exagide	3	60	50	140	50	140	60	234	f	329.329.png	https://www.pokepedia.fr/Vibraninf/Génération_7
-330	624	Pawniard	Scalpion	3	45	85	70	40	40	60	68	f	330.330.png	https://www.pokepedia.fr/Libégon/Génération_7
-331	625	Bisharp	Scalproie	3	65	125	100	60	70	70	172	f	331.331.png	https://www.pokepedia.fr/Cacnea/Génération_7
-332	405	Luxray	Luxray	3	80	120	79	95	79	70	235	f	332.332.png	https://www.pokepedia.fr/Cacturne/Génération_7
-333	306	Aggron	Galeking	3	70	110	180	60	60	50	239	f	333.333.png	https://www.pokepedia.fr/Tylton/Génération_7
-334	330	Flygon	Libégon	3	80	100	80	80	80	100	234	f	334.334.png	https://www.pokepedia.fr/Altaria/Génération_7
-335	350	Milotic	Milobellus	3	95	60	79	100	125	81	189	f	335.335.png	https://www.pokepedia.fr/Mangriff/Génération_7
-336	373	Salamence	Drattak	3	95	135	80	110	80	100	270	f	336.336.png	https://www.pokepedia.fr/Séviper/Génération_7
-337	601	Klinklang	Cliticlic	3	60	100	115	70	85	90	234	f	337.337.png	https://www.pokepedia.fr/Séléroc/Génération_7
-338	571	Zoroark	Zoroark	3	60	105	60	120	60	105	179	f	338.338.png	https://www.pokepedia.fr/Solaroc/Génération_7
-339	700	Sylveon	Nymphali	3	95	65	65	110	130	60	184	f	339.339.png	https://www.pokepedia.fr/Barloche/Génération_7
-346	486	Regigigas	Regigigas	3	110	160	110	80	110	100	302	f	346.346.png	https://www.pokepedia.fr/Vacilys/Génération_7
-369	623	Golurk	Golemastoc	3	89	124	80	55	80	55	169	f	369.369.png	https://www.pokepedia.fr/Relicanth/Génération_7
-370	771	Pyukumuku	Concombaffe	3	55	60	130	30	130	5	144	f	370.370.png	https://www.pokepedia.fr/Lovdisc/Génération_7
-371	707	Klefki	Trousselin	3	57	80	91	80	87	75	165	f	371.371.png	https://www.pokepedia.fr/Draby/Génération_7
-372	663	Talonflame	Flambusard	3	78	81	71	74	69	126	175	f	372.372.png	https://www.pokepedia.fr/Drackhaus/Génération_7
-373	778	Mimikyu	Mimiqui	3	55	90	80	50	105	96	167	f	373.373.png	https://www.pokepedia.fr/Drattak/Génération_7
-374	637	Volcarona	Pyrax	3	85	60	65	135	105	100	248	f	374.374.png	https://www.pokepedia.fr/Terhal/Génération_7
-375	633	Deino	Solochi	3	52	65	50	45	50	38	60	f	375.375.png	https://www.pokepedia.fr/Métang/Génération_7
-376	634	Zweilous	Diamat	3	72	85	70	65	70	58	147	f	376.376.png	https://www.pokepedia.fr/Métalosse/Génération_7
-377	635	Hydreigon	Trioxhydre	3	92	105	90	125	90	98	270	f	377.377.png	https://www.pokepedia.fr/Regirock/Génération_7
-382	290	Nincada	Ningale	3	31	45	90	30	30	40	53	f	382.382.png	https://www.pokepedia.fr/Kyogre/Génération_7
-383	400	Bibarel	Castorno	3	79	85	60	55	60	71	144	f	383.383.png	https://www.pokepedia.fr/Groudon/Génération_7
-440	714	Noibat	Sonistrelle	3	40	30	35	45	40	55	49	f	440.440.png	https://www.pokepedia.fr/Ptiravi/Génération_7
-384	447	Riolu	Riolu	3	40	70	40	35	40	60	57	f	384.384.png	https://www.pokepedia.fr/Rayquaza/Génération_7
-441	715	Noivern	Bruyverne	3	85	70	80	97	80	123	187	f	441.441.png	https://www.pokepedia.fr/Pijako/Génération_7
-442	333	Swablu	Tylton	3	45	40	60	40	75	50	62	f	442.442.png	https://www.pokepedia.fr/Spiritomb/Génération_7
-443	334	Altaria	Altaria	3	75	70	90	70	105	80	172	f	443.443.png	https://www.pokepedia.fr/Griknot/Génération_7
-444	704	Goomy	Mucuscule	3	45	50	35	55	75	40	60	f	444.444.png	https://www.pokepedia.fr/Carmache/Génération_7
-445	705	Sliggoo	Colimucus	3	68	75	53	83	113	60	158	f	445.445.png	https://www.pokepedia.fr/Carchacrok/Génération_7
-446	706	Goodra	Muplodocus	3	90	100	70	110	150	80	270	f	446.446.png	https://www.pokepedia.fr/Goinfrex/Génération_7
-451	759	Stufful	Nounourson	3	70	75	50	45	50	50	68	f	451.451.png	https://www.pokepedia.fr/Rapion/Génération_7
-452	760	Bewear	Chelours	3	120	125	80	55	60	60	175	f	452.452.png	https://www.pokepedia.fr/Drascore/Génération_7
-453	781	Dhelmise	Sinistrail	3	70	131	100	86	90	40	181	f	453.453.png	https://www.pokepedia.fr/Cradopaud/Génération_7
-468	488	Cresselia	Cresselia	3	120	70	110	75	120	85	270	f	468.468.png	https://www.pokepedia.fr/Togekiss/Génération_7
-469	779	Bruxish	Denticrisse	3	68	105	70	70	70	92	166	f	469.469.png	https://www.pokepedia.fr/Yanmega/Génération_7
-471	782	Jangmo-o	Bébécaille	3	45	55	65	45	45	45	60	f	471.471.png	https://www.pokepedia.fr/Givrali/Génération_7
-472	783	Hakamo-o	Écaïd	3	55	75	90	65	70	65	147	f	472.472.png	https://www.pokepedia.fr/Scorvol/Génération_7
-473	784	Kommo-o	Ékaïser	3	75	110	125	100	105	85	270	f	473.473.png	https://www.pokepedia.fr/Mammochon/Génération_7
-474	767	Wimpod	Sovkipou	3	25	35	40	20	30	80	46	f	474.474.png	https://www.pokepedia.fr/Porygon-Z/Génération_7
-475	768	Golisopod	Sarmuraï	3	75	125	140	60	90	40	186	f	475.475.png	https://www.pokepedia.fr/Gallame/Génération_7
-476	753	Fomantis	Mimantis	3	40	55	35	50	35	35	50	f	476.476.png	https://www.pokepedia.fr/Tarinorme/Génération_7
-477	754	Lurantis	Floramantis	3	70	105	90	80	90	45	168	f	477.477.png	https://www.pokepedia.fr/Noctunoir/Génération_7
-478	703	Carbink	Strassie	3	50	50	150	50	150	50	100	f	478.478.png	https://www.pokepedia.fr/Momartik/Génération_7
-479	650	Chespin	Marisson	3	56	61	65	48	45	38	63	f	479.479.png	https://www.pokepedia.fr/Motisma/Génération_7
-480	651	Quilladin	Boguérisse	3	61	78	95	56	58	57	142	f	480.480.png	https://www.pokepedia.fr/Créhelf/Génération_7
-481	652	Chesnaught	Blindépique	3	88	107	122	74	75	64	239	f	481.481.png	https://www.pokepedia.fr/Créfollet/Génération_7
-482	653	Fennekin	Feunnec	3	40	45	40	62	60	60	61	f	482.482.png	https://www.pokepedia.fr/Créfadet/Génération_7
-483	654	Braixen	Roussil	3	59	59	58	90	70	73	143	f	483.483.png	https://www.pokepedia.fr/Dialga/Génération_7
-484	655	Delphox	Goupelin	3	75	69	72	114	100	104	240	f	484.484.png	https://www.pokepedia.fr/Palkia/Génération_7
-485	656	Froakie	Grenousse	3	41	56	40	62	44	71	63	f	485.485.png	https://www.pokepedia.fr/Heatran/Génération_7
-486	657	Frogadier	Croâporal	3	54	63	52	83	56	97	142	f	486.486.png	https://www.pokepedia.fr/Regigigas/Génération_7
-487	658	Greninja	Amphinobi	3	72	95	67	103	71	122	239	f	487.487.png	https://www.pokepedia.fr/Giratina/Génération_7
-488	324	Torkoal	Chartor	3	70	85	140	85	70	20	165	f	488.488.png	https://www.pokepedia.fr/Cresselia/Génération_7
-489	710	Pumpkaboo	Pitrouille	3	49	66	70	44	55	51	67	f	489.489.png	https://www.pokepedia.fr/Phione/Génération_7
-490	711	Gourgeist	Banshitrouye	3	65	90	122	58	75	84	173	f	490.490.png	https://www.pokepedia.fr/Manaphy/Génération_7
-491	684	Swirlix	Sucroquin	3	62	48	66	59	57	49	68	f	491.491.png	https://www.pokepedia.fr/Darkrai/Génération_7
-492	685	Slurpuff	Cupcanaille	3	82	80	86	85	75	72	168	f	492.492.png	https://www.pokepedia.fr/Shaymin/Génération_7
-493	559	Scraggy	Baggiguane	3	50	75	70	35	70	48	70	f	493.493.png	https://www.pokepedia.fr/Arceus/Génération_7
-494	560	Scrafty	Baggaïd	3	65	90	115	45	115	58	171	f	494.494.png	https://www.pokepedia.fr/Victini/Génération_7
-495	270	Lotad	Nénupiot	3	40	30	30	40	50	30	44	f	495.495.png	https://www.pokepedia.fr/Vipélierre/Génération_7
-496	271	Lombre	Lombre	3	60	50	50	60	70	50	119	f	496.496.png	https://www.pokepedia.fr/Lianaja/Génération_7
-497	272	Ludicolo	Ludicolo	3	80	70	70	90	100	70	216	f	497.497.png	https://www.pokepedia.fr/Majaspic/Génération_7
-498	774	Minior	Météno	3	60	60	100	60	100	60	154	f	498.498.png	https://www.pokepedia.fr/Gruikui/Génération_7
-501	370	Luvdisc	Lovdisc	3	43	30	55	40	65	97	116	f	501.501.png	https://www.pokepedia.fr/Moustillon/Génération_7
-502	261	Poochyena	Medhyèna	3	35	55	35	30	30	35	56	t	502.502.png	https://www.pokepedia.fr/Mateloutre/Génération_7
-503	262	Mightyena	Grahyèna	3	70	90	70	60	60	70	147	t	503.503.png	https://www.pokepedia.fr/Clamiral/Génération_7
-504	263	Zigzagoon	Zigzaton	3	38	30	41	30	41	60	56	t	504.504.png	https://www.pokepedia.fr/Ratentif/Génération_7
-505	264	Linoone	Linéon	3	78	70	61	50	61	100	147	t	505.505.png	https://www.pokepedia.fr/Miradar/Génération_7
-506	265	Wurmple	Chenipotte	3	45	45	35	20	30	20	56	t	506.506.png	https://www.pokepedia.fr/Ponchiot/Génération_7
-507	266	Silcoon	Armulys	3	50	35	55	25	25	15	72	t	507.507.png	https://www.pokepedia.fr/Ponchien/Génération_7
-517	279	Pelipper	Bekipan	3	60	50	100	95	70	65	154	t	517.517.png	https://www.pokepedia.fr/Munna/Génération_7
-518	283	Surskit	Arakdo	3	40	30	32	50	52	65	54	t	518.518.png	https://www.pokepedia.fr/Mushana/Génération_7
-519	284	Masquerain	Maskadra	3	70	60	62	100	82	80	159	t	519.519.png	https://www.pokepedia.fr/Poichigeon/Génération_7
-520	293	Whismur	Chuchmur	3	64	51	23	51	23	28	48	t	520.520.png	https://www.pokepedia.fr/Colombeau/Génération_7
-521	294	Loudred	Ramboum	3	84	71	43	71	43	48	126	t	521.521.png	https://www.pokepedia.fr/Déflaisan/Génération_7
-522	295	Exploud	Brouhabam	3	104	91	63	91	73	68	221	t	522.522.png	https://www.pokepedia.fr/Zébibron/Génération_7
-523	296	Makuhita	Makuhita	3	72	60	30	20	30	25	47	t	523.523.png	https://www.pokepedia.fr/Zéblitz/Génération_7
-524	297	Hariyama	Hariyama	3	144	120	60	40	60	50	166	t	524.524.png	https://www.pokepedia.fr/Nodulithe/Génération_7
-525	300	Skitty	Skitty	3	50	45	45	35	35	50	52	t	525.525.png	https://www.pokepedia.fr/Géolithe/Génération_7
-526	301	Delcatty	Delcatty	3	70	65	65	55	55	90	140	t	526.526.png	https://www.pokepedia.fr/Gigalithe/Génération_7
-527	307	Meditite	Méditikka	3	30	40	55	40	55	60	56	t	527.527.png	https://www.pokepedia.fr/Chovsourir/Génération_7
-528	308	Medicham	Charmina	3	60	60	75	60	75	80	144	t	528.528.png	https://www.pokepedia.fr/Rhinolove/Génération_7
-529	309	Electrike	Dynavolt	3	40	45	40	65	40	65	59	t	529.529.png	https://www.pokepedia.fr/Rototaupe/Génération_7
-530	310	Manectric	Élecsprint	3	70	75	60	105	60	105	166	t	530.530.png	https://www.pokepedia.fr/Minotaupe/Génération_7
-531	311	Plusle	Posipi	3	60	50	40	85	75	95	142	t	531.531.png	https://www.pokepedia.fr/Nanméouïe/Génération_7
-532	312	Minun	Négapi	3	60	40	50	75	85	95	142	t	532.532.png	https://www.pokepedia.fr/Charpenti/Génération_7
-533	313	Volbeat	Muciole	3	65	73	75	47	85	85	151	t	533.533.png	https://www.pokepedia.fr/Ouvrifier/Génération_7
-534	314	Illumise	Lumivole	3	65	47	75	73	85	85	151	t	534.534.png	https://www.pokepedia.fr/Bétochef/Génération_7
-535	316	Gulpin	Gloupti	3	70	43	53	43	53	40	60	t	535.535.png	https://www.pokepedia.fr/Tritonde/Génération_7
-536	317	Swalot	Avaltout	3	100	73	83	73	83	55	163	t	536.536.png	https://www.pokepedia.fr/Batracné/Génération_7
-537	322	Numel	Chamallot	3	60	60	40	65	45	35	61	t	537.537.png	https://www.pokepedia.fr/Crapustule/Génération_7
-538	323	Camerupt	Camérupt	3	70	100	70	105	75	40	161	t	538.538.png	https://www.pokepedia.fr/Judokrak/Génération_7
-539	325	Spoink	Spoink	3	60	25	35	70	80	60	66	t	539.539.png	https://www.pokepedia.fr/Karaclée/Génération_7
-540	326	Grumpig	Groret	3	80	45	65	90	110	80	165	t	540.540.png	https://www.pokepedia.fr/Larveyette/Génération_7
-541	327	Spinda	Spinda	3	60	60	60	60	60	60	126	t	541.541.png	https://www.pokepedia.fr/Couverdure/Génération_7
-542	335	Zangoose	Mangriff	3	73	115	60	60	60	90	160	t	542.542.png	https://www.pokepedia.fr/Manternel/Génération_7
-543	336	Seviper	Séviper	3	73	100	60	100	60	65	160	t	543.543.png	https://www.pokepedia.fr/Venipatte/Génération_7
-544	337	Lunatone	Séléroc	3	90	55	65	95	85	70	161	t	544.544.png	https://www.pokepedia.fr/Scobolide/Génération_7
-545	338	Solrock	Solaroc	3	90	95	85	55	65	70	161	t	545.545.png	https://www.pokepedia.fr/Brutapode/Génération_7
-546	339	Barboach	Barloche	3	50	48	43	46	41	60	58	t	546.546.png	https://www.pokepedia.fr/Doudouvet/Génération_7
-547	340	Whiscash	Barbicha	3	110	78	73	76	71	60	164	t	547.547.png	https://www.pokepedia.fr/Farfaduvet/Génération_7
-548	341	Corphish	Écrapince	3	43	80	65	50	35	35	62	t	548.548.png	https://www.pokepedia.fr/Chlorobule/Génération_7
-549	342	Crawdaunt	Colhomard	3	63	120	85	90	55	55	164	t	549.549.png	https://www.pokepedia.fr/Fragilady/Génération_7
-550	343	Baltoy	Balbuto	3	40	40	55	40	70	55	60	t	550.550.png	https://www.pokepedia.fr/Bargantua/Génération_7
-144	144	Articuno	Artikodin	1	90	85	100	95	125	85	261	f	144.144.png	https://www.pokepedia.fr/Artikodin/Génération_7
-145	145	Zapdos	Électhor	1	90	90	85	125	90	100	261	f	145.145.png	https://www.pokepedia.fr/Électhor/Génération_7
-146	146	Moltres	Sulfura	1	90	100	90	125	85	90	261	f	146.146.png	https://www.pokepedia.fr/Sulfura/Génération_7
-150	150	Mewtwo	Mewtwo	1	106	110	90	154	90	130	306	f	150.150.png	https://www.pokepedia.fr/Mewtwo/Génération_7
-243	243	Raikou	Raikou	2	90	85	75	115	100	115	261	f	243.243.png	https://www.pokepedia.fr/Raikou/Génération_7
-244	244	Entei	Entei	2	115	115	85	90	75	100	261	f	244.244.png	https://www.pokepedia.fr/Entei/Génération_7
-245	245	Suicune	Suicune	2	100	75	115	90	115	85	261	f	245.245.png	https://www.pokepedia.fr/Suicune/Génération_7
-249	249	Lugia	Lugia	2	106	90	130	90	154	110	306	f	249.249.png	https://www.pokepedia.fr/Lugia/Génération_7
-250	250	Ho-oh	Ho-Oh	2	106	130	90	110	154	90	306	f	250.250.png	https://www.pokepedia.fr/Ho-Oh/Génération_7
-340	382	Kyogre	Kyogre	3	100	100	90	150	140	90	302	f	340.340.png	https://www.pokepedia.fr/Barbicha/Génération_7
-341	383	Groudon	Groudon	3	100	150	140	100	90	90	302	f	341.341.png	https://www.pokepedia.fr/Écrapince/Génération_7
-342	384	Rayquaza	Rayquaza	3	105	150	90	150	90	95	306	f	342.342.png	https://www.pokepedia.fr/Colhomard/Génération_7
-343	483	Dialga	Dialga	3	100	120	120	150	100	90	306	f	343.343.png	https://www.pokepedia.fr/Balbuto/Génération_7
-344	484	Palkia	Palkia	3	90	120	100	150	120	100	306	f	344.344.png	https://www.pokepedia.fr/Kaorine/Génération_7
-345	487	Giratina	Giratina	3	150	100	120	100	120	90	306	f	345.345.png	https://www.pokepedia.fr/Lilia/Génération_7
-347	491	Darkrai	Darkrai	3	70	90	90	135	90	125	270	f	347.347.png	https://www.pokepedia.fr/Anorith/Génération_7
-348	649	Genesect	Genesect	3	71	120	95	120	95	99	270	f	348.348.png	https://www.pokepedia.fr/Armaldo/Génération_7
-349	643	Reshiram	Reshiram	3	100	120	100	150	120	90	306	f	349.349.png	https://www.pokepedia.fr/Barpau/Génération_7
-350	644	Zekrom	Zekrom	3	100	150	120	120	100	90	306	f	350.350.png	https://www.pokepedia.fr/Milobellus/Génération_7
-378	380	Latias	Latias	3	80	80	90	110	130	110	270	f	378.378.png	https://www.pokepedia.fr/Regice/Génération_7
-379	381	Latios	Latios	3	80	90	80	130	110	110	270	f	379.379.png	https://www.pokepedia.fr/Registeel/Génération_7
-380	386	Deoxys	Deoxys	3	50	150	50	150	50	150	270	f	380.380.png	https://www.pokepedia.fr/Latias/Génération_7
-381	385	Jirachi	Jirachi	3	100	100	100	100	100	100	270	f	381.381.png	https://www.pokepedia.fr/Latios/Génération_7
-447	377	Regirock	Regirock	3	80	100	200	50	100	50	261	f	447.447.png	https://www.pokepedia.fr/Riolu/Génération_7
-448	378	Regice	Regice	3	80	50	100	100	200	50	261	f	448.448.png	https://www.pokepedia.fr/Lucario/Génération_7
-449	379	Registeel	Registeel	3	80	75	150	75	150	50	261	f	449.449.png	https://www.pokepedia.fr/Hippopotas/Génération_7
-450	800	Necrozma	Necrozma	3	97	107	101	127	89	79	270	f	450.450.png	https://www.pokepedia.fr/Hippodocus/Génération_7
-466	648	Meloetta	Meloetta	3	100	77	77	128	128	90	270	f	466.466.png	https://www.pokepedia.fr/Élekable/Génération_7
-500	719	Diancie	Diancie	3	50	100	150	100	150	50	270	f	500.500.png	https://www.pokepedia.fr/Roitiflam/Génération_7
-431	\N	Oricorio	Chaglam	3	49	55	42	42	37	85	62	f	431.431.png	https://www.pokepedia.fr/Chaglam/Génération_7
-432	\N	Oricorio	Chaffreux	3	71	82	64	64	59	112	158	f	432.432.png	https://www.pokepedia.fr/Chaffreux/Génération_7
-433	\N	Oricorio	Korillon	3	45	30	50	65	50	45	57	f	433.433.png	https://www.pokepedia.fr/Korillon/Génération_7
-465	\N	Lycanroc	Bouldeneu	3	100	100	125	110	50	50	187	f	465.465.png	https://www.pokepedia.fr/Bouldeneu/Génération_7
-467	\N	Meloetta	Maganon	3	75	95	67	125	95	83	243	f	467.467.png	https://www.pokepedia.fr/Maganon/Génération_7
-470	\N	Necrozma	Phyllali	3	65	110	130	60	65	95	184	f	470.470.png	https://www.pokepedia.fr/Phyllali/Génération_7
-499	\N	Minior	Grotichon	3	90	93	55	70	55	55	146	f	499.499.png	https://www.pokepedia.fr/Grotichon/Génération_7
-1	1	Bulbasaur	Bulbizarre	1	45	49	49	65	65	45	64	f	1.1.png	https://www.pokepedia.fr/Bulbizarre/Génération_7
-2	2	Ivysaur	Herbizarre	1	60	62	63	80	80	60	142	f	2.2.png	https://www.pokepedia.fr/Herbizarre/Génération_7
-3	3	Venusaur	Florizarre	1	80	82	83	100	100	80	236	f	3.3.png	https://www.pokepedia.fr/Florizarre/Génération_7
-4	4	Charmander	Salamèche	1	39	52	43	60	50	65	62	f	4.4.png	https://www.pokepedia.fr/Salamèche/Génération_7
-5	5	Charmeleon	Reptincel	1	58	64	58	80	65	80	142	f	5.5.png	https://www.pokepedia.fr/Reptincel/Génération_7
-6	6	Charizard	Dracaufeu	1	78	84	78	109	85	100	240	f	6.6.png	https://www.pokepedia.fr/Dracaufeu/Génération_7
-7	7	Squirtle	Carapuce	1	44	48	65	50	64	43	63	f	7.7.png	https://www.pokepedia.fr/Carapuce/Génération_7
-8	8	Wartortle	Carabaffe	1	59	63	80	65	80	58	142	f	8.8.png	https://www.pokepedia.fr/Carabaffe/Génération_7
-9	9	Blastoise	Tortank	1	79	83	100	85	105	78	239	f	9.9.png	https://www.pokepedia.fr/Tortank/Génération_7
-10	10	Caterpie	Chenipan	1	45	30	35	20	20	45	39	f	10.10.png	https://www.pokepedia.fr/Chenipan/Génération_7
-11	11	Metapod	Chrysacier	1	50	20	55	25	25	30	72	f	11.11.png	https://www.pokepedia.fr/Chrysacier/Génération_7
-12	12	Butterfree	Papilusion	1	60	45	50	90	80	70	178	f	12.12.png	https://www.pokepedia.fr/Papilusion/Génération_7
-553	\N	Castform	Crocorible	3	95	117	80	65	70	92	234	t	553.553.png	https://www.pokepedia.fr/Crocorible/Génération_7
-554	\N	Castform	Darumarond	3	70	90	45	15	45	50	63	t	554.554.png	https://www.pokepedia.fr/Darumarond/Génération_7
-555	\N	Castform	Darumacho	3	105	140	55	30	55	95	168	t	555.555.png	https://www.pokepedia.fr/Darumacho/Génération_7
-51	51	Dugtrio	Triopikeur	1	35	100	50	50	70	120	149	f	51.51.png	https://www.pokepedia.fr/Triopikeur/Génération_7
-52	52	Meowth	Miaouss	1	40	45	35	40	40	90	58	f	52.52.png	https://www.pokepedia.fr/Miaouss/Génération_7
-53	53	Persian	Persian	1	65	70	60	65	65	115	154	f	53.53.png	https://www.pokepedia.fr/Persian/Génération_7
-54	54	Psyduck	Psykokwak	1	50	52	48	65	50	55	64	f	54.54.png	https://www.pokepedia.fr/Psykokwak/Génération_7
-55	55	Golduck	Akwakwak	1	80	82	78	95	80	85	175	f	55.55.png	https://www.pokepedia.fr/Akwakwak/Génération_7
-56	56	Mankey	Férosinge	1	40	80	35	35	45	70	61	f	56.56.png	https://www.pokepedia.fr/Férosinge/Génération_7
-57	57	Primeape	Colossinge	1	65	105	60	60	70	95	159	f	57.57.png	https://www.pokepedia.fr/Colossinge/Génération_7
-58	58	Growlithe	Caninos	1	55	70	45	70	50	60	70	f	58.58.png	https://www.pokepedia.fr/Caninos/Génération_7
-59	59	Arcanine	Arcanin	1	90	110	80	100	80	95	194	f	59.59.png	https://www.pokepedia.fr/Arcanin/Génération_7
-60	60	Poliwag	Ptitard	1	40	50	40	40	40	90	60	f	60.60.png	https://www.pokepedia.fr/Ptitard/Génération_7
-61	61	Poliwhirl	Têtarte	1	65	65	65	50	50	90	135	f	61.61.png	https://www.pokepedia.fr/Têtarte/Génération_7
-62	62	Poliwrath	Tartard	1	90	95	95	70	90	70	230	f	62.62.png	https://www.pokepedia.fr/Tartard/Génération_7
-63	63	Abra	Abra	1	25	20	15	105	55	90	62	f	63.63.png	https://www.pokepedia.fr/Abra/Génération_7
-64	64	Kadabra	Kadabra	1	40	35	30	120	70	105	140	f	64.64.png	https://www.pokepedia.fr/Kadabra/Génération_7
-65	65	Alakazam	Alakazam	1	55	50	45	135	95	120	225	f	65.65.png	https://www.pokepedia.fr/Alakazam/Génération_7
-66	66	Machop	Machoc	1	70	80	50	35	35	35	61	f	66.66.png	https://www.pokepedia.fr/Machoc/Génération_7
-101	101	Electrode	Électrode	1	60	50	70	80	80	150	172	f	101.101.png	https://www.pokepedia.fr/Électrode/Génération_7
-102	102	Exeggcute	Noeunoeuf	1	60	40	80	60	45	40	65	f	102.102.png	https://www.pokepedia.fr/Noeunoeuf/Génération_7
-103	103	Exeggutor	Noadkoko	1	95	95	85	125	75	55	186	f	103.103.png	https://www.pokepedia.fr/Noadkoko/Génération_7
-104	104	Cubone	Osselait	1	50	50	95	40	50	35	64	f	104.104.png	https://www.pokepedia.fr/Osselait/Génération_7
-105	105	Marowak	Ossatueur	1	60	80	110	50	80	45	149	f	105.105.png	https://www.pokepedia.fr/Ossatueur/Génération_7
-106	106	Hitmonlee	Kicklee	1	50	120	53	35	110	87	159	f	106.106.png	https://www.pokepedia.fr/Kicklee/Génération_7
-107	107	Hitmonchan	Tygnon	1	50	105	79	35	110	76	159	f	107.107.png	https://www.pokepedia.fr/Tygnon/Génération_7
-108	108	Lickitung	Excelangue	1	90	55	75	60	75	30	77	f	108.108.png	https://www.pokepedia.fr/Excelangue/Génération_7
-109	109	Koffing	Smogo	1	40	65	95	60	45	35	68	f	109.109.png	https://www.pokepedia.fr/Smogo/Génération_7
-110	110	Weezing	Smogogo	1	65	90	120	85	70	60	172	f	110.110.png	https://www.pokepedia.fr/Smogogo/Génération_7
-111	111	Rhyhorn	Rhinocorne	1	80	85	95	30	30	25	69	f	111.111.png	https://www.pokepedia.fr/Rhinocorne/Génération_7
-112	112	Rhydon	Rhinoféros	1	105	130	120	45	45	40	170	f	112.112.png	https://www.pokepedia.fr/Rhinoféros/Génération_7
-113	113	Chansey	Leveinard	1	250	5	5	35	105	50	395	f	113.113.png	https://www.pokepedia.fr/Leveinard/Génération_7
-114	114	Tangela	Saquedeneu	1	65	55	115	100	40	60	87	f	114.114.png	https://www.pokepedia.fr/Saquedeneu/Génération_7
-115	115	Kangaskhan	Kangourex	1	105	95	80	40	80	90	172	f	115.115.png	https://www.pokepedia.fr/Kangourex/Génération_7
-116	116	Horsea	Hypotrempe	1	30	40	70	70	25	60	59	f	116.116.png	https://www.pokepedia.fr/Hypotrempe/Génération_7
-117	117	Seadra	Hypocéan	1	55	65	95	95	45	85	154	f	117.117.png	https://www.pokepedia.fr/Hypocéan/Génération_7
-118	118	Goldeen	Poissirène	1	45	67	60	35	50	63	64	f	118.118.png	https://www.pokepedia.fr/Poissirène/Génération_7
-119	119	Seaking	Poissoroy	1	80	92	65	65	80	68	158	f	119.119.png	https://www.pokepedia.fr/Poissoroy/Génération_7
-151	151	Mew	Mew	1	100	100	100	100	100	100	270	f	151.151.png	https://www.pokepedia.fr/Mew/Génération_7
-152	152	Chikorita	Germignon	2	45	49	65	49	65	45	64	f	152.152.png	https://www.pokepedia.fr/Germignon/Génération_7
-153	153	Bayleef	Macronium	2	60	62	80	63	80	60	142	f	153.153.png	https://www.pokepedia.fr/Macronium/Génération_7
-154	154	Meganium	Méganium	2	80	82	100	83	100	80	236	f	154.154.png	https://www.pokepedia.fr/Méganium/Génération_7
-155	155	Cyndaquil	Héricendre	2	39	52	43	60	50	65	62	f	155.155.png	https://www.pokepedia.fr/Héricendre/Génération_7
-156	156	Quilava	Feurisson	2	58	64	58	80	65	80	142	f	156.156.png	https://www.pokepedia.fr/Feurisson/Génération_7
-157	157	Typhlosion	Typhlosion	2	78	84	78	109	85	100	240	f	157.157.png	https://www.pokepedia.fr/Typhlosion/Génération_7
-158	158	Totodile	Kaiminus	2	50	65	64	44	48	43	63	f	158.158.png	https://www.pokepedia.fr/Kaiminus/Génération_7
-159	159	Croconaw	Crocrodil	2	65	80	80	59	63	58	142	f	159.159.png	https://www.pokepedia.fr/Crocrodil/Génération_7
-160	160	Feraligatr	Aligatueur	2	85	105	100	79	83	78	239	f	160.160.png	https://www.pokepedia.fr/Aligatueur/Génération_7
-161	161	Sentret	Fouinette	2	35	46	34	35	45	20	43	f	161.161.png	https://www.pokepedia.fr/Fouinette/Génération_7
-162	162	Furret	Fouinar	2	85	76	64	45	55	90	145	f	162.162.png	https://www.pokepedia.fr/Fouinar/Génération_7
-163	163	Hoothoot	Hoothoot	2	60	30	30	36	56	50	52	f	163.163.png	https://www.pokepedia.fr/Hoothoot/Génération_7
-164	164	Noctowl	Noarfang	2	100	50	50	86	96	70	158	f	164.164.png	https://www.pokepedia.fr/Noarfang/Génération_7
-165	165	Ledyba	Coxy	2	40	20	30	40	80	55	53	f	165.165.png	https://www.pokepedia.fr/Coxy/Génération_7
-166	166	Ledian	Coxyclaque	2	55	35	50	55	110	85	137	f	166.166.png	https://www.pokepedia.fr/Coxyclaque/Génération_7
-167	167	Spinarak	Mimigal	2	40	60	40	40	40	30	50	f	167.167.png	https://www.pokepedia.fr/Mimigal/Génération_7
-168	168	Ariados	Migalos	2	70	90	70	60	70	40	140	f	168.168.png	https://www.pokepedia.fr/Migalos/Génération_7
-169	169	Crobat	Nostenfer	2	85	90	80	70	80	130	241	f	169.169.png	https://www.pokepedia.fr/Nostenfer/Génération_7
-170	170	Chinchou	Loupio	2	75	38	38	56	56	67	66	f	170.170.png	https://www.pokepedia.fr/Loupio/Génération_7
-171	171	Lanturn	Lanturn	2	125	58	58	76	76	67	161	f	171.171.png	https://www.pokepedia.fr/Lanturn/Génération_7
-172	172	Pichu	Pichu	2	20	40	15	35	35	60	41	f	172.172.png	https://www.pokepedia.fr/Pichu/Génération_7
-201	201	Unown	Zarbi	2	48	72	48	72	48	48	118	f	201.201.png	https://www.pokepedia.fr/Zarbi/Génération_7
-202	202	Wobbuffet	Qulbutoké	2	190	33	58	33	58	33	142	f	202.202.png	https://www.pokepedia.fr/Qulbutoké/Génération_7
-203	203	Girafarig	Girafarig	2	70	80	65	90	65	85	159	f	203.203.png	https://www.pokepedia.fr/Girafarig/Génération_7
-204	204	Pineco	Pomdepik	2	50	65	90	35	35	15	58	f	204.204.png	https://www.pokepedia.fr/Pomdepik/Génération_7
-205	205	Forretress	Foretress	2	75	90	140	60	60	40	163	f	205.205.png	https://www.pokepedia.fr/Foretress/Génération_7
-206	206	Dunsparce	Insolourdo	2	100	70	70	65	65	45	145	f	206.206.png	https://www.pokepedia.fr/Insolourdo/Génération_7
-207	207	Gligar	Scorplane	2	65	75	105	35	65	85	86	f	207.207.png	https://www.pokepedia.fr/Scorplane/Génération_7
-208	208	Steelix	Steelix	2	75	85	200	55	65	30	179	f	208.208.png	https://www.pokepedia.fr/Steelix/Génération_7
-209	209	Snubbull	Snubbull	2	60	80	50	40	40	30	60	f	209.209.png	https://www.pokepedia.fr/Snubbull/Génération_7
-210	210	Granbull	Granbull	2	90	120	75	60	60	45	158	f	210.210.png	https://www.pokepedia.fr/Granbull/Génération_7
-211	211	Qwilfish	Qwilfish	2	65	95	85	55	55	85	88	f	211.211.png	https://www.pokepedia.fr/Qwilfish/Génération_7
-212	212	Scizor	Cizayox	2	70	130	100	55	80	65	175	f	212.212.png	https://www.pokepedia.fr/Cizayox/Génération_7
-213	213	Shuckle	Caratroc	2	20	10	230	10	230	5	177	f	213.213.png	https://www.pokepedia.fr/Caratroc/Génération_7
-214	214	Heracross	Scarhino	2	80	125	75	40	95	85	175	f	214.214.png	https://www.pokepedia.fr/Scarhino/Génération_7
-215	215	Sneasel	Farfuret	2	55	95	55	35	75	115	86	f	215.215.png	https://www.pokepedia.fr/Farfuret/Génération_7
-216	216	Teddiursa	Teddiursa	2	60	80	50	50	50	40	66	f	216.216.png	https://www.pokepedia.fr/Teddiursa/Génération_7
-217	217	Ursaring	Ursaring	2	90	130	75	75	75	55	175	f	217.217.png	https://www.pokepedia.fr/Ursaring/Génération_7
-218	218	Slugma	Limagma	2	40	40	40	70	40	20	50	f	218.218.png	https://www.pokepedia.fr/Limagma/Génération_7
-219	219	Magcargo	Volcaropod	2	60	50	120	90	80	30	151	f	219.219.png	https://www.pokepedia.fr/Volcaropod/Génération_7
-220	220	Swinub	Marcacrin	2	50	50	40	30	30	50	50	f	220.220.png	https://www.pokepedia.fr/Marcacrin/Génération_7
-221	221	Piloswine	Cochignon	2	100	100	80	60	60	50	158	f	221.221.png	https://www.pokepedia.fr/Cochignon/Génération_7
-222	222	Corsola	Corayon	2	65	55	95	65	95	35	144	f	222.222.png	https://www.pokepedia.fr/Corayon/Génération_7
-223	223	Remoraid	Rémoraid	2	35	65	35	65	35	65	60	f	223.223.png	https://www.pokepedia.fr/Rémoraid/Génération_7
-224	224	Octillery	Octillery	2	75	105	75	105	75	45	168	f	224.224.png	https://www.pokepedia.fr/Octillery/Génération_7
-225	225	Delibird	Cadoizo	2	45	55	45	65	45	75	116	f	225.225.png	https://www.pokepedia.fr/Cadoizo/Génération_7
-251	251	Celebi	Celebi	2	100	100	100	100	100	100	270	f	251.251.png	https://www.pokepedia.fr/Celebi/Génération_7
-252	298	Azurill	Azurill	3	50	20	40	20	40	20	38	f	252.252.png	https://www.pokepedia.fr/Arcko/Génération_7
-253	360	Wynaut	Okéoké	3	95	23	48	23	48	23	52	f	253.253.png	https://www.pokepedia.fr/Massko/Génération_7
-254	424	Ambipom	Capidextre	3	75	100	66	60	66	115	169	f	254.254.png	https://www.pokepedia.fr/Jungko/Génération_7
-255	429	Mismagius	Magirêve	3	60	60	60	105	105	105	173	f	255.255.png	https://www.pokepedia.fr/Poussifeu/Génération_7
-256	430	Honchkrow	Corboss	3	100	125	52	105	52	71	177	f	256.256.png	https://www.pokepedia.fr/Galifeu/Génération_7
-257	438	Bonsly	Manzaï	3	50	80	95	10	45	10	58	f	257.257.png	https://www.pokepedia.fr/Braségali/Génération_7
-258	439	Mime Jr.	Mime Jr.	3	20	25	45	70	90	60	62	f	258.258.png	https://www.pokepedia.fr/Gobou/Génération_7
-259	440	Happiny	Ptiravi	3	100	5	5	15	65	30	110	f	259.259.png	https://www.pokepedia.fr/Flobio/Génération_7
-260	446	Munchlax	Goinfrex	3	135	85	40	40	85	5	78	f	260.260.png	https://www.pokepedia.fr/Laggron/Génération_7
-261	458	Mantyke	Babimanta	3	45	20	50	60	120	50	69	f	261.261.png	https://www.pokepedia.fr/Medhyèna/Génération_7
-262	461	Weavile	Dimoret	3	70	120	65	45	85	125	179	f	262.262.png	https://www.pokepedia.fr/Grahyèna/Génération_7
-263	462	Magnezone	Magnézone	3	70	70	115	130	90	60	241	f	263.263.png	https://www.pokepedia.fr/Zigzaton/Génération_7
-264	463	Lickilicky	Coudlangue	3	110	85	95	80	95	50	180	f	264.264.png	https://www.pokepedia.fr/Linéon/Génération_7
-265	464	Rhyperior	Rhinastoc	3	115	140	130	55	55	40	241	f	265.265.png	https://www.pokepedia.fr/Chenipotte/Génération_7
-266	465	Tangrowth	Bouldeneu	3	100	100	125	110	50	50	187	f	266.266.png	https://www.pokepedia.fr/Armulys/Génération_7
-267	466	Electivire	Élekable	3	75	123	67	95	85	95	243	f	267.267.png	https://www.pokepedia.fr/Charmillon/Génération_7
-268	467	Magmortar	Maganon	3	75	95	67	125	95	83	243	f	268.268.png	https://www.pokepedia.fr/Blindalys/Génération_7
-269	468	Togekiss	Togekiss	3	85	50	95	120	115	80	245	f	269.269.png	https://www.pokepedia.fr/Papinox/Génération_7
-270	469	Yanmega	Yanmega	3	86	76	86	116	56	95	180	f	270.270.png	https://www.pokepedia.fr/Nénupiot/Génération_7
-271	470	Leafeon	Phyllali	3	65	110	130	60	65	95	184	f	271.271.png	https://www.pokepedia.fr/Lombre/Génération_7
-272	471	Glaceon	Givrali	3	65	60	110	130	95	65	184	f	272.272.png	https://www.pokepedia.fr/Ludicolo/Génération_7
-273	472	Gliscor	Scorvol	3	75	95	125	45	75	95	179	f	273.273.png	https://www.pokepedia.fr/Grainipiot/Génération_7
-315	493	Arceus	Arceus	3	120	120	120	120	120	120	324	f	315.315.png	https://www.pokepedia.fr/Rosélia/Génération_7
-301	345	Lileep	Lilia	3	66	41	77	61	87	23	71	f	301.301.png	https://www.pokepedia.fr/Delcatty/Génération_7
-302	346	Cradily	Vacilys	3	86	81	97	81	107	43	173	f	302.302.png	https://www.pokepedia.fr/Ténéfix/Génération_7
-303	347	Anorith	Anorith	3	45	95	50	40	50	75	71	f	303.303.png	https://www.pokepedia.fr/Mysdibule/Génération_7
-304	348	Armaldo	Armaldo	3	75	125	100	70	80	45	173	f	304.304.png	https://www.pokepedia.fr/Galekid/Génération_7
-305	408	Cranidos	Kranidos	3	67	125	40	30	30	58	70	f	305.305.png	https://www.pokepedia.fr/Galegon/Génération_7
-306	409	Rampardos	Charkos	3	97	165	60	65	50	58	173	f	306.306.png	https://www.pokepedia.fr/Galeking/Génération_7
-307	410	Shieldon	Dinoclier	3	30	42	118	42	88	30	70	f	307.307.png	https://www.pokepedia.fr/Méditikka/Génération_7
-308	411	Bastiodon	Bastiodon	3	60	52	168	47	138	30	173	f	308.308.png	https://www.pokepedia.fr/Charmina/Génération_7
-309	289	Slaking	Monaflèmit	3	150	160	100	95	65	100	252	f	309.309.png	https://www.pokepedia.fr/Dynavolt/Génération_7
-310	359	Absol	Absol	3	65	130	60	75	60	75	163	f	310.310.png	https://www.pokepedia.fr/Élecsprint/Génération_7
-311	355	Duskull	Skelénox	3	20	40	90	30	90	25	59	f	311.311.png	https://www.pokepedia.fr/Posipi/Génération_7
-312	356	Dusclops	Téraclope	3	40	70	130	60	130	25	159	f	312.312.png	https://www.pokepedia.fr/Négapi/Génération_7
-313	477	Dusknoir	Noctunoir	3	45	100	135	65	135	45	236	f	313.313.png	https://www.pokepedia.fr/Muciole/Génération_7
-314	321	Wailord	Wailord	3	170	90	45	90	45	60	175	f	314.314.png	https://www.pokepedia.fr/Lumivole/Génération_7
-316	387	Turtwig	Tortipouss	3	55	68	64	45	55	31	64	f	316.316.png	https://www.pokepedia.fr/Gloupti/Génération_7
-317	388	Grotle	Boskara	3	75	89	85	55	65	36	142	f	317.317.png	https://www.pokepedia.fr/Avaltout/Génération_7
-318	389	Torterra	Torterra	3	95	109	105	75	85	56	236	f	318.318.png	https://www.pokepedia.fr/Carvanha/Génération_7
-319	390	Chimchar	Ouisticram	3	44	58	44	58	44	61	62	f	319.319.png	https://www.pokepedia.fr/Sharpedo/Génération_7
-320	391	Monferno	Chimpenfeu	3	64	78	52	78	52	81	142	f	320.320.png	https://www.pokepedia.fr/Wailmer/Génération_7
-351	646	Kyurem	Kyurem	3	125	130	90	130	90	95	297	f	351.351.png	https://www.pokepedia.fr/Morphéo/Génération_7
-352	407	Roserade	Roserade	3	60	70	65	125	105	90	232	f	352.352.png	https://www.pokepedia.fr/Kecleon/Génération_7
-353	426	Drifblim	Grodrive	3	150	80	44	90	54	80	174	f	353.353.png	https://www.pokepedia.fr/Polichombr/Génération_7
-354	428	Lopunny	Lockpin	3	65	76	84	54	96	105	168	f	354.354.png	https://www.pokepedia.fr/Branette/Génération_7
-355	286	Breloom	Chapignon	3	60	130	80	60	60	70	161	f	355.355.png	https://www.pokepedia.fr/Skelénox/Génération_7
-356	291	Ninjask	Ninjask	3	61	90	45	50	50	160	160	f	356.356.png	https://www.pokepedia.fr/Téraclope/Génération_7
-357	354	Banette	Branette	3	64	115	65	83	63	65	159	f	357.357.png	https://www.pokepedia.fr/Tropius/Génération_7
-358	479	Rotom	Motisma	3	50	50	77	95	77	91	154	f	358.358.png	https://www.pokepedia.fr/Éoko/Génération_7
-359	579	Reuniclus	Symbios	3	110	65	75	125	85	30	221	f	359.359.png	https://www.pokepedia.fr/Absol/Génération_7
-360	547	Whimsicott	Farfaduvet	3	60	67	85	77	75	116	168	f	360.360.png	https://www.pokepedia.fr/Okéoké/Génération_7
-361	553	Krookodile	Crocorible	3	95	117	80	65	70	92	234	f	361.361.png	https://www.pokepedia.fr/Stalgamin/Génération_7
-362	563	Cofagrigus	Tutankafer	3	58	50	145	95	105	30	169	f	362.362.png	https://www.pokepedia.fr/Oniglali/Génération_7
-363	596	Galvantula	Mygavolt	3	70	77	60	97	60	108	165	f	363.363.png	https://www.pokepedia.fr/Obalie/Génération_7
-364	598	Ferrothorn	Noacier	3	74	94	131	54	116	20	171	f	364.364.png	https://www.pokepedia.fr/Phogleur/Génération_7
-365	607	Litwick	Funécire	3	50	30	55	65	55	20	55	f	365.365.png	https://www.pokepedia.fr/Kaimorse/Génération_7
-366	608	Lampent	Mélancolux	3	60	40	60	95	60	55	130	f	366.366.png	https://www.pokepedia.fr/Coquiperl/Génération_7
-367	609	Chandelure	Lugulabre	3	60	55	90	145	90	80	234	f	367.367.png	https://www.pokepedia.fr/Serpang/Génération_7
-368	612	Haxorus	Tranchodon	3	76	147	90	60	70	97	243	f	368.368.png	https://www.pokepedia.fr/Rosabyss/Génération_7
-401	315	Roselia	Rosélia	3	50	60	45	100	80	65	140	f	401.401.png	https://www.pokepedia.fr/Crikzik/Génération_7
-402	425	Drifloon	Baudrive	3	90	50	34	60	44	70	70	f	402.402.png	https://www.pokepedia.fr/Mélokrik/Génération_7
-403	427	Buneary	Laporeille	3	55	66	44	44	56	85	70	f	403.403.png	https://www.pokepedia.fr/Lixy/Génération_7
-404	285	Shroomish	Balignon	3	60	40	60	40	60	35	59	f	404.404.png	https://www.pokepedia.fr/Luxio/Génération_7
-405	353	Shuppet	Polichombr	3	44	75	35	63	33	45	59	f	405.405.png	https://www.pokepedia.fr/Luxray/Génération_7
-406	577	Solosis	Nucléos	3	45	30	40	105	50	20	58	f	406.406.png	https://www.pokepedia.fr/Rozbouton/Génération_7
-407	578	Duosion	Méios	3	65	40	50	125	60	30	130	f	407.407.png	https://www.pokepedia.fr/Roserade/Génération_7
-408	546	Cottonee	Doudouvet	3	40	27	60	37	50	66	56	f	408.408.png	https://www.pokepedia.fr/Kranidos/Génération_7
-409	551	Sandile	Mascaïman	3	50	72	35	35	35	65	58	f	409.409.png	https://www.pokepedia.fr/Charkos/Génération_7
-410	552	Krokorok	Escroco	3	60	82	45	45	45	74	123	f	410.410.png	https://www.pokepedia.fr/Dinoclier/Génération_7
-411	562	Yamask	Tutafeh	3	38	30	85	55	65	30	61	f	411.411.png	https://www.pokepedia.fr/Bastiodon/Génération_7
-412	595	Joltik	Statitik	3	50	47	50	57	50	65	64	f	412.412.png	https://www.pokepedia.fr/Cheniti/Génération_7
-413	597	Ferroseed	Grindur	3	44	50	91	24	86	10	61	f	413.413.png	https://www.pokepedia.fr/Cheniselle/Génération_7
-414	610	Axew	Coupenotte	3	46	87	60	30	40	57	64	f	414.414.png	https://www.pokepedia.fr/Papilord/Génération_7
-454	747	Mareanie	Vorastérie	3	50	53	62	43	52	45	61	f	454.454.png	https://www.pokepedia.fr/Coatox/Génération_7
-455	748	Toxapex	Prédastérie	3	50	63	152	53	142	35	173	f	455.455.png	https://www.pokepedia.fr/Vortente/Génération_7
-456	701	Hawlucha	Brutalibré	3	78	92	75	74	63	118	175	f	456.456.png	https://www.pokepedia.fr/Écayon/Génération_7
-457	331	Cacnea	Cacnea	3	50	85	40	85	40	35	67	f	457.457.png	https://www.pokepedia.fr/Luminéon/Génération_7
-458	332	Cacturne	Cacturne	3	70	115	60	115	60	55	166	f	458.458.png	https://www.pokepedia.fr/Babimanta/Génération_7
-459	769	Sandygast	Bacabouh	3	55	55	80	70	45	15	64	f	459.459.png	https://www.pokepedia.fr/Blizzi/Génération_7
-460	770	Palossand	Trépassable	3	85	75	110	100	75	35	168	f	460.460.png	https://www.pokepedia.fr/Blizzaroi/Génération_7
-461	698	Amaura	Amagara	3	77	59	50	67	63	46	72	f	461.461.png	https://www.pokepedia.fr/Dimoret/Génération_7
-462	699	Aurorus	Dragmara	3	123	77	72	99	92	58	104	f	462.462.png	https://www.pokepedia.fr/Magnézone/Génération_7
-463	744	Rockruff	Rocabot	3	45	65	40	30	40	60	56	f	463.463.png	https://www.pokepedia.fr/Coudlangue/Génération_7
-464	745	Lycanroc	Lougaroc	3	75	115	65	55	65	112	170	f	464.464.png	https://www.pokepedia.fr/Rhinastoc/Génération_7
-508	267	Beautifly	Charmillon	3	60	70	50	100	50	65	178	t	508.508.png	https://www.pokepedia.fr/Mastouffe/Génération_7
-509	268	Cascoon	Blindalys	3	50	35	55	25	25	15	72	t	509.509.png	https://www.pokepedia.fr/Chacripan/Génération_7
-510	269	Dustox	Papinox	3	60	50	70	50	90	65	173	t	510.510.png	https://www.pokepedia.fr/Léopardus/Génération_7
-511	273	Seedot	Grainipiot	3	40	40	50	30	30	30	44	t	511.511.png	https://www.pokepedia.fr/Feuillajou/Génération_7
-512	274	Nuzleaf	Pifeuil	3	70	70	40	60	40	60	119	t	512.512.png	https://www.pokepedia.fr/Feuiloutan/Génération_7
-513	275	Shiftry	Tengalice	3	90	100	60	90	60	80	216	t	513.513.png	https://www.pokepedia.fr/Flamajou/Génération_7
-514	276	Taillow	Nirondelle	3	40	55	30	30	30	85	54	t	514.514.png	https://www.pokepedia.fr/Flamoutan/Génération_7
-515	277	Swellow	Hélédelle	3	60	85	60	75	50	125	159	t	515.515.png	https://www.pokepedia.fr/Flotajou/Génération_7
-516	278	Wingull	Goélise	3	40	30	30	55	30	85	54	t	516.516.png	https://www.pokepedia.fr/Flotoutan/Génération_7
-551	344	Claydol	Kaorine	3	60	70	105	70	120	75	175	t	551.551.png	https://www.pokepedia.fr/Mascaïman/Génération_7
-552	351	Castform	Morphéo	3	70	70	70	70	70	70	147	t	552.552.png	https://www.pokepedia.fr/Escroco/Génération_7
-556	357	Tropius	Tropius	3	99	68	83	72	87	51	161	t	556.556.png	https://www.pokepedia.fr/Maracachi/Génération_7
-557	433	Chingling	Korillon	3	45	30	50	65	50	45	57	t	557.557.png	https://www.pokepedia.fr/Crabicoque/Génération_7
-558	358	Chimecho	Éoko	3	75	50	80	95	90	65	159	t	558.558.png	https://www.pokepedia.fr/Crabaraque/Génération_7
-559	363	Spheal	Obalie	3	70	40	50	55	50	25	58	t	559.559.png	https://www.pokepedia.fr/Baggiguane/Génération_7
-560	364	Sealeo	Phogleur	3	90	60	70	75	70	45	144	t	560.560.png	https://www.pokepedia.fr/Baggaïd/Génération_7
-561	365	Walrein	Kaimorse	3	110	80	90	95	90	65	239	t	561.561.png	https://www.pokepedia.fr/Cryptéro/Génération_7
-562	366	Clamperl	Coquiperl	3	35	64	85	74	55	32	69	t	562.562.png	https://www.pokepedia.fr/Tutafeh/Génération_7
-563	367	Huntail	Serpang	3	55	104	105	94	75	52	170	t	563.563.png	https://www.pokepedia.fr/Tutankafer/Génération_7
-564	368	Gorebyss	Rosabyss	3	55	84	105	114	75	52	170	t	564.564.png	https://www.pokepedia.fr/Carapagos/Génération_7
-565	369	Relicanth	Relicanth	3	100	90	130	45	65	55	170	t	565.565.png	https://www.pokepedia.fr/Mégapagos/Génération_7
-566	527	Woobat	Chovsourir	3	65	45	43	55	43	72	65	t	566.566.png	https://www.pokepedia.fr/Arkéapti/Génération_7
-567	528	Swoobat	Rhinolove	3	67	57	55	77	55	114	149	t	567.567.png	https://www.pokepedia.fr/Aéroptéryx/Génération_7
-568	602	Tynamo	Anchwatt	3	35	55	40	45	40	60	55	t	568.568.png	https://www.pokepedia.fr/Miamiasme/Génération_7
-569	603	Eelektrik	Lampéroie	3	65	85	70	75	70	40	142	t	569.569.png	https://www.pokepedia.fr/Miasmax/Génération_7
-570	604	Eelektross	Ohmassacre	3	85	115	80	105	80	50	232	t	570.570.png	https://www.pokepedia.fr/Zorua/Génération_7
-571	690	Skrelp	Venalgue	3	50	60	60	60	60	30	64	t	571.571.png	https://www.pokepedia.fr/Zoroark/Génération_7
-572	691	Dragalge	Kravarech	3	65	75	90	97	123	44	173	t	572.572.png	https://www.pokepedia.fr/Chinchidou/Génération_7
+COPY public.pokemon (id, national_id, name_en, name_fr, generation_id, hp, attack, defense, sp_attack, sp_defense, speed, base_experience, is_hoenn_only, sprite_path, pokepedia_url, is_legendary) FROM stdin;
+13	13	Weedle	Aspicot	1	40	35	30	20	20	50	39	f	13.13.png	https://www.pokepedia.fr/Aspicot/Génération_7	f
+14	14	Kakuna	Coconfort	1	45	25	50	25	25	35	72	f	14.14.png	https://www.pokepedia.fr/Coconfort/Génération_7	f
+15	15	Beedrill	Dardargnan	1	65	90	40	45	80	75	178	f	15.15.png	https://www.pokepedia.fr/Dardargnan/Génération_7	f
+16	16	Pidgey	Roucool	1	40	45	40	35	35	56	50	f	16.16.png	https://www.pokepedia.fr/Roucool/Génération_7	f
+17	17	Pidgeotto	Roucoups	1	63	60	55	50	50	71	122	f	17.17.png	https://www.pokepedia.fr/Roucoups/Génération_7	f
+18	18	Pidgeot	Roucarnage	1	83	80	75	70	70	101	216	f	18.18.png	https://www.pokepedia.fr/Roucarnage/Génération_7	f
+19	19	Rattata	Rattata	1	30	56	35	25	35	72	51	f	19.19.png	https://www.pokepedia.fr/Rattata/Génération_7	f
+20	20	Raticate	Rattatac	1	55	81	60	50	70	97	145	f	20.20.png	https://www.pokepedia.fr/Rattatac/Génération_7	f
+21	21	Spearow	Piafabec	1	40	60	30	31	31	70	52	f	21.21.png	https://www.pokepedia.fr/Piafabec/Génération_7	f
+22	22	Fearow	Rapasdepic	1	65	90	65	61	61	100	155	f	22.22.png	https://www.pokepedia.fr/Rapasdepic/Génération_7	f
+23	23	Ekans	Abo	1	35	60	44	40	54	55	58	f	23.23.png	https://www.pokepedia.fr/Abo/Génération_7	f
+24	24	Arbok	Arbok	1	60	95	69	65	79	80	157	f	24.24.png	https://www.pokepedia.fr/Arbok/Génération_7	f
+25	25	Pikachu	Pikachu	1	35	55	40	50	50	90	112	f	25.25.png	https://www.pokepedia.fr/Pikachu/Génération_7	f
+26	26	Raichu	Raichu	1	60	90	55	90	80	110	218	f	26.26.png	https://www.pokepedia.fr/Raichu/Génération_7	f
+27	27	Sandshrew	Sabelette	1	50	75	85	20	30	40	60	f	27.27.png	https://www.pokepedia.fr/Sabelette/Génération_7	f
+28	28	Sandslash	Sablaireau	1	75	100	110	45	55	65	158	f	28.28.png	https://www.pokepedia.fr/Sablaireau/Génération_7	f
+29	29	Nidoran♀	Nidoran♀	1	55	47	52	40	40	41	55	f	29.29.png	https://www.pokepedia.fr/Nidoran♀/Génération_7	f
+30	30	Nidorina	Nidorina	1	70	62	67	55	55	56	128	f	30.30.png	https://www.pokepedia.fr/Nidorina/Génération_7	f
+31	31	Nidoqueen	Nidoqueen	1	90	92	87	75	85	76	227	f	31.31.png	https://www.pokepedia.fr/Nidoqueen/Génération_7	f
+32	32	Nidoran♂	Nidoran♂	1	46	57	40	40	40	50	55	f	32.32.png	https://www.pokepedia.fr/Nidoran♂/Génération_7	f
+33	33	Nidorino	Nidorino	1	61	72	57	55	55	65	128	f	33.33.png	https://www.pokepedia.fr/Nidorino/Génération_7	f
+34	34	Nidoking	Nidoking	1	81	102	77	85	75	85	227	f	34.34.png	https://www.pokepedia.fr/Nidoking/Génération_7	f
+35	35	Clefairy	Mélofée	1	70	45	48	60	65	35	113	f	35.35.png	https://www.pokepedia.fr/Mélofée/Génération_7	f
+36	36	Clefable	Mélodelfe	1	95	70	73	95	90	60	217	f	36.36.png	https://www.pokepedia.fr/Mélodelfe/Génération_7	f
+37	37	Vulpix	Goupix	1	38	41	40	50	65	65	60	f	37.37.png	https://www.pokepedia.fr/Goupix/Génération_7	f
+38	38	Ninetales	Feunard	1	73	76	75	81	100	100	177	f	38.38.png	https://www.pokepedia.fr/Feunard/Génération_7	f
+39	39	Jigglypuff	Rondoudou	1	115	45	20	45	25	20	95	f	39.39.png	https://www.pokepedia.fr/Rondoudou/Génération_7	f
+40	40	Wigglytuff	Grodoudou	1	140	70	45	85	50	45	196	f	40.40.png	https://www.pokepedia.fr/Grodoudou/Génération_7	f
+41	41	Zubat	Nosferapti	1	40	45	35	30	40	55	49	f	41.41.png	https://www.pokepedia.fr/Nosferapti/Génération_7	f
+42	42	Golbat	Nosferalto	1	75	80	70	65	75	90	159	f	42.42.png	https://www.pokepedia.fr/Nosferalto/Génération_7	f
+43	43	Oddish	Mystherbe	1	45	50	55	75	65	30	64	f	43.43.png	https://www.pokepedia.fr/Mystherbe/Génération_7	f
+44	44	Gloom	Ortide	1	60	65	70	85	75	40	138	f	44.44.png	https://www.pokepedia.fr/Ortide/Génération_7	f
+45	45	Vileplume	Rafflesia	1	75	80	85	110	90	50	221	f	45.45.png	https://www.pokepedia.fr/Rafflesia/Génération_7	f
+46	46	Paras	Paras	1	35	70	55	45	55	25	57	f	46.46.png	https://www.pokepedia.fr/Paras/Génération_7	f
+47	47	Parasect	Parasect	1	60	95	80	60	80	30	142	f	47.47.png	https://www.pokepedia.fr/Parasect/Génération_7	f
+48	48	Venonat	Mimitoss	1	60	55	50	40	55	45	61	f	48.48.png	https://www.pokepedia.fr/Mimitoss/Génération_7	f
+49	49	Venomoth	Aéromite	1	70	65	60	90	75	90	158	f	49.49.png	https://www.pokepedia.fr/Aéromite/Génération_7	f
+50	50	Diglett	Taupiqueur	1	10	55	25	35	45	95	53	f	50.50.png	https://www.pokepedia.fr/Taupiqueur/Génération_7	f
+67	67	Machoke	Machopeur	1	80	100	70	50	60	45	142	f	67.67.png	https://www.pokepedia.fr/Machopeur/Génération_7	f
+68	68	Machamp	Mackogneur	1	90	130	80	65	85	55	227	f	68.68.png	https://www.pokepedia.fr/Mackogneur/Génération_7	f
+69	69	Bellsprout	Chétiflor	1	50	75	35	70	30	40	60	f	69.69.png	https://www.pokepedia.fr/Chétiflor/Génération_7	f
+70	70	Weepinbell	Boustiflor	1	65	90	50	85	45	55	137	f	70.70.png	https://www.pokepedia.fr/Boustiflor/Génération_7	f
+71	71	Victreebel	Empiflor	1	80	105	65	100	70	70	221	f	71.71.png	https://www.pokepedia.fr/Empiflor/Génération_7	f
+72	72	Tentacool	Tentacool	1	40	40	35	50	100	70	67	f	72.72.png	https://www.pokepedia.fr/Tentacool/Génération_7	f
+73	73	Tentacruel	Tentacruel	1	80	70	65	80	120	100	180	f	73.73.png	https://www.pokepedia.fr/Tentacruel/Génération_7	f
+74	74	Geodude	Racaillou	1	40	80	100	30	30	20	60	f	74.74.png	https://www.pokepedia.fr/Racaillou/Génération_7	f
+75	75	Graveler	Gravalanch	1	55	95	115	45	45	35	137	f	75.75.png	https://www.pokepedia.fr/Gravalanch/Génération_7	f
+76	76	Golem	Grolem	1	80	120	130	55	65	45	223	f	76.76.png	https://www.pokepedia.fr/Grolem/Génération_7	f
+77	77	Ponyta	Ponyta	1	50	85	55	65	65	90	82	f	77.77.png	https://www.pokepedia.fr/Ponyta/Génération_7	f
+78	78	Rapidash	Galopa	1	65	100	70	80	80	105	175	f	78.78.png	https://www.pokepedia.fr/Galopa/Génération_7	f
+79	79	Slowpoke	Ramoloss	1	90	65	65	40	40	15	63	f	79.79.png	https://www.pokepedia.fr/Ramoloss/Génération_7	f
+80	80	Slowbro	Flagadoss	1	95	75	110	100	80	30	172	f	80.80.png	https://www.pokepedia.fr/Flagadoss/Génération_7	f
+81	81	Magnemite	Magnéti	1	25	35	70	95	55	45	65	f	81.81.png	https://www.pokepedia.fr/Magnéti/Génération_7	f
+82	82	Magneton	Magnéton	1	50	60	95	120	70	70	163	f	82.82.png	https://www.pokepedia.fr/Magnéton/Génération_7	f
+83	83	Farfetch'd	Canarticho	1	52	90	55	58	62	60	132	f	83.83.png	https://www.pokepedia.fr/Canarticho/Génération_7	f
+84	84	Doduo	Doduo	1	35	85	45	35	35	75	62	f	84.84.png	https://www.pokepedia.fr/Doduo/Génération_7	f
+85	85	Dodrio	Dodrio	1	60	110	70	60	60	110	165	f	85.85.png	https://www.pokepedia.fr/Dodrio/Génération_7	f
+86	86	Seel	Otaria	1	65	45	55	45	70	45	65	f	86.86.png	https://www.pokepedia.fr/Otaria/Génération_7	f
+87	87	Dewgong	Lamantine	1	90	70	80	70	95	70	166	f	87.87.png	https://www.pokepedia.fr/Lamantine/Génération_7	f
+88	88	Grimer	Tadmorv	1	80	80	50	40	50	25	65	f	88.88.png	https://www.pokepedia.fr/Tadmorv/Génération_7	f
+89	89	Muk	Grotadmorv	1	105	105	75	65	100	50	175	f	89.89.png	https://www.pokepedia.fr/Grotadmorv/Génération_7	f
+90	90	Shellder	Kokiyas	1	30	65	100	45	25	40	61	f	90.90.png	https://www.pokepedia.fr/Kokiyas/Génération_7	f
+91	91	Cloyster	Crustabri	1	50	95	180	85	45	70	184	f	91.91.png	https://www.pokepedia.fr/Crustabri/Génération_7	f
+92	92	Gastly	Fantominus	1	30	35	30	100	35	80	62	f	92.92.png	https://www.pokepedia.fr/Fantominus/Génération_7	f
+93	93	Haunter	Spectrum	1	45	50	45	115	55	95	142	f	93.93.png	https://www.pokepedia.fr/Spectrum/Génération_7	f
+94	94	Gengar	Ectoplasma	1	60	65	60	130	75	110	225	f	94.94.png	https://www.pokepedia.fr/Ectoplasma/Génération_7	f
+95	95	Onix	Onix	1	35	45	160	30	45	70	77	f	95.95.png	https://www.pokepedia.fr/Onix/Génération_7	f
+96	96	Drowzee	Soporifik	1	60	48	45	43	90	42	66	f	96.96.png	https://www.pokepedia.fr/Soporifik/Génération_7	f
+97	97	Hypno	Hypnomade	1	85	73	70	73	115	67	169	f	97.97.png	https://www.pokepedia.fr/Hypnomade/Génération_7	f
+98	98	Krabby	Krabby	1	30	105	90	25	25	50	65	f	98.98.png	https://www.pokepedia.fr/Krabby/Génération_7	f
+99	99	Kingler	Krabboss	1	55	130	115	50	50	75	166	f	99.99.png	https://www.pokepedia.fr/Krabboss/Génération_7	f
+100	100	Voltorb	Voltorbe	1	40	30	50	55	55	100	66	f	100.100.png	https://www.pokepedia.fr/Voltorbe/Génération_7	f
+120	120	Staryu	Stari	1	30	45	55	70	55	85	68	f	120.120.png	https://www.pokepedia.fr/Stari/Génération_7	f
+121	121	Starmie	Staross	1	60	75	85	100	85	115	182	f	121.121.png	https://www.pokepedia.fr/Staross/Génération_7	f
+122	122	Mr. Mime	M. Mime	1	40	45	65	100	120	90	161	f	122.122.png	https://www.pokepedia.fr/M._Mime/Génération_7	f
+123	123	Scyther	Insécateur	1	70	110	80	55	80	105	100	f	123.123.png	https://www.pokepedia.fr/Insécateur/Génération_7	f
+124	124	Jynx	Lippoutou	1	65	50	35	115	95	95	159	f	124.124.png	https://www.pokepedia.fr/Lippoutou/Génération_7	f
+125	125	Electabuzz	Élektek	1	65	83	57	95	85	105	172	f	125.125.png	https://www.pokepedia.fr/Élektek/Génération_7	f
+126	126	Magmar	Magmar	1	65	95	57	100	85	93	173	f	126.126.png	https://www.pokepedia.fr/Magmar/Génération_7	f
+127	127	Pinsir	Scarabrute	1	65	125	100	55	70	85	175	f	127.127.png	https://www.pokepedia.fr/Scarabrute/Génération_7	f
+128	128	Tauros	Tauros	1	75	100	95	40	70	110	172	f	128.128.png	https://www.pokepedia.fr/Tauros/Génération_7	f
+129	129	Magikarp	Magicarpe	1	20	10	55	15	20	80	40	f	129.129.png	https://www.pokepedia.fr/Magicarpe/Génération_7	f
+130	130	Gyarados	Léviator	1	95	125	79	60	100	81	189	f	130.130.png	https://www.pokepedia.fr/Léviator/Génération_7	f
+131	131	Lapras	Lokhlass	1	130	85	80	85	95	60	187	f	131.131.png	https://www.pokepedia.fr/Lokhlass/Génération_7	f
+132	132	Ditto	Métamorph	1	48	48	48	48	48	48	101	f	132.132.png	https://www.pokepedia.fr/Métamorph/Génération_7	f
+133	133	Eevee	Évoli	1	55	55	50	45	65	55	65	f	133.133.png	https://www.pokepedia.fr/Évoli/Génération_7	f
+134	134	Vaporeon	Aquali	1	130	65	60	110	95	65	184	f	134.134.png	https://www.pokepedia.fr/Aquali/Génération_7	f
+135	135	Jolteon	Voltali	1	65	65	60	110	95	130	184	f	135.135.png	https://www.pokepedia.fr/Voltali/Génération_7	f
+136	136	Flareon	Pyroli	1	65	130	60	95	110	65	184	f	136.136.png	https://www.pokepedia.fr/Pyroli/Génération_7	f
+137	137	Porygon	Porygon	1	65	60	70	85	75	40	79	f	137.137.png	https://www.pokepedia.fr/Porygon/Génération_7	f
+138	138	Omanyte	Amonita	1	35	40	100	90	55	35	71	f	138.138.png	https://www.pokepedia.fr/Amonita/Génération_7	f
+139	139	Omastar	Amonistar	1	70	60	125	115	70	55	173	f	139.139.png	https://www.pokepedia.fr/Amonistar/Génération_7	f
+140	140	Kabuto	Kabuto	1	30	80	90	55	45	55	71	f	140.140.png	https://www.pokepedia.fr/Kabuto/Génération_7	f
+141	141	Kabutops	Kabutops	1	60	115	105	65	70	80	173	f	141.141.png	https://www.pokepedia.fr/Kabutops/Génération_7	f
+142	142	Aerodactyl	Ptéra	1	80	105	65	60	75	130	180	f	142.142.png	https://www.pokepedia.fr/Ptéra/Génération_7	f
+143	143	Snorlax	Ronflex	1	160	110	65	65	110	30	189	f	143.143.png	https://www.pokepedia.fr/Ronflex/Génération_7	f
+147	147	Dratini	Minidraco	1	41	64	45	50	50	50	60	f	147.147.png	https://www.pokepedia.fr/Minidraco/Génération_7	f
+148	148	Dragonair	Draco	1	61	84	65	70	70	70	147	f	148.148.png	https://www.pokepedia.fr/Draco/Génération_7	f
+149	149	Dragonite	Dracolosse	1	91	134	95	100	100	80	270	f	149.149.png	https://www.pokepedia.fr/Dracolosse/Génération_7	f
+173	173	Cleffa	Mélo	2	50	25	28	45	55	15	44	f	173.173.png	https://www.pokepedia.fr/Mélo/Génération_7	f
+174	174	Igglybuff	Toudoudou	2	90	30	15	40	20	15	42	f	174.174.png	https://www.pokepedia.fr/Toudoudou/Génération_7	f
+175	175	Togepi	Togepi	2	35	20	65	40	65	20	49	f	175.175.png	https://www.pokepedia.fr/Togepi/Génération_7	f
+176	176	Togetic	Togetic	2	55	40	85	80	105	40	142	f	176.176.png	https://www.pokepedia.fr/Togetic/Génération_7	f
+177	177	Natu	Natu	2	40	50	45	70	45	70	64	f	177.177.png	https://www.pokepedia.fr/Natu/Génération_7	f
+178	178	Xatu	Xatu	2	65	75	70	95	70	95	165	f	178.178.png	https://www.pokepedia.fr/Xatu/Génération_7	f
+179	179	Mareep	Wattouat	2	55	40	40	65	45	35	56	f	179.179.png	https://www.pokepedia.fr/Wattouat/Génération_7	f
+180	180	Flaaffy	Lainergie	2	70	55	55	80	60	45	128	f	180.180.png	https://www.pokepedia.fr/Lainergie/Génération_7	f
+181	181	Ampharos	Pharamp	2	90	75	85	115	90	55	230	f	181.181.png	https://www.pokepedia.fr/Pharamp/Génération_7	f
+182	182	Bellossom	Joliflor	2	75	80	95	90	100	50	221	f	182.182.png	https://www.pokepedia.fr/Joliflor/Génération_7	f
+183	183	Marill	Marill	2	70	20	50	20	50	40	88	f	183.183.png	https://www.pokepedia.fr/Marill/Génération_7	f
+184	184	Azumarill	Azumarill	2	100	50	80	60	80	50	189	f	184.184.png	https://www.pokepedia.fr/Azumarill/Génération_7	f
+185	185	Sudowoodo	Simularbre	2	70	100	115	30	65	30	144	f	185.185.png	https://www.pokepedia.fr/Simularbre/Génération_7	f
+186	186	Politoed	Tarpaud	2	90	75	75	90	100	70	225	f	186.186.png	https://www.pokepedia.fr/Tarpaud/Génération_7	f
+187	187	Hoppip	Granivol	2	35	35	40	35	55	50	50	f	187.187.png	https://www.pokepedia.fr/Granivol/Génération_7	f
+188	188	Skiploom	Floravol	2	55	45	50	45	65	80	119	f	188.188.png	https://www.pokepedia.fr/Floravol/Génération_7	f
+189	189	Jumpluff	Cotovol	2	75	55	70	55	95	110	207	f	189.189.png	https://www.pokepedia.fr/Cotovol/Génération_7	f
+190	190	Aipom	Capumain	2	55	70	55	40	55	85	72	f	190.190.png	https://www.pokepedia.fr/Capumain/Génération_7	f
+191	191	Sunkern	Tournegrin	2	30	30	30	30	30	30	36	f	191.191.png	https://www.pokepedia.fr/Tournegrin/Génération_7	f
+385	287	Slakoth	Parecool	3	60	60	60	35	35	30	56	f	385.385.png	https://www.pokepedia.fr/Jirachi/Génération_7	f
+386	288	Vigoroth	Vigoroth	3	80	80	80	55	55	90	154	f	386.386.png	https://www.pokepedia.fr/Deoxys/Génération_7	f
+387	320	Wailmer	Wailmer	3	130	70	35	70	35	60	80	f	387.387.png	https://www.pokepedia.fr/Tortipouss/Génération_7	f
+388	403	Shinx	Lixy	3	45	65	34	40	34	45	53	f	388.388.png	https://www.pokepedia.fr/Boskara/Génération_7	f
+389	404	Luxio	Luxio	3	60	85	49	60	49	60	127	f	389.389.png	https://www.pokepedia.fr/Torterra/Génération_7	f
+390	304	Aron	Galekid	3	50	70	100	40	40	30	66	f	390.390.png	https://www.pokepedia.fr/Ouisticram/Génération_7	f
+391	305	Lairon	Galegon	3	60	90	140	50	50	40	151	f	391.391.png	https://www.pokepedia.fr/Chimpenfeu/Génération_7	f
+392	328	Trapinch	Kraknoix	3	45	100	45	45	45	10	58	f	392.392.png	https://www.pokepedia.fr/Simiabraz/Génération_7	f
+393	329	Vibrava	Vibraninf	3	50	70	50	50	50	70	119	f	393.393.png	https://www.pokepedia.fr/Tiplouf/Génération_7	f
+394	349	Feebas	Barpau	3	20	15	20	10	55	80	40	f	394.394.png	https://www.pokepedia.fr/Prinplouf/Génération_7	f
+395	371	Bagon	Draby	3	45	75	60	40	30	50	60	f	395.395.png	https://www.pokepedia.fr/Pingoléon/Génération_7	f
+396	372	Shelgon	Drackhaus	3	65	95	100	60	50	50	147	f	396.396.png	https://www.pokepedia.fr/Étourmi/Génération_7	f
+397	599	Klink	Tic	3	40	55	70	45	60	30	60	f	397.397.png	https://www.pokepedia.fr/Étourvol/Génération_7	f
+398	600	Klang	Clic	3	60	80	95	70	85	50	154	f	398.398.png	https://www.pokepedia.fr/Étouraptor/Génération_7	f
+399	570	Zorua	Zorua	3	40	65	40	80	40	65	66	f	399.399.png	https://www.pokepedia.fr/Keunotor/Génération_7	f
+400	406	Budew	Rozbouton	3	40	30	35	50	70	55	56	f	400.400.png	https://www.pokepedia.fr/Castorno/Génération_7	f
+415	611	Fraxure	Incisache	3	66	117	70	40	50	67	144	f	415.415.png	https://www.pokepedia.fr/Apitrini/Génération_7	f
+416	622	Golett	Gringolem	3	59	74	50	35	50	35	61	f	416.416.png	https://www.pokepedia.fr/Apireine/Génération_7	f
+417	661	Fletchling	Passerouge	3	45	50	43	40	38	62	56	f	417.417.png	https://www.pokepedia.fr/Pachirisu/Génération_7	f
+418	662	Fletchinder	Braisillon	3	62	73	55	56	52	84	134	f	418.418.png	https://www.pokepedia.fr/Mustébouée/Génération_7	f
+419	636	Larvesta	Pyronille	3	55	85	55	50	55	60	72	f	419.419.png	https://www.pokepedia.fr/Mustéflott/Génération_7	f
+420	618	Stunfisk	Limonde	3	109	66	84	81	99	32	165	f	420.420.png	https://www.pokepedia.fr/Ceribou/Génération_7	f
+421	302	Sableye	Ténéfix	3	50	75	75	65	65	50	133	f	421.421.png	https://www.pokepedia.fr/Ceriflor/Génération_7	f
+422	543	Venipede	Venipatte	3	30	45	59	30	39	57	52	f	422.422.png	https://www.pokepedia.fr/Sancoki/Génération_7	f
+423	544	Whirlipede	Scobolide	3	40	55	99	40	79	47	126	f	423.423.png	https://www.pokepedia.fr/Tritosor/Génération_7	f
+424	545	Scolipede	Brutapode	3	60	100	89	55	69	112	218	f	424.424.png	https://www.pokepedia.fr/Capidextre/Génération_7	f
+425	696	Tyrunt	Ptyranidur	3	58	89	77	45	45	48	72	f	425.425.png	https://www.pokepedia.fr/Baudrive/Génération_7	f
+426	697	Tyrantrum	Rexillius	3	82	121	119	69	59	71	182	f	426.426.png	https://www.pokepedia.fr/Grodrive/Génération_7	f
+427	361	Snorunt	Stalgamin	3	50	50	50	50	50	50	60	f	427.427.png	https://www.pokepedia.fr/Laporeille/Génération_7	f
+428	362	Glalie	Oniglali	3	80	80	80	80	80	80	168	f	428.428.png	https://www.pokepedia.fr/Lockpin/Génération_7	f
+429	478	Froslass	Momartik	3	70	80	70	80	70	110	168	f	429.429.png	https://www.pokepedia.fr/Magirêve/Génération_7	f
+430	741	Oricorio	Plumeline	3	75	70	70	98	70	93	167	f	430.430.png	https://www.pokepedia.fr/Corboss/Génération_7	f
+434	568	Trubbish	Miamiasme	3	50	50	62	40	62	65	66	f	434.434.png	https://www.pokepedia.fr/Moufouette/Génération_7	f
+435	569	Garbodor	Miasmax	3	80	95	82	60	82	75	166	f	435.435.png	https://www.pokepedia.fr/Moufflair/Génération_7	f
+436	318	Carvanha	Carvanha	3	45	90	20	65	20	65	61	f	436.436.png	https://www.pokepedia.fr/Archéomire/Génération_7	f
+437	319	Sharpedo	Sharpedo	3	70	120	40	95	40	95	161	f	437.437.png	https://www.pokepedia.fr/Archéodong/Génération_7	f
+438	708	Phantump	Brocélôme	3	43	70	48	50	60	38	62	f	438.438.png	https://www.pokepedia.fr/Manzaï/Génération_7	f
+439	709	Trevenant	Desséliande	3	85	110	76	65	82	56	166	f	439.439.png	https://www.pokepedia.fr/Mime_Jr./Génération_7	f
+192	192	Sunflora	Héliatronc	2	75	75	55	105	85	30	149	f	192.192.png	https://www.pokepedia.fr/Héliatronc/Génération_7	f
+193	193	Yanma	Yanma	2	65	65	45	75	45	95	78	f	193.193.png	https://www.pokepedia.fr/Yanma/Génération_7	f
+194	194	Wooper	Axoloto	2	55	45	45	25	25	15	42	f	194.194.png	https://www.pokepedia.fr/Axoloto/Génération_7	f
+195	195	Quagsire	Maraiste	2	95	85	85	65	65	35	151	f	195.195.png	https://www.pokepedia.fr/Maraiste/Génération_7	f
+196	196	Espeon	Mentali	2	65	65	60	130	95	110	184	f	196.196.png	https://www.pokepedia.fr/Mentali/Génération_7	f
+197	197	Umbreon	Noctali	2	95	65	110	60	130	65	184	f	197.197.png	https://www.pokepedia.fr/Noctali/Génération_7	f
+198	198	Murkrow	Cornèbre	2	60	85	42	85	42	91	81	f	198.198.png	https://www.pokepedia.fr/Cornèbre/Génération_7	f
+199	199	Slowking	Roigada	2	95	75	80	100	110	30	172	f	199.199.png	https://www.pokepedia.fr/Roigada/Génération_7	f
+200	200	Misdreavus	Feuforêve	2	60	60	60	85	85	85	87	f	200.200.png	https://www.pokepedia.fr/Feuforêve/Génération_7	f
+226	226	Mantine	Démanta	2	85	40	70	80	140	70	170	f	226.226.png	https://www.pokepedia.fr/Démanta/Génération_7	f
+227	227	Skarmory	Airmure	2	65	80	140	40	70	70	163	f	227.227.png	https://www.pokepedia.fr/Airmure/Génération_7	f
+228	228	Houndour	Malosse	2	45	60	30	80	50	65	66	f	228.228.png	https://www.pokepedia.fr/Malosse/Génération_7	f
+229	229	Houndoom	Démolosse	2	75	90	50	110	80	95	175	f	229.229.png	https://www.pokepedia.fr/Démolosse/Génération_7	f
+230	230	Kingdra	Hyporoi	2	75	95	95	95	95	85	243	f	230.230.png	https://www.pokepedia.fr/Hyporoi/Génération_7	f
+231	231	Phanpy	Phanpy	2	90	60	60	40	40	40	66	f	231.231.png	https://www.pokepedia.fr/Phanpy/Génération_7	f
+232	232	Donphan	Donphan	2	90	120	120	60	60	50	175	f	232.232.png	https://www.pokepedia.fr/Donphan/Génération_7	f
+233	233	Porygon2	Porygon2	2	85	80	90	105	95	60	180	f	233.233.png	https://www.pokepedia.fr/Porygon2/Génération_7	f
+234	234	Stantler	Cerfrousse	2	73	95	62	85	65	85	163	f	234.234.png	https://www.pokepedia.fr/Cerfrousse/Génération_7	f
+235	235	Smeargle	Queulorior	2	55	20	35	20	45	75	88	f	235.235.png	https://www.pokepedia.fr/Queulorior/Génération_7	f
+236	236	Tyrogue	Debugant	2	35	35	35	35	35	35	42	f	236.236.png	https://www.pokepedia.fr/Debugant/Génération_7	f
+237	237	Hitmontop	Kapoera	2	50	95	95	35	110	70	159	f	237.237.png	https://www.pokepedia.fr/Kapoera/Génération_7	f
+238	238	Smoochum	Lippouti	2	45	30	15	85	65	65	61	f	238.238.png	https://www.pokepedia.fr/Lippouti/Génération_7	f
+239	239	Elekid	Élekid	2	45	63	37	65	55	95	72	f	239.239.png	https://www.pokepedia.fr/Élekid/Génération_7	f
+241	241	Miltank	Écrémeuh	2	95	80	105	40	70	100	172	f	241.241.png	https://www.pokepedia.fr/Écrémeuh/Génération_7	f
+242	242	Blissey	Leuphorie	2	255	10	10	75	135	55	608	f	242.242.png	https://www.pokepedia.fr/Leuphorie/Génération_7	f
+246	246	Larvitar	Embrylex	2	50	64	50	45	50	41	60	f	246.246.png	https://www.pokepedia.fr/Embrylex/Génération_7	f
+247	247	Pupitar	Ymphect	2	70	84	70	65	70	51	144	f	247.247.png	https://www.pokepedia.fr/Ymphect/Génération_7	f
+248	248	Tyranitar	Tyranocif	2	100	134	110	95	100	61	270	f	248.248.png	https://www.pokepedia.fr/Tyranocif/Génération_7	f
+274	473	Mamoswine	Mammochon	3	110	130	80	70	60	80	239	f	274.274.png	https://www.pokepedia.fr/Pifeuil/Génération_7	f
+275	474	Porygon-Z	Porygon-Z	3	85	80	70	135	75	90	241	f	275.275.png	https://www.pokepedia.fr/Tengalice/Génération_7	f
+276	252	Treecko	Arcko	3	40	45	35	65	55	70	62	f	276.276.png	https://www.pokepedia.fr/Nirondelle/Génération_7	f
+277	253	Grovyle	Massko	3	50	65	45	85	65	95	142	f	277.277.png	https://www.pokepedia.fr/Hélédelle/Génération_7	f
+278	254	Sceptile	Jungko	3	70	85	65	105	85	120	239	f	278.278.png	https://www.pokepedia.fr/Goélise/Génération_7	f
+279	255	Torchic	Poussifeu	3	45	60	40	70	50	45	62	f	279.279.png	https://www.pokepedia.fr/Bekipan/Génération_7	f
+280	256	Combusken	Galifeu	3	60	85	60	85	60	55	142	f	280.280.png	https://www.pokepedia.fr/Tarsal/Génération_7	f
+281	257	Blaziken	Braségali	3	80	120	70	110	70	80	239	f	281.281.png	https://www.pokepedia.fr/Kirlia/Génération_7	f
+282	258	Mudkip	Gobou	3	50	70	50	50	50	40	62	f	282.282.png	https://www.pokepedia.fr/Gardevoir/Génération_7	f
+283	259	Marshtomp	Flobio	3	70	85	70	60	70	50	142	f	283.283.png	https://www.pokepedia.fr/Arakdo/Génération_7	f
+284	260	Swampert	Laggron	3	100	110	90	85	90	60	241	f	284.284.png	https://www.pokepedia.fr/Maskadra/Génération_7	f
+285	280	Ralts	Tarsal	3	28	25	25	45	35	40	40	f	285.285.png	https://www.pokepedia.fr/Balignon/Génération_7	f
+286	281	Kirlia	Kirlia	3	38	35	35	65	55	50	97	f	286.286.png	https://www.pokepedia.fr/Chapignon/Génération_7	f
+287	282	Gardevoir	Gardevoir	3	68	65	65	125	115	80	233	f	287.287.png	https://www.pokepedia.fr/Parecool/Génération_7	f
+288	475	Gallade	Gallame	3	68	125	65	65	115	80	233	f	288.288.png	https://www.pokepedia.fr/Vigoroth/Génération_7	f
+289	292	Shedinja	Munja	3	1	90	45	30	30	40	83	f	289.289.png	https://www.pokepedia.fr/Monaflèmit/Génération_7	f
+290	352	Kecleon	Kecleon	3	60	90	70	60	120	40	154	f	290.290.png	https://www.pokepedia.fr/Ningale/Génération_7	f
+291	374	Beldum	Terhal	3	40	55	80	35	60	30	60	f	291.291.png	https://www.pokepedia.fr/Ninjask/Génération_7	f
+292	375	Metang	Métang	3	60	75	100	55	80	50	147	f	292.292.png	https://www.pokepedia.fr/Munja/Génération_7	f
+293	376	Metagross	Métalosse	3	80	135	130	95	90	70	270	f	293.293.png	https://www.pokepedia.fr/Chuchmur/Génération_7	f
+240	240	Magby	Magby	2	45	75	37	70	55	83	73	f	240.240.png	https://www.pokepedia.fr/Magby/Génération_7	f
+294	399	Bidoof	Keunotor	3	59	45	40	35	40	31	50	f	294.294.png	https://www.pokepedia.fr/Ramboum/Génération_7	f
+295	442	Spiritomb	Spiritomb	3	50	92	108	92	108	35	170	f	295.295.png	https://www.pokepedia.fr/Brouhabam/Génération_7	f
+296	448	Lucario	Lucario	3	70	110	70	115	70	90	184	f	296.296.png	https://www.pokepedia.fr/Makuhita/Génération_7	f
+297	443	Gible	Griknot	3	58	70	45	40	45	42	60	f	297.297.png	https://www.pokepedia.fr/Hariyama/Génération_7	f
+298	444	Gabite	Carmache	3	68	90	65	50	55	82	144	f	298.298.png	https://www.pokepedia.fr/Azurill/Génération_7	f
+299	445	Garchomp	Carchacrok	3	108	130	95	80	85	102	270	f	299.299.png	https://www.pokepedia.fr/Tarinor/Génération_7	f
+300	303	Mawile	Mysdibule	3	50	85	85	55	55	50	133	f	300.300.png	https://www.pokepedia.fr/Skitty/Génération_7	f
+321	392	Infernape	Simiabraz	3	76	104	71	104	71	108	240	f	321.321.png	https://www.pokepedia.fr/Wailord/Génération_7	f
+322	393	Piplup	Tiplouf	3	53	51	53	61	56	40	63	f	322.322.png	https://www.pokepedia.fr/Chamallot/Génération_7	f
+323	394	Prinplup	Prinplouf	3	64	66	68	81	76	50	142	f	323.323.png	https://www.pokepedia.fr/Camérupt/Génération_7	f
+324	395	Empoleon	Pingoléon	3	84	86	88	111	101	60	239	f	324.324.png	https://www.pokepedia.fr/Chartor/Génération_7	f
+325	299	Nosepass	Tarinor	3	30	45	135	45	90	30	75	f	325.325.png	https://www.pokepedia.fr/Spoink/Génération_7	f
+326	476	Probopass	Tarinorme	3	60	55	145	75	150	40	184	f	326.326.png	https://www.pokepedia.fr/Groret/Génération_7	f
+327	679	Honedge	Monorpale	3	45	80	100	35	37	28	65	f	327.327.png	https://www.pokepedia.fr/Spinda/Génération_7	f
+328	680	Doublade	Dimoclès	3	59	110	150	45	49	35	157	f	328.328.png	https://www.pokepedia.fr/Kraknoix/Génération_7	f
+329	681	Aegislash	Exagide	3	60	50	140	50	140	60	234	f	329.329.png	https://www.pokepedia.fr/Vibraninf/Génération_7	f
+330	624	Pawniard	Scalpion	3	45	85	70	40	40	60	68	f	330.330.png	https://www.pokepedia.fr/Libégon/Génération_7	f
+331	625	Bisharp	Scalproie	3	65	125	100	60	70	70	172	f	331.331.png	https://www.pokepedia.fr/Cacnea/Génération_7	f
+332	405	Luxray	Luxray	3	80	120	79	95	79	70	235	f	332.332.png	https://www.pokepedia.fr/Cacturne/Génération_7	f
+333	306	Aggron	Galeking	3	70	110	180	60	60	50	239	f	333.333.png	https://www.pokepedia.fr/Tylton/Génération_7	f
+334	330	Flygon	Libégon	3	80	100	80	80	80	100	234	f	334.334.png	https://www.pokepedia.fr/Altaria/Génération_7	f
+335	350	Milotic	Milobellus	3	95	60	79	100	125	81	189	f	335.335.png	https://www.pokepedia.fr/Mangriff/Génération_7	f
+336	373	Salamence	Drattak	3	95	135	80	110	80	100	270	f	336.336.png	https://www.pokepedia.fr/Séviper/Génération_7	f
+337	601	Klinklang	Cliticlic	3	60	100	115	70	85	90	234	f	337.337.png	https://www.pokepedia.fr/Séléroc/Génération_7	f
+338	571	Zoroark	Zoroark	3	60	105	60	120	60	105	179	f	338.338.png	https://www.pokepedia.fr/Solaroc/Génération_7	f
+339	700	Sylveon	Nymphali	3	95	65	65	110	130	60	184	f	339.339.png	https://www.pokepedia.fr/Barloche/Génération_7	f
+346	486	Regigigas	Regigigas	3	110	160	110	80	110	100	302	f	346.346.png	https://www.pokepedia.fr/Vacilys/Génération_7	f
+369	623	Golurk	Golemastoc	3	89	124	80	55	80	55	169	f	369.369.png	https://www.pokepedia.fr/Relicanth/Génération_7	f
+370	771	Pyukumuku	Concombaffe	3	55	60	130	30	130	5	144	f	370.370.png	https://www.pokepedia.fr/Lovdisc/Génération_7	f
+371	707	Klefki	Trousselin	3	57	80	91	80	87	75	165	f	371.371.png	https://www.pokepedia.fr/Draby/Génération_7	f
+372	663	Talonflame	Flambusard	3	78	81	71	74	69	126	175	f	372.372.png	https://www.pokepedia.fr/Drackhaus/Génération_7	f
+373	778	Mimikyu	Mimiqui	3	55	90	80	50	105	96	167	f	373.373.png	https://www.pokepedia.fr/Drattak/Génération_7	f
+374	637	Volcarona	Pyrax	3	85	60	65	135	105	100	248	f	374.374.png	https://www.pokepedia.fr/Terhal/Génération_7	f
+375	633	Deino	Solochi	3	52	65	50	45	50	38	60	f	375.375.png	https://www.pokepedia.fr/Métang/Génération_7	f
+376	634	Zweilous	Diamat	3	72	85	70	65	70	58	147	f	376.376.png	https://www.pokepedia.fr/Métalosse/Génération_7	f
+377	635	Hydreigon	Trioxhydre	3	92	105	90	125	90	98	270	f	377.377.png	https://www.pokepedia.fr/Regirock/Génération_7	f
+382	290	Nincada	Ningale	3	31	45	90	30	30	40	53	f	382.382.png	https://www.pokepedia.fr/Kyogre/Génération_7	f
+383	400	Bibarel	Castorno	3	79	85	60	55	60	71	144	f	383.383.png	https://www.pokepedia.fr/Groudon/Génération_7	f
+440	714	Noibat	Sonistrelle	3	40	30	35	45	40	55	49	f	440.440.png	https://www.pokepedia.fr/Ptiravi/Génération_7	f
+384	447	Riolu	Riolu	3	40	70	40	35	40	60	57	f	384.384.png	https://www.pokepedia.fr/Rayquaza/Génération_7	f
+441	715	Noivern	Bruyverne	3	85	70	80	97	80	123	187	f	441.441.png	https://www.pokepedia.fr/Pijako/Génération_7	f
+442	333	Swablu	Tylton	3	45	40	60	40	75	50	62	f	442.442.png	https://www.pokepedia.fr/Spiritomb/Génération_7	f
+443	334	Altaria	Altaria	3	75	70	90	70	105	80	172	f	443.443.png	https://www.pokepedia.fr/Griknot/Génération_7	f
+444	704	Goomy	Mucuscule	3	45	50	35	55	75	40	60	f	444.444.png	https://www.pokepedia.fr/Carmache/Génération_7	f
+445	705	Sliggoo	Colimucus	3	68	75	53	83	113	60	158	f	445.445.png	https://www.pokepedia.fr/Carchacrok/Génération_7	f
+446	706	Goodra	Muplodocus	3	90	100	70	110	150	80	270	f	446.446.png	https://www.pokepedia.fr/Goinfrex/Génération_7	f
+451	759	Stufful	Nounourson	3	70	75	50	45	50	50	68	f	451.451.png	https://www.pokepedia.fr/Rapion/Génération_7	f
+452	760	Bewear	Chelours	3	120	125	80	55	60	60	175	f	452.452.png	https://www.pokepedia.fr/Drascore/Génération_7	f
+453	781	Dhelmise	Sinistrail	3	70	131	100	86	90	40	181	f	453.453.png	https://www.pokepedia.fr/Cradopaud/Génération_7	f
+468	488	Cresselia	Cresselia	3	120	70	110	75	120	85	270	f	468.468.png	https://www.pokepedia.fr/Togekiss/Génération_7	f
+469	779	Bruxish	Denticrisse	3	68	105	70	70	70	92	166	f	469.469.png	https://www.pokepedia.fr/Yanmega/Génération_7	f
+471	782	Jangmo-o	Bébécaille	3	45	55	65	45	45	45	60	f	471.471.png	https://www.pokepedia.fr/Givrali/Génération_7	f
+472	783	Hakamo-o	Écaïd	3	55	75	90	65	70	65	147	f	472.472.png	https://www.pokepedia.fr/Scorvol/Génération_7	f
+473	784	Kommo-o	Ékaïser	3	75	110	125	100	105	85	270	f	473.473.png	https://www.pokepedia.fr/Mammochon/Génération_7	f
+474	767	Wimpod	Sovkipou	3	25	35	40	20	30	80	46	f	474.474.png	https://www.pokepedia.fr/Porygon-Z/Génération_7	f
+475	768	Golisopod	Sarmuraï	3	75	125	140	60	90	40	186	f	475.475.png	https://www.pokepedia.fr/Gallame/Génération_7	f
+476	753	Fomantis	Mimantis	3	40	55	35	50	35	35	50	f	476.476.png	https://www.pokepedia.fr/Tarinorme/Génération_7	f
+477	754	Lurantis	Floramantis	3	70	105	90	80	90	45	168	f	477.477.png	https://www.pokepedia.fr/Noctunoir/Génération_7	f
+478	703	Carbink	Strassie	3	50	50	150	50	150	50	100	f	478.478.png	https://www.pokepedia.fr/Momartik/Génération_7	f
+479	650	Chespin	Marisson	3	56	61	65	48	45	38	63	f	479.479.png	https://www.pokepedia.fr/Motisma/Génération_7	f
+480	651	Quilladin	Boguérisse	3	61	78	95	56	58	57	142	f	480.480.png	https://www.pokepedia.fr/Créhelf/Génération_7	f
+481	652	Chesnaught	Blindépique	3	88	107	122	74	75	64	239	f	481.481.png	https://www.pokepedia.fr/Créfollet/Génération_7	f
+482	653	Fennekin	Feunnec	3	40	45	40	62	60	60	61	f	482.482.png	https://www.pokepedia.fr/Créfadet/Génération_7	f
+483	654	Braixen	Roussil	3	59	59	58	90	70	73	143	f	483.483.png	https://www.pokepedia.fr/Dialga/Génération_7	f
+484	655	Delphox	Goupelin	3	75	69	72	114	100	104	240	f	484.484.png	https://www.pokepedia.fr/Palkia/Génération_7	f
+485	656	Froakie	Grenousse	3	41	56	40	62	44	71	63	f	485.485.png	https://www.pokepedia.fr/Heatran/Génération_7	f
+486	657	Frogadier	Croâporal	3	54	63	52	83	56	97	142	f	486.486.png	https://www.pokepedia.fr/Regigigas/Génération_7	f
+487	658	Greninja	Amphinobi	3	72	95	67	103	71	122	239	f	487.487.png	https://www.pokepedia.fr/Giratina/Génération_7	f
+488	324	Torkoal	Chartor	3	70	85	140	85	70	20	165	f	488.488.png	https://www.pokepedia.fr/Cresselia/Génération_7	f
+489	710	Pumpkaboo	Pitrouille	3	49	66	70	44	55	51	67	f	489.489.png	https://www.pokepedia.fr/Phione/Génération_7	f
+490	711	Gourgeist	Banshitrouye	3	65	90	122	58	75	84	173	f	490.490.png	https://www.pokepedia.fr/Manaphy/Génération_7	f
+491	684	Swirlix	Sucroquin	3	62	48	66	59	57	49	68	f	491.491.png	https://www.pokepedia.fr/Darkrai/Génération_7	f
+492	685	Slurpuff	Cupcanaille	3	82	80	86	85	75	72	168	f	492.492.png	https://www.pokepedia.fr/Shaymin/Génération_7	f
+493	559	Scraggy	Baggiguane	3	50	75	70	35	70	48	70	f	493.493.png	https://www.pokepedia.fr/Arceus/Génération_7	f
+494	560	Scrafty	Baggaïd	3	65	90	115	45	115	58	171	f	494.494.png	https://www.pokepedia.fr/Victini/Génération_7	f
+495	270	Lotad	Nénupiot	3	40	30	30	40	50	30	44	f	495.495.png	https://www.pokepedia.fr/Vipélierre/Génération_7	f
+496	271	Lombre	Lombre	3	60	50	50	60	70	50	119	f	496.496.png	https://www.pokepedia.fr/Lianaja/Génération_7	f
+497	272	Ludicolo	Ludicolo	3	80	70	70	90	100	70	216	f	497.497.png	https://www.pokepedia.fr/Majaspic/Génération_7	f
+498	774	Minior	Météno	3	60	60	100	60	100	60	154	f	498.498.png	https://www.pokepedia.fr/Gruikui/Génération_7	f
+501	370	Luvdisc	Lovdisc	3	43	30	55	40	65	97	116	f	501.501.png	https://www.pokepedia.fr/Moustillon/Génération_7	f
+502	261	Poochyena	Medhyèna	3	35	55	35	30	30	35	56	t	502.502.png	https://www.pokepedia.fr/Mateloutre/Génération_7	f
+503	262	Mightyena	Grahyèna	3	70	90	70	60	60	70	147	t	503.503.png	https://www.pokepedia.fr/Clamiral/Génération_7	f
+504	263	Zigzagoon	Zigzaton	3	38	30	41	30	41	60	56	t	504.504.png	https://www.pokepedia.fr/Ratentif/Génération_7	f
+505	264	Linoone	Linéon	3	78	70	61	50	61	100	147	t	505.505.png	https://www.pokepedia.fr/Miradar/Génération_7	f
+506	265	Wurmple	Chenipotte	3	45	45	35	20	30	20	56	t	506.506.png	https://www.pokepedia.fr/Ponchiot/Génération_7	f
+507	266	Silcoon	Armulys	3	50	35	55	25	25	15	72	t	507.507.png	https://www.pokepedia.fr/Ponchien/Génération_7	f
+517	279	Pelipper	Bekipan	3	60	50	100	95	70	65	154	t	517.517.png	https://www.pokepedia.fr/Munna/Génération_7	f
+518	283	Surskit	Arakdo	3	40	30	32	50	52	65	54	t	518.518.png	https://www.pokepedia.fr/Mushana/Génération_7	f
+519	284	Masquerain	Maskadra	3	70	60	62	100	82	80	159	t	519.519.png	https://www.pokepedia.fr/Poichigeon/Génération_7	f
+520	293	Whismur	Chuchmur	3	64	51	23	51	23	28	48	t	520.520.png	https://www.pokepedia.fr/Colombeau/Génération_7	f
+521	294	Loudred	Ramboum	3	84	71	43	71	43	48	126	t	521.521.png	https://www.pokepedia.fr/Déflaisan/Génération_7	f
+522	295	Exploud	Brouhabam	3	104	91	63	91	73	68	221	t	522.522.png	https://www.pokepedia.fr/Zébibron/Génération_7	f
+523	296	Makuhita	Makuhita	3	72	60	30	20	30	25	47	t	523.523.png	https://www.pokepedia.fr/Zéblitz/Génération_7	f
+524	297	Hariyama	Hariyama	3	144	120	60	40	60	50	166	t	524.524.png	https://www.pokepedia.fr/Nodulithe/Génération_7	f
+525	300	Skitty	Skitty	3	50	45	45	35	35	50	52	t	525.525.png	https://www.pokepedia.fr/Géolithe/Génération_7	f
+526	301	Delcatty	Delcatty	3	70	65	65	55	55	90	140	t	526.526.png	https://www.pokepedia.fr/Gigalithe/Génération_7	f
+527	307	Meditite	Méditikka	3	30	40	55	40	55	60	56	t	527.527.png	https://www.pokepedia.fr/Chovsourir/Génération_7	f
+528	308	Medicham	Charmina	3	60	60	75	60	75	80	144	t	528.528.png	https://www.pokepedia.fr/Rhinolove/Génération_7	f
+529	309	Electrike	Dynavolt	3	40	45	40	65	40	65	59	t	529.529.png	https://www.pokepedia.fr/Rototaupe/Génération_7	f
+530	310	Manectric	Élecsprint	3	70	75	60	105	60	105	166	t	530.530.png	https://www.pokepedia.fr/Minotaupe/Génération_7	f
+531	311	Plusle	Posipi	3	60	50	40	85	75	95	142	t	531.531.png	https://www.pokepedia.fr/Nanméouïe/Génération_7	f
+532	312	Minun	Négapi	3	60	40	50	75	85	95	142	t	532.532.png	https://www.pokepedia.fr/Charpenti/Génération_7	f
+533	313	Volbeat	Muciole	3	65	73	75	47	85	85	151	t	533.533.png	https://www.pokepedia.fr/Ouvrifier/Génération_7	f
+534	314	Illumise	Lumivole	3	65	47	75	73	85	85	151	t	534.534.png	https://www.pokepedia.fr/Bétochef/Génération_7	f
+535	316	Gulpin	Gloupti	3	70	43	53	43	53	40	60	t	535.535.png	https://www.pokepedia.fr/Tritonde/Génération_7	f
+536	317	Swalot	Avaltout	3	100	73	83	73	83	55	163	t	536.536.png	https://www.pokepedia.fr/Batracné/Génération_7	f
+537	322	Numel	Chamallot	3	60	60	40	65	45	35	61	t	537.537.png	https://www.pokepedia.fr/Crapustule/Génération_7	f
+538	323	Camerupt	Camérupt	3	70	100	70	105	75	40	161	t	538.538.png	https://www.pokepedia.fr/Judokrak/Génération_7	f
+539	325	Spoink	Spoink	3	60	25	35	70	80	60	66	t	539.539.png	https://www.pokepedia.fr/Karaclée/Génération_7	f
+540	326	Grumpig	Groret	3	80	45	65	90	110	80	165	t	540.540.png	https://www.pokepedia.fr/Larveyette/Génération_7	f
+541	327	Spinda	Spinda	3	60	60	60	60	60	60	126	t	541.541.png	https://www.pokepedia.fr/Couverdure/Génération_7	f
+542	335	Zangoose	Mangriff	3	73	115	60	60	60	90	160	t	542.542.png	https://www.pokepedia.fr/Manternel/Génération_7	f
+543	336	Seviper	Séviper	3	73	100	60	100	60	65	160	t	543.543.png	https://www.pokepedia.fr/Venipatte/Génération_7	f
+544	337	Lunatone	Séléroc	3	90	55	65	95	85	70	161	t	544.544.png	https://www.pokepedia.fr/Scobolide/Génération_7	f
+545	338	Solrock	Solaroc	3	90	95	85	55	65	70	161	t	545.545.png	https://www.pokepedia.fr/Brutapode/Génération_7	f
+546	339	Barboach	Barloche	3	50	48	43	46	41	60	58	t	546.546.png	https://www.pokepedia.fr/Doudouvet/Génération_7	f
+547	340	Whiscash	Barbicha	3	110	78	73	76	71	60	164	t	547.547.png	https://www.pokepedia.fr/Farfaduvet/Génération_7	f
+548	341	Corphish	Écrapince	3	43	80	65	50	35	35	62	t	548.548.png	https://www.pokepedia.fr/Chlorobule/Génération_7	f
+549	342	Crawdaunt	Colhomard	3	63	120	85	90	55	55	164	t	549.549.png	https://www.pokepedia.fr/Fragilady/Génération_7	f
+550	343	Baltoy	Balbuto	3	40	40	55	40	70	55	60	t	550.550.png	https://www.pokepedia.fr/Bargantua/Génération_7	f
+144	144	Articuno	Artikodin	1	90	85	100	95	125	85	261	f	144.144.png	https://www.pokepedia.fr/Artikodin/Génération_7	t
+145	145	Zapdos	Électhor	1	90	90	85	125	90	100	261	f	145.145.png	https://www.pokepedia.fr/Électhor/Génération_7	t
+146	146	Moltres	Sulfura	1	90	100	90	125	85	90	261	f	146.146.png	https://www.pokepedia.fr/Sulfura/Génération_7	t
+150	150	Mewtwo	Mewtwo	1	106	110	90	154	90	130	306	f	150.150.png	https://www.pokepedia.fr/Mewtwo/Génération_7	t
+243	243	Raikou	Raikou	2	90	85	75	115	100	115	261	f	243.243.png	https://www.pokepedia.fr/Raikou/Génération_7	t
+244	244	Entei	Entei	2	115	115	85	90	75	100	261	f	244.244.png	https://www.pokepedia.fr/Entei/Génération_7	t
+245	245	Suicune	Suicune	2	100	75	115	90	115	85	261	f	245.245.png	https://www.pokepedia.fr/Suicune/Génération_7	t
+249	249	Lugia	Lugia	2	106	90	130	90	154	110	306	f	249.249.png	https://www.pokepedia.fr/Lugia/Génération_7	t
+250	250	Ho-oh	Ho-Oh	2	106	130	90	110	154	90	306	f	250.250.png	https://www.pokepedia.fr/Ho-Oh/Génération_7	t
+340	382	Kyogre	Kyogre	3	100	100	90	150	140	90	302	f	340.340.png	https://www.pokepedia.fr/Barbicha/Génération_7	t
+341	383	Groudon	Groudon	3	100	150	140	100	90	90	302	f	341.341.png	https://www.pokepedia.fr/Écrapince/Génération_7	t
+342	384	Rayquaza	Rayquaza	3	105	150	90	150	90	95	306	f	342.342.png	https://www.pokepedia.fr/Colhomard/Génération_7	t
+343	483	Dialga	Dialga	3	100	120	120	150	100	90	306	f	343.343.png	https://www.pokepedia.fr/Balbuto/Génération_7	t
+344	484	Palkia	Palkia	3	90	120	100	150	120	100	306	f	344.344.png	https://www.pokepedia.fr/Kaorine/Génération_7	t
+345	487	Giratina	Giratina	3	150	100	120	100	120	90	306	f	345.345.png	https://www.pokepedia.fr/Lilia/Génération_7	t
+347	491	Darkrai	Darkrai	3	70	90	90	135	90	125	270	f	347.347.png	https://www.pokepedia.fr/Anorith/Génération_7	t
+348	649	Genesect	Genesect	3	71	120	95	120	95	99	270	f	348.348.png	https://www.pokepedia.fr/Armaldo/Génération_7	t
+349	643	Reshiram	Reshiram	3	100	120	100	150	120	90	306	f	349.349.png	https://www.pokepedia.fr/Barpau/Génération_7	t
+350	644	Zekrom	Zekrom	3	100	150	120	120	100	90	306	f	350.350.png	https://www.pokepedia.fr/Milobellus/Génération_7	t
+378	380	Latias	Latias	3	80	80	90	110	130	110	270	f	378.378.png	https://www.pokepedia.fr/Regice/Génération_7	t
+379	381	Latios	Latios	3	80	90	80	130	110	110	270	f	379.379.png	https://www.pokepedia.fr/Registeel/Génération_7	t
+380	386	Deoxys	Deoxys	3	50	150	50	150	50	150	270	f	380.380.png	https://www.pokepedia.fr/Latias/Génération_7	t
+381	385	Jirachi	Jirachi	3	100	100	100	100	100	100	270	f	381.381.png	https://www.pokepedia.fr/Latios/Génération_7	t
+447	377	Regirock	Regirock	3	80	100	200	50	100	50	261	f	447.447.png	https://www.pokepedia.fr/Riolu/Génération_7	t
+448	378	Regice	Regice	3	80	50	100	100	200	50	261	f	448.448.png	https://www.pokepedia.fr/Lucario/Génération_7	t
+449	379	Registeel	Registeel	3	80	75	150	75	150	50	261	f	449.449.png	https://www.pokepedia.fr/Hippopotas/Génération_7	t
+450	800	Necrozma	Necrozma	3	97	107	101	127	89	79	270	f	450.450.png	https://www.pokepedia.fr/Hippodocus/Génération_7	t
+466	648	Meloetta	Meloetta	3	100	77	77	128	128	90	270	f	466.466.png	https://www.pokepedia.fr/Élekable/Génération_7	t
+500	719	Diancie	Diancie	3	50	100	150	100	150	50	270	f	500.500.png	https://www.pokepedia.fr/Roitiflam/Génération_7	t
+431	\N	Oricorio	Chaglam	3	49	55	42	42	37	85	62	f	431.431.png	https://www.pokepedia.fr/Chaglam/Génération_7	f
+432	\N	Oricorio	Chaffreux	3	71	82	64	64	59	112	158	f	432.432.png	https://www.pokepedia.fr/Chaffreux/Génération_7	f
+433	\N	Oricorio	Korillon	3	45	30	50	65	50	45	57	f	433.433.png	https://www.pokepedia.fr/Korillon/Génération_7	f
+465	\N	Lycanroc	Bouldeneu	3	100	100	125	110	50	50	187	f	465.465.png	https://www.pokepedia.fr/Bouldeneu/Génération_7	f
+467	\N	Meloetta	Maganon	3	75	95	67	125	95	83	243	f	467.467.png	https://www.pokepedia.fr/Maganon/Génération_7	f
+470	\N	Necrozma	Phyllali	3	65	110	130	60	65	95	184	f	470.470.png	https://www.pokepedia.fr/Phyllali/Génération_7	f
+499	\N	Minior	Grotichon	3	90	93	55	70	55	55	146	f	499.499.png	https://www.pokepedia.fr/Grotichon/Génération_7	f
+1	1	Bulbasaur	Bulbizarre	1	45	49	49	65	65	45	64	f	1.1.png	https://www.pokepedia.fr/Bulbizarre/Génération_7	f
+2	2	Ivysaur	Herbizarre	1	60	62	63	80	80	60	142	f	2.2.png	https://www.pokepedia.fr/Herbizarre/Génération_7	f
+3	3	Venusaur	Florizarre	1	80	82	83	100	100	80	236	f	3.3.png	https://www.pokepedia.fr/Florizarre/Génération_7	f
+4	4	Charmander	Salamèche	1	39	52	43	60	50	65	62	f	4.4.png	https://www.pokepedia.fr/Salamèche/Génération_7	f
+5	5	Charmeleon	Reptincel	1	58	64	58	80	65	80	142	f	5.5.png	https://www.pokepedia.fr/Reptincel/Génération_7	f
+6	6	Charizard	Dracaufeu	1	78	84	78	109	85	100	240	f	6.6.png	https://www.pokepedia.fr/Dracaufeu/Génération_7	f
+7	7	Squirtle	Carapuce	1	44	48	65	50	64	43	63	f	7.7.png	https://www.pokepedia.fr/Carapuce/Génération_7	f
+8	8	Wartortle	Carabaffe	1	59	63	80	65	80	58	142	f	8.8.png	https://www.pokepedia.fr/Carabaffe/Génération_7	f
+9	9	Blastoise	Tortank	1	79	83	100	85	105	78	239	f	9.9.png	https://www.pokepedia.fr/Tortank/Génération_7	f
+10	10	Caterpie	Chenipan	1	45	30	35	20	20	45	39	f	10.10.png	https://www.pokepedia.fr/Chenipan/Génération_7	f
+11	11	Metapod	Chrysacier	1	50	20	55	25	25	30	72	f	11.11.png	https://www.pokepedia.fr/Chrysacier/Génération_7	f
+12	12	Butterfree	Papilusion	1	60	45	50	90	80	70	178	f	12.12.png	https://www.pokepedia.fr/Papilusion/Génération_7	f
+553	\N	Castform	Crocorible	3	95	117	80	65	70	92	234	t	553.553.png	https://www.pokepedia.fr/Crocorible/Génération_7	f
+554	\N	Castform	Darumarond	3	70	90	45	15	45	50	63	t	554.554.png	https://www.pokepedia.fr/Darumarond/Génération_7	f
+555	\N	Castform	Darumacho	3	105	140	55	30	55	95	168	t	555.555.png	https://www.pokepedia.fr/Darumacho/Génération_7	f
+51	51	Dugtrio	Triopikeur	1	35	100	50	50	70	120	149	f	51.51.png	https://www.pokepedia.fr/Triopikeur/Génération_7	f
+52	52	Meowth	Miaouss	1	40	45	35	40	40	90	58	f	52.52.png	https://www.pokepedia.fr/Miaouss/Génération_7	f
+53	53	Persian	Persian	1	65	70	60	65	65	115	154	f	53.53.png	https://www.pokepedia.fr/Persian/Génération_7	f
+54	54	Psyduck	Psykokwak	1	50	52	48	65	50	55	64	f	54.54.png	https://www.pokepedia.fr/Psykokwak/Génération_7	f
+55	55	Golduck	Akwakwak	1	80	82	78	95	80	85	175	f	55.55.png	https://www.pokepedia.fr/Akwakwak/Génération_7	f
+56	56	Mankey	Férosinge	1	40	80	35	35	45	70	61	f	56.56.png	https://www.pokepedia.fr/Férosinge/Génération_7	f
+57	57	Primeape	Colossinge	1	65	105	60	60	70	95	159	f	57.57.png	https://www.pokepedia.fr/Colossinge/Génération_7	f
+58	58	Growlithe	Caninos	1	55	70	45	70	50	60	70	f	58.58.png	https://www.pokepedia.fr/Caninos/Génération_7	f
+59	59	Arcanine	Arcanin	1	90	110	80	100	80	95	194	f	59.59.png	https://www.pokepedia.fr/Arcanin/Génération_7	f
+60	60	Poliwag	Ptitard	1	40	50	40	40	40	90	60	f	60.60.png	https://www.pokepedia.fr/Ptitard/Génération_7	f
+61	61	Poliwhirl	Têtarte	1	65	65	65	50	50	90	135	f	61.61.png	https://www.pokepedia.fr/Têtarte/Génération_7	f
+62	62	Poliwrath	Tartard	1	90	95	95	70	90	70	230	f	62.62.png	https://www.pokepedia.fr/Tartard/Génération_7	f
+63	63	Abra	Abra	1	25	20	15	105	55	90	62	f	63.63.png	https://www.pokepedia.fr/Abra/Génération_7	f
+64	64	Kadabra	Kadabra	1	40	35	30	120	70	105	140	f	64.64.png	https://www.pokepedia.fr/Kadabra/Génération_7	f
+65	65	Alakazam	Alakazam	1	55	50	45	135	95	120	225	f	65.65.png	https://www.pokepedia.fr/Alakazam/Génération_7	f
+66	66	Machop	Machoc	1	70	80	50	35	35	35	61	f	66.66.png	https://www.pokepedia.fr/Machoc/Génération_7	f
+101	101	Electrode	Électrode	1	60	50	70	80	80	150	172	f	101.101.png	https://www.pokepedia.fr/Électrode/Génération_7	f
+102	102	Exeggcute	Noeunoeuf	1	60	40	80	60	45	40	65	f	102.102.png	https://www.pokepedia.fr/Noeunoeuf/Génération_7	f
+103	103	Exeggutor	Noadkoko	1	95	95	85	125	75	55	186	f	103.103.png	https://www.pokepedia.fr/Noadkoko/Génération_7	f
+104	104	Cubone	Osselait	1	50	50	95	40	50	35	64	f	104.104.png	https://www.pokepedia.fr/Osselait/Génération_7	f
+105	105	Marowak	Ossatueur	1	60	80	110	50	80	45	149	f	105.105.png	https://www.pokepedia.fr/Ossatueur/Génération_7	f
+106	106	Hitmonlee	Kicklee	1	50	120	53	35	110	87	159	f	106.106.png	https://www.pokepedia.fr/Kicklee/Génération_7	f
+107	107	Hitmonchan	Tygnon	1	50	105	79	35	110	76	159	f	107.107.png	https://www.pokepedia.fr/Tygnon/Génération_7	f
+108	108	Lickitung	Excelangue	1	90	55	75	60	75	30	77	f	108.108.png	https://www.pokepedia.fr/Excelangue/Génération_7	f
+109	109	Koffing	Smogo	1	40	65	95	60	45	35	68	f	109.109.png	https://www.pokepedia.fr/Smogo/Génération_7	f
+110	110	Weezing	Smogogo	1	65	90	120	85	70	60	172	f	110.110.png	https://www.pokepedia.fr/Smogogo/Génération_7	f
+111	111	Rhyhorn	Rhinocorne	1	80	85	95	30	30	25	69	f	111.111.png	https://www.pokepedia.fr/Rhinocorne/Génération_7	f
+112	112	Rhydon	Rhinoféros	1	105	130	120	45	45	40	170	f	112.112.png	https://www.pokepedia.fr/Rhinoféros/Génération_7	f
+113	113	Chansey	Leveinard	1	250	5	5	35	105	50	395	f	113.113.png	https://www.pokepedia.fr/Leveinard/Génération_7	f
+114	114	Tangela	Saquedeneu	1	65	55	115	100	40	60	87	f	114.114.png	https://www.pokepedia.fr/Saquedeneu/Génération_7	f
+115	115	Kangaskhan	Kangourex	1	105	95	80	40	80	90	172	f	115.115.png	https://www.pokepedia.fr/Kangourex/Génération_7	f
+116	116	Horsea	Hypotrempe	1	30	40	70	70	25	60	59	f	116.116.png	https://www.pokepedia.fr/Hypotrempe/Génération_7	f
+117	117	Seadra	Hypocéan	1	55	65	95	95	45	85	154	f	117.117.png	https://www.pokepedia.fr/Hypocéan/Génération_7	f
+118	118	Goldeen	Poissirène	1	45	67	60	35	50	63	64	f	118.118.png	https://www.pokepedia.fr/Poissirène/Génération_7	f
+119	119	Seaking	Poissoroy	1	80	92	65	65	80	68	158	f	119.119.png	https://www.pokepedia.fr/Poissoroy/Génération_7	f
+151	151	Mew	Mew	1	100	100	100	100	100	100	270	f	151.151.png	https://www.pokepedia.fr/Mew/Génération_7	t
+152	152	Chikorita	Germignon	2	45	49	65	49	65	45	64	f	152.152.png	https://www.pokepedia.fr/Germignon/Génération_7	f
+153	153	Bayleef	Macronium	2	60	62	80	63	80	60	142	f	153.153.png	https://www.pokepedia.fr/Macronium/Génération_7	f
+154	154	Meganium	Méganium	2	80	82	100	83	100	80	236	f	154.154.png	https://www.pokepedia.fr/Méganium/Génération_7	f
+155	155	Cyndaquil	Héricendre	2	39	52	43	60	50	65	62	f	155.155.png	https://www.pokepedia.fr/Héricendre/Génération_7	f
+156	156	Quilava	Feurisson	2	58	64	58	80	65	80	142	f	156.156.png	https://www.pokepedia.fr/Feurisson/Génération_7	f
+157	157	Typhlosion	Typhlosion	2	78	84	78	109	85	100	240	f	157.157.png	https://www.pokepedia.fr/Typhlosion/Génération_7	f
+158	158	Totodile	Kaiminus	2	50	65	64	44	48	43	63	f	158.158.png	https://www.pokepedia.fr/Kaiminus/Génération_7	f
+159	159	Croconaw	Crocrodil	2	65	80	80	59	63	58	142	f	159.159.png	https://www.pokepedia.fr/Crocrodil/Génération_7	f
+160	160	Feraligatr	Aligatueur	2	85	105	100	79	83	78	239	f	160.160.png	https://www.pokepedia.fr/Aligatueur/Génération_7	f
+161	161	Sentret	Fouinette	2	35	46	34	35	45	20	43	f	161.161.png	https://www.pokepedia.fr/Fouinette/Génération_7	f
+162	162	Furret	Fouinar	2	85	76	64	45	55	90	145	f	162.162.png	https://www.pokepedia.fr/Fouinar/Génération_7	f
+163	163	Hoothoot	Hoothoot	2	60	30	30	36	56	50	52	f	163.163.png	https://www.pokepedia.fr/Hoothoot/Génération_7	f
+164	164	Noctowl	Noarfang	2	100	50	50	86	96	70	158	f	164.164.png	https://www.pokepedia.fr/Noarfang/Génération_7	f
+165	165	Ledyba	Coxy	2	40	20	30	40	80	55	53	f	165.165.png	https://www.pokepedia.fr/Coxy/Génération_7	f
+166	166	Ledian	Coxyclaque	2	55	35	50	55	110	85	137	f	166.166.png	https://www.pokepedia.fr/Coxyclaque/Génération_7	f
+167	167	Spinarak	Mimigal	2	40	60	40	40	40	30	50	f	167.167.png	https://www.pokepedia.fr/Mimigal/Génération_7	f
+168	168	Ariados	Migalos	2	70	90	70	60	70	40	140	f	168.168.png	https://www.pokepedia.fr/Migalos/Génération_7	f
+169	169	Crobat	Nostenfer	2	85	90	80	70	80	130	241	f	169.169.png	https://www.pokepedia.fr/Nostenfer/Génération_7	f
+170	170	Chinchou	Loupio	2	75	38	38	56	56	67	66	f	170.170.png	https://www.pokepedia.fr/Loupio/Génération_7	f
+171	171	Lanturn	Lanturn	2	125	58	58	76	76	67	161	f	171.171.png	https://www.pokepedia.fr/Lanturn/Génération_7	f
+172	172	Pichu	Pichu	2	20	40	15	35	35	60	41	f	172.172.png	https://www.pokepedia.fr/Pichu/Génération_7	f
+201	201	Unown	Zarbi	2	48	72	48	72	48	48	118	f	201.201.png	https://www.pokepedia.fr/Zarbi/Génération_7	f
+202	202	Wobbuffet	Qulbutoké	2	190	33	58	33	58	33	142	f	202.202.png	https://www.pokepedia.fr/Qulbutoké/Génération_7	f
+203	203	Girafarig	Girafarig	2	70	80	65	90	65	85	159	f	203.203.png	https://www.pokepedia.fr/Girafarig/Génération_7	f
+204	204	Pineco	Pomdepik	2	50	65	90	35	35	15	58	f	204.204.png	https://www.pokepedia.fr/Pomdepik/Génération_7	f
+205	205	Forretress	Foretress	2	75	90	140	60	60	40	163	f	205.205.png	https://www.pokepedia.fr/Foretress/Génération_7	f
+206	206	Dunsparce	Insolourdo	2	100	70	70	65	65	45	145	f	206.206.png	https://www.pokepedia.fr/Insolourdo/Génération_7	f
+207	207	Gligar	Scorplane	2	65	75	105	35	65	85	86	f	207.207.png	https://www.pokepedia.fr/Scorplane/Génération_7	f
+208	208	Steelix	Steelix	2	75	85	200	55	65	30	179	f	208.208.png	https://www.pokepedia.fr/Steelix/Génération_7	f
+209	209	Snubbull	Snubbull	2	60	80	50	40	40	30	60	f	209.209.png	https://www.pokepedia.fr/Snubbull/Génération_7	f
+210	210	Granbull	Granbull	2	90	120	75	60	60	45	158	f	210.210.png	https://www.pokepedia.fr/Granbull/Génération_7	f
+211	211	Qwilfish	Qwilfish	2	65	95	85	55	55	85	88	f	211.211.png	https://www.pokepedia.fr/Qwilfish/Génération_7	f
+212	212	Scizor	Cizayox	2	70	130	100	55	80	65	175	f	212.212.png	https://www.pokepedia.fr/Cizayox/Génération_7	f
+213	213	Shuckle	Caratroc	2	20	10	230	10	230	5	177	f	213.213.png	https://www.pokepedia.fr/Caratroc/Génération_7	f
+214	214	Heracross	Scarhino	2	80	125	75	40	95	85	175	f	214.214.png	https://www.pokepedia.fr/Scarhino/Génération_7	f
+215	215	Sneasel	Farfuret	2	55	95	55	35	75	115	86	f	215.215.png	https://www.pokepedia.fr/Farfuret/Génération_7	f
+216	216	Teddiursa	Teddiursa	2	60	80	50	50	50	40	66	f	216.216.png	https://www.pokepedia.fr/Teddiursa/Génération_7	f
+217	217	Ursaring	Ursaring	2	90	130	75	75	75	55	175	f	217.217.png	https://www.pokepedia.fr/Ursaring/Génération_7	f
+218	218	Slugma	Limagma	2	40	40	40	70	40	20	50	f	218.218.png	https://www.pokepedia.fr/Limagma/Génération_7	f
+219	219	Magcargo	Volcaropod	2	60	50	120	90	80	30	151	f	219.219.png	https://www.pokepedia.fr/Volcaropod/Génération_7	f
+220	220	Swinub	Marcacrin	2	50	50	40	30	30	50	50	f	220.220.png	https://www.pokepedia.fr/Marcacrin/Génération_7	f
+221	221	Piloswine	Cochignon	2	100	100	80	60	60	50	158	f	221.221.png	https://www.pokepedia.fr/Cochignon/Génération_7	f
+222	222	Corsola	Corayon	2	65	55	95	65	95	35	144	f	222.222.png	https://www.pokepedia.fr/Corayon/Génération_7	f
+223	223	Remoraid	Rémoraid	2	35	65	35	65	35	65	60	f	223.223.png	https://www.pokepedia.fr/Rémoraid/Génération_7	f
+224	224	Octillery	Octillery	2	75	105	75	105	75	45	168	f	224.224.png	https://www.pokepedia.fr/Octillery/Génération_7	f
+225	225	Delibird	Cadoizo	2	45	55	45	65	45	75	116	f	225.225.png	https://www.pokepedia.fr/Cadoizo/Génération_7	f
+251	251	Celebi	Celebi	2	100	100	100	100	100	100	270	f	251.251.png	https://www.pokepedia.fr/Celebi/Génération_7	t
+252	298	Azurill	Azurill	3	50	20	40	20	40	20	38	f	252.252.png	https://www.pokepedia.fr/Arcko/Génération_7	f
+253	360	Wynaut	Okéoké	3	95	23	48	23	48	23	52	f	253.253.png	https://www.pokepedia.fr/Massko/Génération_7	f
+254	424	Ambipom	Capidextre	3	75	100	66	60	66	115	169	f	254.254.png	https://www.pokepedia.fr/Jungko/Génération_7	f
+255	429	Mismagius	Magirêve	3	60	60	60	105	105	105	173	f	255.255.png	https://www.pokepedia.fr/Poussifeu/Génération_7	f
+256	430	Honchkrow	Corboss	3	100	125	52	105	52	71	177	f	256.256.png	https://www.pokepedia.fr/Galifeu/Génération_7	f
+257	438	Bonsly	Manzaï	3	50	80	95	10	45	10	58	f	257.257.png	https://www.pokepedia.fr/Braségali/Génération_7	f
+258	439	Mime Jr.	Mime Jr.	3	20	25	45	70	90	60	62	f	258.258.png	https://www.pokepedia.fr/Gobou/Génération_7	f
+259	440	Happiny	Ptiravi	3	100	5	5	15	65	30	110	f	259.259.png	https://www.pokepedia.fr/Flobio/Génération_7	f
+260	446	Munchlax	Goinfrex	3	135	85	40	40	85	5	78	f	260.260.png	https://www.pokepedia.fr/Laggron/Génération_7	f
+261	458	Mantyke	Babimanta	3	45	20	50	60	120	50	69	f	261.261.png	https://www.pokepedia.fr/Medhyèna/Génération_7	f
+262	461	Weavile	Dimoret	3	70	120	65	45	85	125	179	f	262.262.png	https://www.pokepedia.fr/Grahyèna/Génération_7	f
+263	462	Magnezone	Magnézone	3	70	70	115	130	90	60	241	f	263.263.png	https://www.pokepedia.fr/Zigzaton/Génération_7	f
+264	463	Lickilicky	Coudlangue	3	110	85	95	80	95	50	180	f	264.264.png	https://www.pokepedia.fr/Linéon/Génération_7	f
+265	464	Rhyperior	Rhinastoc	3	115	140	130	55	55	40	241	f	265.265.png	https://www.pokepedia.fr/Chenipotte/Génération_7	f
+266	465	Tangrowth	Bouldeneu	3	100	100	125	110	50	50	187	f	266.266.png	https://www.pokepedia.fr/Armulys/Génération_7	f
+267	466	Electivire	Élekable	3	75	123	67	95	85	95	243	f	267.267.png	https://www.pokepedia.fr/Charmillon/Génération_7	f
+268	467	Magmortar	Maganon	3	75	95	67	125	95	83	243	f	268.268.png	https://www.pokepedia.fr/Blindalys/Génération_7	f
+269	468	Togekiss	Togekiss	3	85	50	95	120	115	80	245	f	269.269.png	https://www.pokepedia.fr/Papinox/Génération_7	f
+270	469	Yanmega	Yanmega	3	86	76	86	116	56	95	180	f	270.270.png	https://www.pokepedia.fr/Nénupiot/Génération_7	f
+271	470	Leafeon	Phyllali	3	65	110	130	60	65	95	184	f	271.271.png	https://www.pokepedia.fr/Lombre/Génération_7	f
+272	471	Glaceon	Givrali	3	65	60	110	130	95	65	184	f	272.272.png	https://www.pokepedia.fr/Ludicolo/Génération_7	f
+273	472	Gliscor	Scorvol	3	75	95	125	45	75	95	179	f	273.273.png	https://www.pokepedia.fr/Grainipiot/Génération_7	f
+315	493	Arceus	Arceus	3	120	120	120	120	120	120	324	f	315.315.png	https://www.pokepedia.fr/Rosélia/Génération_7	t
+301	345	Lileep	Lilia	3	66	41	77	61	87	23	71	f	301.301.png	https://www.pokepedia.fr/Delcatty/Génération_7	f
+302	346	Cradily	Vacilys	3	86	81	97	81	107	43	173	f	302.302.png	https://www.pokepedia.fr/Ténéfix/Génération_7	f
+303	347	Anorith	Anorith	3	45	95	50	40	50	75	71	f	303.303.png	https://www.pokepedia.fr/Mysdibule/Génération_7	f
+304	348	Armaldo	Armaldo	3	75	125	100	70	80	45	173	f	304.304.png	https://www.pokepedia.fr/Galekid/Génération_7	f
+305	408	Cranidos	Kranidos	3	67	125	40	30	30	58	70	f	305.305.png	https://www.pokepedia.fr/Galegon/Génération_7	f
+306	409	Rampardos	Charkos	3	97	165	60	65	50	58	173	f	306.306.png	https://www.pokepedia.fr/Galeking/Génération_7	f
+307	410	Shieldon	Dinoclier	3	30	42	118	42	88	30	70	f	307.307.png	https://www.pokepedia.fr/Méditikka/Génération_7	f
+308	411	Bastiodon	Bastiodon	3	60	52	168	47	138	30	173	f	308.308.png	https://www.pokepedia.fr/Charmina/Génération_7	f
+309	289	Slaking	Monaflèmit	3	150	160	100	95	65	100	252	f	309.309.png	https://www.pokepedia.fr/Dynavolt/Génération_7	f
+310	359	Absol	Absol	3	65	130	60	75	60	75	163	f	310.310.png	https://www.pokepedia.fr/Élecsprint/Génération_7	f
+311	355	Duskull	Skelénox	3	20	40	90	30	90	25	59	f	311.311.png	https://www.pokepedia.fr/Posipi/Génération_7	f
+312	356	Dusclops	Téraclope	3	40	70	130	60	130	25	159	f	312.312.png	https://www.pokepedia.fr/Négapi/Génération_7	f
+313	477	Dusknoir	Noctunoir	3	45	100	135	65	135	45	236	f	313.313.png	https://www.pokepedia.fr/Muciole/Génération_7	f
+314	321	Wailord	Wailord	3	170	90	45	90	45	60	175	f	314.314.png	https://www.pokepedia.fr/Lumivole/Génération_7	f
+316	387	Turtwig	Tortipouss	3	55	68	64	45	55	31	64	f	316.316.png	https://www.pokepedia.fr/Gloupti/Génération_7	f
+317	388	Grotle	Boskara	3	75	89	85	55	65	36	142	f	317.317.png	https://www.pokepedia.fr/Avaltout/Génération_7	f
+318	389	Torterra	Torterra	3	95	109	105	75	85	56	236	f	318.318.png	https://www.pokepedia.fr/Carvanha/Génération_7	f
+319	390	Chimchar	Ouisticram	3	44	58	44	58	44	61	62	f	319.319.png	https://www.pokepedia.fr/Sharpedo/Génération_7	f
+320	391	Monferno	Chimpenfeu	3	64	78	52	78	52	81	142	f	320.320.png	https://www.pokepedia.fr/Wailmer/Génération_7	f
+351	646	Kyurem	Kyurem	3	125	130	90	130	90	95	297	f	351.351.png	https://www.pokepedia.fr/Morphéo/Génération_7	t
+352	407	Roserade	Roserade	3	60	70	65	125	105	90	232	f	352.352.png	https://www.pokepedia.fr/Kecleon/Génération_7	f
+353	426	Drifblim	Grodrive	3	150	80	44	90	54	80	174	f	353.353.png	https://www.pokepedia.fr/Polichombr/Génération_7	f
+354	428	Lopunny	Lockpin	3	65	76	84	54	96	105	168	f	354.354.png	https://www.pokepedia.fr/Branette/Génération_7	f
+355	286	Breloom	Chapignon	3	60	130	80	60	60	70	161	f	355.355.png	https://www.pokepedia.fr/Skelénox/Génération_7	f
+356	291	Ninjask	Ninjask	3	61	90	45	50	50	160	160	f	356.356.png	https://www.pokepedia.fr/Téraclope/Génération_7	f
+357	354	Banette	Branette	3	64	115	65	83	63	65	159	f	357.357.png	https://www.pokepedia.fr/Tropius/Génération_7	f
+358	479	Rotom	Motisma	3	50	50	77	95	77	91	154	f	358.358.png	https://www.pokepedia.fr/Éoko/Génération_7	f
+359	579	Reuniclus	Symbios	3	110	65	75	125	85	30	221	f	359.359.png	https://www.pokepedia.fr/Absol/Génération_7	f
+360	547	Whimsicott	Farfaduvet	3	60	67	85	77	75	116	168	f	360.360.png	https://www.pokepedia.fr/Okéoké/Génération_7	f
+361	553	Krookodile	Crocorible	3	95	117	80	65	70	92	234	f	361.361.png	https://www.pokepedia.fr/Stalgamin/Génération_7	f
+362	563	Cofagrigus	Tutankafer	3	58	50	145	95	105	30	169	f	362.362.png	https://www.pokepedia.fr/Oniglali/Génération_7	f
+363	596	Galvantula	Mygavolt	3	70	77	60	97	60	108	165	f	363.363.png	https://www.pokepedia.fr/Obalie/Génération_7	f
+364	598	Ferrothorn	Noacier	3	74	94	131	54	116	20	171	f	364.364.png	https://www.pokepedia.fr/Phogleur/Génération_7	f
+365	607	Litwick	Funécire	3	50	30	55	65	55	20	55	f	365.365.png	https://www.pokepedia.fr/Kaimorse/Génération_7	f
+366	608	Lampent	Mélancolux	3	60	40	60	95	60	55	130	f	366.366.png	https://www.pokepedia.fr/Coquiperl/Génération_7	f
+367	609	Chandelure	Lugulabre	3	60	55	90	145	90	80	234	f	367.367.png	https://www.pokepedia.fr/Serpang/Génération_7	f
+368	612	Haxorus	Tranchodon	3	76	147	90	60	70	97	243	f	368.368.png	https://www.pokepedia.fr/Rosabyss/Génération_7	f
+401	315	Roselia	Rosélia	3	50	60	45	100	80	65	140	f	401.401.png	https://www.pokepedia.fr/Crikzik/Génération_7	f
+402	425	Drifloon	Baudrive	3	90	50	34	60	44	70	70	f	402.402.png	https://www.pokepedia.fr/Mélokrik/Génération_7	f
+403	427	Buneary	Laporeille	3	55	66	44	44	56	85	70	f	403.403.png	https://www.pokepedia.fr/Lixy/Génération_7	f
+404	285	Shroomish	Balignon	3	60	40	60	40	60	35	59	f	404.404.png	https://www.pokepedia.fr/Luxio/Génération_7	f
+405	353	Shuppet	Polichombr	3	44	75	35	63	33	45	59	f	405.405.png	https://www.pokepedia.fr/Luxray/Génération_7	f
+406	577	Solosis	Nucléos	3	45	30	40	105	50	20	58	f	406.406.png	https://www.pokepedia.fr/Rozbouton/Génération_7	f
+407	578	Duosion	Méios	3	65	40	50	125	60	30	130	f	407.407.png	https://www.pokepedia.fr/Roserade/Génération_7	f
+408	546	Cottonee	Doudouvet	3	40	27	60	37	50	66	56	f	408.408.png	https://www.pokepedia.fr/Kranidos/Génération_7	f
+409	551	Sandile	Mascaïman	3	50	72	35	35	35	65	58	f	409.409.png	https://www.pokepedia.fr/Charkos/Génération_7	f
+410	552	Krokorok	Escroco	3	60	82	45	45	45	74	123	f	410.410.png	https://www.pokepedia.fr/Dinoclier/Génération_7	f
+411	562	Yamask	Tutafeh	3	38	30	85	55	65	30	61	f	411.411.png	https://www.pokepedia.fr/Bastiodon/Génération_7	f
+412	595	Joltik	Statitik	3	50	47	50	57	50	65	64	f	412.412.png	https://www.pokepedia.fr/Cheniti/Génération_7	f
+413	597	Ferroseed	Grindur	3	44	50	91	24	86	10	61	f	413.413.png	https://www.pokepedia.fr/Cheniselle/Génération_7	f
+414	610	Axew	Coupenotte	3	46	87	60	30	40	57	64	f	414.414.png	https://www.pokepedia.fr/Papilord/Génération_7	f
+454	747	Mareanie	Vorastérie	3	50	53	62	43	52	45	61	f	454.454.png	https://www.pokepedia.fr/Coatox/Génération_7	f
+455	748	Toxapex	Prédastérie	3	50	63	152	53	142	35	173	f	455.455.png	https://www.pokepedia.fr/Vortente/Génération_7	f
+456	701	Hawlucha	Brutalibré	3	78	92	75	74	63	118	175	f	456.456.png	https://www.pokepedia.fr/Écayon/Génération_7	f
+457	331	Cacnea	Cacnea	3	50	85	40	85	40	35	67	f	457.457.png	https://www.pokepedia.fr/Luminéon/Génération_7	f
+458	332	Cacturne	Cacturne	3	70	115	60	115	60	55	166	f	458.458.png	https://www.pokepedia.fr/Babimanta/Génération_7	f
+459	769	Sandygast	Bacabouh	3	55	55	80	70	45	15	64	f	459.459.png	https://www.pokepedia.fr/Blizzi/Génération_7	f
+460	770	Palossand	Trépassable	3	85	75	110	100	75	35	168	f	460.460.png	https://www.pokepedia.fr/Blizzaroi/Génération_7	f
+461	698	Amaura	Amagara	3	77	59	50	67	63	46	72	f	461.461.png	https://www.pokepedia.fr/Dimoret/Génération_7	f
+462	699	Aurorus	Dragmara	3	123	77	72	99	92	58	104	f	462.462.png	https://www.pokepedia.fr/Magnézone/Génération_7	f
+463	744	Rockruff	Rocabot	3	45	65	40	30	40	60	56	f	463.463.png	https://www.pokepedia.fr/Coudlangue/Génération_7	f
+464	745	Lycanroc	Lougaroc	3	75	115	65	55	65	112	170	f	464.464.png	https://www.pokepedia.fr/Rhinastoc/Génération_7	f
+508	267	Beautifly	Charmillon	3	60	70	50	100	50	65	178	t	508.508.png	https://www.pokepedia.fr/Mastouffe/Génération_7	f
+509	268	Cascoon	Blindalys	3	50	35	55	25	25	15	72	t	509.509.png	https://www.pokepedia.fr/Chacripan/Génération_7	f
+510	269	Dustox	Papinox	3	60	50	70	50	90	65	173	t	510.510.png	https://www.pokepedia.fr/Léopardus/Génération_7	f
+511	273	Seedot	Grainipiot	3	40	40	50	30	30	30	44	t	511.511.png	https://www.pokepedia.fr/Feuillajou/Génération_7	f
+512	274	Nuzleaf	Pifeuil	3	70	70	40	60	40	60	119	t	512.512.png	https://www.pokepedia.fr/Feuiloutan/Génération_7	f
+513	275	Shiftry	Tengalice	3	90	100	60	90	60	80	216	t	513.513.png	https://www.pokepedia.fr/Flamajou/Génération_7	f
+514	276	Taillow	Nirondelle	3	40	55	30	30	30	85	54	t	514.514.png	https://www.pokepedia.fr/Flamoutan/Génération_7	f
+515	277	Swellow	Hélédelle	3	60	85	60	75	50	125	159	t	515.515.png	https://www.pokepedia.fr/Flotajou/Génération_7	f
+516	278	Wingull	Goélise	3	40	30	30	55	30	85	54	t	516.516.png	https://www.pokepedia.fr/Flotoutan/Génération_7	f
+551	344	Claydol	Kaorine	3	60	70	105	70	120	75	175	t	551.551.png	https://www.pokepedia.fr/Mascaïman/Génération_7	f
+552	351	Castform	Morphéo	3	70	70	70	70	70	70	147	t	552.552.png	https://www.pokepedia.fr/Escroco/Génération_7	f
+556	357	Tropius	Tropius	3	99	68	83	72	87	51	161	t	556.556.png	https://www.pokepedia.fr/Maracachi/Génération_7	f
+557	433	Chingling	Korillon	3	45	30	50	65	50	45	57	t	557.557.png	https://www.pokepedia.fr/Crabicoque/Génération_7	f
+558	358	Chimecho	Éoko	3	75	50	80	95	90	65	159	t	558.558.png	https://www.pokepedia.fr/Crabaraque/Génération_7	f
+559	363	Spheal	Obalie	3	70	40	50	55	50	25	58	t	559.559.png	https://www.pokepedia.fr/Baggiguane/Génération_7	f
+560	364	Sealeo	Phogleur	3	90	60	70	75	70	45	144	t	560.560.png	https://www.pokepedia.fr/Baggaïd/Génération_7	f
+561	365	Walrein	Kaimorse	3	110	80	90	95	90	65	239	t	561.561.png	https://www.pokepedia.fr/Cryptéro/Génération_7	f
+562	366	Clamperl	Coquiperl	3	35	64	85	74	55	32	69	t	562.562.png	https://www.pokepedia.fr/Tutafeh/Génération_7	f
+563	367	Huntail	Serpang	3	55	104	105	94	75	52	170	t	563.563.png	https://www.pokepedia.fr/Tutankafer/Génération_7	f
+564	368	Gorebyss	Rosabyss	3	55	84	105	114	75	52	170	t	564.564.png	https://www.pokepedia.fr/Carapagos/Génération_7	f
+565	369	Relicanth	Relicanth	3	100	90	130	45	65	55	170	t	565.565.png	https://www.pokepedia.fr/Mégapagos/Génération_7	f
+566	527	Woobat	Chovsourir	3	65	45	43	55	43	72	65	t	566.566.png	https://www.pokepedia.fr/Arkéapti/Génération_7	f
+567	528	Swoobat	Rhinolove	3	67	57	55	77	55	114	149	t	567.567.png	https://www.pokepedia.fr/Aéroptéryx/Génération_7	f
+568	602	Tynamo	Anchwatt	3	35	55	40	45	40	60	55	t	568.568.png	https://www.pokepedia.fr/Miamiasme/Génération_7	f
+569	603	Eelektrik	Lampéroie	3	65	85	70	75	70	40	142	t	569.569.png	https://www.pokepedia.fr/Miasmax/Génération_7	f
+570	604	Eelektross	Ohmassacre	3	85	115	80	105	80	50	232	t	570.570.png	https://www.pokepedia.fr/Zorua/Génération_7	f
+571	690	Skrelp	Venalgue	3	50	60	60	60	60	30	64	t	571.571.png	https://www.pokepedia.fr/Zoroark/Génération_7	f
+572	691	Dragalge	Kravarech	3	65	75	90	97	123	44	173	t	572.572.png	https://www.pokepedia.fr/Chinchidou/Génération_7	f
 \.
 
 
