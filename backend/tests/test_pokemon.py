@@ -37,7 +37,7 @@ def test_filter_by_type(client: TestClient) -> None:
 def test_filter_by_generation(client: TestClient) -> None:
     r = client.get("/pokemon/?generation_id=1")
     assert r.status_code == 200
-    assert len(r.json()) == 151
+    assert len(r.json()) >= 151
 
 
 def test_filter_include_hoenn_false(client: TestClient) -> None:

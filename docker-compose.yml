@@ -16,7 +16,7 @@ services:
     networks:
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U fusiondex_user -d fusiondex_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fusiondex_user} -d ${POSTGRES_DB:-fusiondex_db}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -68,9 +68,11 @@ services:
       # AI providers (au moins un doit être actif sinon /ai/ask renvoie 503).
       # Lus à runtime via env_file (.env). Ils sont listés explicitement
       # ici pour les rendre découvrables.
-      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
-      OLLAMA_URL:      ${OLLAMA_URL:-}
-      OLLAMA_MODEL:    ${OLLAMA_MODEL:-qwen2.5:3b}
+      DEEPSEEK_API_KEY:    ${DEEPSEEK_API_KEY:-}
+      OPENROUTER_API_KEY:  ${OPENROUTER_API_KEY:-}
+      OPENROUTER_MODEL:    ${OPENROUTER_MODEL:-}
+      OLLAMA_URL:          ${OLLAMA_URL:-}
+      OLLAMA_MODEL:        ${OLLAMA_MODEL:-qwen2.5:3b}
       # Clé interne Next.js↔Backend. Vide = pas d'enforcement (dev sans clé).
       # Générer avec : openssl rand -hex 32
       INTERNAL_API_KEY: ${INTERNAL_API_KEY:-}

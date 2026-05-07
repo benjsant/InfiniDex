@@ -3,6 +3,7 @@ import type {
   PokemonListItem,
   PokemonDetail,
   PokemonMoveOut,
+  LocationOut,
   EvolutionOut,
   WeaknessOut,
   TypeOut,
@@ -75,6 +76,10 @@ export function getPokemonEvolutions(id: number): Promise<EvolutionOut[]> {
 
 export function getPokemonWeaknesses(id: number): Promise<WeaknessOut[]> {
   return apiFetch<WeaknessOut[]>(`/pokemon/${id}/weaknesses`);
+}
+
+export function getPokemonLocations(id: number): Promise<LocationOut[]> {
+  return apiFetch<LocationOut[]>(`/pokemon/${id}/locations`);
 }
 
 // ── Fusion ───────────────────────────────────────────────────────────────────

@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
-from backend.schemas.move import MoveDetail, MoveListItem, MoveTutorOut, PokemonMoveOut, TMInfo, TMLocationOut
+from backend.schemas.move import MoveDetail, MoveExpertOut, MoveListItem, MoveTutorOut, PokemonMoveOut, TMInfo, TMLocationOut
 from backend.schemas.type_ import TypeOut
 from backend.services.move_service import (
     get_move_by_id,
@@ -102,7 +102,7 @@ def get_all_tutors(db: Session = Depends(get_db)):
     ]
 
 
-@router.get("/experts/all")
+@router.get("/experts/all", response_model=list[MoveExpertOut])
 def get_all_expert_moves(db: Session = Depends(get_db)):
     """All Move Expert moves (Knot Island / Boon Island) with unlock conditions."""
     return list_all_expert_moves(db)

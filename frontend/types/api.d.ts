@@ -85,6 +85,13 @@ export interface EvolutionOut {
   if_notes: string | null;
 }
 
+export interface LocationOut {
+  location_id: number;
+  location_name: string;
+  method: string;
+  notes: string | null;
+}
+
 export interface WeaknessOut {
   attacking_type_id: number;
   attacking_type_name_en: string;

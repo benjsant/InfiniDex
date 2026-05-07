@@ -44,12 +44,19 @@ def test_invalid_category(client: TestClient) -> None:
     assert r.status_code == 422
 
 
+def _get_by_name(client: TestClient, name: str) -> dict:
+    """Resolve an item by name to avoid hardcoding sequential IDs."""
+    items = client.get(f"/items/search?q={name}").json()
+    match = next((i for i in items if i["name_en"] == name), None)
+    assert match is not None, f"Item '{name}' not found via search"
+    r = client.get(f"/items/{match['id']}")
+    assert r.status_code == 200
+    return r.json()
+
+
 def test_item_detail_fusion(client: TestClient) -> None:
     """Fusion item has correct category and no sell price."""
-    r = client.get("/items/1")  # DNA Splicers
-    assert r.status_code == 200
-    i = r.json()
-    assert i["id"] == 1
+    i = _get_by_name(client, "DNA Splicers")
     assert i["name_en"] == "DNA Splicers"
     assert i["category"] == "fusion"
     assert i["price_buy"] == 300
@@ -59,9 +66,7 @@ def test_item_detail_fusion(client: TestClient) -> None:
 
 def test_item_detail_valuable(client: TestClient) -> None:
     """Valuable item (Heart Scale) has sell price."""
-    r = client.get("/items/43")  # Heart Scale
-    assert r.status_code == 200
-    i = r.json()
+    i = _get_by_name(client, "Heart Scale")
     assert i["name_en"] == "Heart Scale"
     assert i["category"] == "valuable"
     assert i["price_sell"] == 50
@@ -69,9 +74,7 @@ def test_item_detail_valuable(client: TestClient) -> None:
 
 def test_item_detail_evolution(client: TestClient) -> None:
     """Evolution item (Fire Stone) has a buy price."""
-    r = client.get("/items/7")  # Fire Stone
-    assert r.status_code == 200
-    i = r.json()
+    i = _get_by_name(client, "Fire Stone")
     assert i["name_en"] == "Fire Stone"
     assert i["category"] == "evolution"
     assert i["price_buy"] == 5000
