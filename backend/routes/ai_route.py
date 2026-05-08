@@ -68,7 +68,7 @@ async def ask_ai(request: AiRequest, db: Session = Depends(get_db)):
             ):
                 yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
         except Exception as exc:
-            LOGGER.error("SSE stream exception: %s", exc)
+            LOGGER.error("SSE stream exception: %s", type(exc).__name__)
             yield f"data: {json.dumps({'type': 'error', 'message': 'Une erreur est survenue, réessaie.'}, ensure_ascii=False)}\n\n"
 
     return StreamingResponse(
