@@ -88,6 +88,7 @@ class AiRateLimitMiddleware(BaseHTTPMiddleware):
         self._rpm = rpm
         self._trusted_proxy = trusted_proxy
         self._window: dict[str, list[float]] = {}
+        self._request_count = 0
 
     def _get_ip(self, request: Request) -> str:
         if self._trusted_proxy:
@@ -116,6 +117,12 @@ class AiRateLimitMiddleware(BaseHTTPMiddleware):
             )
         hits.append(now)
         self._window[ip] = hits
+
+        # Purge stale IP entries every 500 requests to prevent unbounded growth.
+        self._request_count += 1
+        if self._request_count >= 500:
+            self._request_count = 0
+            self._window = {k: v for k, v in self._window.items() if v and v[-1] > cutoff}
         return await call_next(request)
 
 

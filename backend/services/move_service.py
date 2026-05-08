@@ -162,7 +162,7 @@ def list_tutors_for_move(db: Session, move_id: int) -> list[MoveTutor]:
     return (
         db.query(MoveTutor)
         .join(Location, Location.id == MoveTutor.location_id)
-        .options(joinedload(MoveTutor.location))
+        .options(joinedload(MoveTutor.location), joinedload(MoveTutor.move))
         .filter(MoveTutor.move_id == move_id)
         .order_by(MoveTutor.price.asc().nullsfirst(), Location.name_en)
         .all()

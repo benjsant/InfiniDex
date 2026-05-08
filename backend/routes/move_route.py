@@ -65,7 +65,7 @@ def get_moves(
 
 @router.get("/search", response_model=list[MoveListItem])
 def search_moves_route(
-    q: str = Query(..., min_length=1, description="Partial name EN or FR (accent-insensitive)"),
+    q: str = Query(..., min_length=1, max_length=100, description="Partial name EN or FR (accent-insensitive)"),
     db: Session = Depends(get_db),
 ):
     """Accent-insensitive search on EN or FR move name."""

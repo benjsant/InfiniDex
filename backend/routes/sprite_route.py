@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
@@ -45,8 +45,8 @@ def get_custom_sprites_for_pokemon(
 
 @router.get("/{head_id}/{body_id}", response_model=list[SpriteOut])
 def get_sprites_for_pair(
-    head_id: int,
-    body_id: int,
+    head_id: int = Path(..., ge=1),
+    body_id: int = Path(..., ge=1),
     db: Session = Depends(get_db),
 ):
     """
@@ -73,8 +73,8 @@ def get_sprites_for_pair(
 
 @router.get("/{head_id}/{body_id}/image")
 def get_sprite_image(
-    head_id: int,
-    body_id: int,
+    head_id: int = Path(..., ge=1),
+    body_id: int = Path(..., ge=1),
     variant_id: int | None = Query(None, description="Specific sprite.id; default=variant marked is_default"),
     db: Session = Depends(get_db),
 ):

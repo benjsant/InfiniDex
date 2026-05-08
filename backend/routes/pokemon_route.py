@@ -82,7 +82,7 @@ def get_pokemon_list(
 
 @router.get("/search", response_model=list[PokemonListItem])
 def search_pokemon_route(
-    q: str = Query(..., min_length=1),
+    q: str = Query(..., min_length=1, max_length=100),
     db: Session = Depends(get_db),
 ):
     """Search by English or French name (accent-insensitive)."""
@@ -196,4 +196,4 @@ def get_weaknesses_for_pokemon(
     db: Session = Depends(get_db),
 ):
     """Damage multipliers by attacking type (non-neutral only)."""
-    return compute_pokemon_weaknesses(db, p.id) or []
+    return compute_pokemon_weaknesses(db, p.id, pokemon=p) or []
