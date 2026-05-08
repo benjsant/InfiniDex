@@ -171,7 +171,7 @@ app.add_middleware(
 )
 
 
-@app.get("/health", tags=["health"])
+@app.get("/health", tags=["health"], response_model=dict[str, str])
 def healthcheck():
     """Liveness endpoint — used by Docker healthcheck and CI smoke tests."""
     return {"status": "healthy"}

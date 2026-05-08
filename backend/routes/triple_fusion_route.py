@@ -67,7 +67,7 @@ def get_triple_fusion_sprite(tf_id: int = FPath(..., ge=1), db: Session = Depend
     filename = ".".join(str(i) for i in ids) + ".png"
     path = SPECIAL_SPRITES_DIR / filename
     if not path.exists():
-        raise HTTPException(status_code=404, detail=f"Sprite not found: {filename}")
+        raise HTTPException(status_code=404, detail="Sprite not found")
     return FileResponse(path, media_type="image/png")
 
 

@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 class HistoryMessage(BaseModel):
     role: Literal["user", "assistant"]
-    content: str
+    content: str = Field(..., min_length=1, max_length=2000)
 
 
 class AiRequest(BaseModel):

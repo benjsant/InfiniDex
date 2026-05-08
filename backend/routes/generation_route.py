@@ -34,7 +34,7 @@ def get_generation(gen_id: int = Path(..., ge=1), db: Session = Depends(get_db))
 
 
 @router.get("/{gen_id}/pokemon", response_model=list[PokemonListItem])
-def get_pokemon_for_generation(gen_id: int, db: Session = Depends(get_db)):
+def get_pokemon_for_generation(gen_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
     """All Pokémon belonging to a generation."""
     gen = get_generation_by_id(db, gen_id)
     if not gen:
