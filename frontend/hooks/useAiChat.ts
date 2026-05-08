@@ -72,11 +72,12 @@ export function useAiChat() {
               if (!line.startsWith("data: ")) continue;
               try {
                 const event = JSON.parse(line.slice(6)) as {
-                  type: "tool_call" | "token" | "source" | "usage";
+                  type: "tool_call" | "token" | "source" | "usage" | "error";
                   name?: string;
                   chunk?: string;
                   sources?: string[];
                   total_tokens?: number;
+                  message?: string;
                 };
 
                 if (event.type === "tool_call" && event.name) {
@@ -113,6 +114,10 @@ export function useAiChat() {
                     updated[updated.length - 1] = { ...last, totalTokens: event.total_tokens };
                     return updated;
                   });
+                } else if (event.type === "error") {
+                  setError(event.message ?? "Une erreur est survenue.");
+                  setMessages((cur) => cur.slice(0, -1));
+                  done = true;
                 }
               } catch {
                 // Malformed SSE line — skip.
