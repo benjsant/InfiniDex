@@ -71,4 +71,12 @@ async def ask_ai(request: AiRequest, db: Session = Depends(get_db)):
             LOGGER.error("SSE stream exception: %s", exc)
             yield f"data: {json.dumps({'type': 'error', 'message': 'Une erreur est survenue, réessaie.'}, ensure_ascii=False)}\n\n"
 
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
