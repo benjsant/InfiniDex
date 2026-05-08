@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class TripleFusionComponentOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     position: int
     pokemon_id: int
     name_en: str
@@ -11,6 +12,7 @@ class TripleFusionComponentOut(BaseModel):
 
 
 class TripleFusionTypeOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     slot: int
     name_en: str
     name_fr: str | None
@@ -18,6 +20,7 @@ class TripleFusionTypeOut(BaseModel):
 
 
 class TripleFusionAbilityOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     slot: int
     is_hidden: bool
     name_en: str
@@ -25,6 +28,7 @@ class TripleFusionAbilityOut(BaseModel):
 
 
 class TripleFusionListItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     name_en: str
     name_fr: str | None

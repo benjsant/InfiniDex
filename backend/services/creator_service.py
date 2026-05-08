@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from backend.db.models import Creator, FusionSprite, FusionSpriteCreator
 
@@ -42,6 +42,7 @@ def list_sprites_for_creator(db: Session, creator_id: int) -> list[FusionSprite]
         db.query(FusionSprite)
         .join(FusionSpriteCreator, FusionSpriteCreator.fusion_sprite_id == FusionSprite.id)
         .filter(FusionSpriteCreator.creator_id == creator_id)
+        .options(joinedload(FusionSprite.creators).joinedload(FusionSpriteCreator.creator))
         .order_by(FusionSprite.head_id, FusionSprite.body_id)
         .all()
     )

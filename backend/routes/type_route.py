@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
@@ -23,7 +23,7 @@ def get_types(db: Session = Depends(get_db)):
 
 
 @router.get("/by-name/{name}", response_model=TypeOut)
-def get_type_by_name(name: str, db: Session = Depends(get_db)):
+def get_type_by_name(name: str = Path(..., min_length=1, max_length=50), db: Session = Depends(get_db)):
     """Find a type by EN or FR name (accent-insensitive, prefix match)."""
     t = find_type_by_name(db, name)
     if not t:

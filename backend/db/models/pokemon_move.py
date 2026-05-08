@@ -10,7 +10,7 @@ class PokemonMove(Base):
     id         = Column(Integer, primary_key=True)
     pokemon_id = Column(Integer, ForeignKey("pokemon.id", ondelete="CASCADE"),
                         nullable=False)
-    move_id    = Column(Integer, ForeignKey("move.id"), nullable=False)
+    move_id    = Column(Integer, ForeignKey("move.id"), nullable=False, index=True)
     method     = Column(String(20), nullable=False)
     # level_up | tm | tutor | breeding | special | before_evolution
     level      = Column(Integer)     # uniquement pour level_up

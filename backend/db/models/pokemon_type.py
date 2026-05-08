@@ -10,7 +10,7 @@ class PokemonType(Base):
     pokemon_id  = Column(Integer, ForeignKey("pokemon.id", ondelete="CASCADE"),
                          primary_key=True)
     slot        = Column(Integer, primary_key=True)  # 1 ou 2 — PK réelle (SQL: PRIMARY KEY (pokemon_id, slot))
-    type_id     = Column(Integer, ForeignKey("type.id"), nullable=False)
+    type_id     = Column(Integer, ForeignKey("type.id"), nullable=False, index=True)
     if_override = Column(Boolean, nullable=False, default=False)
 
     pokemon = relationship("Pokemon", back_populates="types")

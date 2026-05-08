@@ -9,7 +9,7 @@ class PokemonEvolution(Base):
 
     id              = Column(Integer, primary_key=True)
     pokemon_id      = Column(Integer, ForeignKey("pokemon.id", ondelete="CASCADE"), nullable=False)
-    evolves_into_id = Column(Integer, ForeignKey("pokemon.id", ondelete="CASCADE"), nullable=False)
+    evolves_into_id = Column(Integer, ForeignKey("pokemon.id", ondelete="CASCADE"), nullable=False, index=True)
     trigger_type    = Column(String(20), nullable=False)
     # level_up | use_item | trade | friendship | other
     min_level       = Column(Integer)
