@@ -153,6 +153,11 @@ _cors_raw = os.getenv(
     "http://localhost:53000,http://localhost:58000",
 )
 cors_origins = [o.strip() for o in _cors_raw.split(",") if o.strip()]
+if not cors_origins:
+    raise RuntimeError(
+        "CORS_ALLOWED_ORIGINS is empty — set it to one or more comma-separated origins "
+        "(e.g. 'https://fusiondex.example.com') or '*' to allow all."
+    )
 
 _ai_rpm = int(os.getenv("RATE_LIMIT_AI_RPM", "0"))
 _internal_key = os.getenv("INTERNAL_API_KEY", "")
