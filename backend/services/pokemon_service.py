@@ -7,6 +7,7 @@ from decimal import Decimal
 from sqlalchemy.orm import Session, joinedload
 
 from backend.db.models import Move, Pokemon, PokemonEvolution, PokemonLocation, PokemonMove, PokemonType, Type, TypeEffectiveness
+from backend.utils.text import ilike_escape
 
 
 def list_pokemon(
@@ -52,8 +53,8 @@ def search_pokemon(db: Session, name: str) -> list[Pokemon]:
         db.query(Pokemon)
         .options(joinedload(Pokemon.types))
         .filter(
-            Pokemon.name_en.ilike(f"%{name}%")
-            | Pokemon.name_fr.ilike(f"%{name}%")
+            Pokemon.name_en.ilike(f"%{ilike_escape(name)}%", escape="\\")
+            | Pokemon.name_fr.ilike(f"%{ilike_escape(name)}%", escape="\\")
         )
         .order_by(Pokemon.id)
         .all()
@@ -185,5 +186,5 @@ def search_pokemon_locations(
     if method:
         query = query.filter(PokemonLocation.method == method)
     if condition:
-        query = query.filter(PokemonLocation.notes.ilike(f"%{condition}%"))
+        query = query.filter(PokemonLocation.notes.ilike(f"%{ilike_escape(condition)}%", escape="\\"))
     return query.order_by(Pokemon.id).all()

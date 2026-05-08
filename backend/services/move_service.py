@@ -5,7 +5,7 @@ from __future__ import annotations
 from sqlalchemy.orm import Session, joinedload
 
 from backend.db.models import Location, Move, MoveExpertMove, MoveTutor, Pokemon, PokemonMove, TM, TMLocation, Type
-from backend.utils.text import normalize
+from backend.utils.text import ilike_escape, normalize
 
 
 def list_moves(
@@ -53,7 +53,7 @@ def search_moves(db: Session, name: str) -> list[Move]:
     candidates = (
         db.query(Move)
         .options(joinedload(Move.type))
-        .filter(Move.name_en.ilike(f"%{name}%") | Move.name_fr.ilike(f"%{name}%"))
+        .filter(Move.name_en.ilike(f"%{ilike_escape(name)}%", escape="\\") | Move.name_fr.ilike(f"%{ilike_escape(name)}%", escape="\\"))
         .all()
     )
     # If ilike caught everything (no accents in query), return directly.
@@ -73,7 +73,7 @@ def list_moves_by_type(db: Session, type_name: str) -> list[Move]:
     type_obj = (
         db.query(Type)
         .filter(
-            Type.name_en.ilike(f"{type_name}%") | Type.name_fr.ilike(f"{type_name}%")
+            Type.name_en.ilike(f"{ilike_escape(type_name)}%", escape="\\") | Type.name_fr.ilike(f"{ilike_escape(type_name)}%", escape="\\")
         )
         .first()
     )

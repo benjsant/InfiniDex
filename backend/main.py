@@ -1,6 +1,7 @@
 """FusionDex API — FastAPI entry point."""
 
 import os
+from secrets import compare_digest
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -141,7 +142,7 @@ class InternalKeyMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         if request.url.path == "/health":
             return await call_next(request)
-        if request.headers.get("X-Internal-Key") != self._key:
+        if not compare_digest(request.headers.get("X-Internal-Key", ""), self._key):
             from fastapi.responses import JSONResponse
             return JSONResponse({"detail": "Forbidden"}, status_code=403)
         return await call_next(request)
