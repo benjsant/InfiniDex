@@ -11,7 +11,7 @@ class Pokemon(Base):
     national_id     = Column(Integer, unique=True)        # National Pokédex (PokeAPI)
     name_en         = Column(String(100), nullable=False)
     name_fr         = Column(String(100))
-    generation_id   = Column(Integer, ForeignKey("generation.id"), nullable=False)
+    generation_id   = Column(Integer, ForeignKey("generation.id"), nullable=False, index=True)
     hp              = Column(Integer, nullable=False)
     attack          = Column(Integer, nullable=False)
     defense         = Column(Integer, nullable=False)

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
@@ -73,7 +73,7 @@ def search_moves_route(
 
 
 @router.get("/by-type/{type_name}", response_model=list[MoveListItem])
-def get_moves_by_type(type_name: str, db: Session = Depends(get_db)):
+def get_moves_by_type(type_name: str = Path(..., min_length=1, max_length=50), db: Session = Depends(get_db)):
     """All moves of a given type (EN or FR name, case-insensitive prefix match)."""
     moves = list_moves_by_type(db, type_name)
     if not moves:

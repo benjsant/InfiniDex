@@ -10,7 +10,7 @@ class PokemonLocation(Base):
     id          = Column(Integer, primary_key=True)
     pokemon_id  = Column(Integer, ForeignKey("pokemon.id", ondelete="CASCADE"),
                          nullable=False)
-    location_id = Column(Integer, ForeignKey("location.id", ondelete="RESTRICT"), nullable=False)
+    location_id = Column(Integer, ForeignKey("location.id", ondelete="RESTRICT"), nullable=False, index=True)
     method      = Column(String(20), nullable=False, default="wild")  # wild | gift | trade | static | fishing | headbutt
     notes       = Column(Text)
 

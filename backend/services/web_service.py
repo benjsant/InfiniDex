@@ -71,4 +71,4 @@ async def search_web(query: str) -> dict:
 
     except Exception as exc:
         LOGGER.warning("Web search error for query=%r: %s", query, exc)
-        return {"found": False, "error": f"Web search failed: {exc}"}
+        return {"found": False, "error": "Web search unavailable"}

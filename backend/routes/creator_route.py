@@ -22,7 +22,7 @@ def get_creators(
     db: Session = Depends(get_db),
     limit: int | None = Query(None, ge=1, le=1000),
     offset: int = Query(0, ge=0),
-    q: str | None = Query(None, description="Filter by name (ilike)"),
+    q: str | None = Query(None, max_length=100, description="Filter by name (ilike)"),
 ):
     """List sprite artists, sorted by sprite count in descending order."""
     rows = list_creators(db, limit=limit, offset=offset, q=q)
