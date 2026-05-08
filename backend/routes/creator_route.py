@@ -42,9 +42,9 @@ def get_creator(creator_id: int = Path(..., ge=1), db: Session = Depends(get_db)
 @router.get("/{creator_id}/sprites", response_model=list[SpriteOut])
 def get_sprites_by_creator(creator_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
     """All sprites created by this creator."""
-    if not get_creator_by_id(db, creator_id):
-        raise HTTPException(status_code=404, detail="Creator not found")
     sprites = list_sprites_for_creator(db, creator_id)
+    if not sprites and not get_creator_by_id(db, creator_id):
+        raise HTTPException(status_code=404, detail="Creator not found")
     return [
         SpriteOut(
             id=s.id,
