@@ -119,6 +119,31 @@ def test_move_invalid_category(client: TestClient) -> None:
     assert r.status_code == 422
 
 
+def test_tutors_all(client: TestClient) -> None:
+    r = client.get("/moves/tutors/all")
+    assert r.status_code == 200
+    data = r.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+    t = data[0]
+    assert "move_id" in t and "move_name_en" in t
+    assert "location_id" in t and "location_name_en" in t
+    assert "price" in t and "currency" in t
+
+
+def test_experts_all(client: TestClient) -> None:
+    r = client.get("/moves/experts/all")
+    assert r.status_code == 200
+    data = r.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+    e = data[0]
+    assert "move_id" in e and "move_name_en" in e
+    assert "location" in e
+    assert isinstance(e["required_pokemon"], list)
+    assert isinstance(e["required_types"], list)
+
+
 def test_types_list(client: TestClient) -> None:
     r = client.get("/types/")
     assert r.status_code == 200
