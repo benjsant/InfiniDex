@@ -37,6 +37,10 @@ services:
       RATE_LIMIT_AI_RPM: ${RATE_LIMIT_AI_RPM:-20}
       TRUSTED_PROXY: "1"
       INTERNAL_API_KEY: "${INTERNAL_API_KEY:?INTERNAL_API_KEY requis — générer avec : openssl rand -hex 32}"
+    volumes:
+      - ./backend:/app/backend:ro
+      - ./data/sprites:/app/data/sprites:ro
+      - ${SPECIAL_SPRITES_PATH:-./data/special_sprites}:/app/data/special_sprites:ro
     deploy:
       resources:
         limits:

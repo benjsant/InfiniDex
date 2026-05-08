@@ -60,7 +60,7 @@ def search_pokemon(db: Session, name: str) -> list[Pokemon]:
     )
 
 
-def compute_pokemon_weaknesses(db: Session, pokemon_id: int) -> list[dict] | None:
+def compute_pokemon_weaknesses(db: Session, pokemon_id: int, pokemon: Pokemon | None = None) -> list[dict] | None:
     """
     Returns damage multipliers for every attacking type against this Pokémon.
 
@@ -69,8 +69,11 @@ def compute_pokemon_weaknesses(db: Session, pokemon_id: int) -> list[dict] | Non
 
     Only types with a non-neutral final multiplier (≠ 1.0) are returned.
     Types not listed in type_effectiveness default to 1.0.
+
+    Pass `pokemon` when already loaded to avoid a redundant DB query.
     """
-    pokemon = db.query(Pokemon).filter(Pokemon.id == pokemon_id).first()
+    if pokemon is None:
+        pokemon = db.query(Pokemon).filter(Pokemon.id == pokemon_id).first()
     if not pokemon:
         return None
 

@@ -74,20 +74,14 @@ def test_move_tutors_empty(client: TestClient) -> None:
 
 def test_move_detail_tm_info(client: TestClient) -> None:
     """TM05 is Roar, taught at Celadon Dept. Store + Route 32."""
-    import psycopg2, os
-    conn = psycopg2.connect(
-        host=os.getenv("POSTGRES_HOST", "localhost"),
-        port=int(os.getenv("POSTGRES_PORT", 55432)),
-        user=os.getenv("POSTGRES_USER", "fusiondex_user"),
-        password=os.getenv("POSTGRES_PASSWORD", "changeme"),
-        dbname=os.getenv("POSTGRES_DB", "fusiondex_db"),
-    )
-    with conn.cursor() as cur:
-        cur.execute("SELECT move_id FROM tm WHERE number = 5")
-        move_id = cur.fetchone()[0]
-    conn.close()
+    # Resolve TM05 move via search instead of a raw psycopg2 connection.
+    r = client.get("/moves/search?q=Roar")
+    assert r.status_code == 200
+    moves = r.json()
+    roar = next((m for m in moves if m["name_en"] == "Roar"), None)
+    assert roar is not None, "Roar not found via search"
 
-    r = client.get(f"/moves/{move_id}")
+    r = client.get(f"/moves/{roar['id']}")
     assert r.status_code == 200
     data = r.json()
     assert data["tm"] is not None

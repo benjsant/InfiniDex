@@ -24,7 +24,7 @@ def get_abilities(db: Session = Depends(get_db)):
 
 @router.get("/search", response_model=list[AbilityListItem])
 def search_abilities_route(
-    q: str = Query(..., min_length=1, description="Partial name EN or FR (accent-insensitive)"),
+    q: str = Query(..., min_length=1, max_length=100, description="Partial name EN or FR (accent-insensitive)"),
     db: Session = Depends(get_db),
 ):
     """Accent-insensitive search on EN or FR ability name."""

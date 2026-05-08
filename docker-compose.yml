@@ -39,7 +39,7 @@ services:
     volumes:
       - ./etl:/app/etl
       - ./data:/app/data
-      - ./docker:/app/docker
+      - ./docker:/app/docker:ro
     networks:
       - backend
     restart: "no"
