@@ -10,7 +10,7 @@ class Move(Base):
     id             = Column(Integer, primary_key=True)
     name_en        = Column(String(100), nullable=False, unique=True)
     name_fr        = Column(String(100))
-    type_id        = Column(Integer, ForeignKey("type.id"), nullable=False)
+    type_id        = Column(Integer, ForeignKey("type.id"), nullable=False, index=True)
     category       = Column(String(10), nullable=False)   # Physical | Special | Status
     power          = Column(Integer)                       # NULL for Status moves
     accuracy       = Column(Integer)                       # NULL if accuracy is infinite
