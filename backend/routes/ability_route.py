@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
@@ -32,7 +32,7 @@ def search_abilities_route(
 
 
 @router.get("/{ability_id}", response_model=AbilityDetail)
-def get_ability(ability_id: int, db: Session = Depends(get_db)):
+def get_ability(ability_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
     """Detail of an ability with EN/FR descriptions."""
     ability = get_ability_by_id(db, ability_id)
     if not ability:

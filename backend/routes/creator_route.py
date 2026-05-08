@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
@@ -30,7 +30,7 @@ def get_creators(
 
 
 @router.get("/{creator_id}", response_model=CreatorOut)
-def get_creator(creator_id: int, db: Session = Depends(get_db)):
+def get_creator(creator_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
     """Detail of a sprite creator with their total sprite count."""
     row = get_creator_by_id(db, creator_id)
     if not row:
@@ -40,7 +40,7 @@ def get_creator(creator_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/{creator_id}/sprites", response_model=list[SpriteOut])
-def get_sprites_by_creator(creator_id: int, db: Session = Depends(get_db)):
+def get_sprites_by_creator(creator_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
     """All sprites created by this creator."""
     if not get_creator_by_id(db, creator_id):
         raise HTTPException(status_code=404, detail="Creator not found")

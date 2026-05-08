@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Path as FPath
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
@@ -57,7 +58,7 @@ def list_all(db: Session = Depends(get_db)):
 
 
 @router.get("/{tf_id}/sprite")
-def get_triple_fusion_sprite(tf_id: int, db: Session = Depends(get_db)):
+def get_triple_fusion_sprite(tf_id: int = FPath(..., ge=1), db: Session = Depends(get_db)):
     """Serve the battle sprite PNG for a triple fusion."""
     tf = get_triple_fusion(db, tf_id)
     if not tf:
@@ -71,7 +72,7 @@ def get_triple_fusion_sprite(tf_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/{tf_id}/weaknesses", response_model=list[WeaknessOut])
-def get_triple_fusion_weaknesses(tf_id: int, db: Session = Depends(get_db)):
+def get_triple_fusion_weaknesses(tf_id: int = FPath(..., ge=1), db: Session = Depends(get_db)):
     """Damage multipliers against this triple fusion's type combination."""
     tf = get_triple_fusion(db, tf_id)
     if not tf:
@@ -80,7 +81,7 @@ def get_triple_fusion_weaknesses(tf_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/{tf_id}", response_model=TripleFusionDetail)
-def get_detail(tf_id: int, db: Session = Depends(get_db)):
+def get_detail(tf_id: int = FPath(..., ge=1), db: Session = Depends(get_db)):
     """Full detail of a triple fusion: stats, components, types, and abilities."""
     tf = get_triple_fusion(db, tf_id)
     if not tf:

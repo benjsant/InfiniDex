@@ -303,15 +303,16 @@ async def _get_triple_fusion(db: Session, args: dict) -> dict:
         tf = get_triple_fusion(db, int(name_or_id))
     else:
         needle = str(name_or_id).lower().strip()
-        for candidate in list_triple_fusions(db):
-            if (candidate.name_en or "").lower() == needle or (candidate.name_fr or "").lower() == needle:
-                tf = get_triple_fusion(db, candidate.id)
-                break
-        if tf is None:
-            for candidate in list_triple_fusions(db):
-                if needle in (candidate.name_en or "").lower() or needle in (candidate.name_fr or "").lower():
-                    tf = get_triple_fusion(db, candidate.id)
-                    break
+        candidates = list_triple_fusions(db)
+        match = next(
+            (c for c in candidates if (c.name_en or "").lower() == needle or (c.name_fr or "").lower() == needle),
+            None,
+        ) or next(
+            (c for c in candidates if needle in (c.name_en or "").lower() or needle in (c.name_fr or "").lower()),
+            None,
+        )
+        if match:
+            tf = get_triple_fusion(db, match.id)
 
     if tf is None:
         return {"error": f"No triple fusion matching '{name_or_id}'. Known triple fusions: Zapmolcuno, Enraicune, Kyodonquaza, Paldiatina, Zekyushiram, Celemewchi, Deosectwo, Regiregi, and starter trios."}

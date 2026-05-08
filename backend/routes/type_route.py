@@ -32,7 +32,7 @@ def get_type_by_name(name: str = Path(..., min_length=1, max_length=50), db: Ses
 
 
 @router.get("/{type_id}", response_model=TypeOut)
-def get_type(type_id: int, db: Session = Depends(get_db)):
+def get_type(type_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
     """Type by ID."""
     t = get_type_by_id(db, type_id)
     if not t:
