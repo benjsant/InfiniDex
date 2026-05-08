@@ -5,7 +5,7 @@ from __future__ import annotations
 from sqlalchemy.orm import Session
 
 from backend.db.models import Item
-from backend.utils.text import normalize
+from backend.utils.text import ilike_escape, normalize
 
 
 def list_items(db: Session, *, category: str | None = None) -> list[Item]:
@@ -23,9 +23,18 @@ def get_item_by_id(db: Session, item_id: int) -> Item | None:
 def search_items(db: Session, name: str) -> list[Item]:
     """Accent-insensitive partial match on name_en or name_fr."""
     needle = normalize(name)
-    items = db.query(Item).all()
-    return [
-        i for i in items
+    escaped = ilike_escape(name)
+    candidates = (
+        db.query(Item)
+        .filter(
+            Item.name_en.ilike(f"%{escaped}%", escape="\\")
+            | Item.name_fr.ilike(f"%{escaped}%", escape="\\")
+        )
+        .all()
+    )
+    exact = [
+        i for i in candidates
         if needle in normalize(i.name_en or "")
         or needle in normalize(i.name_fr or "")
     ]
+    return exact if exact else candidates
