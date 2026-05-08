@@ -58,7 +58,12 @@ async def dispatch_tool(db: Session, name: str, args: dict[str, Any]) -> dict:
         return {"error": f"Unknown tool '{name}'"}
 
     t0 = time.monotonic()
-    result = await tool.handler(db, args)
+    try:
+        result = await tool.handler(db, args)
+    except Exception as exc:
+        latency_ms = (time.monotonic() - t0) * 1000
+        LOGGER.error("tool=%s latency_ms=%.1f error=%s", name, latency_ms, exc)
+        return {"error": "Tool execution failed"}
     latency_ms = (time.monotonic() - t0) * 1000
     success = "error" not in result
 

@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import json
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
+
+LOGGER = logging.getLogger(__name__)
 
 from backend.db.session import get_db
 from backend.schemas.ai import AiPromptInfo, AiProviderInfo, AiRequest
@@ -59,9 +62,13 @@ async def ask_ai(request: AiRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=503, detail=provider_setup_instructions())
 
     async def event_stream():
-        async for event in stream_ai_response(
-            db, request.message, request.context, request.history, provider
-        ):
-            yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+        try:
+            async for event in stream_ai_response(
+                db, request.message, request.context, request.history, provider
+            ):
+                yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+        except Exception as exc:
+            LOGGER.error("SSE stream exception: %s", exc)
+            yield f"data: {json.dumps({'type': 'error', 'message': 'Une erreur est survenue, réessaie.'}, ensure_ascii=False)}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
