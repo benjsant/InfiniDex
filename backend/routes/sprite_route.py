@@ -19,7 +19,7 @@ router = APIRouter(prefix="/sprites", tags=["Sprites"])
 
 @router.get("/by_pokemon/{pokemon_id}", response_model=list[SpriteOut])
 def get_custom_sprites_for_pokemon(
-    pokemon_id: int,
+    pokemon_id: int = Path(..., ge=1),
     db: Session = Depends(get_db),
 ):
     """

@@ -109,7 +109,7 @@ def get_all_expert_moves(db: Session = Depends(get_db)):
 
 
 @router.get("/{move_id}/tutors", response_model=list[MoveTutorOut])
-def get_move_tutors(move_id: int, db: Session = Depends(get_db)):
+def get_move_tutors(move_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
     """Locations and prices where this move can be learned from a classic Move Tutor.
 
     Returns an empty list if no tutor teaches this move. Scope: classic tutors
@@ -135,7 +135,7 @@ def get_move_tutors(move_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/{move_id}", response_model=MoveDetail)
-def get_move(move_id: int, db: Session = Depends(get_db)):
+def get_move(move_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
     """Full detail of a move. Includes `tm` if the move is a TM."""
     move = get_move_by_id(db, move_id)
     if not move:

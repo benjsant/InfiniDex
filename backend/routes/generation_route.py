@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
@@ -25,7 +25,7 @@ def get_generations(db: Session = Depends(get_db)):
 
 
 @router.get("/{gen_id}", response_model=GenerationOut)
-def get_generation(gen_id: int, db: Session = Depends(get_db)):
+def get_generation(gen_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
     """Detail of a generation by ID (1–9)."""
     g = get_generation_by_id(db, gen_id)
     if not g:

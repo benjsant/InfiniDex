@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
@@ -23,7 +23,7 @@ def get_items(
 
 @router.get("/search", response_model=list[ItemOut])
 def search_items_route(
-    q: str = Query(..., min_length=1, description="Partial name EN or FR (accent-insensitive)"),
+    q: str = Query(..., min_length=1, max_length=100, description="Partial name EN or FR (accent-insensitive)"),
     db: Session = Depends(get_db),
 ):
     """Accent-insensitive search on EN or FR name."""
@@ -31,7 +31,7 @@ def search_items_route(
 
 
 @router.get("/{item_id}", response_model=ItemOut)
-def get_item(item_id: int, db: Session = Depends(get_db)):
+def get_item(item_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
     """Detail of a single item."""
     item = get_item_by_id(db, item_id)
     if not item:
