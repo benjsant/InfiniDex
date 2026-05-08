@@ -1,5 +1,15 @@
 // Mirror of backend Pydantic schemas — aligned with actual API responses
 
+export interface ItemOut {
+  id: number;
+  name_en: string;
+  name_fr: string | null;
+  category: "fusion" | "evolution" | "valuable";
+  effect: string | null;
+  price_buy: number | null;
+  price_sell: number | null;
+}
+
 // TypeOut from type_.py (used in Move, Fusion)
 export interface TypeOut {
   id: number;
