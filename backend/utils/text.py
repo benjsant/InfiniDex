@@ -5,6 +5,14 @@ from __future__ import annotations
 import unicodedata
 
 
+def ilike_escape(text: str) -> str:
+    """Escape ILIKE special characters (%, _, \\) in user-supplied search strings.
+
+    Always pair with escape="\\\\" in the SQLAlchemy ilike() call.
+    """
+    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 def normalize(text: str) -> str:
     """Lowercase + strip accents (NFD decomposition).
 

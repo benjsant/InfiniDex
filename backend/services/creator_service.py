@@ -6,6 +6,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from backend.db.models import Creator, FusionSprite, FusionSpriteCreator
+from backend.utils.text import ilike_escape
 
 
 def list_creators(
@@ -19,7 +20,7 @@ def list_creators(
         .order_by(func.count(FusionSpriteCreator.fusion_sprite_id).desc(), Creator.name)
     )
     if q:
-        query = query.filter(Creator.name.ilike(f"%{q}%"))
+        query = query.filter(Creator.name.ilike(f"%{ilike_escape(q)}%", escape="\\"))
     query = query.offset(offset)
     if limit is not None:
         query = query.limit(limit)
