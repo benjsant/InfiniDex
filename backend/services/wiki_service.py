@@ -22,6 +22,7 @@ WIKI_API_URL = "https://infinitefusion.fandom.com/api.php"
 MAX_EXTRACT_CHARS = 2_000
 HTTP_TIMEOUT = 8.0
 _CACHE_TTL = 600  # seconds
+_CACHE_MAX_SIZE = 500
 
 # Simple in-process TTL cache: normalised_query → (timestamp, result)
 _wiki_cache: dict[str, tuple[float, dict]] = {}
@@ -97,6 +98,8 @@ async def fetch_wiki(query: str) -> dict:
 
             if not results:
                 result: dict = {"found": False, "query": query}
+                if len(_wiki_cache) >= _CACHE_MAX_SIZE:
+                    _wiki_cache.clear()
                 _wiki_cache[cache_key] = (time.monotonic(), result)
                 return result
 
@@ -117,6 +120,8 @@ async def fetch_wiki(query: str) -> dict:
                     "query": query,
                     "note": f"Page '{title}' found but content could not be parsed",
                 }
+                if len(_wiki_cache) >= _CACHE_MAX_SIZE:
+                    _wiki_cache.clear()
                 _wiki_cache[cache_key] = (time.monotonic(), result)
                 return result
 

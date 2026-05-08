@@ -19,6 +19,7 @@ MAX_CHARS_PER_RESULT = 300   # per snippet, before capping total
 MAX_TOTAL_CHARS      = 1_500  # total returned to the LLM
 HTTP_TIMEOUT         = 8.0
 _CACHE_TTL           = 300   # 5 min (web results change faster than wiki)
+_CACHE_MAX_SIZE      = 500
 
 _web_cache: dict[str, tuple[float, dict]] = {}
 
@@ -49,6 +50,8 @@ async def search_web(query: str) -> dict:
 
         if not raw:
             result: dict = {"found": False, "query": query}
+            if len(_web_cache) >= _CACHE_MAX_SIZE:
+                _web_cache.clear()
             _web_cache[cache_key] = (time.monotonic(), result)
             return result
 
@@ -66,6 +69,8 @@ async def search_web(query: str) -> dict:
                 break
 
         result = {"found": True, "results": results}
+        if len(_web_cache) >= _CACHE_MAX_SIZE:
+            _web_cache.clear()
         _web_cache[cache_key] = (time.monotonic(), result)
         return result
 
