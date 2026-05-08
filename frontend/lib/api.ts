@@ -23,6 +23,7 @@ import type {
   TripleFusionListItem,
   TripleFusionDetail,
   CreatorOut,
+  ItemOut,
 } from "@/types/api";
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -209,4 +210,14 @@ export interface AiPromptInfo {
 
 export function getAiPrompt(): Promise<AiPromptInfo> {
   return apiFetch<AiPromptInfo>("/ai/prompt");
+}
+
+// Items
+export function getItems(category?: string): Promise<ItemOut[]> {
+  const qs = category ? `?category=${encodeURIComponent(category)}` : "";
+  return apiFetch<ItemOut[]>(`/items/${qs}`);
+}
+
+export function searchItems(q: string): Promise<ItemOut[]> {
+  return apiFetch<ItemOut[]>(`/items/search?q=${encodeURIComponent(q)}`);
 }

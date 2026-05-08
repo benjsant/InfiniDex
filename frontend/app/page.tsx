@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, GitMerge, Zap, Shield, Star, Bot, Layers } from "lucide-react";
+import { BookOpen, GitMerge, Zap, Shield, Star, Bot, Layers, Package } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 const NAV_CARDS: { href: string; label: string; desc: string; Icon: LucideIcon }[] = [
@@ -8,6 +8,7 @@ const NAV_CARDS: { href: string; label: string; desc: string; Icon: LucideIcon }
   { href: "/moves",          label: "Capacités",      desc: "Toutes les attaques IF",            Icon: Zap       },
   { href: "/types",          label: "Types",          desc: "Tableau d'efficacités Gen 7",       Icon: Shield    },
   { href: "/abilities",      label: "Talents",        desc: "Tous les talents IF",               Icon: Star      },
+  { href: "/items",          label: "Objets",         desc: "Fusion, évolution, précieux",       Icon: Package   },
   { href: "/ai",             label: "Assistant IA",   desc: "Pose tes questions sur IF",         Icon: Bot       },
   { href: "/triple-fusions", label: "Triple Fusions", desc: "Les fusions légendaires secrètes", Icon: Layers    },
 ];
