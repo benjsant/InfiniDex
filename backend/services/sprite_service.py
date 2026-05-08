@@ -73,4 +73,6 @@ def resolve_sprite_file(
         row = q.order_by(FusionSprite.is_default.desc(), FusionSprite.id).first()
 
     candidate = SPRITES_DIR / (row.sprite_path if row else f"{head_id}.{body_id}.png")
+    if not candidate.resolve().is_relative_to(SPRITES_DIR.resolve()):
+        return None
     return candidate if candidate.is_file() else None
