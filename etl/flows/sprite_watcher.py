@@ -47,7 +47,7 @@ _DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 # ── Tasks ─────────────────────────────────────────────────────────────────────
 
-@task(name="fetch-latest-sha")
+@task(name="fetch-latest-sha", retries=3, retry_delay_seconds=30)
 def fetch_latest_sha() -> str:
     """Récupère le SHA du dernier commit sur master."""
     logger = get_run_logger()
@@ -66,7 +66,7 @@ def read_local_sha() -> str | None:
     return None
 
 
-@task(name="fetch-settings-version")
+@task(name="fetch-settings-version", retries=2, retry_delay_seconds=20)
 def fetch_settings_version(sha: str) -> str | None:
     """Lit LATEST_GAME_RELEASE dans Settings.rb au SHA donné."""
     logger = get_run_logger()
@@ -89,7 +89,7 @@ def read_local_version() -> str | None:
     return None
 
 
-@task(name="fetch-sprite-list")
+@task(name="fetch-sprite-list", retries=3, retry_delay_seconds=30)
 def fetch_sprite_list(sha: str, filename: str = "CUSTOM_SPRITES") -> set[str]:
     """Récupère la liste de sprites (CUSTOM_SPRITES ou BASE_SPRITES) à un SHA donné."""
     url  = f"https://raw.githubusercontent.com/{REPO}/{sha}/{filename}"

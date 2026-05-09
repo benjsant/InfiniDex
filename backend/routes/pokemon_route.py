@@ -82,7 +82,7 @@ def get_pokemon_list(
 
 @router.get("/search", response_model=list[PokemonListItem])
 def search_pokemon_route(
-    q: str = Query(..., min_length=1, max_length=100),
+    q: str = Query(..., min_length=2, max_length=100),
     db: Session = Depends(get_db),
 ):
     """Search by English or French name (accent-insensitive)."""

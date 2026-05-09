@@ -64,6 +64,14 @@ class UsageEvent(TypedDict):
 AgentEvent = ToolCallEvent | TokenEvent | SourceEvent | UsageEvent
 
 
+def _safe_redact(data: dict) -> dict:
+    try:
+        return pii_redact(data)
+    except Exception:
+        LOGGER.warning("pii_redact failed — passing tool result unredacted")
+        return data
+
+
 # ─── Single-turn streamer ─────────────────────────────────────────────────────
 
 async def _stream_turn(provider: LLMProvider, messages: list[dict]):
@@ -245,7 +253,7 @@ async def stream_ai_response(
             messages.append({
                 "role":         "tool",
                 "tool_call_id": tc["id"],
-                "content":      json.dumps(pii_redact(result), ensure_ascii=False),
+                "content":      json.dumps(_safe_redact(result), ensure_ascii=False),
             })
 
     LOGGER.warning("agent reached MAX_ITERATIONS=%d without final response", MAX_ITERATIONS)

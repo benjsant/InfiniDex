@@ -119,7 +119,7 @@ class SearchRateLimitMiddleware(BaseHTTPMiddleware):
             ip = fwd.split(",")[0].strip()
             if ip:
                 return ip
-        return request.client.host if request.client else "unknown"
+        return (request.client.host or "unknown") if request.client else "unknown"
 
     async def dispatch(self, request: Request, call_next):
         if (
@@ -178,7 +178,7 @@ class AiRateLimitMiddleware(BaseHTTPMiddleware):
             ip = fwd.split(",")[0].strip()
             if ip:
                 return ip
-        return request.client.host if request.client else "unknown"
+        return (request.client.host or "unknown") if request.client else "unknown"
 
     async def dispatch(self, request: Request, call_next):
         if self._rpm <= 0 or request.url.path != "/ai/ask" or request.method != "POST":
