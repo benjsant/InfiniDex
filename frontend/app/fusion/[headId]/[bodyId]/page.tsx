@@ -1,9 +1,10 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft, ArrowLeftRight } from "lucide-react";
 import { useFusion, useFusionMoves, useFusionExpertMoves, useSprites } from "@/hooks/useFusion";
+import { useHistory } from "@/hooks/useHistory";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import { StatBar } from "@/components/pokemon/StatBar";
 import { AiSuggestButton } from "@/components/ai/AiSuggestButton";
@@ -20,11 +21,25 @@ export default function FusionResultPage({
   const hId = parseInt(headId, 10);
   const bId = parseInt(bodyId, 10);
 
-  const { data: fusion, isLoading, error }          = useFusion(hId, bId);
-  const { data: moves = [], isLoading: movesLoading }       = useFusionMoves(hId, bId);
+  const { data: fusion, isLoading, error }                   = useFusion(hId, bId);
+  const { data: moves = [], isLoading: movesLoading }        = useFusionMoves(hId, bId);
   const { data: expertMoves = [], isLoading: expertLoading } = useFusionExpertMoves(hId, bId);
-  const { data: sprites = [] }                              = useSprites(hId, bId);
-  const { data: spritesReversed = [] }                      = useSprites(bId, hId);
+  const { data: sprites = [] }                               = useSprites(hId, bId);
+  const { data: spritesReversed = [] }                       = useSprites(bId, hId);
+  const { addEntry }                                         = useHistory();
+
+  useEffect(() => {
+    if (fusion) {
+      addEntry({
+        headId: hId,
+        bodyId: bId,
+        headName: fusion.head_name_en,
+        bodyName: fusion.body_name_en,
+      });
+    }
+  // addEntry is stable (useCallback), fusion identity changes only when data arrives
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fusion]);
 
   if (isLoading) {
     return (
