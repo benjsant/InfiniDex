@@ -1,6 +1,8 @@
 """FusionDex API — FastAPI entry point."""
 
+import logging
 import os
+import time
 from secrets import compare_digest
 
 from fastapi import FastAPI, Request
@@ -25,6 +27,8 @@ from backend.routes import (
     type_route,
 )
 
+LOGGER = logging.getLogger(__name__)
+
 _is_prod = os.getenv("FUSIONDEX_ENV") == "production"
 
 app = FastAPI(
@@ -35,6 +39,29 @@ app = FastAPI(
     redoc_url=None if _is_prod else "/redoc",
     openapi_url=None if _is_prod else "/openapi.json",
 )
+
+
+class RequestLogMiddleware(BaseHTTPMiddleware):
+    """Log every request: method, path, status, duration (ms).
+
+    Skips /health to avoid log noise from the Docker healthcheck.
+    Structured as key=value pairs for easy parsing by log aggregators.
+    """
+
+    async def dispatch(self, request: Request, call_next):
+        if request.url.path == "/health":
+            return await call_next(request)
+        t0 = time.monotonic()
+        response = await call_next(request)
+        ms = round((time.monotonic() - t0) * 1000)
+        LOGGER.info(
+            "method=%s path=%s status=%d duration_ms=%d",
+            request.method,
+            request.url.path,
+            response.status_code,
+            ms,
+        )
+        return response
 
 
 class StaticCacheMiddleware(BaseHTTPMiddleware):
@@ -70,6 +97,60 @@ class StaticCacheMiddleware(BaseHTTPMiddleware):
         return response
 
 
+class SearchRateLimitMiddleware(BaseHTTPMiddleware):
+    """Sliding-window rate limiter for GET /*/search endpoints, keyed by IP.
+
+    Limit is read from RATE_LIMIT_SEARCH_RPM env var (requests per minute).
+    Set to 0 to disable. Uses the same IP resolution logic as AiRateLimitMiddleware.
+    """
+
+    _SEARCH_SUFFIX = "/search"
+
+    def __init__(self, app, rpm: int, trusted_proxy: bool) -> None:
+        super().__init__(app)
+        self._rpm = rpm
+        self._trusted_proxy = trusted_proxy
+        self._window: dict[str, list[float]] = {}
+        self._request_count = 0
+
+    def _get_ip(self, request: Request) -> str:
+        if self._trusted_proxy:
+            fwd = request.headers.get("x-forwarded-for", "")
+            ip = fwd.split(",")[0].strip()
+            if ip:
+                return ip
+        return request.client.host if request.client else "unknown"
+
+    async def dispatch(self, request: Request, call_next):
+        if (
+            self._rpm <= 0
+            or request.method != "GET"
+            or not request.url.path.endswith(self._SEARCH_SUFFIX)
+        ):
+            return await call_next(request)
+
+        ip = self._get_ip(request)
+        now = time.monotonic()
+        cutoff = now - 60.0
+
+        hits = [t for t in self._window.get(ip, []) if t > cutoff]
+        if len(hits) >= self._rpm:
+            from fastapi.responses import JSONResponse
+            return JSONResponse(
+                {"detail": "Trop de requêtes. Réessaie dans une minute."},
+                status_code=429,
+                headers={"Retry-After": "60"},
+            )
+        hits.append(now)
+        self._window[ip] = hits
+
+        self._request_count += 1
+        if self._request_count >= 500:
+            self._request_count = 0
+            self._window = {k: v for k, v in self._window.items() if v and v[-1] > cutoff}
+        return await call_next(request)
+
+
 class AiRateLimitMiddleware(BaseHTTPMiddleware):
     """Sliding-window rate limiter for POST /ai/ask, keyed by client IP.
 
@@ -103,7 +184,6 @@ class AiRateLimitMiddleware(BaseHTTPMiddleware):
         if self._rpm <= 0 or request.url.path != "/ai/ask" or request.method != "POST":
             return await call_next(request)
 
-        import time
         ip = self._get_ip(request)
         now = time.monotonic()
         cutoff = now - 60.0
@@ -159,11 +239,15 @@ if not cors_origins:
         "(e.g. 'https://fusiondex.example.com') or '*' to allow all."
     )
 
-_ai_rpm = int(os.getenv("RATE_LIMIT_AI_RPM", "0"))
-_internal_key = os.getenv("INTERNAL_API_KEY", "")
+_ai_rpm     = int(os.getenv("RATE_LIMIT_AI_RPM",     "0"))
+_search_rpm = int(os.getenv("RATE_LIMIT_SEARCH_RPM", "0"))
+_internal_key  = os.getenv("INTERNAL_API_KEY", "")
 _trusted_proxy = os.getenv("TRUSTED_PROXY", "0") == "1"
 
+app.add_middleware(RequestLogMiddleware)
 app.add_middleware(StaticCacheMiddleware)
+if _search_rpm > 0:
+    app.add_middleware(SearchRateLimitMiddleware, rpm=_search_rpm, trusted_proxy=_trusted_proxy)
 if _ai_rpm > 0:
     app.add_middleware(AiRateLimitMiddleware, rpm=_ai_rpm, trusted_proxy=_trusted_proxy)
 if _internal_key:

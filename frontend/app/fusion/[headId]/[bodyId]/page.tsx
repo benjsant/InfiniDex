@@ -1,8 +1,8 @@
 "use client";
 
-import { use, useEffect } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ArrowLeftRight, Star, GitCompare } from "lucide-react";
+import { ChevronLeft, ArrowLeftRight, Star, GitCompare, Link2, Check } from "lucide-react";
 import { useFusion, useFusionMoves, useFusionExpertMoves, useSprites } from "@/hooks/useFusion";
 import { useHistory } from "@/hooks/useHistory";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -82,6 +82,15 @@ export default function FusionResultPage({
   const defaultSprite   = sprites.find((s) => s.is_default) ?? sprites[0];
   const defaultReversed = spritesReversed.find((s) => s.is_default) ?? spritesReversed[0];
 
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   const favorited   = isFavorite(hId, bId);
   const inComparison = isInComparison(hId, bId);
 
@@ -102,6 +111,19 @@ export default function FusionResultPage({
 
         {/* Action buttons */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleCopyLink}
+            title="Copier le lien"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
+            style={{
+              background: copied ? "rgba(74,222,128,0.12)" : "#111428",
+              border: `1px solid ${copied ? "#4ade8066" : "#1e2240"}`,
+              color: copied ? "#4ade80" : "#6b7199",
+            }}
+          >
+            {copied ? <Check size={13} /> : <Link2 size={13} />}
+            {copied ? "Copié !" : "Lien"}
+          </button>
           <button
             onClick={handleToggleFavorite}
             title={favorited ? "Retirer des favoris" : "Ajouter aux favoris"}
