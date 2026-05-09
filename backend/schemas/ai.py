@@ -39,3 +39,9 @@ class AiPromptInfo(BaseModel):
     system_prompt: str
     tools: list[AiToolInfo]
     max_history_messages: int
+
+
+class FeedbackRequest(BaseModel):
+    question: str = Field(..., max_length=2000)
+    answer: str = Field(..., max_length=4000)
+    rating: Literal["up", "down"]

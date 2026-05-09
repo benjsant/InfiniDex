@@ -212,6 +212,14 @@ export function getAiPrompt(): Promise<AiPromptInfo> {
   return apiFetch<AiPromptInfo>("/ai/prompt");
 }
 
+export function sendAiFeedback(question: string, answer: string, rating: "up" | "down"): Promise<{ ok: boolean }> {
+  return apiFetch<{ ok: boolean }>("/ai/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question, answer, rating }),
+  });
+}
+
 // Items
 export function getItems(category?: string): Promise<ItemOut[]> {
   const qs = category ? `?category=${encodeURIComponent(category)}` : "";

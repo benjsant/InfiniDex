@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -12,13 +14,15 @@ from sqlalchemy.orm import Session
 LOGGER = logging.getLogger(__name__)
 
 from backend.db.session import get_db
-from backend.schemas.ai import AiPromptInfo, AiProviderInfo, AiRequest
+from backend.schemas.ai import AiPromptInfo, AiProviderInfo, AiRequest, FeedbackRequest
 from backend.services.ai_service import MAX_HISTORY_MSGS, stream_ai_response
 from backend.services.llm_providers import provider_setup_instructions, select_provider
 from backend.services.prompt import SYSTEM_PROMPT
 from backend.services.tools import TOOL_SPECS
 
 router = APIRouter(prefix="/ai", tags=["AI"])
+
+_DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 
 @router.get("/provider", response_model=AiProviderInfo)
@@ -80,3 +84,38 @@ async def ask_ai(request: AiRequest, db: Session = Depends(get_db)):
             "Connection": "keep-alive",
         },
     )
+
+
+@router.post("/feedback")
+async def submit_feedback(request: FeedbackRequest):
+    """Record a thumbs-up/down on an AI response.
+
+    On thumbs-down, forwards question + answer to the Discord webhook (if
+    DISCORD_WEBHOOK_URL is set) so the developer can review bad responses.
+    Always returns 200 — feedback is best-effort, never blocks the UI.
+    """
+    if request.rating == "down" and _DISCORD_WEBHOOK:
+        color = 0xE74C3C  # red
+        embed = {
+            "title": "👎 Mauvaise réponse — Assistant IA FusionDex",
+            "color": color,
+            "fields": [
+                {
+                    "name": "Question",
+                    "value": request.question[:1000] or "(vide)",
+                    "inline": False,
+                },
+                {
+                    "name": "Réponse",
+                    "value": request.answer[:1000] or "(vide)",
+                    "inline": False,
+                },
+            ],
+        }
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                await client.post(_DISCORD_WEBHOOK, json={"embeds": [embed]})
+        except Exception as exc:
+            LOGGER.warning("Discord feedback webhook failed: %s", type(exc).__name__)
+
+    return {"ok": True}
