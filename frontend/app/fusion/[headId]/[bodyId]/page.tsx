@@ -2,9 +2,11 @@
 
 import { use, useEffect } from "react";
 import Link from "next/link";
-import { ChevronLeft, ArrowLeftRight } from "lucide-react";
+import { ChevronLeft, ArrowLeftRight, Star, GitCompare } from "lucide-react";
 import { useFusion, useFusionMoves, useFusionExpertMoves, useSprites } from "@/hooks/useFusion";
 import { useHistory } from "@/hooks/useHistory";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useComparison } from "@/hooks/useComparison";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import { StatBar } from "@/components/pokemon/StatBar";
 import { AiSuggestButton } from "@/components/ai/AiSuggestButton";
@@ -27,6 +29,8 @@ export default function FusionResultPage({
   const { data: sprites = [] }                               = useSprites(hId, bId);
   const { data: spritesReversed = [] }                       = useSprites(bId, hId);
   const { addEntry }                                         = useHistory();
+  const { isFavorite, toggleFavorite }                       = useFavorites();
+  const { isInComparison, addToComparison, canCompare }      = useComparison();
 
   useEffect(() => {
     if (fusion) {
@@ -78,12 +82,65 @@ export default function FusionResultPage({
   const defaultSprite   = sprites.find((s) => s.is_default) ?? sprites[0];
   const defaultReversed = spritesReversed.find((s) => s.is_default) ?? spritesReversed[0];
 
+  const favorited   = isFavorite(hId, bId);
+  const inComparison = isInComparison(hId, bId);
+
+  const handleToggleFavorite = () =>
+    toggleFavorite({ headId: hId, bodyId: bId, headName: fusion.head_name_en, bodyName: fusion.body_name_en });
+
+  const handleAddToComparison = () =>
+    addToComparison({ headId: hId, bodyId: bId, headName: fusion.head_name_en, bodyName: fusion.body_name_en });
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-2 text-sm text-[rgb(120,120,140)] mb-6">
-        <Link href="/fusion" className="transition-colors hover:text-[#e8b84b]">Fusion</Link>
-        <span>/</span>
-        <span className="text-[rgb(200,200,220)]">{fusionName}</span>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2 text-sm text-[rgb(120,120,140)]">
+          <Link href="/fusion" className="transition-colors hover:text-[#e8b84b]">Fusion</Link>
+          <span>/</span>
+          <span className="text-[rgb(200,200,220)]">{fusionName}</span>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleToggleFavorite}
+            title={favorited ? "Retirer des favoris" : "Ajouter aux favoris"}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
+            style={{
+              background: favorited ? "rgba(232,184,75,0.15)" : "#111428",
+              border: `1px solid ${favorited ? "#e8b84b66" : "#1e2240"}`,
+              color: favorited ? "#e8b84b" : "#6b7199",
+            }}
+          >
+            <Star size={13} fill={favorited ? "currentColor" : "none"} />
+            {favorited ? "Favori" : "Favori"}
+          </button>
+
+          {inComparison ? (
+            <Link
+              href="/fusion/compare"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
+              style={{
+                background: "rgba(99,102,241,0.15)",
+                border: "1px solid #6366f166",
+                color: "#818cf8",
+              }}
+            >
+              <GitCompare size={13} />
+              {canCompare ? "Comparer →" : "Dans la sélection"}
+            </Link>
+          ) : (
+            <button
+              onClick={handleAddToComparison}
+              title="Ajouter à la comparaison"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all hover:border-indigo-500/60 hover:text-indigo-300"
+              style={{ background: "#111428", border: "1px solid #1e2240", color: "#6b7199" }}
+            >
+              <GitCompare size={13} />
+              Comparer
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Main card */}

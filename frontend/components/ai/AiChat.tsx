@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
-import { Bot, Cog, Globe, Database, BookOpen, Eye } from "lucide-react";
+import { Bot, Cog, Globe, Database, BookOpen, Eye, ThumbsUp, ThumbsDown } from "lucide-react";
 import { useAiChat } from "@/hooks/useAiChat";
-import { getAiProvider } from "@/lib/api";
+import { getAiProvider, sendAiFeedback } from "@/lib/api";
 import type { ChatMessage } from "@/hooks/useAiChat";
 import { AI_TOOL_LABELS, AI_SOURCE_LABELS, AI_SOURCE_COLORS } from "@/lib/constants";
 import { PromptModal } from "@/components/ai/PromptModal";
@@ -27,6 +27,15 @@ export function AiChat({
   const { messages, isStreaming, error, sendMessage, reset } = useAiChat();
   const [input, setInput] = useState("");
   const [showPrompt, setShowPrompt] = useState(false);
+  const [ratings, setRatings] = useState<Record<number, "up" | "down">>({});
+
+  const handleRate = useCallback((msgIndex: number, rating: "up" | "down") => {
+    if (ratings[msgIndex]) return;
+    setRatings((r) => ({ ...r, [msgIndex]: rating }));
+    const question = messages[msgIndex - 1]?.content ?? "";
+    const answer   = messages[msgIndex]?.content ?? "";
+    sendAiFeedback(question, answer, rating).catch(() => {});
+  }, [ratings, messages]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
 
@@ -85,7 +94,12 @@ export function AiChat({
         )}
 
         {messages.map((msg, i) => (
-          <MessageBubble key={i} message={msg} />
+          <MessageBubble
+            key={i}
+            message={msg}
+            rating={ratings[i]}
+            onRate={msg.role === "assistant" && !isStreaming ? (r) => handleRate(i, r) : undefined}
+          />
         ))}
 
         {isStreaming && messages[messages.length - 1]?.content === "" &&
@@ -181,7 +195,15 @@ function SourceBadge({ source }: { source: string }) {
   );
 }
 
-function MessageBubble({ message }: { message: ChatMessage }) {
+function MessageBubble({
+  message,
+  rating,
+  onRate,
+}: {
+  message: ChatMessage;
+  rating?: "up" | "down";
+  onRate?: (r: "up" | "down") => void;
+}) {
   const isUser = message.role === "user";
   const toolCalls = message.toolCalls ?? [];
 
@@ -236,6 +258,36 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             </ReactMarkdown>
           )}
         </div>
+
+        {/* Feedback buttons — assistant only */}
+        {onRate && message.content && (
+          <div className="flex gap-1 mt-1">
+            <button
+              onClick={() => onRate("up")}
+              disabled={!!rating}
+              title="Bonne réponse"
+              className="p-1 rounded transition-colors"
+              style={{
+                color: rating === "up" ? "#4ade80" : "#3d4170",
+                background: rating === "up" ? "rgba(74,222,128,0.1)" : "transparent",
+              }}
+            >
+              <ThumbsUp size={12} />
+            </button>
+            <button
+              onClick={() => onRate("down")}
+              disabled={!!rating}
+              title="Mauvaise réponse"
+              className="p-1 rounded transition-colors"
+              style={{
+                color: rating === "down" ? "#f87171" : "#3d4170",
+                background: rating === "down" ? "rgba(248,113,113,0.1)" : "transparent",
+              }}
+            >
+              <ThumbsDown size={12} />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
