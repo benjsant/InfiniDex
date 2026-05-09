@@ -24,6 +24,7 @@ import type {
   TripleFusionDetail,
   CreatorOut,
   ItemOut,
+  GenerationOut,
 } from "@/types/api";
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -34,7 +35,11 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   if (!res.ok) {
     throw new Error(`API error ${res.status} — ${path}`);
   }
-  return res.json() as Promise<T>;
+  try {
+    return await res.json() as Promise<T>;
+  } catch {
+    throw new Error(`Réponse invalide du serveur (${path})`);
+  }
 }
 
 // ── Pokémon ──────────────────────────────────────────────────────────────────
@@ -147,6 +152,12 @@ export function getAbility(id: number): Promise<AbilityDetail> {
 
 export function searchAbilities(q: string): Promise<AbilityListItem[]> {
   return apiFetch<AbilityListItem[]>(`/abilities/search?q=${encodeURIComponent(q)}`);
+}
+
+// ── Generations ───────────────────────────────────────────────────────────────
+
+export function getGenerations(): Promise<GenerationOut[]> {
+  return apiFetch<GenerationOut[]>("/generations/");
 }
 
 // ── Types ────────────────────────────────────────────────────────────────────

@@ -10,6 +10,7 @@ The extract is capped at MAX_EXTRACT_CHARS to avoid token explosion.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import re
 import time
@@ -24,8 +25,10 @@ HTTP_TIMEOUT = 8.0
 _CACHE_TTL = 600  # seconds
 _CACHE_MAX_SIZE = 500
 
-# Simple in-process TTL cache: normalised_query → (timestamp, result)
+# TTL cache: normalised_query → (timestamp, result)
 _wiki_cache: dict[str, tuple[float, dict]] = {}
+# In-flight deduplication: concurrent requests for the same key share one HTTP call
+_wiki_inflight: dict[str, asyncio.Future[dict]] = {}
 
 
 def _strip_wiki_markup(text: str) -> str:
@@ -80,6 +83,26 @@ async def fetch_wiki(query: str) -> dict:
         LOGGER.debug("wiki cache hit for query=%r", query)
         return cached[1]
 
+    # Deduplicate concurrent requests for the same query (avoids duplicate HTTP calls)
+    if cache_key in _wiki_inflight:
+        LOGGER.debug("wiki in-flight hit for query=%r", query)
+        return await _wiki_inflight[cache_key]
+
+    fut: asyncio.Future[dict] = asyncio.get_event_loop().create_future()
+    _wiki_inflight[cache_key] = fut
+    try:
+        result = await _do_fetch_wiki(query, cache_key)
+        fut.set_result(result)
+        return result
+    except Exception as exc:
+        if not fut.done():
+            fut.set_exception(exc)
+        raise
+    finally:
+        _wiki_inflight.pop(cache_key, None)
+
+
+async def _do_fetch_wiki(query: str, cache_key: str) -> dict:
     try:
         async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
             # 1. Search for matching pages.

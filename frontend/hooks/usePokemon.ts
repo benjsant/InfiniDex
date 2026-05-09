@@ -6,6 +6,7 @@ import {
   getPokemonEvolutions,
   getPokemonWeaknesses,
   getTypes,
+  getGenerations,
   searchPokemon,
 } from "@/lib/api";
 
@@ -28,6 +29,14 @@ export function useTypes() {
   return useQuery({
     queryKey: ["types"],
     queryFn: () => getTypes(),
+    ...STATIC,
+  });
+}
+
+export function useGenerations() {
+  return useQuery({
+    queryKey: ["generations"],
+    queryFn: () => getGenerations(),
     ...STATIC,
   });
 }

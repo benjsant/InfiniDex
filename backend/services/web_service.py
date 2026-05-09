@@ -22,6 +22,7 @@ _CACHE_TTL           = 300   # 5 min (web results change faster than wiki)
 _CACHE_MAX_SIZE      = 500
 
 _web_cache: dict[str, tuple[float, dict]] = {}
+_web_inflight: dict[str, asyncio.Future[dict]] = {}
 
 
 async def search_web(query: str) -> dict:
@@ -41,6 +42,26 @@ async def search_web(query: str) -> dict:
         LOGGER.debug("web cache hit for query=%r", query)
         return cached[1]
 
+    # Deduplicate concurrent requests for the same query
+    if cache_key in _web_inflight:
+        LOGGER.debug("web in-flight hit for query=%r", query)
+        return await _web_inflight[cache_key]
+
+    fut: asyncio.Future[dict] = asyncio.get_event_loop().create_future()
+    _web_inflight[cache_key] = fut
+    try:
+        result = await _do_search_web(query, cache_key)
+        fut.set_result(result)
+        return result
+    except Exception as exc:
+        if not fut.done():
+            fut.set_exception(exc)
+        raise
+    finally:
+        _web_inflight.pop(cache_key, None)
+
+
+async def _do_search_web(query: str, cache_key: str) -> dict:
     try:
         def _sync_search() -> list[dict]:
             with DDGS() as ddgs:

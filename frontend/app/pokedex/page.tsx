@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { usePokemonList, usePokemonSearch, useTypes } from "@/hooks/usePokemon";
+import { usePokemonList, usePokemonSearch, useTypes, useGenerations } from "@/hooks/usePokemon";
 import { PokemonCard } from "@/components/pokemon/PokemonCard";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { primaryType, secondaryType, normalize } from "@/lib/utils";
@@ -23,6 +23,7 @@ function PokedexContent() {
   const searchParams = useSearchParams();
   const [q, setQ] = useState(searchParams.get("q") ?? "");
   const [typeId, setTypeId] = useState<number | undefined>(undefined);
+  const [genId, setGenId]   = useState<number | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [game, setGame] = useState<"kanto" | "hoenn" | "all">("kanto");
 
@@ -34,8 +35,9 @@ function PokedexContent() {
   const includeHoenn = game !== "kanto";
   const hoennOnly    = game === "hoenn";
 
-  const typesQuery  = useTypes();
-  const listQuery   = usePokemonList({ page, page_size: PAGE_SIZE, type_id: typeId, include_hoenn: includeHoenn });
+  const typesQuery = useTypes();
+  const gensQuery  = useGenerations();
+  const listQuery  = usePokemonList({ page, page_size: PAGE_SIZE, type_id: typeId, gen: genId, include_hoenn: includeHoenn });
   const searchQuery = usePokemonSearch(q);
 
   const pokemons = isSearching ? searchQuery.data ?? [] : listQuery.data ?? [];
@@ -89,6 +91,22 @@ function PokedexContent() {
           className="flex-1"
           placeholder="Rechercher (Bulbasaur, Bulbizarre, pikachu…)"
         />
+        <select
+          value={genId ?? ""}
+          onChange={(e) => {
+            const v = e.target.value;
+            setGenId(v ? Number(v) : undefined);
+            setPage(1);
+          }}
+          className="px-3 py-2 rounded-lg bg-[rgb(30,30,42)] border border-[rgb(50,50,70)] text-[rgb(220,220,255)] focus:outline-none focus:border-indigo-500"
+        >
+          <option value="">Toutes les générations</option>
+          {(gensQuery.data ?? []).map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.name_fr}
+            </option>
+          ))}
+        </select>
         <select
           value={typeId ?? ""}
           onChange={(e) => {

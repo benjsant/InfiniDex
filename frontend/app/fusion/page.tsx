@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import Link from "next/link";
-import { Clock, Trash2, Star, GitCompare } from "lucide-react";
+import { Clock, Trash2, Star, GitCompare, Download } from "lucide-react";
 import { FusionSelector } from "@/components/fusion/FusionSelector";
 import { FusionSprite } from "@/components/fusion/FusionSprite";
 import { useHistory } from "@/hooks/useHistory";
@@ -41,6 +41,22 @@ function FusionMiniCard({ entry }: { entry: FusionCardEntry }) {
   );
 }
 
+function exportFavoritesJson(favorites: FusionFavorite[]) {
+  const data = favorites.map((f) => ({
+    fusion: `${f.headName}/${f.bodyName}`,
+    headId: f.headId,
+    bodyId: f.bodyId,
+    url: `/fusion/${f.headId}/${f.bodyId}`,
+  }));
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "fusiondex-favoris.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function FavoritesSection() {
   const { favorites, clearFavorites } = useFavorites();
   if (favorites.length === 0) return null;
@@ -50,16 +66,27 @@ function FavoritesSection() {
       <div className="flex items-center justify-between mb-3">
         <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: "#e8b84b" }}>
           <Star size={12} fill="currentColor" />
-          Favoris
+          Favoris ({favorites.length})
         </span>
-        <button
-          onClick={clearFavorites}
-          className="flex items-center gap-1 text-xs transition-colors hover:text-red-400"
-          style={{ color: "#6b7199" }}
-        >
-          <Trash2 size={11} />
-          Effacer
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => exportFavoritesJson(favorites)}
+            className="flex items-center gap-1 text-xs transition-colors hover:text-[#e8b84b]"
+            style={{ color: "#6b7199" }}
+            title="Exporter en JSON"
+          >
+            <Download size={11} />
+            Exporter
+          </button>
+          <button
+            onClick={clearFavorites}
+            className="flex items-center gap-1 text-xs transition-colors hover:text-red-400"
+            style={{ color: "#6b7199" }}
+          >
+            <Trash2 size={11} />
+            Effacer
+          </button>
+        </div>
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "thin" }}>
         {favorites.map((f: FusionFavorite) => (

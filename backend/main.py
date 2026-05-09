@@ -105,6 +105,7 @@ class SearchRateLimitMiddleware(BaseHTTPMiddleware):
     """
 
     _SEARCH_SUFFIX = "/search"
+    _RANDOM_PATHS  = {"/fusion/random"}
 
     def __init__(self, app, rpm: int, trusted_proxy: bool) -> None:
         super().__init__(app)
@@ -121,12 +122,14 @@ class SearchRateLimitMiddleware(BaseHTTPMiddleware):
                 return ip
         return (request.client.host or "unknown") if request.client else "unknown"
 
+    def _should_limit(self, request: Request) -> bool:
+        if self._rpm <= 0 or request.method != "GET":
+            return False
+        path = request.url.path
+        return path.endswith(self._SEARCH_SUFFIX) or path in self._RANDOM_PATHS
+
     async def dispatch(self, request: Request, call_next):
-        if (
-            self._rpm <= 0
-            or request.method != "GET"
-            or not request.url.path.endswith(self._SEARCH_SUFFIX)
-        ):
+        if not self._should_limit(request):
             return await call_next(request)
 
         ip = self._get_ip(request)

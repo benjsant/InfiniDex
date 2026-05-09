@@ -10,6 +10,12 @@ export interface ItemOut {
   price_sell: number | null;
 }
 
+export interface GenerationOut {
+  id: number;
+  name_en: string;
+  name_fr: string;
+}
+
 // TypeOut from type_.py (used in Move, Fusion)
 export interface TypeOut {
   id: number;
