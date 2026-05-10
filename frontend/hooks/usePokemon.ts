@@ -14,7 +14,16 @@ import {
 const STATIC: { staleTime: number } = { staleTime: Infinity };
 
 export function usePokemonList(
-  params?: { type_id?: number; gen?: number; page?: number; page_size?: number; include_hoenn?: boolean },
+  params?: {
+    type_id?: number;
+    gen?: number;
+    page?: number;
+    page_size?: number;
+    include_hoenn?: boolean;
+    min_bst?: number;
+    max_bst?: number;
+    sort_by?: "id" | "bst_asc" | "bst_desc";
+  },
   options?: { enabled?: boolean },
 ) {
   return useQuery({

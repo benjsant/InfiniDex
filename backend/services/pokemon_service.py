@@ -10,6 +10,12 @@ from backend.db.models import Move, Pokemon, PokemonEvolution, PokemonLocation, 
 from backend.utils.text import ilike_escape
 
 
+_BST = (
+    Pokemon.hp + Pokemon.attack + Pokemon.defense
+    + Pokemon.sp_attack + Pokemon.sp_defense + Pokemon.speed
+)
+
+
 def list_pokemon(
     db: Session,
     *,
@@ -18,8 +24,11 @@ def list_pokemon(
     type_id: int | None = None,
     generation_id: int | None = None,
     include_hoenn: bool = True,
+    min_bst: int | None = None,
+    max_bst: int | None = None,
+    sort_by: str = "id",
 ) -> list[Pokemon]:
-    """Paginated list of Pokémon with type / generation / Hoenn-only filters."""
+    """Paginated list of Pokémon with type / generation / Hoenn-only / BST filters."""
     query = db.query(Pokemon).options(joinedload(Pokemon.types))
     if type_id is not None:
         sub = db.query(PokemonType.pokemon_id).filter(PokemonType.type_id == type_id)
@@ -28,7 +37,17 @@ def list_pokemon(
         query = query.filter(Pokemon.generation_id == generation_id)
     if not include_hoenn:
         query = query.filter(Pokemon.is_hoenn_only.is_(False))
-    query = query.order_by(Pokemon.id).offset(offset)
+    if min_bst is not None:
+        query = query.filter(_BST >= min_bst)
+    if max_bst is not None:
+        query = query.filter(_BST <= max_bst)
+    if sort_by == "bst_asc":
+        query = query.order_by(_BST.asc(), Pokemon.id)
+    elif sort_by == "bst_desc":
+        query = query.order_by(_BST.desc(), Pokemon.id)
+    else:
+        query = query.order_by(Pokemon.id)
+    query = query.offset(offset)
     if limit is not None:
         query = query.limit(limit)
     return query.all()

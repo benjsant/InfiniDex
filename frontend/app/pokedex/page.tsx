@@ -19,6 +19,8 @@ export default function PokedexPage() {
   );
 }
 
+type SortBy = "id" | "bst_asc" | "bst_desc";
+
 function PokedexContent() {
   const searchParams = useSearchParams();
   const [q, setQ] = useState(searchParams.get("q") ?? "");
@@ -26,18 +28,34 @@ function PokedexContent() {
   const [genId, setGenId]   = useState<number | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [game, setGame] = useState<"kanto" | "hoenn" | "all">("kanto");
+  const [sortBy, setSortBy] = useState<SortBy>("id");
+  const [minBst, setMinBst] = useState<string>("");
+  const [maxBst, setMaxBst] = useState<string>("");
 
   const handleSearch = useCallback((v: string) => { setQ(v); setPage(1); }, []);
   const handleGame   = useCallback((v: "kanto" | "hoenn" | "all") => { setGame(v); setPage(1); }, []);
 
   const isSearching = q.trim().length >= 2;
+  const isBstSort   = sortBy !== "id";
 
   const includeHoenn = game !== "kanto";
   const hoennOnly    = game === "hoenn";
 
+  const parsedMinBst = minBst !== "" ? parseInt(minBst, 10) : undefined;
+  const parsedMaxBst = maxBst !== "" ? parseInt(maxBst, 10) : undefined;
+
   const typesQuery = useTypes();
   const gensQuery  = useGenerations();
-  const listQuery  = usePokemonList({ page, page_size: PAGE_SIZE, type_id: typeId, gen: genId, include_hoenn: includeHoenn });
+  const listQuery  = usePokemonList({
+    page: isBstSort ? 1 : page,
+    page_size: isBstSort ? 1000 : PAGE_SIZE,
+    type_id: typeId,
+    gen: genId,
+    include_hoenn: includeHoenn,
+    min_bst: parsedMinBst,
+    max_bst: parsedMaxBst,
+    sort_by: sortBy,
+  });
   const searchQuery = usePokemonSearch(q);
 
   const pokemons = isSearching ? searchQuery.data ?? [] : listQuery.data ?? [];
@@ -48,11 +66,11 @@ function PokedexContent() {
     [typesQuery.data],
   );
 
-  // Quand on cherche, on garde l'intersection recherche × type × game côté client
-  // (l'endpoint /search ne prend pas de type_id ni include_hoenn).
+  // Quand on cherche, on garde l'intersection recherche × type × game × BST côté client
+  // (l'endpoint /search ne prend pas de type_id, include_hoenn, ni bst).
   const filtered = useMemo(() => {
     let result = pokemons;
-    if (isSearching && hoennOnly)      result = result.filter((p) => p.is_hoenn_only);
+    if (isSearching && hoennOnly)        result = result.filter((p) => p.is_hoenn_only);
     if (isSearching && game === "kanto") result = result.filter((p) => !p.is_hoenn_only);
     if (isSearching && typeId) {
       const target = types.find((t) => t.id === typeId);
@@ -65,8 +83,13 @@ function PokedexContent() {
         });
       }
     }
+    if (isSearching && parsedMinBst !== undefined) result = result.filter((p) => p.bst >= parsedMinBst);
+    if (isSearching && parsedMaxBst !== undefined) result = result.filter((p) => p.bst <= parsedMaxBst);
+    if (isSearching && isBstSort) {
+      result = [...result].sort((a, b) => sortBy === "bst_desc" ? b.bst - a.bst : a.bst - b.bst);
+    }
     return result;
-  }, [pokemons, typeId, types, isSearching, hoennOnly, game]);
+  }, [pokemons, typeId, types, isSearching, hoennOnly, game, parsedMinBst, parsedMaxBst, isBstSort, sortBy]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -85,44 +108,81 @@ function PokedexContent() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <SearchBar
-          onSearch={handleSearch}
-          className="flex-1"
-          placeholder="Rechercher (Bulbasaur, Bulbizarre, pikachu…)"
-        />
-        <select
-          value={genId ?? ""}
-          onChange={(e) => {
-            const v = e.target.value;
-            setGenId(v ? Number(v) : undefined);
-            setPage(1);
-          }}
-          className="px-3 py-2 rounded-lg bg-[rgb(30,30,42)] border border-[rgb(50,50,70)] text-[rgb(220,220,255)] focus:outline-none focus:border-indigo-500"
-        >
-          <option value="">Toutes les générations</option>
-          {(gensQuery.data ?? []).map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.name_fr}
-            </option>
-          ))}
-        </select>
-        <select
-          value={typeId ?? ""}
-          onChange={(e) => {
-            const v = e.target.value;
-            setTypeId(v ? Number(v) : undefined);
-            setPage(1);
-          }}
-          className="px-3 py-2 rounded-lg bg-[rgb(30,30,42)] border border-[rgb(50,50,70)] text-[rgb(220,220,255)] focus:outline-none focus:border-indigo-500"
-        >
-          <option value="">Tous les types</option>
-          {types.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name_fr} ({t.name_en})
-            </option>
-          ))}
-        </select>
+      <div className="flex flex-col gap-3 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <SearchBar
+            onSearch={handleSearch}
+            className="flex-1"
+            placeholder="Rechercher (Bulbasaur, Bulbizarre, pikachu…)"
+          />
+          <select
+            value={genId ?? ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              setGenId(v ? Number(v) : undefined);
+              setPage(1);
+            }}
+            className="px-3 py-2 rounded-lg bg-[rgb(30,30,42)] border border-[rgb(50,50,70)] text-[rgb(220,220,255)] focus:outline-none focus:border-indigo-500"
+          >
+            <option value="">Toutes les générations</option>
+            {(gensQuery.data ?? []).map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name_fr}
+              </option>
+            ))}
+          </select>
+          <select
+            value={typeId ?? ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              setTypeId(v ? Number(v) : undefined);
+              setPage(1);
+            }}
+            className="px-3 py-2 rounded-lg bg-[rgb(30,30,42)] border border-[rgb(50,50,70)] text-[rgb(220,220,255)] focus:outline-none focus:border-indigo-500"
+          >
+            <option value="">Tous les types</option>
+            {types.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name_fr} ({t.name_en})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* BST row */}
+        <div className="flex flex-wrap items-center gap-3">
+          <select
+            value={sortBy}
+            onChange={(e) => { setSortBy(e.target.value as SortBy); setPage(1); }}
+            className="px-3 py-1.5 rounded-lg bg-[rgb(30,30,42)] border border-[rgb(50,50,70)] text-[rgb(220,220,255)] text-sm focus:outline-none focus:border-indigo-500"
+          >
+            <option value="id">Tri : numéro ↑</option>
+            <option value="bst_asc">Tri : BST ↑</option>
+            <option value="bst_desc">Tri : BST ↓</option>
+          </select>
+          <div className="flex items-center gap-2 text-sm text-[rgb(120,120,140)]">
+            <span>BST</span>
+            <input
+              type="number"
+              min={0}
+              max={1000}
+              placeholder="min"
+              value={minBst}
+              onChange={(e) => { setMinBst(e.target.value); setPage(1); }}
+              className="w-20 px-2 py-1.5 rounded-lg bg-[rgb(30,30,42)] border border-[rgb(50,50,70)] text-[rgb(220,220,255)] text-sm focus:outline-none focus:border-indigo-500"
+            />
+            <span>—</span>
+            <input
+              type="number"
+              min={0}
+              max={1000}
+              placeholder="max"
+              value={maxBst}
+              onChange={(e) => { setMaxBst(e.target.value); setPage(1); }}
+              className="w-20 px-2 py-1.5 rounded-lg bg-[rgb(30,30,42)] border border-[rgb(50,50,70)] text-[rgb(220,220,255)] text-sm focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+        </div>
       </div>
 
       {isLoading ? (
@@ -138,7 +198,7 @@ function PokedexContent() {
             {filtered.map((p) => <PokemonCard key={p.id} pokemon={p} />)}
           </div>
 
-          {!isSearching && (
+          {!isSearching && !isBstSort && (
             <div className="flex justify-center gap-3 mt-8">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}

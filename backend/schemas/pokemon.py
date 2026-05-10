@@ -27,6 +27,7 @@ class PokemonListItem(BaseModel):
     sprite_path: str | None
     is_hoenn_only: bool
     pokepedia_url: str | None
+    bst: int
 
     model_config = {"from_attributes": True}
 
@@ -43,6 +44,7 @@ class PokemonDetail(BaseModel):
     sp_attack: int
     sp_defense: int
     speed: int
+    bst: int
     base_experience: int | None
     is_hoenn_only: bool
     sprite_path: str | None

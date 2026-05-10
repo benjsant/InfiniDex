@@ -56,6 +56,7 @@ def pokemon_to_list_item(p: Pokemon) -> PokemonListItem:
         sprite_path=p.sprite_path,
         is_hoenn_only=p.is_hoenn_only,
         pokepedia_url=p.pokepedia_url,
+        bst=p.hp + p.attack + p.defense + p.sp_attack + p.sp_defense + p.speed,
     )
 
 
@@ -67,6 +68,9 @@ def get_pokemon_list(
     type_id: int | None = Query(None, ge=1, description="Filter by type (id)"),
     generation_id: int | None = Query(None, ge=1, description="Filter by generation"),
     include_hoenn: bool = Query(True, description="Include Hoenn-only Pokémon"),
+    min_bst: int | None = Query(None, ge=0, description="Minimum BST"),
+    max_bst: int | None = Query(None, ge=0, description="Maximum BST"),
+    sort_by: str = Query("id", pattern="^(id|bst_asc|bst_desc)$", description="Sort order"),
 ):
     """List Pokémon in the Infinite Fusion game, with pagination and filters."""
     pokemons = list_pokemon(
@@ -76,6 +80,9 @@ def get_pokemon_list(
         type_id=type_id,
         generation_id=generation_id,
         include_hoenn=include_hoenn,
+        min_bst=min_bst,
+        max_bst=max_bst,
+        sort_by=sort_by,
     )
     return [pokemon_to_list_item(p) for p in pokemons]
 
@@ -104,6 +111,7 @@ def get_pokemon(p: Pokemon = Depends(get_pokemon_or_404)):
         sp_attack=p.sp_attack,
         sp_defense=p.sp_defense,
         speed=p.speed,
+        bst=p.hp + p.attack + p.defense + p.sp_attack + p.sp_defense + p.speed,
         base_experience=p.base_experience,
         is_hoenn_only=p.is_hoenn_only,
         sprite_path=p.sprite_path,

@@ -10,9 +10,8 @@ import { useComparison } from "@/hooks/useComparison";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import { StatBar } from "@/components/pokemon/StatBar";
 import { AiSuggestButton } from "@/components/ai/AiSuggestButton";
-import { FusionSprite } from "@/components/fusion/FusionSprite";
 import { FusionMovesetTable } from "@/components/fusion/FusionMovesetTable";
-import { CreatorBadge } from "@/components/fusion/CreatorModal";
+import { SpriteCarousel } from "@/components/fusion/SpriteCarousel";
 
 export default function FusionResultPage({
   params,
@@ -78,9 +77,6 @@ export default function FusionResultPage({
   ];
 
   const baseTotal = stats.reduce((s, st) => s + st.value, 0);
-
-  const defaultSprite   = sprites.find((s) => s.is_default) ?? sprites[0];
-  const defaultReversed = spritesReversed.find((s) => s.is_default) ?? spritesReversed[0];
 
   const [copied, setCopied] = useState(false);
 
@@ -169,25 +165,20 @@ export default function FusionResultPage({
       <div className="rounded-xl p-4 sm:p-6 mb-6" style={{ background: "#111428", border: "1px solid #1e2240" }}>
         {/* Sprites row */}
         <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start mb-6">
-          {/* Normal sprite */}
-          <SpriteCard
-            headId={hId}
-            bodyId={bId}
-            label={fusionName}
-            creators={defaultSprite?.creators ?? []}
-          />
+          {/* Normal sprite — carrousel si plusieurs variants */}
+          <div className="flex flex-col items-center gap-1">
+            <SpriteCarousel headId={hId} bodyId={bId} sprites={sprites} size={128} />
+            <p className="text-xs font-medium" style={{ color: "#8c8ca0" }}>{fusionName}</p>
+          </div>
 
           <div className="hidden sm:flex items-center self-center text-[rgb(60,60,80)]"><ArrowLeftRight size={20} /></div>
 
           {/* Reversed sprite */}
-          <Link href={`/fusion/${bId}/${hId}`} className="group">
-            <SpriteCard
-              headId={bId}
-              bodyId={hId}
-              label={reversedName}
-              creators={defaultReversed?.creators ?? []}
-              muted
-            />
+          <Link href={`/fusion/${bId}/${hId}`} className="group opacity-70 hover:opacity-100 transition-opacity">
+            <div className="flex flex-col items-center gap-1">
+              <SpriteCarousel headId={bId} bodyId={hId} sprites={spritesReversed} size={128} />
+              <p className="text-xs font-medium" style={{ color: "#8c8ca0" }}>{reversedName}</p>
+            </div>
           </Link>
         </div>
 
@@ -267,38 +258,3 @@ export default function FusionResultPage({
   );
 }
 
-function SpriteCard({
-  headId,
-  bodyId,
-  label,
-  creators,
-  muted = false,
-}: {
-  headId: number;
-  bodyId: number;
-  label: string;
-  creators: string[];
-  muted?: boolean;
-}) {
-  return (
-    <div className={`flex flex-col items-center gap-2 ${muted ? "opacity-70 hover:opacity-100 transition-opacity" : ""}`}>
-      <div className="w-32 h-32 sm:w-40 sm:h-40 flex items-center justify-center rounded-xl shrink-0" style={{ background: "#090c1a", border: "1px solid #1e2240" }}>
-        <FusionSprite headId={headId} bodyId={bodyId} size={128} />
-      </div>
-      <p className="text-xs text-[rgb(140,140,160)] font-medium">{label}</p>
-      {creators.length > 0 ? (
-        <p className="text-[10px] text-[rgb(100,100,130)] text-center leading-tight">
-          par{" "}
-          {creators.map((c, i) => (
-            <span key={c}>
-              {i > 0 && ", "}
-              <CreatorBadge name={c} />
-            </span>
-          ))}
-        </p>
-      ) : (
-        <p className="text-[10px] text-[rgb(70,70,90)] italic">Auto-généré</p>
-      )}
-    </div>
-  );
-}

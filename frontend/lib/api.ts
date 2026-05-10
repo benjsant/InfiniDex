@@ -50,11 +50,17 @@ export function getPokemonList(params?: {
   page?: number;
   page_size?: number;
   include_hoenn?: boolean;
+  min_bst?: number;
+  max_bst?: number;
+  sort_by?: "id" | "bst_asc" | "bst_desc";
 }): Promise<PokemonListItem[]> {
   const sp = new URLSearchParams();
   if (params?.type_id)   sp.set("type_id", String(params.type_id));
   if (params?.gen)       sp.set("generation_id", String(params.gen));
   if (params?.include_hoenn === false) sp.set("include_hoenn", "false");
+  if (params?.min_bst !== undefined) sp.set("min_bst", String(params.min_bst));
+  if (params?.max_bst !== undefined) sp.set("max_bst", String(params.max_bst));
+  if (params?.sort_by && params.sort_by !== "id") sp.set("sort_by", params.sort_by);
   const pageSize = params?.page_size ?? 40;
   sp.set("limit", String(pageSize));
   if (params?.page && params.page > 1) {

@@ -11,10 +11,17 @@ const outfit = Outfit({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fusiondex.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "FusionDex — Pokédex Intelligent pour Infinite Fusion",
   description:
     "Explorez les 501 Pokémon de Pokémon Infinite Fusion, calculez les fusions, découvrez les faiblesses et posez vos questions à l'IA DeepSeek.",
+  openGraph: {
+    siteName: "FusionDex",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

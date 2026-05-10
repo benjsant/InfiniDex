@@ -47,6 +47,7 @@ export interface PokemonListItem {
   sprite_path: string | null;
   is_hoenn_only: boolean;
   pokepedia_url: string | null;
+  bst: number;
 }
 
 export interface PokemonDetail {
@@ -61,6 +62,7 @@ export interface PokemonDetail {
   sp_attack: number;
   sp_defense: number;
   speed: number;
+  bst: number;
   base_experience: number | null;
   is_hoenn_only: boolean;
   sprite_path: string | null;
