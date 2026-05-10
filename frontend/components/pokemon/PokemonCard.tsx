@@ -74,6 +74,10 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
         {t1 && <TypeBadge typeName={t1.name_en} label={t1.name_fr ?? t1.name_en} size="sm" />}
         {t2 && <TypeBadge typeName={t2.name_en} label={t2.name_fr ?? t2.name_en} size="sm" />}
       </div>
+
+      <p className="text-[10px] font-mono" style={{ color: "#4a4f75" }}>
+        BST {pokemon.bst}
+      </p>
     </Link>
   );
 }

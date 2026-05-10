@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getFusion, getFusionMoves, getFusionExpertMoves, getSprites } from "@/lib/api";
+import { getFusion, getFusionMoves, getFusionExpertMoves, getFusionAbilities, getSprites } from "@/lib/api";
 
 const STATIC = { staleTime: Infinity } as const;
 
@@ -28,6 +28,15 @@ export function useFusionExpertMoves(headId: number | null, bodyId: number | nul
   return useQuery({
     queryKey: ["fusion-expert-moves", headId, bodyId],
     queryFn: () => getFusionExpertMoves(headId!, bodyId!),
+    enabled: enabled(headId, bodyId),
+    ...STATIC,
+  });
+}
+
+export function useFusionAbilities(headId: number | null, bodyId: number | null) {
+  return useQuery({
+    queryKey: ["fusion-abilities", headId, bodyId],
+    queryFn: () => getFusionAbilities(headId!, bodyId!),
     enabled: enabled(headId, bodyId),
     ...STATIC,
   });

@@ -14,6 +14,7 @@ import type {
   AbilityListItem,
   AbilityDetail,
   FusionResult,
+  FusionAbilityOut,
   FusionInvolvingOut,
   SpriteOut,
   FusionMoveOut,
@@ -33,6 +34,11 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
   });
   if (!res.ok) {
+    if (res.status === 429) {
+      const retryAfter = res.headers.get("Retry-After");
+      const seconds = retryAfter ? parseInt(retryAfter, 10) : 60;
+      throw Object.assign(new Error(`Trop de requêtes — réessayez dans ${seconds}s`), { status: 429, retryAfter: seconds });
+    }
     throw new Error(`API error ${res.status} — ${path}`);
   }
   try {
@@ -43,6 +49,23 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 // ── Pokémon ──────────────────────────────────────────────────────────────────
+
+export function getPokemonCount(params?: {
+  type_id?: number;
+  gen?: number;
+  include_hoenn?: boolean;
+  min_bst?: number;
+  max_bst?: number;
+}): Promise<number> {
+  const sp = new URLSearchParams();
+  if (params?.type_id)   sp.set("type_id", String(params.type_id));
+  if (params?.gen)       sp.set("generation_id", String(params.gen));
+  if (params?.include_hoenn === false) sp.set("include_hoenn", "false");
+  if (params?.min_bst !== undefined) sp.set("min_bst", String(params.min_bst));
+  if (params?.max_bst !== undefined) sp.set("max_bst", String(params.max_bst));
+  const qs = sp.toString() ? `?${sp}` : "";
+  return apiFetch<number>(`/pokemon/count${qs}`);
+}
 
 export function getPokemonList(params?: {
   type_id?: number;
@@ -106,6 +129,10 @@ export function getFusionMoves(headId: number, bodyId: number): Promise<FusionMo
 
 export function getFusionExpertMoves(headId: number, bodyId: number): Promise<FusionExpertMoveOut[]> {
   return apiFetch<FusionExpertMoveOut[]>(`/fusion/${headId}/${bodyId}/expert-moves`);
+}
+
+export function getFusionAbilities(headId: number, bodyId: number): Promise<FusionAbilityOut[]> {
+  return apiFetch<FusionAbilityOut[]>(`/fusion/${headId}/${bodyId}/abilities`);
 }
 
 export function getFusionsInvolving(pokemonId: number, limit = 24): Promise<FusionInvolvingOut[]> {

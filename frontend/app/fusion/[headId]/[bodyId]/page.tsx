@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ArrowLeftRight, Star, GitCompare, Link2, Check } from "lucide-react";
-import { useFusion, useFusionMoves, useFusionExpertMoves, useSprites } from "@/hooks/useFusion";
+import { useFusion, useFusionMoves, useFusionExpertMoves, useFusionAbilities, useSprites } from "@/hooks/useFusion";
 import { useHistory } from "@/hooks/useHistory";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useComparison } from "@/hooks/useComparison";
@@ -25,8 +25,9 @@ export default function FusionResultPage({
   const { data: fusion, isLoading, error }                   = useFusion(hId, bId);
   const { data: moves = [], isLoading: movesLoading }        = useFusionMoves(hId, bId);
   const { data: expertMoves = [], isLoading: expertLoading } = useFusionExpertMoves(hId, bId);
-  const { data: sprites = [] }                               = useSprites(hId, bId);
-  const { data: spritesReversed = [] }                       = useSprites(bId, hId);
+  const { data: abilities = [] }                             = useFusionAbilities(hId, bId);
+  const { data: sprites = [], isLoading: spritesLoading }    = useSprites(hId, bId);
+  const { data: spritesReversed = [], isLoading: spritesRevLoading } = useSprites(bId, hId);
   const { addEntry }                                         = useHistory();
   const { isFavorite, toggleFavorite }                       = useFavorites();
   const { isInComparison, addToComparison, canCompare }      = useComparison();
@@ -167,7 +168,7 @@ export default function FusionResultPage({
         <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start mb-6">
           {/* Normal sprite — carrousel si plusieurs variants */}
           <div className="flex flex-col items-center gap-1">
-            <SpriteCarousel headId={hId} bodyId={bId} sprites={sprites} size={128} />
+            <SpriteCarousel headId={hId} bodyId={bId} sprites={sprites} size={128} loading={spritesLoading} />
             <p className="text-xs font-medium" style={{ color: "#8c8ca0" }}>{fusionName}</p>
           </div>
 
@@ -176,7 +177,7 @@ export default function FusionResultPage({
           {/* Reversed sprite */}
           <Link href={`/fusion/${bId}/${hId}`} className="group opacity-70 hover:opacity-100 transition-opacity">
             <div className="flex flex-col items-center gap-1">
-              <SpriteCarousel headId={bId} bodyId={hId} sprites={spritesReversed} size={128} />
+              <SpriteCarousel headId={bId} bodyId={hId} sprites={spritesReversed} size={128} loading={spritesRevLoading} />
               <p className="text-xs font-medium" style={{ color: "#8c8ca0" }}>{reversedName}</p>
             </div>
           </Link>
@@ -204,6 +205,26 @@ export default function FusionResultPage({
             {fusion.type1 && <TypeBadge typeName={fusion.type1.name_en} />}
             {fusion.type2 && <TypeBadge typeName={fusion.type2.name_en} />}
           </div>
+
+          {abilities.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start">
+              {abilities.map((a) => (
+                <span
+                  key={a.ability_id}
+                  className="px-2 py-0.5 rounded-lg text-xs"
+                  style={{
+                    background: a.is_hidden ? "rgba(99,102,241,0.12)" : "rgba(255,255,255,0.05)",
+                    border: `1px solid ${a.is_hidden ? "#6366f144" : "#1e2240"}`,
+                    color: a.is_hidden ? "#818cf8" : "#9499c0",
+                  }}
+                  title={`Depuis ${a.origin === "head" ? "la tête" : "le corps"}`}
+                >
+                  {a.name_fr ?? a.name_en}
+                  {a.is_hidden && <span className="ml-1 opacity-60">(caché)</span>}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

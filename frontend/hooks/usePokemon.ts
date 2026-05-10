@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   getPokemon,
   getPokemonList,
+  getPokemonCount,
   getPokemonMoves,
   getPokemonEvolutions,
   getPokemonWeaknesses,
@@ -31,6 +32,22 @@ export function usePokemonList(
     queryFn: () => getPokemonList(params),
     ...STATIC,
     ...options,
+  });
+}
+
+export function usePokemonCount(
+  params?: {
+    type_id?: number;
+    gen?: number;
+    include_hoenn?: boolean;
+    min_bst?: number;
+    max_bst?: number;
+  },
+) {
+  return useQuery({
+    queryKey: ["pokemon-count", params],
+    queryFn: () => getPokemonCount(params),
+    ...STATIC,
   });
 }
 

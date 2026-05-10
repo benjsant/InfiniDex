@@ -10,6 +10,7 @@ interface SpriteCarouselProps {
   bodyId: number;
   sprites: SpriteOut[];
   size?: number;
+  loading?: boolean;
 }
 
 export function SpriteCarousel({
@@ -17,6 +18,7 @@ export function SpriteCarousel({
   bodyId,
   sprites,
   size = 128,
+  loading = false,
 }: SpriteCarouselProps) {
   const [idx, setIdx] = useState(0);
 
@@ -30,6 +32,18 @@ export function SpriteCarousel({
   const src = sprite
     ? `/api/sprites/${headId}/${bodyId}/image?variant_id=${sprite.id}`
     : `/api/sprites/${headId}/${bodyId}/image`;
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <div
+          className="rounded-xl animate-pulse shrink-0"
+          style={{ width: size, height: size, background: "#1e2240" }}
+        />
+        <div className="h-2.5 w-16 rounded bg-[#1e2240] animate-pulse" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-2">

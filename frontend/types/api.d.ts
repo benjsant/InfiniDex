@@ -159,6 +159,14 @@ export interface AbilityDetail extends AbilityListItem {
   description_fr: string | null;
 }
 
+export interface FusionAbilityOut {
+  ability_id: number;
+  name_en: string;
+  name_fr: string | null;
+  is_hidden: boolean;
+  origin: "head" | "body";
+}
+
 // FusionResult — stats are flat (not nested), types are TypeOut objects
 export interface FusionResult {
   head_id: number;

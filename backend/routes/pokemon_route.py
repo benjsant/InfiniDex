@@ -16,6 +16,7 @@ from backend.schemas.type_ import TypeOut
 from backend.schemas.weakness import WeaknessOut
 from backend.services.pokemon_service import (
     compute_pokemon_weaknesses,
+    count_pokemon,
     get_pokemon_evolutions,
     get_pokemon_locations,
     get_pokemon_moves,
@@ -57,6 +58,26 @@ def pokemon_to_list_item(p: Pokemon) -> PokemonListItem:
         is_hoenn_only=p.is_hoenn_only,
         pokepedia_url=p.pokepedia_url,
         bst=p.hp + p.attack + p.defense + p.sp_attack + p.sp_defense + p.speed,
+    )
+
+
+@router.get("/count", response_model=int)
+def get_pokemon_count(
+    db: Session = Depends(get_db),
+    type_id: int | None = Query(None, ge=1),
+    generation_id: int | None = Query(None, ge=1),
+    include_hoenn: bool = Query(True),
+    min_bst: int | None = Query(None, ge=0),
+    max_bst: int | None = Query(None, ge=0),
+) -> int:
+    """Count Pokémon matching the given filters."""
+    return count_pokemon(
+        db,
+        type_id=type_id,
+        generation_id=generation_id,
+        include_hoenn=include_hoenn,
+        min_bst=min_bst,
+        max_bst=max_bst,
     )
 
 

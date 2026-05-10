@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { usePokemonList, usePokemonSearch, useTypes, useGenerations } from "@/hooks/usePokemon";
+import { usePokemonList, usePokemonSearch, usePokemonCount, useTypes, useGenerations } from "@/hooks/usePokemon";
 import { PokemonCard } from "@/components/pokemon/PokemonCard";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { primaryType, secondaryType, normalize } from "@/lib/utils";
@@ -55,6 +55,13 @@ function PokedexContent() {
     min_bst: parsedMinBst,
     max_bst: parsedMaxBst,
     sort_by: sortBy,
+  });
+  const countQuery  = usePokemonCount({
+    type_id: typeId,
+    gen: genId,
+    include_hoenn: includeHoenn,
+    min_bst: parsedMinBst,
+    max_bst: parsedMaxBst,
   });
   const searchQuery = usePokemonSearch(q);
 
@@ -192,7 +199,11 @@ function PokedexContent() {
       ) : (
         <>
           <p className="text-sm text-[rgb(120,120,140)] mb-4">
-            {filtered.length} Pokémon{isSearching ? ` pour "${q}"` : ""}
+            {isSearching
+              ? `${filtered.length} Pokémon pour "${q}"`
+              : isBstSort
+              ? `${filtered.length} Pokémon`
+              : `${countQuery.data ?? "…"} Pokémon`}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {filtered.map((p) => <PokemonCard key={p.id} pokemon={p} />)}
@@ -207,10 +218,18 @@ function PokedexContent() {
               >
                 <ChevronLeft size={16} className="inline" /> Précédent
               </button>
-              <span className="px-4 py-2 text-[rgb(120,120,140)]">Page {page}</span>
+              <span className="px-4 py-2 text-[rgb(120,120,140)]">
+                Page {page}
+                {countQuery.data !== undefined && (
+                  <span> / {Math.ceil(countQuery.data / PAGE_SIZE)}</span>
+                )}
+              </span>
               <button
                 onClick={() => setPage((p) => p + 1)}
-                disabled={pokemons.length < PAGE_SIZE}
+                disabled={
+                  pokemons.length < PAGE_SIZE ||
+                  (countQuery.data !== undefined && page >= Math.ceil(countQuery.data / PAGE_SIZE))
+                }
                 className="px-4 py-2 rounded-lg bg-[rgb(30,30,42)] border border-[rgb(50,50,70)] text-[rgb(160,160,180)] disabled:opacity-40 hover:border-indigo-500 hover:text-white transition-all"
               >
                 Suivant <ChevronRight size={16} className="inline" />
