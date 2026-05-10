@@ -20,6 +20,7 @@ import math
 from collections import defaultdict
 from decimal import Decimal
 
+from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 
 from backend.db.models import (
@@ -289,27 +290,39 @@ def compute_fusion_expert_moves(
         .all()
     }
 
+    # Push all three conditions to PostgreSQL using native ARRAY operators:
+    #   overlap (&&)       → at least one element in common
+    #   contained_by (<@)  → all elements are in the reference set
+    pokemon_cond = or_(
+        MoveExpertMove.required_pokemon_ids == [],
+        MoveExpertMove.required_pokemon_ids.overlap([head.id, body.id]),
+    )
+    type_cond = (
+        or_(
+            MoveExpertMove.required_type_ids == [],
+            MoveExpertMove.required_type_ids.contained_by(list(fusion_type_ids)),
+        )
+        if fusion_type_ids
+        else MoveExpertMove.required_type_ids == []
+    )
+    move_cond = (
+        or_(
+            MoveExpertMove.required_move_ids == [],
+            MoveExpertMove.required_move_ids.overlap(list(learned_move_ids)),
+        )
+        if learned_move_ids
+        else MoveExpertMove.required_move_ids == []
+    )
+
     rows = (
         db.query(MoveExpertMove)
         .options(joinedload(MoveExpertMove.move).joinedload(Move.type))
+        .filter(pokemon_cond, type_cond, move_cond)
         .all()
     )
 
     qualified: dict[int, dict] = {}  # move_id → entry
     for row in rows:
-        # AND: Pokémon check
-        if row.required_pokemon_ids:
-            if head.id not in row.required_pokemon_ids and body.id not in row.required_pokemon_ids:
-                continue
-        # AND: all required types must be present in the fusion
-        if row.required_type_ids:
-            if not set(row.required_type_ids).issubset(fusion_type_ids):
-                continue
-        # AND: ≥1 prerequisite move must be known
-        if row.required_move_ids:
-            if not (set(row.required_move_ids) & learned_move_ids):
-                continue
-
         entry = qualified.get(row.move_id)
         if entry is None:
             m = row.move
