@@ -153,14 +153,23 @@ function RecentFusions() {
           <Clock size={12} />
           Récemment consultées
         </span>
-        <button
-          onClick={clearHistory}
-          className="flex items-center gap-1 text-xs transition-colors hover:text-red-400"
-          style={{ color: "#6b7199" }}
-        >
-          <Trash2 size={11} />
-          Effacer
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/fusion/history"
+            className="text-xs transition-colors hover:text-indigo-300"
+            style={{ color: "#4a4f75" }}
+          >
+            Voir tout →
+          </Link>
+          <button
+            onClick={clearHistory}
+            className="flex items-center gap-1 text-xs transition-colors hover:text-red-400"
+            style={{ color: "#6b7199" }}
+          >
+            <Trash2 size={11} />
+            Effacer
+          </button>
+        </div>
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "thin" }}>
         {entries.slice(0, 10).map((entry: FusionHistoryEntry) => (

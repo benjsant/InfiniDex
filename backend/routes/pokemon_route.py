@@ -69,6 +69,7 @@ def get_pokemon_count(
     include_hoenn: bool = Query(True),
     min_bst: int | None = Query(None, ge=0),
     max_bst: int | None = Query(None, ge=0),
+    ability_id: int | None = Query(None, ge=1),
 ) -> int:
     """Count Pokémon matching the given filters."""
     return count_pokemon(
@@ -78,6 +79,7 @@ def get_pokemon_count(
         include_hoenn=include_hoenn,
         min_bst=min_bst,
         max_bst=max_bst,
+        ability_id=ability_id,
     )
 
 
@@ -92,6 +94,7 @@ def get_pokemon_list(
     min_bst: int | None = Query(None, ge=0, description="Minimum BST"),
     max_bst: int | None = Query(None, ge=0, description="Maximum BST"),
     sort_by: str = Query("id", pattern="^(id|bst_asc|bst_desc)$", description="Sort order"),
+    ability_id: int | None = Query(None, ge=1, description="Filter by ability (id)"),
 ):
     """List Pokémon in the Infinite Fusion game, with pagination and filters."""
     pokemons = list_pokemon(
@@ -104,6 +107,7 @@ def get_pokemon_list(
         min_bst=min_bst,
         max_bst=max_bst,
         sort_by=sort_by,
+        ability_id=ability_id,
     )
     return [pokemon_to_list_item(p) for p in pokemons]
 

@@ -2,6 +2,48 @@
 
 import { Component, type ReactNode } from "react";
 
+// ── Section-level boundary — inline fallback, no full-page takeover ───────────
+
+interface SectionProps {
+  children: ReactNode;
+  label?: string;
+}
+
+interface SectionState {
+  error: Error | null;
+}
+
+export class SectionErrorBoundary extends Component<SectionProps, SectionState> {
+  state: SectionState = { error: null };
+
+  static getDerivedStateFromError(error: Error): SectionState {
+    return { error };
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div
+          className="rounded-xl px-4 py-3 text-sm"
+          style={{ background: "rgba(239,68,68,0.08)", border: "1px solid #ef444433", color: "#f87171" }}
+        >
+          {this.props.label ? `${this.props.label} — ` : ""}
+          Erreur de chargement.{" "}
+          <button
+            onClick={() => this.setState({ error: null })}
+            className="underline hover:no-underline transition-all"
+          >
+            Réessayer
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// ── Full-page boundary ────────────────────────────────────────────────────────
+
 interface Props {
   children: ReactNode;
 }

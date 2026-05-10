@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from sqlalchemy.orm import Session, joinedload
 
-from backend.db.models import Move, Pokemon, PokemonEvolution, PokemonLocation, PokemonMove, PokemonType, Type, TypeEffectiveness
+from backend.db.models import Move, Pokemon, PokemonAbility, PokemonEvolution, PokemonLocation, PokemonMove, PokemonType, Type, TypeEffectiveness
 from backend.utils.text import ilike_escape
 
 
@@ -24,11 +24,15 @@ def _base_query(
     include_hoenn: bool = True,
     min_bst: int | None = None,
     max_bst: int | None = None,
+    ability_id: int | None = None,
 ):
     """Shared filter logic for list and count queries."""
     query = db.query(Pokemon)
     if type_id is not None:
         sub = db.query(PokemonType.pokemon_id).filter(PokemonType.type_id == type_id)
+        query = query.filter(Pokemon.id.in_(sub))
+    if ability_id is not None:
+        sub = db.query(PokemonAbility.pokemon_id).filter(PokemonAbility.ability_id == ability_id)
         query = query.filter(Pokemon.id.in_(sub))
     if generation_id is not None:
         query = query.filter(Pokemon.generation_id == generation_id)
@@ -49,10 +53,12 @@ def count_pokemon(
     include_hoenn: bool = True,
     min_bst: int | None = None,
     max_bst: int | None = None,
+    ability_id: int | None = None,
 ) -> int:
     """Count Pokémon matching the given filters (no pagination)."""
     return _base_query(db, type_id=type_id, generation_id=generation_id,
-                       include_hoenn=include_hoenn, min_bst=min_bst, max_bst=max_bst).count()
+                       include_hoenn=include_hoenn, min_bst=min_bst, max_bst=max_bst,
+                       ability_id=ability_id).count()
 
 
 def list_pokemon(
@@ -66,10 +72,12 @@ def list_pokemon(
     min_bst: int | None = None,
     max_bst: int | None = None,
     sort_by: str = "id",
+    ability_id: int | None = None,
 ) -> list[Pokemon]:
-    """Paginated list of Pokémon with type / generation / Hoenn-only / BST filters."""
+    """Paginated list of Pokémon with type / generation / Hoenn-only / BST / ability filters."""
     query = _base_query(db, type_id=type_id, generation_id=generation_id,
-                        include_hoenn=include_hoenn, min_bst=min_bst, max_bst=max_bst)
+                        include_hoenn=include_hoenn, min_bst=min_bst, max_bst=max_bst,
+                        ability_id=ability_id)
     query = query.options(joinedload(Pokemon.types))
     if sort_by == "bst_asc":
         query = query.order_by(_BST.asc(), Pokemon.id)

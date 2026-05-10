@@ -4,11 +4,13 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ArrowLeftRight, Star, GitCompare, Link2, Check } from "lucide-react";
 import { useFusion, useFusionMoves, useFusionExpertMoves, useFusionAbilities, useSprites } from "@/hooks/useFusion";
+import { useToast } from "@/components/layout/Toast";
 import { useHistory } from "@/hooks/useHistory";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useComparison } from "@/hooks/useComparison";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import { StatBar } from "@/components/pokemon/StatBar";
+import { SectionErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { AiSuggestButton } from "@/components/ai/AiSuggestButton";
 import { FusionMovesetTable } from "@/components/fusion/FusionMovesetTable";
 import { SpriteCarousel } from "@/components/fusion/SpriteCarousel";
@@ -31,6 +33,7 @@ export default function FusionResultPage({
   const { addEntry }                                         = useHistory();
   const { isFavorite, toggleFavorite }                       = useFavorites();
   const { isInComparison, addToComparison, canCompare }      = useComparison();
+  const { toast }                                            = useToast();
 
   useEffect(() => {
     if (fusion) {
@@ -84,6 +87,7 @@ export default function FusionResultPage({
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
       setCopied(true);
+      toast("Lien copié !");
       setTimeout(() => setCopied(false), 2000);
     });
   };
@@ -91,11 +95,16 @@ export default function FusionResultPage({
   const favorited   = isFavorite(hId, bId);
   const inComparison = isInComparison(hId, bId);
 
-  const handleToggleFavorite = () =>
+  const handleToggleFavorite = () => {
+    const wasFav = favorited;
     toggleFavorite({ headId: hId, bodyId: bId, headName: fusion.head_name_en, bodyName: fusion.body_name_en });
+    toast(wasFav ? "Retiré des favoris" : "Ajouté aux favoris", wasFav ? "info" : "success");
+  };
 
-  const handleAddToComparison = () =>
+  const handleAddToComparison = () => {
     addToComparison({ headId: hId, bodyId: bId, headName: fusion.head_name_en, bodyName: fusion.body_name_en });
+    toast("Ajouté à la comparaison", "info");
+  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -229,6 +238,7 @@ export default function FusionResultPage({
       </div>
 
       {/* Stats */}
+      <SectionErrorBoundary label="Stats">
       <div className="rounded-xl bg-[rgb(20,20,28)] border border-[rgb(50,50,70)] p-5 mb-4">
         <h2 className="text-sm font-semibold text-[rgb(120,120,140)] uppercase tracking-wider mb-4">
           Statistiques fusionnées
@@ -246,8 +256,10 @@ export default function FusionResultPage({
           Physique (HP/Atk/Déf/Vit) = ⌊Body×⅔ + Head×⅓⌋ · Spécial (AtkSpé/DéfSpé) = ⌊Head×⅔ + Body×⅓⌋
         </p>
       </div>
+      </SectionErrorBoundary>
 
       {/* Moveset */}
+      <SectionErrorBoundary label="Capacités">
       <div className="rounded-xl bg-[rgb(20,20,28)] border border-[rgb(50,50,70)] p-5 mb-4">
         <h2 className="text-sm font-semibold text-[rgb(120,120,140)] uppercase tracking-wider mb-4">
           Capacités apprises
@@ -267,6 +279,7 @@ export default function FusionResultPage({
           />
         )}
       </div>
+      </SectionErrorBoundary>
 
       <div className="flex flex-wrap gap-3">
         <AiSuggestButton

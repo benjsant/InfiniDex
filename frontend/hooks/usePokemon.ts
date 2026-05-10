@@ -8,6 +8,7 @@ import {
   getPokemonWeaknesses,
   getTypes,
   getGenerations,
+  getAbilities,
   searchPokemon,
 } from "@/lib/api";
 
@@ -24,6 +25,7 @@ export function usePokemonList(
     min_bst?: number;
     max_bst?: number;
     sort_by?: "id" | "bst_asc" | "bst_desc";
+    ability_id?: number;
   },
   options?: { enabled?: boolean },
 ) {
@@ -42,11 +44,20 @@ export function usePokemonCount(
     include_hoenn?: boolean;
     min_bst?: number;
     max_bst?: number;
+    ability_id?: number;
   },
 ) {
   return useQuery({
     queryKey: ["pokemon-count", params],
     queryFn: () => getPokemonCount(params),
+    ...STATIC,
+  });
+}
+
+export function useAbilities() {
+  return useQuery({
+    queryKey: ["abilities-all"],
+    queryFn: () => getAbilities(),
     ...STATIC,
   });
 }

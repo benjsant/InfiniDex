@@ -33,6 +33,19 @@ async function fetchPokemonMeta(id: number): Promise<PokemonMeta | null> {
   }
 }
 
+export async function generateStaticParams() {
+  try {
+    const headers: Record<string, string> = {};
+    if (INTERNAL_API_KEY) headers["X-Internal-Key"] = INTERNAL_API_KEY;
+    const res = await fetch(`${BACKEND_URL}/pokemon/?limit=600&include_hoenn=true`, { headers });
+    if (!res.ok) return [];
+    const data: { id: number }[] = await res.json();
+    return data.map((p) => ({ id: String(p.id) }));
+  } catch {
+    return [];
+  }
+}
+
 export async function generateMetadata({
   params,
 }: {

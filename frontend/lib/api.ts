@@ -56,6 +56,7 @@ export function getPokemonCount(params?: {
   include_hoenn?: boolean;
   min_bst?: number;
   max_bst?: number;
+  ability_id?: number;
 }): Promise<number> {
   const sp = new URLSearchParams();
   if (params?.type_id)   sp.set("type_id", String(params.type_id));
@@ -63,6 +64,7 @@ export function getPokemonCount(params?: {
   if (params?.include_hoenn === false) sp.set("include_hoenn", "false");
   if (params?.min_bst !== undefined) sp.set("min_bst", String(params.min_bst));
   if (params?.max_bst !== undefined) sp.set("max_bst", String(params.max_bst));
+  if (params?.ability_id !== undefined) sp.set("ability_id", String(params.ability_id));
   const qs = sp.toString() ? `?${sp}` : "";
   return apiFetch<number>(`/pokemon/count${qs}`);
 }
@@ -76,6 +78,7 @@ export function getPokemonList(params?: {
   min_bst?: number;
   max_bst?: number;
   sort_by?: "id" | "bst_asc" | "bst_desc";
+  ability_id?: number;
 }): Promise<PokemonListItem[]> {
   const sp = new URLSearchParams();
   if (params?.type_id)   sp.set("type_id", String(params.type_id));
@@ -84,6 +87,7 @@ export function getPokemonList(params?: {
   if (params?.min_bst !== undefined) sp.set("min_bst", String(params.min_bst));
   if (params?.max_bst !== undefined) sp.set("max_bst", String(params.max_bst));
   if (params?.sort_by && params.sort_by !== "id") sp.set("sort_by", params.sort_by);
+  if (params?.ability_id !== undefined) sp.set("ability_id", String(params.ability_id));
   const pageSize = params?.page_size ?? 40;
   sp.set("limit", String(pageSize));
   if (params?.page && params.page > 1) {
@@ -223,6 +227,10 @@ export function listCreators(q: string, limit: number, offset: number): Promise<
   const params = new URLSearchParams({ limit: String(limit), offset: String(offset) });
   if (q.trim()) params.set("q", q.trim());
   return apiFetch<CreatorOut[]>(`/creators/?${params}`);
+}
+
+export function getCreator(creatorId: number): Promise<CreatorOut> {
+  return apiFetch<CreatorOut>(`/creators/${creatorId}`);
 }
 
 export function getCreatorSprites(creatorId: number): Promise<SpriteOut[]> {

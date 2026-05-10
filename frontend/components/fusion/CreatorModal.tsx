@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { X, Palette } from "lucide-react";
+import { X, Palette, ExternalLink } from "lucide-react";
 import { searchCreators, getCreatorSprites } from "@/lib/api";
 import type { SpriteOut } from "@/types/api";
 
@@ -12,9 +12,10 @@ interface CreatorModalProps {
   creatorId?: number;
   spriteCount?: number;
   onClose: () => void;
+  detailHref?: string;
 }
 
-export function CreatorModal({ name, creatorId, spriteCount, onClose }: CreatorModalProps) {
+export function CreatorModal({ name, creatorId, spriteCount, onClose, detailHref }: CreatorModalProps) {
   // If id is provided directly (from gallery page), skip the search round-trip
   const { data: creators = [] } = useQuery({
     queryKey: ["creator-search", name],
@@ -65,6 +66,17 @@ export function CreatorModal({ name, creatorId, spriteCount, onClose }: CreatorM
               </p>
             )}
           </div>
+          {detailHref && (
+            <Link
+              href={detailHref}
+              onClick={onClose}
+              className="shrink-0 p-1.5 rounded-lg transition-colors hover:bg-[rgb(40,40,55)]"
+              style={{ color: "#6b7199" }}
+              title="Page complète"
+            >
+              <ExternalLink size={14} />
+            </Link>
+          )}
           <button
             onClick={onClose}
             className="shrink-0 p-1.5 rounded-lg text-[rgb(100,100,130)] hover:text-white hover:bg-[rgb(40,40,55)] transition-colors"
@@ -119,18 +131,26 @@ export function CreatorModal({ name, creatorId, spriteCount, onClose }: CreatorM
   );
 }
 
-// Small inline button to trigger the modal
-export function CreatorBadge({ name }: { name: string }) {
+// Small inline button — opens modal for quick preview; right-click / long-press links to detail page
+export function CreatorBadge({ name, creatorId }: { name: string; creatorId?: number }) {
   const [open, setOpen] = useState(false);
   return (
     <>
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}
         className="text-[10px] text-indigo-400 hover:text-indigo-300 hover:underline transition-colors"
+        title={creatorId ? `Voir les sprites de ${name}` : name}
       >
         {name}
       </button>
-      {open && <CreatorModal name={name} onClose={() => setOpen(false)} />}
+      {open && (
+        <CreatorModal
+          name={name}
+          creatorId={creatorId}
+          onClose={() => setOpen(false)}
+          detailHref={creatorId ? `/creators/${creatorId}` : undefined}
+        />
+      )}
     </>
   );
 }

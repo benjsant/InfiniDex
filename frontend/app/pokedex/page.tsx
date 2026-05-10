@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { usePokemonList, usePokemonSearch, usePokemonCount, useTypes, useGenerations } from "@/hooks/usePokemon";
+import { usePokemonList, usePokemonSearch, usePokemonCount, useTypes, useGenerations, useAbilities } from "@/hooks/usePokemon";
 import { PokemonCard } from "@/components/pokemon/PokemonCard";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { primaryType, secondaryType, normalize } from "@/lib/utils";
@@ -31,6 +31,8 @@ function PokedexContent() {
   const [sortBy, setSortBy] = useState<SortBy>("id");
   const [minBst, setMinBst] = useState<string>("");
   const [maxBst, setMaxBst] = useState<string>("");
+  const [abilitySearch, setAbilitySearch] = useState<string>("");
+  const [abilityId, setAbilityId] = useState<number | undefined>(undefined);
 
   const handleSearch = useCallback((v: string) => { setQ(v); setPage(1); }, []);
   const handleGame   = useCallback((v: "kanto" | "hoenn" | "all") => { setGame(v); setPage(1); }, []);
@@ -44,8 +46,9 @@ function PokedexContent() {
   const parsedMinBst = minBst !== "" ? parseInt(minBst, 10) : undefined;
   const parsedMaxBst = maxBst !== "" ? parseInt(maxBst, 10) : undefined;
 
-  const typesQuery = useTypes();
-  const gensQuery  = useGenerations();
+  const typesQuery      = useTypes();
+  const gensQuery       = useGenerations();
+  const abilitiesQuery  = useAbilities();
   const listQuery  = usePokemonList({
     page: isBstSort ? 1 : page,
     page_size: isBstSort ? 1000 : PAGE_SIZE,
@@ -55,6 +58,7 @@ function PokedexContent() {
     min_bst: parsedMinBst,
     max_bst: parsedMaxBst,
     sort_by: sortBy,
+    ability_id: abilityId,
   });
   const countQuery  = usePokemonCount({
     type_id: typeId,
@@ -62,6 +66,7 @@ function PokedexContent() {
     include_hoenn: includeHoenn,
     min_bst: parsedMinBst,
     max_bst: parsedMaxBst,
+    ability_id: abilityId,
   });
   const searchQuery = usePokemonSearch(q);
 
@@ -154,6 +159,43 @@ function PokedexContent() {
               </option>
             ))}
           </select>
+        </div>
+
+        {/* Ability + BST row */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Ability datalist filter */}
+          <div className="relative">
+            <datalist id="ability-list">
+              {(abilitiesQuery.data ?? []).map((a) => (
+                <option key={a.id} value={a.name_fr ?? a.name_en} />
+              ))}
+            </datalist>
+            <input
+              type="text"
+              list="ability-list"
+              placeholder="Talent…"
+              value={abilitySearch}
+              onChange={(e) => {
+                const val = e.target.value;
+                setAbilitySearch(val);
+                const match = (abilitiesQuery.data ?? []).find(
+                  (a) => (a.name_fr ?? a.name_en).toLowerCase() === val.toLowerCase()
+                );
+                setAbilityId(match?.id);
+                setPage(1);
+              }}
+              className="w-36 px-3 py-1.5 rounded-lg bg-[rgb(30,30,42)] border border-[rgb(50,50,70)] text-[rgb(220,220,255)] text-sm focus:outline-none focus:border-indigo-500"
+            />
+            {abilitySearch && (
+              <button
+                onClick={() => { setAbilitySearch(""); setAbilityId(undefined); setPage(1); }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[rgb(100,100,130)] hover:text-white"
+                aria-label="Effacer le talent"
+              >
+                ×
+              </button>
+            )}
+          </div>
         </div>
 
         {/* BST row */}
