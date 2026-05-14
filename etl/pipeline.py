@@ -222,6 +222,12 @@ def main(force: bool = False) -> None:
         "Step 9b/10 — Load encounters into location + pokemon_location",
     )
 
+    # Step 9b-bis — Fix location data: correct legendary/gift/trade entries from wiki
+    run(
+        ["python", str(SCRIPTS_DIR / "fix_pokemon_locations.py")],
+        "Step 9b-bis — Fix legendary/gift/trade Pokémon locations (wiki-sourced)",
+    )
+
     # Step 9c — Enrich pokemon.pokepedia_url from pokepedia_names.json
     run(
         ["python", str(SCRIPTS_DIR / "enrich_pokemon_fr.py")],
@@ -232,6 +238,12 @@ def main(force: bool = False) -> None:
     run(
         ["python", str(SCRIPTS_DIR / "load_items.py")],
         "Step 9d — Load items (fusion/evolution/valuable) from IF wiki",
+    )
+
+    # Step 9d-bis — Extract item locations from IF wiki
+    run(
+        ["python", str(SCRIPTS_DIR / "extract_item_locations.py")],
+        "Step 9d-bis — Extract item locations from IF wiki",
     )
 
     # Step 9e — Load move tutors from IF wiki
@@ -274,6 +286,12 @@ def main(force: bool = False) -> None:
     run(
         ["python", str(SCRIPTS_DIR / "load_triple_fusions.py")],
         "Step 11b/12 — Load triple_fusion + components + types + abilities",
+    )
+
+    # Step 11c — Seed type_effectiveness for the 8 custom IF triple-fusion types
+    run(
+        ["python", str(SCRIPTS_DIR / "load_triple_fusion_type_effectiveness.py")],
+        "Step 11c/12 — Seed type_effectiveness for custom IF triple-fusion types",
     )
 
     # Step 12 — Load sprite credits (creator + fusion_sprite + fusion_sprite_creator)
