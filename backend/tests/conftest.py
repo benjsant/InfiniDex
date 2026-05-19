@@ -28,6 +28,10 @@ from fastapi.testclient import TestClient
 
 os.environ.setdefault("POSTGRES_HOST", "localhost")
 os.environ.setdefault("POSTGRES_PORT", os.environ.get("FUSIONDEX_DB_PORT", "55432"))
+# session.py now requires POSTGRES_PASSWORD at import (no insecure default).
+# The DB-free smoke job never connects, so a dummy lets import/collection
+# succeed; CI full job and local runs inject the real value (no-op here).
+os.environ.setdefault("POSTGRES_PASSWORD", "changeme")
 
 _host = os.environ["POSTGRES_HOST"]
 _docker_mode = os.environ.get("FUSIONDEX_TEST_DOCKER") == "1"
