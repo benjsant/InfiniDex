@@ -1,14 +1,14 @@
-"""Script ETL — peuple `tm_location` depuis le wiki IF.
+"""ETL script — populates `tm_location` from the IF wiki.
 
-Source : https://infinitefusion.fandom.com/wiki/List_of_TMs (section TMs).
+Source: https://infinitefusion.fandom.com/wiki/List_of_TMs (TMs section).
 
-Ce script :
-  1. Parse la table wiki (122 lignes, TM00 à TM121)
-  2. Résout chaque location vers `location.id` (avec alias + création si absent)
-  3. Repopule `tm_location` (TRUNCATE + INSERT)
+This script:
+  1. Parses the wiki table (122 rows, TM00 to TM121)
+  2. Resolves each location to `location.id` (with aliases + creation if absent)
+  3. Repopulates `tm_location` (TRUNCATE + INSERT)
 
-Le résumé texte `location_summary` n'est plus stocké en base — il est calculé
-à la volée par le backend depuis les lignes `tm_location`.
+The `location_summary` text is no longer stored in the DB — it is computed
+on the fly by the backend from the `tm_location` rows.
 
 Idempotent.
 """
@@ -28,29 +28,29 @@ LOGGER = setup_logging(__name__)
 WIKI_PAGE = "List_of_TMs"
 
 
-# ─── Mapping des locations du wiki vers location.name_en ─────────────────────
+# ─── Mapping of wiki locations to location.name_en ───────────────────────────
 #
-# Les sous-lieux sont mappés au parent city, le sous-lieu devient une "note".
-# Exemple : "[[Celadon City|Celadon Dept. Store]]" → location=Celadon City,
+# Sub-locations are mapped to the parent city, the sub-location becomes a "note".
+# Example: "[[Celadon City|Celadon Dept. Store]]" → location=Celadon City,
 # notes="Celadon Dept. Store".
 LOCATION_ALIASES: dict[str, str] = {
-    # Sous-lieux de Celadon City
+    # Sub-locations of Celadon City
     "Celadon Dept. Store": "Celadon City",
     "Game Corner":         "Celadon City",
     "Celadon Sewers":      "Celadon City",
-    # Sous-lieux de Saffron City
+    # Sub-locations of Saffron City
     "Silph Co.":           "Saffron City",
-    # Sous-lieux de Lavender Town
+    # Sub-locations of Lavender Town
     "Pokémon Tower":       "Lavender Town",
 }
 
-# Locations à créer si absentes en DB (noms tirés du wiki).
+# Locations to create if absent from the DB (names taken from the wiki).
 LOCATIONS_TO_ENSURE: list[tuple[str, str | None]] = [
-    # Villes/routes principales manquantes
+    # Missing main cities/routes
     ("Viridian City",              "Kanto"),
     ("Ecruteak City",              "Johto"),
     ("Route 25",                   "Kanto"),
-    # Sous-zones / bâtiments standalone
+    # Standalone sub-areas / buildings
     ("S.S. Anne",                  "Kanto"),
     ("Underground Paths",          "Kanto"),
     ("Cycling Road",               "Kanto"),
@@ -67,7 +67,7 @@ LOCATIONS_TO_ENSURE: list[tuple[str, str | None]] = [
 ]
 
 
-# ─── Parseurs ────────────────────────────────────────────────────────────────
+# ─── Parsers ─────────────────────────────────────────────────────────────────
 
 @dataclass
 class TMEntry:
@@ -123,7 +123,7 @@ def _parse_location_cell(cell: str) -> tuple[list[tuple[str, str | None]], str]:
     for seg in segments:
         m = _WIKILINK_RE.search(seg)
         if not m:
-            LOGGER.debug("Segment sans wikilink, ignoré : %r", seg)
+            LOGGER.debug("Segment without wikilink, skipped: %r", seg)
             continue
         link = m.group(1)
         display = link.split("|", 1)[-1] if "|" in link else link
@@ -156,7 +156,7 @@ def parse_tm_table(wikitext: str) -> list[TMEntry]:
     """Extract TM entries from the 'TMs' section of the wikitext."""
     sec = re.search(r"==\s*TMs\s*==(.*?)(?===|\Z)", wikitext, re.DOTALL)
     if not sec:
-        raise RuntimeError("Section '== TMs ==' introuvable dans le wikitext")
+        raise RuntimeError("Section '== TMs ==' not found in the wikitext")
     body = sec.group(1)
 
     blocks = re.split(r"^\s*\|-\s*$", body, flags=re.MULTILINE)
@@ -184,7 +184,7 @@ def parse_tm_table(wikitext: str) -> list[TMEntry]:
     return entries
 
 
-# ─── Résolution DB ───────────────────────────────────────────────────────────
+# ─── DB resolution ───────────────────────────────────────────────────────────
 
 def ensure_location(cur, name_en: str, region: str | None) -> int:
     cur.execute("SELECT id FROM location WHERE name_en = %s", (name_en,))
@@ -196,7 +196,7 @@ def ensure_location(cur, name_en: str, region: str | None) -> int:
         (name_en, region),
     )
     new_id = cur.fetchone()[0]
-    LOGGER.info("  + Location créée : %s (id=%d)", name_en, new_id)
+    LOGGER.info("  + Location created: %s (id=%d)", name_en, new_id)
     return new_id
 
 
@@ -216,21 +216,21 @@ def load_location_index(cur) -> dict[str, int]:
 def run(conn) -> None:
     cur = conn.cursor()
 
-    # Créer les locations manquantes avant de charger l'index
+    # Create the missing locations before loading the index
     for name, region in LOCATIONS_TO_ENSURE:
         ensure_location(cur, name, region)
 
     tm_idx  = load_tm_number_index(cur)
     loc_idx = load_location_index(cur)
-    LOGGER.info("DB : %d TMs, %d locations chargés", len(tm_idx), len(loc_idx))
+    LOGGER.info("DB: %d TMs, %d locations loaded", len(tm_idx), len(loc_idx))
 
     wikitext = fetch_wikitext(WIKI_PAGE)
-    LOGGER.info("Wiki : %d caractères récupérés", len(wikitext))
+    LOGGER.info("Wiki: %d characters fetched", len(wikitext))
 
     entries = parse_tm_table(wikitext)
-    LOGGER.info("Wiki : %d TMs parsés", len(entries))
+    LOGGER.info("Wiki: %d TMs parsed", len(entries))
 
-    # Purge complète de tm_location avant ré-insertion
+    # Full purge of tm_location before re-insertion
     cur.execute("TRUNCATE tm_location RESTART IDENTITY")
 
     inserted_rows  = 0
@@ -250,7 +250,7 @@ def run(conn) -> None:
                 unresolved_loc.add(display_name)
                 continue
 
-            # Notes = sous-lieu (si aliasé) éventuellement enrichi du contexte
+            # Notes = sub-location (if aliased), optionally enriched with context
             notes_parts: list[str] = []
             if canonical != display_name:
                 notes_parts.append(display_name)
@@ -272,11 +272,11 @@ def run(conn) -> None:
     cur.close()
 
     if unresolved_tm:
-        LOGGER.warning("TMs wiki absents en DB : %s", sorted(unresolved_tm))
+        LOGGER.warning("Wiki TMs missing from the DB: %s", sorted(unresolved_tm))
     if unresolved_loc:
-        LOGGER.warning("Locations non résolues : %s", sorted(unresolved_loc))
+        LOGGER.warning("Unresolved locations: %s", sorted(unresolved_loc))
 
-    LOGGER.info("Terminé — %d lignes insérées dans tm_location",
+    LOGGER.info("Done — %d rows inserted into tm_location",
                 inserted_rows)
 
 

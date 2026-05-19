@@ -1,18 +1,18 @@
-"""Script ETL — peuple la table `move_tutor` depuis le wiki IF.
+"""ETL script — populates the `move_tutor` table from the IF wiki.
 
-Source : https://infinitefusion.fandom.com/wiki/List_of_Tutors
+Source: https://infinitefusion.fandom.com/wiki/List_of_Tutors
 
-Scope : tutors classiques uniquement (un NPC = un move). Les 3 premières
-lignes de la table wiki (Move Relearner, Move Deleter, Egg Move Tutor)
-sont des services spéciaux non-liés à un move unique — elles sont
-exclues de `move_tutor` et documentées séparément.
+Scope: classic tutors only (one NPC = one move). The first 3 rows of
+the wiki table (Move Relearner, Move Deleter, Egg Move Tutor) are
+special services not tied to a single move — they are excluded from
+`move_tutor` and documented separately.
 
-Monnaies :
-    'pokedollars' → `price` = montant (₽)
-    'free'        → gratuit inconditionnel
-    'quest'       → gratuit après une quête (détail dans `npc_description`)
+Currencies:
+    'pokedollars' → `price` = amount (₽)
+    'free'        → unconditionally free
+    'quest'       → free after a quest (details in `npc_description`)
 
-Idempotent : TRUNCATE + INSERT à chaque run.
+Idempotent: TRUNCATE + INSERT each run.
 """
 
 from __future__ import annotations
@@ -29,15 +29,15 @@ LOGGER = setup_logging(__name__)
 
 WIKI_PAGE = "List_of_Tutors"
 
-# Les 3 premières lignes du tableau wiki sont des cas spéciaux que l'on
-# exclut (non rattachables à un move unique).
+# The first 3 rows of the wiki table are special cases that we exclude
+# (not attachable to a single move).
 SPECIAL_ROW_COUNT = 3
 
 
-# ─── Mapping des locations du wiki vers la table `location` ───────────────────
+# ─── Mapping of wiki locations to the `location` table ───────────────────────
 #
-# Les valeurs sont des noms `location.name_en` existants. Les lieux absents
-# (`Pewter City`, `Fuchsia City`) sont créés par `ensure_city` plus bas.
+# The values are existing `location.name_en` names. Missing places
+# (`Pewter City`, `Fuchsia City`) are created by `ensure_city` below.
 LOCATION_ALIASES: dict[str, str] = {
     "Pokémon Tower":                "Lavender Town",
     "Silph Co. Head Office":        "Saffron City",
@@ -46,15 +46,15 @@ LOCATION_ALIASES: dict[str, str] = {
     "Ruins of Alph Hidden Chamber": "Ruins of Alph",
 }
 
-# Villes à créer si absentes en DB (elles sont nommées dans le wiki mais
-# n'ont pas de ligne `pokemon_location` → absentes de `location`).
+# Cities to create if absent from the DB (named in the wiki but with no
+# `pokemon_location` row → absent from `location`).
 CITIES_TO_ENSURE: list[tuple[str, str | None]] = [
     ("Pewter City",   "Kanto"),
     ("Fuchsia City",  "Kanto"),
 ]
 
 
-# ─── Parseurs ────────────────────────────────────────────────────────────────
+# ─── Parsers ─────────────────────────────────────────────────────────────────
 
 @dataclass
 class TutorRow:
@@ -117,7 +117,7 @@ def parse_price(cell: str) -> tuple[int | None, str]:
         return None, "free"
     if is_abbr or "quest" in clean.lower() or "defeat" in clean.lower():
         return None, "quest"
-    LOGGER.warning("Prix non reconnu, traité comme 'quest' : %r", raw)
+    LOGGER.warning("Unrecognized price, treated as 'quest': %r", raw)
     return None, "quest"
 
 
@@ -149,12 +149,12 @@ def parse_wikitext(text: str) -> list[TutorRow]:
     return tutors
 
 
-# ─── Résolution DB ───────────────────────────────────────────────────────────
+# ─── DB resolution ───────────────────────────────────────────────────────────
 
 def load_move_index(cur) -> dict[str, int]:
     cur.execute("SELECT id, name_en FROM move")
-    # Normalise simple : lowercase + strip — les moves IF utilisent des noms
-    # propres, pas besoin d'aliases (contrairement aux Pokémon).
+    # Simple normalization: lowercase + strip — IF moves use proper names,
+    # no need for aliases (unlike Pokémon).
     return {name_en.lower().strip(): mid for mid, name_en in cur.fetchall()}
 
 
@@ -174,7 +174,7 @@ def ensure_city(cur, name_en: str, region: str | None) -> int:
         (name_en, region),
     )
     new_id = cur.fetchone()[0]
-    LOGGER.info("  + Location créée : %s (id=%d)", name_en, new_id)
+    LOGGER.info("  + Location created: %s (id=%d)", name_en, new_id)
     return new_id
 
 
@@ -183,20 +183,20 @@ def ensure_city(cur, name_en: str, region: str | None) -> int:
 def run(conn) -> None:
     cur = conn.cursor()
 
-    # Créer les villes manquantes AVANT de charger l'index
+    # Create the missing cities BEFORE loading the index
     for city, region in CITIES_TO_ENSURE:
         ensure_city(cur, city, region)
 
     move_idx = load_move_index(cur)
     loc_idx  = load_location_index(cur)
 
-    LOGGER.info("DB : %d moves, %d locations chargés", len(move_idx), len(loc_idx))
+    LOGGER.info("DB: %d moves, %d locations loaded", len(move_idx), len(loc_idx))
 
     wikitext = fetch_wikitext(WIKI_PAGE)
-    LOGGER.info("Wiki : %d caractères récupérés", len(wikitext))
+    LOGGER.info("Wiki: %d characters fetched", len(wikitext))
 
     tutors = parse_wikitext(wikitext)
-    LOGGER.info("Wiki : %d tutors classiques parsés (3 cas spéciaux exclus)", len(tutors))
+    LOGGER.info("Wiki: %d classic tutors parsed (3 special cases excluded)", len(tutors))
 
     inserts: list[tuple[int, int, int | None, str, str]] = []
     unresolved_moves:     set[str] = set()
@@ -218,9 +218,9 @@ def run(conn) -> None:
         inserts.append((mid, lid, t.price, t.currency, t.npc_description))
 
     if unresolved_moves:
-        LOGGER.warning("Moves inconnus (ignorés) : %s", sorted(unresolved_moves))
+        LOGGER.warning("Unknown moves (skipped): %s", sorted(unresolved_moves))
     if unresolved_locations:
-        LOGGER.warning("Locations inconnues (ignorées) : %s", sorted(unresolved_locations))
+        LOGGER.warning("Unknown locations (skipped): %s", sorted(unresolved_locations))
 
     cur.execute("TRUNCATE move_tutor RESTART IDENTITY")
     for mid, lid, price, currency, desc in inserts:
@@ -235,7 +235,7 @@ def run(conn) -> None:
 
     conn.commit()
     cur.close()
-    LOGGER.info("Terminé — %d lignes insérées dans move_tutor", len(inserts))
+    LOGGER.info("Done — %d rows inserted into move_tutor", len(inserts))
 
 
 def main() -> None:

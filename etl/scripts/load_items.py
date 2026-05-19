@@ -1,16 +1,16 @@
-"""Script ETL — peuple la table `item` (scope restreint : 3 catégories).
+"""ETL script — populates the `item` table (restricted scope: 3 categories).
 
-Source : https://infinitefusion.fandom.com/wiki/List_of_Items
+Source: https://infinitefusion.fandom.com/wiki/List_of_Items
 
-Scope :
+Scope:
     - Fusion Items    (DNA Splicers, Super Splicers, etc.)
     - Evolution Items (Fire Stone, Moon Stone, Everstone, …)
     - Valuables       (Heart Scale, Nugget, Pearl, …)
 
-Hors scope pour cette PR :
-    Pokéballs, Medicine, Berries, Battle Items, Held Items, TMs & HMs, etc.
+Out of scope for this PR:
+    Poké Balls, Medicine, Berries, Battle Items, Held Items, TMs & HMs, etc.
 
-Idempotent : TRUNCATE + INSERT.
+Idempotent: TRUNCATE + INSERT.
 """
 
 from __future__ import annotations
@@ -128,10 +128,10 @@ def split_rows(table: str) -> list[list[str]]:
     return rows
 
 
-# ─── Parseurs par layout ─────────────────────────────────────────────────────
+# ─── Layout-specific parsers ─────────────────────────────────────────────────
 
 def parse_fusion_or_evolution(rows: list[list[str]], category: str) -> list[ItemRow]:
-    """Layout : icon | name | effect | price | location."""
+    """Layout: icon | name | effect | price | location."""
     out: list[ItemRow] = []
     for cells in rows:
         if len(cells) < 5:
@@ -153,7 +153,7 @@ def parse_fusion_or_evolution(rows: list[list[str]], category: str) -> list[Item
 
 
 def parse_valuables(rows: list[list[str]]) -> list[ItemRow]:
-    """Layout : icon | name | price | sale_price | collector | location."""
+    """Layout: icon | name | price | sale_price | collector | location."""
     out: list[ItemRow] = []
     for cells in rows:
         if len(cells) < 6:
@@ -178,17 +178,17 @@ def parse_valuables(rows: list[list[str]]) -> list[ItemRow]:
 def run(conn) -> None:
     cur = conn.cursor()
     text = fetch_wikitext(WIKI_PAGE)
-    LOGGER.info("Wiki : %d caractères récupérés", len(text))
+    LOGGER.info("Wiki: %d characters fetched", len(text))
 
     all_items: list[ItemRow] = []
     for section_title, category, layout in SECTIONS:
         body = extract_section_body(text, section_title)
         if body is None:
-            LOGGER.warning("Section introuvable : %s", section_title)
+            LOGGER.warning("Section not found: %s", section_title)
             continue
         table = extract_first_table(body)
         if table is None:
-            LOGGER.warning("Tableau introuvable pour : %s", section_title)
+            LOGGER.warning("Table not found for: %s", section_title)
             continue
         rows = split_rows(table)
         if layout == "icon_name_effect_price_location":
@@ -196,19 +196,19 @@ def run(conn) -> None:
         elif layout == "icon_name_price_sell_collector_location":
             items = parse_valuables(rows)
         else:
-            LOGGER.error("Layout inconnu: %s", layout)
+            LOGGER.error("Unknown layout: %s", layout)
             continue
-        LOGGER.info("  %s : %d items parsés", section_title, len(items))
+        LOGGER.info("  %s: %d items parsed", section_title, len(items))
         all_items.extend(items)
 
-    # Déduplication : par nom + catégorie (le wiki peut avoir des variantes
-    # listées 2x avec des prix différents — on garde la première).
+    # Deduplication: by name + category (the wiki may list variants twice
+    # with different prices — keep the first).
     seen: set[str] = set()
     unique: list[ItemRow] = []
     for it in all_items:
         key = it.name_en.lower()
         if key in seen:
-            LOGGER.debug("Doublon ignoré : %s", it.name_en)
+            LOGGER.debug("Duplicate skipped: %s", it.name_en)
             continue
         seen.add(key)
         unique.append(it)
@@ -225,7 +225,7 @@ def run(conn) -> None:
 
     conn.commit()
     cur.close()
-    LOGGER.info("Terminé — %d items insérés (%d Fusion, %d Evolution, %d Valuables)",
+    LOGGER.info("Done — %d items inserted (%d Fusion, %d Evolution, %d Valuables)",
                 len(unique),
                 sum(1 for i in unique if i.category == "fusion"),
                 sum(1 for i in unique if i.category == "evolution"),
