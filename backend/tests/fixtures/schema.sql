@@ -1617,6 +1617,21 @@ ALTER TABLE ONLY public.type_effectiveness
 
 
 --
+-- Name: item_location; Type: TABLE; Schema: public; Owner: -
+-- Kept in sync with docker/init_postgres.sql and backend.db.models.item.ItemLocation
+--
+
+CREATE TABLE IF NOT EXISTS public.item_location (
+    id            SERIAL       PRIMARY KEY,
+    item_id       INTEGER      NOT NULL REFERENCES public.item(id) ON DELETE CASCADE,
+    location_name VARCHAR(200) NOT NULL,
+    method        VARCHAR(20)  NOT NULL CHECK (method IN ('shop', 'found', 'wild', 'other')),
+    notes         TEXT,
+    UNIQUE (item_id, location_name, method)
+);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
