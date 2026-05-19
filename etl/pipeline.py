@@ -52,6 +52,8 @@ import sys
 from pathlib import Path
 from typing import NamedTuple, Sequence
 
+from etl.utils.db import _require_password
+
 BASE_DIR    = Path(__file__).resolve().parent
 SCRIPTS_DIR = BASE_DIR / "scripts"
 SCRAPER_DIR = BASE_DIR / "pokepedia_scraper"
@@ -171,6 +173,10 @@ def check_already_loaded() -> bool:
         "creator":       5_000,
         "triple_fusion": 20,
     }
+    # Resolve the password before the try block so a missing POSTGRES_PASSWORD
+    # raises the clear RuntimeError (consistent with etl/utils/db.py) instead
+    # of being swallowed by the broad except below.
+    pwd = _require_password()
     try:
         import psycopg2  # noqa: PLC0415
 
@@ -179,7 +185,7 @@ def check_already_loaded() -> bool:
             port=int(os.getenv("POSTGRES_PORT", "5432")),
             dbname=os.getenv("POSTGRES_DB", "fusiondex_db"),
             user=os.getenv("POSTGRES_USER", "fusiondex_user"),
-            password=os.getenv("POSTGRES_PASSWORD", "fusiondex_password"),
+            password=pwd,
             connect_timeout=5,
         )
         cur = conn.cursor()
