@@ -1804,16 +1804,25 @@
 <p>Pour forcer une réexécution complète (même si les données sont déjà chargées) :</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>etl<span class="w"> </span>python<span class="w"> </span>etl/pipeline.py<span class="w"> </span>--force
 </span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Recrée le backend après un rebuild</p>
+<p>Le backend warm <code>_pokemon_cache</code> / <code>_fusion_cache</code> <strong>au démarrage</strong>.
+Après un re-run ETL (surtout <code>--force</code>), recrée-le pour qu'il recharge
+depuis la base reconstruite — sinon il sert des données périmées
+silencieusement :
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>backend<span class="w"> </span>-d<span class="w"> </span>--force-recreate
+</span></code></pre></div></p>
+</div>
 <h2 id="patterns-recurrents">Patterns récurrents<a class="headerlink" href="#patterns-recurrents" title="Permanent link">&para;</a></h2>
 <h3 id="cache-de-requetes-wiki">Cache de requêtes wiki<a class="headerlink" href="#cache-de-requetes-wiki" title="Permanent link">&para;</a></h3>
 <p>Les pages MediaWiki sont longues à fetch. Chaque script met en cache le wikitext brut sous <code>etl/data/cache/</code> pour éviter de requêter à chaque relance.</p>
 <h3 id="normalisation-de-noms">Normalisation de noms<a class="headerlink" href="#normalisation-de-noms" title="Permanent link">&para;</a></h3>
 <p>Les sources divergent sur quelques noms (ex : wiki IF écrit <em>Flaafy</em> au lieu de <em>Flaaffy</em>). Chaque parseur expose un dictionnaire d'alias + une fonction <code>norm()</code> qui strip espaces, <code>-</code>, <code>'</code>, <code>.</code> et lowercase pour matcher contre la DB.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">WIKI_POKEMON_ALIASES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;flaafy&quot;</span><span class="p">:</span> <span class="s2">&quot;flaaffy&quot;</span><span class="p">}</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">norm_pokemon</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">n</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="k">return</span> <span class="n">WIKI_POKEMON_ALIASES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">WIKI_POKEMON_ALIASES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;flaafy&quot;</span><span class="p">:</span> <span class="s2">&quot;flaaffy&quot;</span><span class="p">}</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">norm_pokemon</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">n</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="k">return</span> <span class="n">WIKI_POKEMON_ALIASES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="parsing-de-tables-avec-rowspan">Parsing de tables avec rowspan<a class="headerlink" href="#parsing-de-tables-avec-rowspan" title="Permanent link">&para;</a></h3>
 <p>Les Move Experts et plusieurs autres pages wiki utilisent <code>rowspan</code> pour factoriser les cellules partagées entre plusieurs lignes. Le parseur maison reconstruit la matrice complète avant d'extraire les données.</p>
