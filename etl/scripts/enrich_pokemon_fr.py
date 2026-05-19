@@ -35,7 +35,7 @@ def enrich_pokemon_pokepedia(conn) -> None:
     # Fetch all pokemon that need enrichment
     cur.execute("SELECT id, national_id FROM pokemon WHERE pokepedia_url IS NULL AND national_id IS NOT NULL")
     rows = cur.fetchall()
-    LOGGER.info("%d Pokémon à enrichir (pokepedia_url manquant)", len(rows))
+    LOGGER.info("%d Pokémon to enrich (pokepedia_url missing)", len(rows))
 
     updated = skipped = 0
     for pokemon_id, national_id in rows:

@@ -6,9 +6,9 @@ Sources (MediaWiki API):
   - List_of_TMs    → CTs: number, move name, location in IF
   - List_of_Tutors → tutor moves: name, location, price
 
-Noms FR : renseignés plus tard via Pokepedia (movesets_base.json contient name_fr).
-          load_db.py fait la jointure move.name_en ↔ moveset.move_name_fr via
-          un mapping inversé construit depuis les movesets.
+FR names: filled in later via Pokepedia (movesets_base.json holds name_fr).
+          load_db.py joins move.name_en ↔ moveset.move_name_fr through an
+          inverted mapping built from the movesets.
 
 Output: data/moves_if.json, data/tms_if.json, data/tutors_if.json
 """
@@ -278,7 +278,7 @@ def main() -> None:
         tutors = extract_tutors(fetch_wikitext("List_of_Tutors"))
     except Exception:
         tutors = []
-        LOGGER.warning("List of Tutors non disponible — skipped")
+        LOGGER.warning("List of Tutors unavailable — skipped")
     save_json(OUT_TUTORS, tutors)
     LOGGER.info("Saved %d tutors → %s", len(tutors), OUT_TUTORS)
 
@@ -287,7 +287,7 @@ def main() -> None:
         expert_tutors = extract_expert_tutors(fetch_wikitext("List_of_Move_Expert_Moves"))
     except Exception:
         expert_tutors = []
-        LOGGER.warning("List_of_Move_Expert_Moves non disponible — skipped")
+        LOGGER.warning("List_of_Move_Expert_Moves unavailable — skipped")
     save_json(OUT_EXPERT_TUTORS, expert_tutors)
     LOGGER.info("Saved %d expert tutor moves → %s", len(expert_tutors), OUT_EXPERT_TUTORS)
 

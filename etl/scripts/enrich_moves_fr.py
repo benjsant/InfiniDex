@@ -1,14 +1,14 @@
 """
 ETL Step 3b — Enrich moves with French names from PokeAPI.
 
-Pour chaque move dans moves_if.json, interroge PokeAPI /move/{slug}
-pour récupérer le nom FR.
-Slug = name_en.lower().replace(" ", "-"), ex: "Bug Bite" → "bug-bite"
+For each move in moves_if.json, query PokeAPI /move/{slug} to fetch the
+FR name.
+Slug = name_en.lower().replace(" ", "-"), e.g. "Bug Bite" → "bug-bite"
 
-Met à jour moves_if.json sur place avec name_fr renseigné.
-Idempotent : saute les moves ayant déjà un name_fr.
+Updates moves_if.json in place with name_fr filled in.
+Idempotent: skips moves that already have a name_fr.
 
-Output: data/moves_if.json (modifié in-place avec name_fr)
+Output: data/moves_if.json (modified in-place with name_fr)
 """
 
 from __future__ import annotations
@@ -28,16 +28,16 @@ LOGGER = setup_logging(__name__)
 POKEAPI_MOVE  = "https://pokeapi.co/api/v2/move/{}"
 MOVES_FILE    = Path("data/moves_if.json")
 MAX_WORKERS   = 4
-REQUEST_DELAY = 0.05   # secondes par worker
+REQUEST_DELAY = 0.05   # seconds per worker
 
-# Priorité de version pour la description FR — on prend la plus récente disponible
+# Version priority for the FR description — take the most recent available
 VERSION_PRIO = [
     "ultra-sun-ultra-moon", "sun-moon", "omega-ruby-alpha-sapphire", "x-y",
     "black-2-white-2", "black-white",
     "lets-go-pikachu-lets-go-eevee", "sword-shield",  # fallback Gen 8+ moves
 ]
 
-# Corrections manuelles : nom IF wiki → slug PokeAPI exact
+# Manual fixes: IF wiki name → exact PokeAPI slug
 MANUAL_SLUGS: dict[str, str] = {
     "Smelling Salts":      "smelling-salts",
     "Vice Grip":           "vice-grip",
@@ -84,7 +84,7 @@ def main() -> None:
 
     moves = load_json(MOVES_FILE)
     to_enrich = [m for m in moves if not m.get("name_fr") or not m.get("description_fr")]
-    LOGGER.info("%d moves à enrichir en FR (sur %d)", len(to_enrich), len(moves))
+    LOGGER.info("%d moves to enrich in FR (out of %d)", len(to_enrich), len(moves))
 
     def save() -> None:
         save_json(MOVES_FILE, moves)
@@ -99,11 +99,11 @@ def main() -> None:
         label="moves",
     )
 
-    LOGGER.info("Terminé — %d FR trouvés | %d non trouvés", found, len(not_found))
+    LOGGER.info("Done — %d FR found | %d not found", found, len(not_found))
 
     missing = [m["name_en"] for m in moves if not m.get("name_fr")]
     if missing:
-        LOGGER.warning("%d moves sans nom FR : %s", len(missing), missing[:20])
+        LOGGER.warning("%d moves without an FR name: %s", len(missing), missing[:20])
 
 
 if __name__ == "__main__":
