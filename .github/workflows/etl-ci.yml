@@ -1,0 +1,42 @@
+name: ETL CI
+
+on:
+  pull_request:
+    paths:
+      - 'etl/**'
+      - '.github/workflows/etl-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'etl/**'
+      - '.github/workflows/etl-ci.yml'
+
+jobs:
+  etl:
+    name: Compile gate + parser tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.10.12"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ETL deps
+        run: uv sync --frozen --project etl
+
+      # Syntax gate: nothing else compiled the ETL layer before — a broken
+      # script (the bug class from this session) now fails CI here.
+      - name: Compile all ETL scripts
+        run: uv run --project etl python -m compileall -q etl
+
+      # Pure-parser unit tests — lock the regression classes (alt-form type
+      # promotion, triple-fusion type split, move-name alias/normalize).
+      - name: Parser unit tests
+        run: uv run --project etl --with pytest python -m pytest etl/tests -q
