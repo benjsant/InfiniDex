@@ -59,29 +59,29 @@ POKEPEDIA_ALIASES: dict[str, str | None] = {
     "Dracocharge":          "Draco-Charge",
     "Cru-Aile":             "Cru-Ailes",
     "Dynamopoing":          "Dynamo-Poing",
-    "Danse-Plume":          "Danse Plumes",   # Feather Dance — manquait le 's'
-    "Danse Plume":          "Danse Plumes",   # variante sans tiret
-    "Danse-Fleur":          "Danse Fleurs",   # Petal Dance — manquait le 's'
-    "Danse Fleur":          "Danse Fleurs",   # variante sans tiret
+    "Danse-Plume":          "Danse Plumes",   # Feather Dance — was missing the 's'
+    "Danse Plume":          "Danse Plumes",   # variant without hyphen
+    "Danse-Fleur":          "Danse Fleurs",   # Petal Dance — was missing the 's'
+    "Danse Fleur":          "Danse Fleurs",   # variant without hyphen
     "Force Cosmik":         "Force Cosmique",
-    "Prélèvem. Destin":     "Lien du Destin", # Destiny Bond (abréviation Pokepedia)
-    "Prélèvement Destin":   "Lien du Destin", # Destiny Bond (vieux nom Gen 1/2)
-    "Sonicboom":            "Sonic Boom",     # orthographe sans espace
-    "Sonik-Boom":           "Sonic Boom",     # orthographe Pokepedia
+    "Prélèvem. Destin":     "Lien du Destin", # Destiny Bond (Pokepedia abbreviation)
+    "Prélèvement Destin":   "Lien du Destin", # Destiny Bond (old Gen 1/2 name)
+    "Sonicboom":            "Sonic Boom",     # spelling without space
+    "Sonik-Boom":           "Sonic Boom",     # Pokepedia spelling
     "Stalagtite":           "Stalactite",
     "Coquilame":            "Coqui-Lame",     # Razor Shell
-    "Coquilames":           "Coqui-Lame",     # variante pluriel
+    "Coquilames":           "Coqui-Lame",     # plural variant
     "Carnareket":           "Psycho-Croc",    # Psychic Fangs (Jirachi)
-    "Crocs Suprêmes":       "Psycho-Croc",    # vieux nom Pokepedia
+    "Crocs Suprêmes":       "Psycho-Croc",    # old Pokepedia name
     "DélugePlasmique":      "Déluge Plasmique",
     "Lumiqueue":            "Lumi-Queue",     # Tail Glow
-    "Lumik-Queue":          "Lumi-Queue",     # variante orthographe
+    "Lumik-Queue":          "Lumi-Queue",     # spelling variant
     "Bombaimant":           "Bombe Aimant",   # Magnet Bomb
-    "Bomb-Aimant":          "Bombe Aimant",   # variante avec tiret
-    "Bomb'Œuf":             "Bombe Œuf",      # Egg Bomb (apostrophe → espace)
+    "Bomb-Aimant":          "Bombe Aimant",   # variant with hyphen
+    "Bomb'Œuf":             "Bombe Œuf",      # Egg Bomb (apostrophe → space)
     "Vol-Force":            "Vole-Force",     # Strength Sap (was wrongly mapped to "Force-Vol")
     "Végé-Attak":           "Végé-Attaque",
-    # Artefacts — not move names, discard
+    # Artifacts — not move names, discard
     "Ce Pokémon n'apprend aucune capacité par reproduction lors de cette génération.": None,
     "Grâce à sa capacité":  None,
 }

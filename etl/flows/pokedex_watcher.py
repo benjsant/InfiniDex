@@ -1,20 +1,20 @@
 """
-Prefect flow — Pokédex new Pokémon watcher.
+Prefect flow — Pokédex new-Pokémon watcher.
 
-Surveille deux sources pour détecter l'ajout de nouveaux Pokémon :
-  1. Le wiki Infinite Fusion (PokedexTable/Data) — source officielle
-  2. Data/pokedex/all_entries.json dans infinitefusion/infinitefusion-e18 — early detection
-     (le fichier JSON est mis à jour dans le repo du jeu avant même que le wiki soit édité)
+Watches two sources to detect newly added Pokémon:
+  1. The Infinite Fusion wiki (PokedexTable/Data) — official source
+  2. Data/pokedex/all_entries.json in infinitefusion/infinitefusion-e18 — early detection
+     (the JSON file is updated in the game repo even before the wiki is edited)
 
-À chaque run :
-  1. Récupère la liste wiki + le JSON du repo jeu
-  2. Compare avec le snapshot local (data/pokedex_last_ids.json)
-  3. Si de nouveaux IDs détectés → notifie Discord avec les noms
+On each run:
+  1. Fetch the wiki list + the game-repo JSON
+  2. Compare with the local snapshot (data/pokedex_last_ids.json)
+  3. If new IDs are detected → notify Discord with the names
 
-Lancement manuel :
+Manual run:
   python -m etl.flows.pokedex_watcher
 
-Lancement Prefect planifié (toutes les 24h) :
+Scheduled Prefect run (every 24h):
   prefect deployment run pokedex-watcher/daily
 """
 
@@ -60,7 +60,7 @@ _ENTRY_RE = re.compile(
 
 @task(name="fetch-wiki-pokedex", retries=3, retry_delay_seconds=30)
 def fetch_wiki_pokedex() -> dict[int, str]:
-    """Récupère la liste des Pokémon depuis le wiki IF.
+    """Fetch the Pokémon list from the IF wiki.
 
     Returns {if_id: name_en}
     """
@@ -93,7 +93,7 @@ def fetch_wiki_pokedex() -> dict[int, str]:
 
 @task(name="fetch-game-sha", retries=3, retry_delay_seconds=30)
 def fetch_game_sha() -> str:
-    """Récupère le SHA du dernier commit sur main du repo du jeu."""
+    """Fetch the SHA of the latest commit on the game repo's main branch."""
     logger = get_run_logger()
     resp = requests.get(
         f"https://api.github.com/repos/{GAME_REPO}/commits/{GAME_BRANCH}",
@@ -107,7 +107,7 @@ def fetch_game_sha() -> str:
 
 @task(name="fetch-game-dex-ids", retries=2, retry_delay_seconds=20)
 def fetch_game_dex_ids(sha: str) -> set[int]:
-    """Récupère les IDs de Data/pokedex/all_entries.json à un SHA donné."""
+    """Fetch the IDs from Data/pokedex/all_entries.json at a given SHA."""
     logger = get_run_logger()
     url  = f"https://raw.githubusercontent.com/{GAME_REPO}/{sha}/{GAME_DEX_FILE}"
     resp = requests.get(url, timeout=30)
@@ -123,7 +123,7 @@ def fetch_game_dex_ids(sha: str) -> set[int]:
 
 @task(name="load-snapshot")
 def load_snapshot() -> dict[int, str]:
-    """Lit le snapshot local des Pokémon connus."""
+    """Read the local snapshot of known Pokémon."""
     if SNAPSHOT_FILE.exists():
         raw = json.loads(SNAPSHOT_FILE.read_text())
         # Keys are stored as strings in JSON
@@ -144,13 +144,13 @@ def detect_new_pokemon(
     known: dict[int, str],
     source: str,
 ) -> list[tuple[int, str]]:
-    """Détecte les Pokémon présents dans `current` mais absents de `known`."""
+    """Detect Pokémon present in `current` but absent from `known`."""
     logger = get_run_logger()
     new_ids = sorted(set(current.keys()) - set(known.keys()))
     new_entries = [(i, current[i]) for i in new_ids]
     if new_entries:
         names = ", ".join(f"#{i} {n}" for i, n in new_entries[:10])
-        suffix = f" (+ {len(new_entries) - 10} autres)" if len(new_entries) > 10 else ""
+        suffix = f" (+ {len(new_entries) - 10} more)" if len(new_entries) > 10 else ""
         logger.warning("[%s] %d new Pokémon: %s%s", source, len(new_entries), names, suffix)
     else:
         logger.info("[%s] No new Pokémon detected (%d known).", source, len(known))
@@ -159,17 +159,17 @@ def detect_new_pokemon(
 
 @task(name="notify-new-pokemon")
 def notify_new_pokemon(new_entries: list[tuple[int, str]], source: str) -> None:
-    """Envoie une alerte Discord listant les nouveaux Pokémon."""
+    """Send a Discord alert listing the new Pokémon."""
     logger = get_run_logger()
     if not new_entries:
         return
 
     lines = "\n".join(f"• `#{i}` **{n}**" for i, n in new_entries[:20])
-    suffix = f"\n_… et {len(new_entries) - 20} autres_" if len(new_entries) > 20 else ""
+    suffix = f"\n_… and {len(new_entries) - 20} more_" if len(new_entries) > 20 else ""
     msg = (
-        f"🆕 **{len(new_entries)} nouveau(x) Pokémon détecté(s) sur {source} !**\n\n"
+        f"🆕 **{len(new_entries)} new Pokémon detected on {source}!**\n\n"
         f"{lines}{suffix}\n\n"
-        "Un re-run ETL (`extract_pokedex_if.py` → `load_db.py`) est nécessaire pour les intégrer."
+        "An ETL re-run (`extract_pokedex_if.py` → `load_db.py`) is needed to integrate them."
     )
 
     if not _DISCORD_WEBHOOK:
@@ -208,14 +208,14 @@ def save_pokedex_snapshot(entries: dict[int, str], game_sha: str | None) -> None
 @flow(name="pokedex-watcher", log_prints=True)
 def pokedex_watcher_flow() -> None:
     """
-    Détecte l'ajout de nouveaux Pokémon dans le wiki IF et le PBS GitHub.
+    Detect newly added Pokémon in the IF wiki and the GitHub PBS.
 
-    Sources vérifiées :
-    - Wiki IF (PokedexTable/Data) — source officielle du jeu
+    Sources checked:
+    - IF wiki (PokedexTable/Data) — official game source
     - PBS pokemon.txt (infinitefusion/infinitefusion-e18) — early detection
 
-    À planifier toutes les 24h via Prefect (idéalement quelques heures avant
-    que le sprite_watcher ne tourne, afin d'anticiper une nouvelle version).
+    Schedule every 24h via Prefect (ideally a few hours before
+    sprite_watcher runs, to anticipate a new version).
     """
     logger = get_run_logger()
 

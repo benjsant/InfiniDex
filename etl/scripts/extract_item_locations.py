@@ -190,7 +190,7 @@ def load_item_locations(conn, items: list[dict]) -> None:
     for item in items:
         item_id = name_to_id.get(item["name"].lower())
         if item_id is None:
-            LOGGER.warning("Objet non trouvé en DB : '%s'", item["name"])
+            LOGGER.warning("Item not found in DB: '%s'", item["name"])
             unmatched += 1
             continue
 
@@ -211,7 +211,7 @@ def load_item_locations(conn, items: list[dict]) -> None:
     conn.commit()
     cur.close()
     LOGGER.info(
-        "Terminé — %d localisations insérées | %d déjà présentes | %d objets non matchés",
+        "Done — %d locations inserted | %d already present | %d items unmatched",
         inserted, skipped, unmatched,
     )
 
@@ -223,7 +223,7 @@ def main() -> None:
 
     LOGGER.info("Parsing item rows…")
     items = parse_item_rows(wikitext)
-    LOGGER.info("%d objets parsés depuis le wiki", len(items))
+    LOGGER.info("%d items parsed from the wiki", len(items))
 
     with pg_connection() as conn:
         load_item_locations(conn, items)

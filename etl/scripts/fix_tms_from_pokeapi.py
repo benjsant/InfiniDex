@@ -1,25 +1,25 @@
 """
-Script de correction — complète les CT Infinite Fusion via PokeAPI.
+Correction script — fill in Infinite Fusion TMs via PokeAPI.
 
-Règle métier (Infinite Fusion) : un Pokémon peut apprendre une CT IF dès lors
-qu'il apprend ce move par *n'importe quelle* méthode dans les jeux officiels
-(niveau, CT, tuteur, œuf) OU par pré-évolution. Le scraper du wiki IF ne capte
-que les mouvements listés sur la page propre de chaque Pokémon, ce qui laisse
-beaucoup de trous (ex. Moonblast : 13 Pokémon côté IF, 63 côté PokeAPI).
+Business rule (Infinite Fusion): a Pokémon can learn an IF TM as soon as
+it learns that move by *any* method in the official games (level, TM,
+tutor, egg) OR through pre-evolution. The IF wiki scraper only captures
+the moves listed on each Pokémon's own page, which leaves many gaps
+(e.g. Moonblast: 13 Pokémon on the IF side, 63 on PokeAPI).
 
-Pipeline :
-  1. Liste des CT IF → wiki fandom (api.php, prop=wikitext).
-  2. Pour chaque CT, PokeAPI /move/{name}/ → liste des apprenants + flag
-     `machines` (CT officielle dans au moins un jeu ?).
-  3. Insère `pokemon_move(method='tm', source=base|infinite_fusion)` pour
-     chaque apprenant existant dans notre DB.
-  4. Héritage pré-évolution forward : tout descendant d'un apprenant reçoit
-     aussi la CT (règle IF rappelée par l'utilisateur).
-  5. Idempotent via la contrainte UNIQUE (pokemon_id, move_id, method).
+Pipeline:
+  1. IF TM list → fandom wiki (api.php, prop=wikitext).
+  2. For each TM, PokeAPI /move/{name}/ → learner list + `machines`
+     flag (official TM in at least one game?).
+  3. Insert `pokemon_move(method='tm', source=base|infinite_fusion)` for
+     each learner present in our DB.
+  4. Forward pre-evolution inheritance: every descendant of a learner
+     also receives the TM (IF rule reminded by the user).
+  5. Idempotent via the UNIQUE constraint (pokemon_id, move_id, method).
 
-Le champ `source` distingue :
-  - `base`             : CT officielle Nintendo (existe dans au moins un jeu).
-  - `infinite_fusion`  : CT spécifique à IF (le move n'est pas CT ailleurs).
+The `source` field distinguishes:
+  - `base`             : official Nintendo TM (exists in at least one game).
+  - `infinite_fusion`  : IF-specific TM (the move is not a TM elsewhere).
 """
 
 from __future__ import annotations
@@ -49,7 +49,7 @@ TM_ROW_RE = re.compile(
 
 
 def fetch_if_tm_names() -> list[str]:
-    """Retourne les noms (en) des moves listés comme CT sur le wiki IF."""
+    """Return the (en) names of the moves listed as TMs on the IF wiki."""
     resp = requests.get(
         WIKI_API,
         params={
@@ -64,14 +64,14 @@ def fetch_if_tm_names() -> list[str]:
     resp.raise_for_status()
     wikitext = resp.json()["parse"]["wikitext"]["*"]
     names = sorted({m.group("name").strip() for m in TM_ROW_RE.finditer(wikitext)})
-    LOGGER.info("Wiki IF : %d moves distincts listés comme CT", len(names))
+    LOGGER.info("IF wiki: %d distinct moves listed as TMs", len(names))
     return names
 
 
 # ─── Step 2 — PokeAPI move details ────────────────────────────────────────────
 
 def pokeapi_move_slug(name_en: str) -> str:
-    """Convertit un nom de move (EN) vers un slug PokeAPI."""
+    """Convert a move name (EN) to a PokeAPI slug."""
     return (
         name_en.lower()
         .replace("'", "")
@@ -81,15 +81,15 @@ def pokeapi_move_slug(name_en: str) -> str:
 
 
 def fetch_move_detail(name_en: str) -> tuple[bool, list[str]] | None:
-    """Retourne (is_official_tm, pokemon_slugs) ou None si introuvable."""
+    """Return (is_official_tm, pokemon_slugs) or None if not found."""
     slug = pokeapi_move_slug(name_en)
     try:
         r = requests.get(f"{POKEAPI}/move/{slug}", timeout=15)
     except requests.RequestException as e:
-        LOGGER.warning("PokeAPI erreur (%s) : %s", slug, e)
+        LOGGER.warning("PokeAPI error (%s): %s", slug, e)
         return None
     if r.status_code != 200:
-        LOGGER.warning("PokeAPI 404 pour move %s (slug=%s)", name_en, slug)
+        LOGGER.warning("PokeAPI 404 for move %s (slug=%s)", name_en, slug)
         return None
     data = r.json()
     is_official_tm = bool(data.get("machines"))
@@ -100,13 +100,13 @@ def fetch_move_detail(name_en: str) -> tuple[bool, list[str]] | None:
 # ─── Step 3 — DB helpers ──────────────────────────────────────────────────────
 
 def load_move_ids(cur, names: list[str]) -> dict[str, int]:
-    """name_en → move.id (limité aux moves présents en base)."""
+    """name_en → move.id (limited to moves present in the DB)."""
     cur.execute("SELECT id, name_en FROM move WHERE name_en = ANY(%s)", (names,))
     return {name: mid for mid, name in cur.fetchall()}
 
 
 def load_pokemon_ids(cur) -> dict[str, int]:
-    """slug PokeAPI-like (lowercased name_en) → pokemon.id"""
+    """PokeAPI-like slug (lowercased name_en) → pokemon.id"""
     cur.execute("SELECT id, name_en FROM pokemon")
     out: dict[str, int] = {}
     for pid, name_en in cur.fetchall():
@@ -115,7 +115,7 @@ def load_pokemon_ids(cur) -> dict[str, int]:
 
 
 def load_evolution_forward(cur) -> dict[int, list[int]]:
-    """pokemon_id → liste des descendants directs."""
+    """pokemon_id → list of direct descendants."""
     cur.execute("SELECT pokemon_id, evolves_into_id FROM pokemon_evolution")
     out: dict[int, list[int]] = defaultdict(list)
     for src, tgt in cur.fetchall():
@@ -124,7 +124,7 @@ def load_evolution_forward(cur) -> dict[int, list[int]]:
 
 
 def all_descendants(start: int, edges: dict[int, list[int]]) -> set[int]:
-    """BFS des descendants d'un Pokémon (hors lui-même)."""
+    """BFS of a Pokémon's descendants (excluding itself)."""
     seen: set[int] = set()
     queue = list(edges.get(start, []))
     while queue:
@@ -143,10 +143,10 @@ def run(conn) -> None:
 
     tm_names = fetch_if_tm_names()
     move_ids = load_move_ids(cur, tm_names)
-    LOGGER.info("Moves trouvés en base : %d / %d", len(move_ids), len(tm_names))
+    LOGGER.info("Moves found in DB: %d / %d", len(move_ids), len(tm_names))
     missing = set(tm_names) - set(move_ids)
     if missing:
-        LOGGER.warning("Moves CT IF absents de la table `move` (ignorés) : %s",
+        LOGGER.warning("IF TM moves missing from the `move` table (skipped): %s",
                        sorted(missing))
 
     pokemon_ids = load_pokemon_ids(cur)
@@ -163,7 +163,7 @@ def run(conn) -> None:
         is_official_tm, learners = detail
         source = "base" if is_official_tm else "infinite_fusion"
 
-        # Collecte des pokémon_id (apprenants + descendants)
+        # Collect pokemon_id (learners + descendants)
         targets: set[int] = set()
         for slug in learners:
             pid = pokemon_ids.get(slug)
@@ -173,10 +173,10 @@ def run(conn) -> None:
             targets |= all_descendants(pid, evolutions)
 
         if not targets:
-            LOGGER.debug("Aucun apprenant pour %s", name_en)
+            LOGGER.debug("No learner for %s", name_en)
             continue
 
-        # INSERT idempotent
+        # Idempotent INSERT
         for pid in targets:
             cur.execute(
                 """
@@ -191,12 +191,12 @@ def run(conn) -> None:
             else:
                 skipped += 1
 
-        LOGGER.info("  %s (source=%s) → %d apprenants ciblés",
+        LOGGER.info("  %s (source=%s) → %d learners targeted",
                     name_en, source, len(targets))
 
     conn.commit()
     cur.close()
-    LOGGER.info("Terminé — %d nouvelles lignes CT insérées, %d déjà présentes",
+    LOGGER.info("Done — %d new TM rows inserted, %d already present",
                 inserted, skipped)
 
 

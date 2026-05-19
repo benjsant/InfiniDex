@@ -51,7 +51,7 @@ def main() -> None:
     abilities: list[dict] = load_json(DATA_FILE)
 
     to_enrich = [a for a in abilities if a.get("name_fr") is None]
-    LOGGER.info("%d abilities à enrichir (sur %d)", len(to_enrich), len(abilities))
+    LOGGER.info("%d abilities to enrich (out of %d)", len(to_enrich), len(abilities))
 
     def save() -> None:
         save_json(DATA_FILE, abilities)
@@ -66,9 +66,9 @@ def main() -> None:
         label="abilities",
     )
 
-    LOGGER.info("Terminé — %d FR trouvés | %d non trouvés", found, len(not_found))
+    LOGGER.info("Done — %d FR found | %d not found", found, len(not_found))
     if not_found:
-        LOGGER.warning("Non trouvés: %s", not_found)
+        LOGGER.warning("Not found: %s", not_found)
 
 
 if __name__ == "__main__":

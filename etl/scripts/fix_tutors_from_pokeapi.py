@@ -1,18 +1,18 @@
 """
-Script de correction — complète les moves de Move Tutor Infinite Fusion.
+Correction script — fill in Infinite Fusion Move Tutor moves.
 
-Même règle que pour les CT (cf. fix_tms_from_pokeapi.py) : un Pokémon peut
-apprendre un move par tutor IF s'il l'apprend par *n'importe quelle* méthode
-officielle (niveau, CT, tuteur, œuf) ou via héritage pré-évolution.
+Same rule as for TMs (cf. fix_tms_from_pokeapi.py): a Pokémon can learn
+a move via an IF tutor if it learns it by *any* official method (level,
+TM, tutor, egg) or through pre-evolution inheritance.
 
-Trois lignes du wiki sont ignorées car ce ne sont pas de vrais moves :
-  - "Move Teacher" (Move Reminder) : rappelle des moves déjà dans le learnset
-  - "Move Deleter" : efface des moves
-  - "Egg Moves" : emplacement pour ré-apprendre les moves œuf (déjà capturés
-    en méthode `breeding`)
+Three wiki rows are skipped because they are not real moves:
+  - "Move Teacher" (Move Reminder): re-teaches moves already in the learnset
+  - "Move Deleter": deletes moves
+  - "Egg Moves": slot to re-learn egg moves (already captured under the
+    `breeding` method)
 
-La page Move Expert est traitée à part (liste_Move_Expert_Moves), car ces
-moves ne sont apprenables que sur des fusions sous conditions.
+The Move Expert page is handled separately (List_of_Move_Expert_Moves),
+since those moves are only learnable on fusions under conditions.
 """
 
 from __future__ import annotations
@@ -43,11 +43,11 @@ SKIP_NAMES: set[str] = {
 
 # ─── Step 1 — Parse tutor list ────────────────────────────────────────────────
 
-# Lignes de la forme :
+# Lines of the form:
 #   |[[bulbapedia:NAME_LINK|DISPLAY_NAME]]
-# ou :
+# or:
 #   |[https://bulbapedia.../NAME DISPLAY_NAME]
-# On capture DISPLAY_NAME, puis on filtre via SKIP_NAMES.
+# We capture DISPLAY_NAME, then filter via SKIP_NAMES.
 TUTOR_BULBA_WIKI = re.compile(
     r"\|\s*\[\[bulbapedia:[^|\]]+\|(?P<name>[^\]]+)\]\]"
 )
@@ -88,11 +88,11 @@ def fetch_tutor_names() -> list[str]:
         names.add(name)
 
     names_sorted = sorted(names)
-    LOGGER.info("Wiki IF : %d moves distincts listés comme tutors", len(names_sorted))
+    LOGGER.info("IF wiki: %d distinct moves listed as tutors", len(names_sorted))
     return names_sorted
 
 
-# ─── Step 2 — PokeAPI helpers (copiés de fix_tms_from_pokeapi) ────────────────
+# ─── Step 2 — PokeAPI helpers (copied from fix_tms_from_pokeapi) ───────────────
 
 def pokeapi_move_slug(name_en: str) -> str:
     return (
@@ -104,20 +104,20 @@ def pokeapi_move_slug(name_en: str) -> str:
 
 
 def fetch_move_detail(name_en: str) -> tuple[bool, list[str]] | None:
-    """Retourne (is_official_tutor_or_tm, pokemon_slugs). On considère `base`
-    tout move qui apparaît officiellement dans les machines ou dans les
-    move_learn_methods ≠ level-up (i.e. non exclusif IF)."""
+    """Return (is_official_tutor_or_tm, pokemon_slugs). Any move that
+    appears officially in `machines` or in move_learn_methods ≠ level-up
+    (i.e. not IF-exclusive) is considered `base`."""
     slug = pokeapi_move_slug(name_en)
     try:
         r = requests.get(f"{POKEAPI}/move/{slug}", timeout=15)
     except requests.RequestException as e:
-        LOGGER.warning("PokeAPI erreur (%s) : %s", slug, e)
+        LOGGER.warning("PokeAPI error (%s): %s", slug, e)
         return None
     if r.status_code != 200:
-        LOGGER.warning("PokeAPI 404 pour move %s (slug=%s)", name_en, slug)
+        LOGGER.warning("PokeAPI 404 for move %s (slug=%s)", name_en, slug)
         return None
     data = r.json()
-    # `machines` non vide = TM/HM dans un jeu officiel
+    # non-empty `machines` = TM/HM in an official game
     is_official = bool(data.get("machines"))
     learners = [p["name"] for p in data.get("learned_by_pokemon", [])]
     return is_official, learners
@@ -162,10 +162,10 @@ def run(conn) -> None:
 
     names = fetch_tutor_names()
     move_ids = load_move_ids(cur, names)
-    LOGGER.info("Moves trouvés en base : %d / %d", len(move_ids), len(names))
+    LOGGER.info("Moves found in DB: %d / %d", len(move_ids), len(names))
     missing = set(names) - set(move_ids)
     if missing:
-        LOGGER.warning("Moves tutor IF absents de la table `move` (ignorés) : %s",
+        LOGGER.warning("IF tutor moves missing from the `move` table (skipped): %s",
                        sorted(missing))
 
     pokemon_ids = load_pokemon_ids(cur)
@@ -180,10 +180,10 @@ def run(conn) -> None:
         if detail is None:
             continue
         is_official, learners = detail
-        # Pour les tutors : on marque `base` si le move est soit une CT
-        # officielle (machines non vide), soit listé comme learnable dans
-        # un jeu officiel (learned_by_pokemon non vide de manière générale).
-        # Sinon c'est un tutor ajouté par IF.
+        # For tutors: mark `base` if the move is either an official TM
+        # (non-empty machines) or listed as learnable in an official game
+        # (non-empty learned_by_pokemon in general). Otherwise it is a
+        # tutor added by IF.
         source = "base" if (is_official or learners) else "infinite_fusion"
 
         targets: set[int] = set()
@@ -195,7 +195,7 @@ def run(conn) -> None:
             targets |= all_descendants(pid, evolutions)
 
         if not targets:
-            LOGGER.debug("Aucun apprenant pour %s", name_en)
+            LOGGER.debug("No learner for %s", name_en)
             continue
 
         for pid in targets:
@@ -212,12 +212,12 @@ def run(conn) -> None:
             else:
                 skipped += 1
 
-        LOGGER.info("  %s (source=%s) → %d apprenants ciblés",
+        LOGGER.info("  %s (source=%s) → %d learners targeted",
                     name_en, source, len(targets))
 
     conn.commit()
     cur.close()
-    LOGGER.info("Terminé — %d nouvelles lignes tutor insérées, %d déjà présentes",
+    LOGGER.info("Done — %d new tutor rows inserted, %d already present",
                 inserted, skipped)
 
 

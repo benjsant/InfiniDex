@@ -1,13 +1,13 @@
-"""Prefect flow — pipeline ETL complet InfiniDex.
+"""Prefect flow — full InfiniDex ETL pipeline.
 
-Orchestre les 14 étapes du pipeline en tasks Prefect séquentielles.
-Chaque step est un subprocess isolé (préserve la logique existante)
-avec retry et logging Prefect.
+Orchestrates the 14 pipeline steps as sequential Prefect tasks.
+Each step is an isolated subprocess (preserves the existing logic)
+with Prefect retry and logging.
 
-Usage manuel :
+Manual usage:
     python -m etl.flows.etl_pipeline
 
-Déploiement Prefect planifié :
+Scheduled Prefect deployment:
     prefect deployment run fusiondex-etl-pipeline/etl-pipeline-manual
 """
 
@@ -28,20 +28,20 @@ PY = sys.executable
 
 # (script_filename, cwd_override_or_None)
 _STEPS: list[tuple[str, Path | None, str]] = [
-    ("extract_pokedex_if.py",              None,        "1 — Extract Pokédex wiki IF"),
-    ("extract_stats_pokeapi.py",           None,        "2a — Stats + FR + évolutions (PokeAPI)"),
-    ("extract_pokepedia_names.py",         None,        "2b — Mapping Pokepédia"),
-    ("extract_moves_if.py",                None,        "3 — Moves / TMs / tuteurs wiki IF"),
+    ("extract_pokedex_if.py",              None,        "1 — Extract IF wiki Pokédex"),
+    ("extract_stats_pokeapi.py",           None,        "2a — Stats + FR + evolutions (PokeAPI)"),
+    ("extract_pokepedia_names.py",         None,        "2b — Pokepedia mapping"),
+    ("extract_moves_if.py",                None,        "3 — Moves / TMs / tutors IF wiki"),
     ("enrich_moves_fr.py",                 None,        "3b — Moves FR (PokeAPI)"),
-    ("extract_abilities_if.py",            None,        "4 — Abilities wiki IF"),
+    ("extract_abilities_if.py",            None,        "4 — Abilities IF wiki"),
     ("enrich_abilities_fr.py",             None,        "4b — Abilities FR (PokeAPI)"),
-    ("extract_encounters_if.py",           None,        "5 — Encounters wiki IF"),
-    # Step 6 : scrapy tourne depuis pokepedia_scraper/
-    ("if_movesets",                        SCRAPER_DIR, "6 — Scrape Pokepédia movesets (scrapy)"),
+    ("extract_encounters_if.py",           None,        "5 — Encounters IF wiki"),
+    # Step 6: scrapy runs from pokepedia_scraper/
+    ("if_movesets",                        SCRAPER_DIR, "6 — Scrape Pokepedia movesets (scrapy)"),
     ("transform_merge_movesets.py",        None,        "7 — Merge movesets"),
     ("load_db.py",                         None,        "8 — Load PostgreSQL"),
     ("fix_pokemon_types.py",               None,        "8b — Fix types (PokeAPI)"),
-    ("enrich_evolution_movesets.py",       None,        "8c — Héritage moves pré-évolutions"),
+    ("enrich_evolution_movesets.py",       None,        "8c — Inherit moves from pre-evolutions"),
     ("fix_national_ids.py",                None,        "8d — Fix national_id"),
     ("fix_stats_and_fr_names.py",          None,        "8e — Resync stats + FR"),
     ("fix_tms_from_pokeapi.py",            None,        "8f — TM gaps (PokeAPI)"),
@@ -69,7 +69,7 @@ def run_script(filename: str, cwd: Path | None, label: str) -> None:
     logger.info("▶ %s", label)
 
     if cwd is not None:
-        # Scrapy step : `scrapy crawl <spider>`
+        # Scrapy step: `scrapy crawl <spider>`
         cmd = ["scrapy", "crawl", filename]
     else:
         cmd = [PY, str(SCRIPTS_DIR / filename)]
@@ -83,33 +83,33 @@ def run_script(filename: str, cwd: Path | None, label: str) -> None:
 
 @task(name="audit-db", retries=0)
 def run_audit() -> None:
-    """Lance l'audit de cohérence de la base après le pipeline."""
+    """Run the database consistency audit after the pipeline."""
     logger = get_run_logger()
-    logger.info("▶ Audit DB — vérification cohérence post-pipeline")
+    logger.info("▶ Audit DB — post-pipeline consistency check")
     from etl.scripts.audit_db import run_audit as _audit
     _audit()
 
 
 @flow(name="fusiondex-etl-pipeline", log_prints=True)
 def etl_pipeline_flow(force: bool = False) -> None:
-    """Pipeline ETL complet — 14 étapes + audit final.
+    """Full ETL pipeline — 14 steps + final audit.
 
     Args:
-        force: Si True, relance même si les données sont déjà chargées.
+        force: If True, re-run even if the data is already loaded.
     """
     logger = get_run_logger()
 
     if not force and check_already_loaded():
-        logger.info("Données déjà chargées — pipeline ignoré (force=True pour relancer).")
+        logger.info("Data already loaded — pipeline skipped (force=True to re-run).")
         return
 
-    logger.info("Démarrage du pipeline ETL InfiniDex (%d étapes).", len(_STEPS))
+    logger.info("Starting the InfiniDex ETL pipeline (%d steps).", len(_STEPS))
 
     for filename, cwd, label in _STEPS:
         run_script.with_options(name=label)(filename, cwd, label)
 
     run_audit()
-    logger.info("Pipeline ETL terminé avec succès.")
+    logger.info("ETL pipeline finished successfully.")
 
 
 if __name__ == "__main__":

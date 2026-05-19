@@ -1,15 +1,15 @@
-"""ETL — Suppression des moves vraiment orphelins.
+"""ETL — Delete truly orphan moves.
 
-Un move est orphelin s'il n'est référencé nulle part :
-  - pokemon_move (aucun Pokémon ne l'apprend)
-  - tm           (pas de CT associée)
-  - move_tutor   (pas de tuteur classique)
-  - move_expert_move (pas de Move Expert)
+A move is orphan if it is referenced nowhere:
+  - pokemon_move (no Pokémon learns it)
+  - tm           (no associated TM)
+  - move_tutor   (no classic tutor)
+  - move_expert_move (no Move Expert)
 
-Ces moves correspondent à des attaques Gen 7+ qui n'existent pas dans IF.
-Les supprimer allège la DB et évite qu'ils apparaissent dans des filtres.
+These moves correspond to Gen 7+ attacks that do not exist in IF.
+Deleting them lightens the DB and avoids them showing up in filters.
 
-Usage :
+Usage:
     docker compose run --rm etl python -m etl.scripts.clean_orphan_moves
 """
 
@@ -39,10 +39,10 @@ def main() -> None:
         orphans = cur.fetchall()
 
         if not orphans:
-            log.info("Aucun move orphelin trouvé.")
+            log.info("No orphan move found.")
             return
 
-        log.info("%d moves orphelins détectés :", len(orphans))
+        log.info("%d orphan moves detected:", len(orphans))
         for mid, name in orphans:
             log.info("  #%d %s", mid, name)
 
@@ -50,7 +50,7 @@ def main() -> None:
         cur.execute("DELETE FROM move WHERE id = ANY(%s)", (ids,))
         conn.commit()
 
-        log.info("✅ %d moves supprimés.", len(ids))
+        log.info("✅ %d moves deleted.", len(ids))
 
 
 if __name__ == "__main__":
