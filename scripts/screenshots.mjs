@@ -1,14 +1,18 @@
 /**
- * FusionDex — captures d'écran automatiques pour la documentation.
+ * FusionDex — automatic documentation screenshots.
  *
- * Prérequis : npx playwright install chromium
- * Lancement  : node scripts/screenshots.mjs
+ * Prerequisite : npx playwright install chromium
+ * Run          : node scripts/screenshots.mjs
  *
- * Sortie     : screenshots/{nom}.png  (desktop 1280×800)
- *              screenshots/mobile_{nom}.png  (mobile 390×844)
+ * Output       : screenshots/{name}.webp  (desktop 1280×800)
+ *                screenshots/mobile_{name}.webp  (mobile 390×844)
+ *
+ * Playwright only emits PNG/JPEG, so each shot is captured as a PNG
+ * buffer then re-encoded to WebP (q88) via sharp.
  */
 
 import { chromium } from "playwright";
+import sharp from "sharp";
 import { mkdir } from "fs/promises";
 import { existsSync } from "fs";
 
@@ -42,6 +46,13 @@ const PAGES = [
   { name: "17_favoris_pokedex",    path: "/pokedex/favorites",  wait: "networkidle" },
 ];
 
+// ── Capture helper ────────────────────────────────────────────────────────────
+
+async function saveWebp(page, name, { fullPage = false } = {}) {
+  const buf = await page.screenshot({ fullPage });
+  await sharp(buf).webp({ quality: 88 }).toFile(`${OUT_DIR}${name}.webp`);
+}
+
 // ── Actions interactives ──────────────────────────────────────────────────────
 
 async function captureSearchOpen(page, name) {
@@ -64,7 +75,7 @@ async function captureSearchOpen(page, name) {
     await page.keyboard.type("char");
     await page.waitForTimeout(800);
   } catch { /* ignore */ }
-  await page.screenshot({ path: `${OUT_DIR}${name}.png`, fullPage: false });
+  await saveWebp(page, name);
 }
 
 async function setTheme(page, theme) {
@@ -78,7 +89,7 @@ async function setTheme(page, theme) {
 
 async function captureModeLight(page, name) {
   await setTheme(page, "light");
-  await page.screenshot({ path: `${OUT_DIR}${name}.png`, fullPage: false });
+  await saveWebp(page, name);
   await setTheme(page, "dark");
 }
 
@@ -89,14 +100,14 @@ async function captureCarousel(page, name) {
     await carousel.scrollIntoViewIfNeeded();
   } catch { /* ignore */ }
   await page.waitForTimeout(500);
-  await page.screenshot({ path: `${OUT_DIR}${name}.png`, fullPage: false });
+  await saveWebp(page, name);
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 async function shot(page, name, { fullPage = true } = {}) {
-  await page.screenshot({ path: `${OUT_DIR}${name}.png`, fullPage });
-  console.log(`  ✓  ${name}.png`);
+  await saveWebp(page, name, { fullPage });
+  console.log(`  ✓  ${name}.webp`);
 }
 
 async function goto(page, path, waitUntil = "networkidle") {
@@ -134,7 +145,7 @@ async function main() {
   try {
     await goto(dp, "/");
     await captureSearchOpen(dp, "18_recherche_globale");
-    console.log("  ✓  18_recherche_globale.png"); ok++;
+    console.log("  ✓  18_recherche_globale.webp"); ok++;
   } catch (err) { console.error(`  ✗  18_recherche_globale — ${err.message.split("\n")[0]}`); fail++; }
 
   // Captures mode clair sur plusieurs pages
@@ -148,7 +159,7 @@ async function main() {
     try {
       await goto(dp, path);
       await captureModeLight(dp, name);
-      console.log(`  ✓  ${name}.png`); ok++;
+      console.log(`  ✓  ${name}.webp`); ok++;
     } catch (err) { console.error(`  ✗  ${name} — ${err.message.split("\n")[0]}`); fail++; }
   }
 
@@ -156,7 +167,7 @@ async function main() {
     await goto(dp, "/fusion/1/4", "load");
     await dp.waitForTimeout(1500);
     await captureCarousel(dp, "20_carousel_sprites");
-    console.log("  ✓  20_carousel_sprites.png"); ok++;
+    console.log("  ✓  20_carousel_sprites.webp"); ok++;
   } catch (err) { console.error(`  ✗  20_carousel_sprites — ${err.message.split("\n")[0]}`); fail++; }
 
   await desktop.close();
@@ -190,17 +201,17 @@ async function main() {
     await goto(mp, "/");
     await mp.locator('[aria-label="Menu"]').click();
     await mp.waitForTimeout(400);
-    await mp.screenshot({ path: `${OUT_DIR}mobile_06_navbar_drawer.png`, fullPage: false });
-    console.log("  ✓  mobile_06_navbar_drawer.png"); ok++;
+    await saveWebp(mp, "mobile_06_navbar_drawer");
+    console.log("  ✓  mobile_06_navbar_drawer.webp"); ok++;
   } catch (err) { console.error(`  ✗  mobile_06_navbar_drawer — ${err.message.split("\n")[0]}`); fail++; }
 
   // Mode clair mobile
   try {
     await goto(mp, "/pokedex");
     await setTheme(mp, "light");
-    await mp.screenshot({ path: `${OUT_DIR}mobile_07_mode_clair.png`, fullPage: false });
+    await saveWebp(mp, "mobile_07_mode_clair");
     await setTheme(mp, "dark");
-    console.log("  ✓  mobile_07_mode_clair.png"); ok++;
+    console.log("  ✓  mobile_07_mode_clair.webp"); ok++;
   } catch (err) { console.error(`  ✗  mobile_07_mode_clair — ${err.message.split("\n")[0]}`); fail++; }
 
   await mobile.close();

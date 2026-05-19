@@ -169,7 +169,7 @@ Les images sont produites dans `screenshots/` puis copiées dans `docs/imgs/` :
 
 ```bash
 # Copie rapide après régénération
-for src in screenshots/*.png; do
+for src in screenshots/*.webp; do
   name=$(basename "$src")
   # Voir scripts/screenshots.mjs pour la correspondance complète
 done
