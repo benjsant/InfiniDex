@@ -10136,7 +10136,6 @@ COPY public.pokemon_evolution (id, pokemon_id, evolves_into_id, trigger_type, mi
 217	303	304	level_up	40	\N	\N	f	\N
 218	394	335	level_up	35	\N	\N	t	Level 35 OR Prism Scale
 219	394	335	use_item	\N	prism-scale	\N	t	Prism Scale
-220	394	335	level_up	35	\N	\N	t	Level 35 OR Prism Scale
 222	405	357	level_up	37	\N	\N	f	\N
 223	311	312	level_up	37	\N	\N	f	\N
 224	312	313	level_up	50	\N	\N	t	Level 50 OR Reaper Cloth
