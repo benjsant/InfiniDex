@@ -253,6 +253,13 @@ def main(argv: Sequence[str] | None = None) -> None:
         run(s.cmd, s.label, s.cwd)
 
     print("\n[ETL] Pipeline completed successfully.", flush=True)
+    print(
+        "[ETL] Reminder: the backend warms _pokemon_cache/_fusion_cache at "
+        "startup. Recreate it so it reloads from the rebuilt DB, otherwise "
+        "it silently serves stale data:\n"
+        "      docker compose up backend -d --force-recreate",
+        flush=True,
+    )
 
 
 if __name__ == "__main__":
