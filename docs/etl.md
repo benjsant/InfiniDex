@@ -112,6 +112,15 @@ Pour forcer une réexécution complète (même si les données sont déjà charg
 docker compose run --rm etl python etl/pipeline.py --force
 ```
 
+!!! warning "Recrée le backend après un rebuild"
+    Le backend warm `_pokemon_cache` / `_fusion_cache` **au démarrage**.
+    Après un re-run ETL (surtout `--force`), recrée-le pour qu'il recharge
+    depuis la base reconstruite — sinon il sert des données périmées
+    silencieusement :
+    ```bash
+    docker compose up backend -d --force-recreate
+    ```
+
 ## Patterns récurrents
 
 ### Cache de requêtes wiki
