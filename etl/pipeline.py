@@ -144,6 +144,8 @@ STEPS: list[Step] = [
          _py("clean_orphan_moves.py")),
     Step("14",     "Step 14 — Enrich missing abilities via PokeAPI",
          _py("enrich_missing_abilities.py")),
+    Step("audit",  "Step 15 — Data consistency audit (gate: fails on blocking issues)",
+         _py("audit_db.py")),
 ]
 
 
