@@ -1,11 +1,11 @@
 """
-Script de correction — Enrich pokemon_type depuis PokeAPI.
+Correction script — Enrich pokemon_type from PokeAPI.
 
-Problème : extract_pokedex_if.py assigne mal type1/type2 depuis le wiki IF.
-Solution  : pour chaque Pokémon avec national_id connu, récupère les types
-            depuis PokeAPI et met à jour pokemon_type en base.
+Problem : extract_pokedex_if.py mis-assigns type1/type2 from the IF wiki.
+Solution: for each Pokémon with a known national_id, fetch the types
+          from PokeAPI and update pokemon_type in the DB.
 
-Idempotent : ON CONFLICT (pokemon_id, slot) DO UPDATE.
+Idempotent: ON CONFLICT (pokemon_id, slot) DO UPDATE.
 """
 
 from __future__ import annotations
@@ -20,29 +20,29 @@ from etl.utils.logging import setup_logging
 LOGGER = setup_logging(__name__)
 
 POKEAPI = "https://pokeapi.co/api/v2/pokemon/{}"
-REQUEST_DELAY = 0.15  # secondes entre requêtes
+REQUEST_DELAY = 0.15  # seconds between requests
 
-# Pokémon IF sans équivalent PokeAPI (formes IF custom, triple fusions, etc.)
-# On les laisse avec les types du wiki IF
+# IF Pokémon with no PokeAPI equivalent (IF-custom forms, triple fusions, etc.)
+# Left with the IF wiki types
 SKIP_NATIONAL_IDS: set[int] = set()
 
 
 def fetch_types(national_id: int, retries: int = 3) -> list[tuple[int, str]]:
-    """Retourne [(slot, type_name_en)] depuis PokeAPI pour un national_id.
+    """Return [(slot, type_name_en)] from PokeAPI for a national_id.
 
-    Retente jusqu'à `retries` fois en cas de 429 ou d'erreur réseau,
-    avec backoff exponentiel (2s, 4s, 8s).
+    Retries up to `retries` times on 429 or network error, with
+    exponential backoff (2s, 4s, 8s).
     """
     for attempt in range(retries):
         try:
             resp = requests.get(POKEAPI.format(national_id), timeout=15)
             if resp.status_code == 429:
                 wait = 2 ** (attempt + 1)
-                LOGGER.warning("PokeAPI 429 pour #%d — attente %ds", national_id, wait)
+                LOGGER.warning("PokeAPI 429 for #%d — waiting %ds", national_id, wait)
                 time.sleep(wait)
                 continue
             if resp.status_code != 200:
-                LOGGER.warning("PokeAPI HTTP %d pour #%d", resp.status_code, national_id)
+                LOGGER.warning("PokeAPI HTTP %d for #%d", resp.status_code, national_id)
                 return []
             data = resp.json()
             return [
@@ -51,7 +51,7 @@ def fetch_types(national_id: int, retries: int = 3) -> list[tuple[int, str]]:
             ]
         except Exception as e:
             wait = 2 ** (attempt + 1)
-            LOGGER.warning("PokeAPI error pour #%d (tentative %d/%d) : %s — attente %ds",
+            LOGGER.warning("PokeAPI error for #%d (attempt %d/%d): %s — waiting %ds",
                            national_id, attempt + 1, retries, e, wait)
             if attempt < retries - 1:
                 time.sleep(wait)
@@ -61,12 +61,12 @@ def fetch_types(national_id: int, retries: int = 3) -> list[tuple[int, str]]:
 def fix_pokemon_types(conn) -> None:
     cur = conn.cursor()
 
-    # Récupère la liste des Pokémon avec leur national_id
+    # Fetch the list of Pokémon with their national_id
     cur.execute("SELECT id, national_id FROM pokemon WHERE national_id IS NOT NULL ORDER BY id")
     rows = cur.fetchall()
-    LOGGER.info("%d Pokémon avec national_id trouvés", len(rows))
+    LOGGER.info("%d Pokémon with a national_id found", len(rows))
 
-    # Récupère le type_map name_en → id
+    # Fetch the type_map name_en → id
     cur.execute("SELECT id, name_en FROM type WHERE is_triple_fusion_type = FALSE")
     type_map: dict[str, int] = {name: tid for tid, name in cur.fetchall()}
 
@@ -92,11 +92,11 @@ def fix_pokemon_types(conn) -> None:
             )
 
         for slot, type_name in types:
-            # Certains noms PokeAPI : "fighting" → "Fighting"
+            # Some PokeAPI names: "fighting" → "Fighting"
             type_id = type_map.get(type_name)
             if type_id is None:
                 LOGGER.warning(
-                    "Type inconnu '%s' pour Pokémon #%d (national #%d)",
+                    "Unknown type '%s' for Pokémon #%d (national #%d)",
                     type_name, pokemon_id, national_id
                 )
                 continue
@@ -113,26 +113,26 @@ def fix_pokemon_types(conn) -> None:
 
         if (i + 1) % 50 == 0:
             conn.commit()
-            LOGGER.info("[%d/%d] %d mis à jour, %d erreurs", i + 1, len(rows), updated + i + 1, errors)
+            LOGGER.info("[%d/%d] %d updated, %d errors", i + 1, len(rows), updated + i + 1, errors)
 
         updated += 1
         time.sleep(REQUEST_DELAY)
 
     conn.commit()
 
-    # Pokémon sans national_id (IF-only) : utilise type2 du wiki comme slot 1
-    LOGGER.info("Correction des Pokémon IF-only (sans national_id)...")
+    # Pokémon with no national_id (IF-only): use the wiki type2 as slot 1
+    LOGGER.info("Fixing IF-only Pokémon (no national_id)...")
     cur.execute("""
         SELECT id FROM pokemon
         WHERE national_id IS NULL
           AND id NOT IN (SELECT DISTINCT pokemon_id FROM pokemon_type)
     """)
     if_only = [r[0] for r in cur.fetchall()]
-    LOGGER.info("%d Pokémon IF-only sans types en base", len(if_only))
+    LOGGER.info("%d IF-only Pokémon without types in DB", len(if_only))
 
     cur.close()
     LOGGER.info(
-        "Terminé — %d mis à jour | %d ignorés | %d erreurs",
+        "Done — %d updated | %d skipped | %d errors",
         updated, skipped, errors
     )
 

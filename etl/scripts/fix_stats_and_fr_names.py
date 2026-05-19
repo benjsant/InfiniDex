@@ -1,12 +1,12 @@
 """
-Script de correction — re-synchronise stats + name_fr + base_experience
-avec le `national_id` (désormais correct après `fix_national_ids.py`).
+Correction script — re-syncs stats + name_fr + base_experience with the
+`national_id` (now correct after `fix_national_ids.py`).
 
-Le script d'origine (extract_stats_pokeapi.py) posait `national_id = if_id`,
-ce qui a mélangé les stats et les noms français pour ~320 lignes. Maintenant
-que `national_id` est correct en base, on re-fetch directement depuis PokeAPI.
+The original script (extract_stats_pokeapi.py) set `national_id = if_id`,
+which mixed up stats and French names for ~320 rows. Now that
+`national_id` is correct in the DB, re-fetch directly from PokeAPI.
 
-Aucun fichier intermédiaire : on lit/écrit directement la DB.
+No intermediate file: reads/writes the DB directly.
 """
 
 from __future__ import annotations
@@ -70,14 +70,14 @@ def fix(conn) -> None:
         "WHERE national_id IS NOT NULL ORDER BY id"
     )
     rows = cur.fetchall()
-    LOGGER.info("%d Pokémon à mettre à jour", len(rows))
+    LOGGER.info("%d Pokémon to update", len(rows))
 
     updated = errors = 0
     for i, (pokemon_id, national_id, name_en) in enumerate(rows, start=1):
         poke = fetch_pokemon(national_id)
         time.sleep(REQUEST_DELAY)
         if not poke:
-            LOGGER.warning("PokeAPI /pokemon/%d KO pour id=%d (%s)",
+            LOGGER.warning("PokeAPI /pokemon/%d failed for id=%d (%s)",
                            national_id, pokemon_id, name_en)
             errors += 1
             continue
@@ -113,11 +113,11 @@ def fix(conn) -> None:
 
         if i % 50 == 0:
             conn.commit()
-            LOGGER.info("[%d/%d] %d mis à jour, %d erreurs", i, len(rows), updated, errors)
+            LOGGER.info("[%d/%d] %d updated, %d errors", i, len(rows), updated, errors)
 
     conn.commit()
     cur.close()
-    LOGGER.info("Terminé — %d mis à jour | %d erreurs", updated, errors)
+    LOGGER.info("Done — %d updated | %d errors", updated, errors)
 
 
 def main() -> None:

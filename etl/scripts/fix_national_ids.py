@@ -1,20 +1,20 @@
 """
-Script de correction — aligne `pokemon.national_id` sur le vrai ID national
-PokeAPI en se fiant au nom anglais (issu de `data/pokedex_if.json`, source
-autoritaire pour la numérotation Infinite Fusion).
+Correction script — aligns `pokemon.national_id` with the real PokeAPI
+national ID, keyed by the English name (from `data/pokedex_if.json`, the
+authoritative source for Infinite Fusion numbering).
 
-Contexte : `extract_stats_pokeapi.py` posait `national_id = if_id`, ce qui est
-correct jusqu'à Celebi (#251) mais faux ensuite — la Pokédex IF diverge de
-la Pokédex nationale (Shinx/Lixy est if_id 388 mais national 403, etc.).
-Conséquence : ~320 lignes ont un mauvais national_id, d'où des stats, types,
-sprites et noms FR incohérents.
+Context: `extract_stats_pokeapi.py` set `national_id = if_id`, which is
+correct up to Celebi (#251) but wrong afterwards — the IF Pokédex diverges
+from the national Pokédex (Shinx is if_id 388 but national 403, etc.).
+Consequence: ~320 rows have a wrong national_id, hence inconsistent stats,
+types, sprites and FR names.
 
-Ce script corrige uniquement `national_id`. Le reste (types, stats, name_fr)
-devra être re-synchronisé ensuite via les scripts dédiés.
+This script fixes only `national_id`. The rest (types, stats, name_fr)
+must be re-synced afterwards via the dedicated scripts.
 
-Normalisation des noms : conforme à l'API (`/api/v2/pokemon/{name}`) — tout
-minuscule, apostrophes et points retirés, ♀/♂ mappés en -f/-m, formes
-alternatives mappées à leur variant par défaut.
+Name normalization: matches the API (`/api/v2/pokemon/{name}`) — all
+lowercase, apostrophes and dots removed, ♀/♂ mapped to -f/-m, alternate
+forms mapped to their default variant.
 """
 
 from __future__ import annotations
@@ -33,13 +33,13 @@ LOGGER = setup_logging(__name__)
 
 POKEDEX_IF_JSON = Path(__file__).resolve().parents[2] / "data" / "pokedex_if.json"
 POKEAPI_SPECIES = "https://pokeapi.co/api/v2/pokemon-species/{}"
-REQUEST_DELAY = 0.12  # sec. entre requêtes
+REQUEST_DELAY = 0.12  # sec. between requests
 
-# Mapping manuel pour les cas que la normalisation auto ne couvre pas.
-# Clé : name_en tel qu'il apparaît dans pokedex_if.json.
-# Valeur : slug PokeAPI OU int national_id (si pas dans PokeAPI).
+# Manual mapping for cases the auto-normalization does not cover.
+# Key: name_en as it appears in pokedex_if.json.
+# Value: PokeAPI slug OR int national_id (if not in PokeAPI).
 MANUAL_OVERRIDES: dict[str, str | int] = {
-    # Formes avec caractères spéciaux
+    # Forms with special characters
     "Nidoran♀": "nidoran-f",
     "Nidoran♂": "nidoran-m",
     "Farfetch'd": "farfetchd",
@@ -54,18 +54,18 @@ MANUAL_OVERRIDES: dict[str, str | int] = {
     "Porygon-Z": "porygon-z",
     "Porygon2": "porygon2",
     "Flabébé": "flabebe",
-    # Formes IF custom sans équivalent PokeAPI — laisser national_id NULL.
-    # (on n'ajoute pas d'override, le script détectera l'absence et skip.)
+    # IF-custom forms with no PokeAPI equivalent — leave national_id NULL.
+    # (no override added; the script detects the absence and skips.)
 }
 
-# Valeurs spéciales : skip entièrement (IF-only, triple fusions, formes custom)
+# Special values: skip entirely (IF-only, triple fusions, custom forms)
 SKIP_NAMES: set[str] = set()
 
 
 def normalize_name(name_en: str) -> str:
-    """Convertit un name_en vers le slug PokeAPI."""
+    """Convert a name_en to the PokeAPI slug."""
     n = name_en.lower()
-    # Suppression accents basiques pour certains cas (é, è, â…)
+    # Strip basic accents for a few cases (é, è, â…)
     n = (
         n.replace("é", "e")
          .replace("è", "e")
@@ -82,7 +82,7 @@ def normalize_name(name_en: str) -> str:
 
 
 def resolve_slug(name_en: str) -> str | int | None:
-    """Retourne le slug PokeAPI, un national_id direct, ou None si à skipper."""
+    """Return the PokeAPI slug, a direct national_id, or None if it should be skipped."""
     if name_en in SKIP_NAMES:
         return None
     if name_en in MANUAL_OVERRIDES:
@@ -91,19 +91,19 @@ def resolve_slug(name_en: str) -> str | int | None:
 
 
 def fetch_national_id(slug: str) -> int | None:
-    """Interroge PokeAPI `/pokemon-species/{slug}` (renvoie l'ID national)."""
+    """Query PokeAPI `/pokemon-species/{slug}` (returns the national ID)."""
     try:
         resp = requests.get(POKEAPI_SPECIES.format(slug), timeout=10)
         if resp.status_code != 200:
             return None
         return int(resp.json()["id"])
     except Exception as e:
-        LOGGER.warning("PokeAPI erreur pour slug=%s : %s", slug, e)
+        LOGGER.warning("PokeAPI error for slug=%s: %s", slug, e)
         return None
 
 
 def load_pokedex_if() -> dict[int, str]:
-    """Charge pokedex_if.json → {if_id: name_en}."""
+    """Load pokedex_if.json → {if_id: name_en}."""
     with POKEDEX_IF_JSON.open(encoding="utf-8") as f:
         data = json.load(f)
     return {entry["if_id"]: entry["name_en"] for entry in data}
@@ -113,24 +113,24 @@ def fix_national_ids(conn) -> None:
     cur = conn.cursor()
 
     pokedex_if = load_pokedex_if()
-    LOGGER.info("%d entrées chargées depuis pokedex_if.json", len(pokedex_if))
+    LOGGER.info("%d entries loaded from pokedex_if.json", len(pokedex_if))
 
     cur.execute("SELECT id, national_id, name_en FROM pokemon ORDER BY id")
     db_rows = cur.fetchall()
-    LOGGER.info("%d Pokémon en base", len(db_rows))
+    LOGGER.info("%d Pokémon in DB", len(db_rows))
 
     updated = unchanged = unresolved = skipped = 0
     unresolved_names: list[tuple[int, str]] = []
-    # 1) Première passe : récolte (pk_id, target_national_id). On ne fait AUCUN
-    #    UPDATE ici pour éviter de violer temporairement la contrainte UNIQUE.
+    # 1) First pass: collect (pk_id, target_national_id). NO UPDATE is done
+    #    here, to avoid temporarily violating the UNIQUE constraint.
     updates: list[tuple[int, int | None]] = []
 
     for pokemon_id, current_national, name_en in db_rows:
-        # Vérifie que le name_en en base matche bien pokedex_if.json
+        # Check that the DB name_en actually matches pokedex_if.json
         expected_name = pokedex_if.get(pokemon_id)
         if expected_name and expected_name != name_en:
             LOGGER.warning(
-                "Pokémon id=%d : name_en DB='%s' ≠ pokedex_if='%s' — on fait confiance à pokedex_if",
+                "Pokémon id=%d: name_en DB='%s' ≠ pokedex_if='%s' — trusting pokedex_if",
                 pokemon_id, name_en, expected_name,
             )
             name_en = expected_name
@@ -149,14 +149,14 @@ def fix_national_ids(conn) -> None:
             if target is None:
                 unresolved += 1
                 unresolved_names.append((pokemon_id, name_en))
-                updates.append((pokemon_id, None))  # on nullifiera
+                updates.append((pokemon_id, None))  # will be nulled
                 continue
 
         updates.append((pokemon_id, target))
 
-    # 2) Résolution des collisions — plusieurs if_id peuvent pointer vers un
-    #    même national_id (ex. formes alternatives). On garde le plus petit
-    #    if_id et on met les autres à NULL.
+    # 2) Collision resolution — several if_id can point to the same
+    #    national_id (e.g. alternate forms). Keep the smallest if_id and
+    #    set the others to NULL.
     by_target: dict[int, list[int]] = {}
     for pk_id, target in updates:
         if target is not None:
@@ -170,14 +170,14 @@ def fix_national_ids(conn) -> None:
                 if pk != keep:
                     collisions.add(pk)
             LOGGER.warning(
-                "Collision national_id=%d : garde pk=%d, NULL pour %s",
+                "Collision national_id=%d: keep pk=%d, NULL for %s",
                 target, keep, [pk for pk in pks if pk != keep],
             )
 
-    # 3) Applique : on commence par TOUT mettre à NULL, puis on pose les
-    #    valeurs cibles. Évite les conflits UNIQUE pendant la transition.
+    # 3) Apply: first set EVERYTHING to NULL, then set the target values.
+    #    Avoids UNIQUE conflicts during the transition.
     cur.execute("UPDATE pokemon SET national_id = NULL")
-    LOGGER.info("national_id vidé pour toutes les lignes")
+    LOGGER.info("national_id cleared for all rows")
 
     for pk_id, target in updates:
         if target is None or pk_id in collisions:
@@ -186,8 +186,8 @@ def fix_national_ids(conn) -> None:
             "UPDATE pokemon SET national_id = %s WHERE id = %s",
             (target, pk_id),
         )
-        # Comptabilise changé vs inchangé par rapport à l'état initial
-        # (avant le UPDATE ... = NULL)
+        # Count changed vs unchanged relative to the initial state
+        # (before the UPDATE ... = NULL)
         initial = next((n for i, n, _ in db_rows if i == pk_id), None)
         if initial == target:
             unchanged += 1
@@ -197,11 +197,11 @@ def fix_national_ids(conn) -> None:
     conn.commit()
 
     LOGGER.info(
-        "Terminé — %d mis à jour | %d inchangés | %d non résolus | %d ignorés | %d collisions NULL",
+        "Done — %d updated | %d unchanged | %d unresolved | %d skipped | %d collisions NULL",
         updated, unchanged, unresolved, skipped, len(collisions),
     )
     if unresolved_names:
-        LOGGER.warning("Noms non résolus (à traiter en override) :")
+        LOGGER.warning("Unresolved names (handle via override):")
         for pk_id, name in unresolved_names:
             LOGGER.warning("  id=%d name_en=%s", pk_id, name)
 
