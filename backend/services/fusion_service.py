@@ -19,6 +19,7 @@ from __future__ import annotations
 import math
 from collections import defaultdict
 from decimal import Decimal
+from typing import NamedTuple
 
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, aliased, joinedload
@@ -160,13 +161,33 @@ MOVE_EXPERT_PRICES_HEART_SCALES: dict[str, int] = {
 }
 
 
-def _slot_types(p: Pokemon) -> tuple[Type | None, Type | None]:
-    """Return (type_slot1, type_slot2) for a Pokémon (type2 is None for mono-type)."""
-    by_slot = {pt.slot: pt.type for pt in p.types}
+class TypeRef(NamedTuple):
+    """Immutable, session-free snapshot of a Type.
+
+    Returned by compute_fusion_types and stored in _fusion_cache instead of
+    detached ORM Type instances (which would raise DetachedInstanceError on
+    any lazy attribute accessed from a later request). Exposes exactly the
+    fields TypeOut serializes.
+    """
+    id: int
+    name_en: str
+    name_fr: str | None
+    is_triple_fusion_type: bool
+
+
+def _slot_types(p: Pokemon) -> tuple[TypeRef | None, TypeRef | None]:
+    """Return (type_slot1, type_slot2) for a Pokémon (type2 is None for mono-type).
+
+    Converts the eager-loaded ORM Type to a TypeRef here, while still attached.
+    """
+    by_slot = {
+        pt.slot: TypeRef(pt.type.id, pt.type.name_en, pt.type.name_fr, pt.type.is_triple_fusion_type)
+        for pt in p.types
+    }
     return by_slot.get(1), by_slot.get(2)
 
 
-def compute_fusion_types(head: Pokemon, body: Pokemon) -> tuple[Type | None, Type | None]:
+def compute_fusion_types(head: Pokemon, body: Pokemon) -> tuple[TypeRef | None, TypeRef | None]:
     """Compute (type1, type2) according to Infinite Fusion rules.
 
     See the module docstring for the full specification.
