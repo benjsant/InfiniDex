@@ -19,10 +19,12 @@ Usage:
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 from etl.utils.db import pg_connection
 from etl.utils.logging import setup_logging
+from etl.utils.sql import load_id_map
 
 log = setup_logging("audit_db")
 
@@ -47,7 +49,7 @@ def fail(msg: str) -> None:
     print(f"  ❌  {msg}")
 
 
-def run_audit() -> None:
+def run_audit() -> int:
     issues = 0
 
     with pg_connection() as conn:
@@ -269,10 +271,12 @@ def run_audit() -> None:
         # that collapsed the 2nd normal ability). Compares the expected
         # count (source, capped to the schema) to the actual count in DB.
         section("12. DB vs source JSON consistency (normal abilities & types)")
-        cur.execute("SELECT id, lower(name_en), name_en FROM pokemon")
-        id_name = {r[0]: r[2] for r in cur.fetchall()}
-        cur.execute("SELECT lower(name_en), id FROM pokemon")
-        name_to_id = dict(cur.fetchall())
+        cur.execute("SELECT id, name_en FROM pokemon")
+        id_name = {r[0]: r[1] for r in cur.fetchall()}
+        # Same deterministic resolution as load_db (load_id_map): for
+        # duplicate-name multi-form Pokémon the base form (lowest id) wins,
+        # so audit and load agree on which row owns an ability/type.
+        name_to_id = load_id_map(conn, "pokemon")
 
         ab_path = Path("data/abilities_if.json")
         dex_path = Path("data/pokedex_if.json")
@@ -342,6 +346,8 @@ def run_audit() -> None:
 
         print()
 
+    return issues
+
 
 if __name__ == "__main__":
-    run_audit()
+    sys.exit(1 if run_audit() else 0)
