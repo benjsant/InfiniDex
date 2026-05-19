@@ -1,18 +1,18 @@
-"""ETL Audit — vérification de la cohérence de la base de données.
+"""ETL Audit — database consistency checks.
 
-Checks effectués :
-  1. Pokémon sans aucun sprite (ni head ni body dans fusion_sprite)
-  2. Pokémon sans national_id (ne peuvent pas utiliser PokeAPI en fallback)
-  3. Pokémon sans type déclaré
-  4. Pokémon sans talent (ability)
-  5. Pokémon sans aucune attaque apprise
-  6. Moves orphelins — présents dans move mais appris par aucun Pokémon
-  7. pokemon_move pointant vers un move inexistant (brisé côté FK — sécurité)
-  8. fusion_sprite avec head_id ou body_id absent de pokemon
-  9. Pokémon sans localisation connue (hors Pokémon Hoenn-only qui sont normaux)
- 10. Résumé global avec compteurs
+Checks performed:
+  1. Pokémon with no sprite (neither head nor body in fusion_sprite)
+  2. Pokémon with no national_id (cannot use PokeAPI as a fallback)
+  3. Pokémon with no declared type
+  4. Pokémon with no ability
+  5. Pokémon with no learned move
+  6. Orphan moves — present in move but learned by no Pokémon
+  7. pokemon_move pointing to a non-existent move (broken FK — safety)
+  8. fusion_sprite with head_id or body_id absent from pokemon
+  9. Pokémon with no known location (excluding Hoenn-only, which is normal)
+ 10. Global summary with counters
 
-Usage :
+Usage:
     docker compose run --rm etl python -m etl.scripts.audit_db
 """
 
@@ -53,8 +53,8 @@ def run_audit() -> None:
     with pg_connection() as conn:
         cur = conn.cursor()
 
-        # ── 1. Pokémon totaux ─────────────────────────────────────────────
-        section("Vue d'ensemble")
+        # ── 1. Total Pokémon ──────────────────────────────────────────────
+        section("Overview")
         cur.execute("SELECT COUNT(*) FROM pokemon")
         total_pokemon = cur.fetchone()[0]
         cur.execute("SELECT COUNT(*) FROM move")
@@ -70,8 +70,8 @@ def run_audit() -> None:
         print(f"  pokemon_move  : {total_pm}")
         print(f"  fusion_sprite : {total_sprites}  (custom: {custom_sprites})")
 
-        # ── 2. Pokémon sans sprite (ni head ni body) ──────────────────────
-        section("2. Pokémon sans aucun sprite (ni head ni body)")
+        # ── 2. Pokémon with no sprite (neither head nor body) ─────────────
+        section("2. Pokémon with no sprite at all (neither head nor body)")
         cur.execute("""
             SELECT p.id, p.name_en
             FROM pokemon p
@@ -81,15 +81,15 @@ def run_audit() -> None:
         """)
         rows = cur.fetchall()
         if rows:
-            fail(f"{len(rows)} Pokémon absents de fusion_sprite :")
+            fail(f"{len(rows)} Pokémon absent from fusion_sprite:")
             for pid, name in rows:
                 print(f"       #{pid} {name}")
             issues += len(rows)
         else:
-            ok("Tous les Pokémon ont au moins un sprite.")
+            ok("All Pokémon have at least one sprite.")
 
-        # ── 3. Pokémon sans national_id ───────────────────────────────────
-        section("3. Pokémon sans national_id (fallback PokeAPI impossible)")
+        # ── 3. Pokémon with no national_id ────────────────────────────────
+        section("3. Pokémon with no national_id (PokeAPI fallback impossible)")
         cur.execute("""
             SELECT id, name_en FROM pokemon
             WHERE national_id IS NULL
@@ -97,16 +97,16 @@ def run_audit() -> None:
         """)
         rows = cur.fetchall()
         if rows:
-            warn(f"{len(rows)} Pokémon sans national_id :")
+            warn(f"{len(rows)} Pokémon with no national_id:")
             for pid, name in rows[:20]:
                 print(f"       #{pid} {name}")
             if len(rows) > 20:
-                print(f"       … et {len(rows) - 20} autres")
+                print(f"       … and {len(rows) - 20} more")
         else:
-            ok("Tous les Pokémon ont un national_id.")
+            ok("All Pokémon have a national_id.")
 
-        # ── 4. Pokémon sans type ──────────────────────────────────────────
-        section("4. Pokémon sans type déclaré (slot 1 obligatoire)")
+        # ── 4. Pokémon with no type ───────────────────────────────────────
+        section("4. Pokémon with no declared type (slot 1 mandatory)")
         cur.execute("""
             SELECT p.id, p.name_en
             FROM pokemon p
@@ -118,15 +118,15 @@ def run_audit() -> None:
         """)
         rows = cur.fetchall()
         if rows:
-            fail(f"{len(rows)} Pokémon sans type primaire :")
+            fail(f"{len(rows)} Pokémon with no primary type:")
             for pid, name in rows:
                 print(f"       #{pid} {name}")
             issues += len(rows)
         else:
-            ok("Tous les Pokémon ont un type primaire.")
+            ok("All Pokémon have a primary type.")
 
-        # ── 5. Pokémon sans talent (ability) ─────────────────────────────
-        section("5. Pokémon sans talent (ability)")
+        # ── 5. Pokémon with no ability ────────────────────────────────────
+        section("5. Pokémon with no ability")
         cur.execute("""
             SELECT p.id, p.name_en
             FROM pokemon p
@@ -138,16 +138,16 @@ def run_audit() -> None:
         """)
         rows = cur.fetchall()
         if rows:
-            warn(f"{len(rows)} Pokémon sans talent :")
+            warn(f"{len(rows)} Pokémon with no ability:")
             for pid, name in rows[:20]:
                 print(f"       #{pid} {name}")
             if len(rows) > 20:
-                print(f"       … et {len(rows) - 20} autres")
+                print(f"       … and {len(rows) - 20} more")
         else:
-            ok("Tous les Pokémon ont au moins un talent.")
+            ok("All Pokémon have at least one ability.")
 
-        # ── 6. Pokémon sans aucune attaque ───────────────────────────────
-        section("6. Pokémon sans aucune attaque apprise")
+        # ── 6. Pokémon with no move ───────────────────────────────────────
+        section("6. Pokémon with no learned move")
         cur.execute("""
             SELECT p.id, p.name_en
             FROM pokemon p
@@ -159,16 +159,16 @@ def run_audit() -> None:
         """)
         rows = cur.fetchall()
         if rows:
-            warn(f"{len(rows)} Pokémon sans aucune attaque :")
+            warn(f"{len(rows)} Pokémon with no move at all:")
             for pid, name in rows[:20]:
                 print(f"       #{pid} {name}")
             if len(rows) > 20:
-                print(f"       … et {len(rows) - 20} autres")
+                print(f"       … and {len(rows) - 20} more")
         else:
-            ok("Tous les Pokémon ont au moins une attaque.")
+            ok("All Pokémon have at least one move.")
 
-        # ── 7. Moves orphelins (appris par personne) ──────────────────────
-        section("7. Moves orphelins — dans move mais appris par aucun Pokémon")
+        # ── 7. Orphan moves (learned by nobody) ───────────────────────────
+        section("7. Orphan moves — in move but learned by no Pokémon")
         cur.execute("""
             SELECT m.id, m.name_en, m.source
             FROM move m
@@ -182,16 +182,16 @@ def run_audit() -> None:
         """)
         rows = cur.fetchall()
         if rows:
-            warn(f"{len(rows)} moves non appris par aucun Pokémon et sans CT :")
+            warn(f"{len(rows)} moves learned by no Pokémon and with no TM:")
             for mid, name, source in rows[:30]:
                 print(f"       #{mid} {name}  [{source}]")
             if len(rows) > 30:
-                print(f"       … et {len(rows) - 30} autres")
+                print(f"       … and {len(rows) - 30} more")
         else:
-            ok("Aucun move orphelin.")
+            ok("No orphan move.")
 
-        # ── 8. pokemon_move → move FK brisée ─────────────────────────────
-        section("8. pokemon_move pointant vers un move inexistant")
+        # ── 8. pokemon_move → broken move FK ──────────────────────────────
+        section("8. pokemon_move pointing to a non-existent move")
         cur.execute("""
             SELECT DISTINCT pm.move_id
             FROM pokemon_move pm
@@ -202,15 +202,15 @@ def run_audit() -> None:
         """)
         rows = cur.fetchall()
         if rows:
-            fail(f"{len(rows)} move_id invalides dans pokemon_move :")
+            fail(f"{len(rows)} invalid move_id in pokemon_move:")
             for (mid,) in rows:
                 print(f"       move_id={mid}")
             issues += len(rows)
         else:
-            ok("Aucune FK brisée dans pokemon_move.")
+            ok("No broken FK in pokemon_move.")
 
-        # ── 9. fusion_sprite avec Pokémon inconnu ────────────────────────
-        section("9. fusion_sprite avec head_id ou body_id absent de pokemon")
+        # ── 9. fusion_sprite with unknown Pokémon ─────────────────────────
+        section("9. fusion_sprite with head_id or body_id absent from pokemon")
         cur.execute("""
             SELECT COUNT(*) FROM fusion_sprite fs
             WHERE NOT EXISTS (SELECT 1 FROM pokemon p WHERE p.id = fs.head_id)
@@ -218,13 +218,13 @@ def run_audit() -> None:
         """)
         count = cur.fetchone()[0]
         if count:
-            fail(f"{count} entrées fusion_sprite avec Pokémon introuvable.")
+            fail(f"{count} fusion_sprite entries with a missing Pokémon.")
             issues += count
         else:
-            ok("Toutes les entrées fusion_sprite référencent des Pokémon valides.")
+            ok("All fusion_sprite entries reference valid Pokémon.")
 
-        # ── 10. Pokémon sans localisation (hors Hoenn-only) ──────────────
-        section("10. Pokémon sans localisation connue (hors Hoenn-only)")
+        # ── 10. Pokémon with no location (excluding Hoenn-only) ───────────
+        section("10. Pokémon with no known location (excluding Hoenn-only)")
         cur.execute("""
             SELECT p.id, p.name_en, p.is_hoenn_only
             FROM pokemon p
@@ -237,16 +237,16 @@ def run_audit() -> None:
         """)
         rows = cur.fetchall()
         if rows:
-            warn(f"{len(rows)} Pokémon Kanto/communs sans localisation :")
+            warn(f"{len(rows)} Kanto/common Pokémon with no location:")
             for pid, name, hoenn in rows[:30]:
                 print(f"       #{pid} {name}")
             if len(rows) > 30:
-                print(f"       … et {len(rows) - 30} autres")
+                print(f"       … and {len(rows) - 30} more")
         else:
-            ok("Tous les Pokémon non-Hoenn ont au moins une localisation.")
+            ok("All non-Hoenn Pokémon have at least one location.")
 
-        # ── 11. Doublons dans fusion_sprite par défaut ────────────────────
-        section("11. Paires (head_id, body_id) avec plusieurs sprites par défaut")
+        # ── 11. Duplicate default fusion_sprite ───────────────────────────
+        section("11. (head_id, body_id) pairs with multiple default sprites")
         cur.execute("""
             SELECT head_id, body_id, COUNT(*) AS n
             FROM fusion_sprite
@@ -258,17 +258,17 @@ def run_audit() -> None:
         """)
         rows = cur.fetchall()
         if rows:
-            warn(f"{len(rows)} paires avec plusieurs sprites is_default=TRUE :")
+            warn(f"{len(rows)} pairs with multiple is_default=TRUE sprites:")
             for hid, bid, n in rows:
-                print(f"       head={hid} body={bid}  → {n} sprites default")
+                print(f"       head={hid} body={bid}  → {n} default sprites")
         else:
-            ok("Aucune paire avec plusieurs sprites par défaut.")
+            ok("No pair with multiple default sprites.")
 
-        # ── 12. Divergence DB vs JSON source (capacités & types) ──────────
-        # Détecte la perte silencieuse de données au chargement (ex: le bug
-        # du slot_tracker qui collapsait la 2e capacité normale). Compare le
-        # nombre attendu (source, plafonné au schéma) au réel en base.
-        section("12. Cohérence DB vs JSON source (capacités normales & types)")
+        # ── 12. DB vs source JSON divergence (abilities & types) ──────────
+        # Detects silent data loss at load time (e.g. the slot_tracker bug
+        # that collapsed the 2nd normal ability). Compares the expected
+        # count (source, capped to the schema) to the actual count in DB.
+        section("12. DB vs source JSON consistency (normal abilities & types)")
         cur.execute("SELECT id, lower(name_en), name_en FROM pokemon")
         id_name = {r[0]: r[2] for r in cur.fetchall()}
         cur.execute("SELECT lower(name_en), id FROM pokemon")
@@ -277,9 +277,9 @@ def run_audit() -> None:
         ab_path = Path("data/abilities_if.json")
         dex_path = Path("data/pokedex_if.json")
         if not ab_path.exists() or not dex_path.exists():
-            warn("data/abilities_if.json ou pokedex_if.json absent — check ignoré.")
+            warn("data/abilities_if.json or pokedex_if.json missing — check skipped.")
         else:
-            # Abilities: capacités normales distinctes attendues (cap schéma = 2)
+            # Abilities: distinct expected normal abilities (schema cap = 2)
             expected_norm: dict[int, set[str]] = {}
             for ab in json.loads(ab_path.read_text(encoding="utf-8")):
                 for poke in ab.get("pokemon", []):
@@ -299,16 +299,16 @@ def run_audit() -> None:
                 if actual_norm.get(pid, 0) < min(len(n), 2)
             ]
             if ab_bad:
-                fail(f"{len(ab_bad)} Pokémon avec moins de capacités normales que la source :")
+                fail(f"{len(ab_bad)} Pokémon with fewer normal abilities than the source:")
                 for pid, exp, act in sorted(ab_bad)[:20]:
-                    print(f"       #{pid} {id_name.get(pid, '?')} : attendu {exp}, réel {act}")
+                    print(f"       #{pid} {id_name.get(pid, '?')} : expected {exp}, actual {act}")
                 if len(ab_bad) > 20:
-                    print(f"       … et {len(ab_bad) - 20} autres")
+                    print(f"       … and {len(ab_bad) - 20} more")
                 issues += len(ab_bad)
             else:
-                ok("Capacités normales cohérentes avec abilities_if.json.")
+                ok("Normal abilities consistent with abilities_if.json.")
 
-            # Types: nb de slots attendus (1 ou 2 après dédup mono-type)
+            # Types: number of expected slots (1 or 2 after mono-type dedup)
             expected_types: dict[int, int] = {}
             for entry in json.loads(dex_path.read_text(encoding="utf-8")):
                 t1 = (entry.get("type1") or "").lower() or None
@@ -324,21 +324,21 @@ def run_audit() -> None:
                 if exp > 0 and actual_types.get(pid, 0) < exp
             ]
             if ty_bad:
-                fail(f"{len(ty_bad)} Pokémon avec moins de types que la source :")
+                fail(f"{len(ty_bad)} Pokémon with fewer types than the source:")
                 for pid, exp, act in sorted(ty_bad)[:20]:
-                    print(f"       #{pid} {id_name.get(pid, '?')} : attendu {exp}, réel {act}")
+                    print(f"       #{pid} {id_name.get(pid, '?')} : expected {exp}, actual {act}")
                 if len(ty_bad) > 20:
-                    print(f"       … et {len(ty_bad) - 20} autres")
+                    print(f"       … and {len(ty_bad) - 20} more")
                 issues += len(ty_bad)
             else:
-                ok("Types cohérents avec pokedex_if.json.")
+                ok("Types consistent with pokedex_if.json.")
 
-        # ── Résumé ────────────────────────────────────────────────────────
-        section("Résumé")
+        # ── Summary ───────────────────────────────────────────────────────
+        section("Summary")
         if issues == 0:
-            ok(f"Aucune erreur bloquante détectée. ({total_pokemon} Pokémon, {total_moves} moves, {total_sprites} sprites)")
+            ok(f"No blocking error detected. ({total_pokemon} Pokémon, {total_moves} moves, {total_sprites} sprites)")
         else:
-            fail(f"{issues} problème(s) bloquant(s) à corriger.")
+            fail(f"{issues} blocking issue(s) to fix.")
 
         print()
 

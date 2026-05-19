@@ -1,12 +1,12 @@
 """
 ETL Step 9 — Seed types (EN+FR) and type_effectiveness from table_type.csv.
 
-Source: etl/scripts/data/table_type.csv (issu du predictiondex)
-Colonnes CSV : type_attaquant, type_defenseur, multiplicateur (noms français)
+Source: etl/scripts/data/table_type.csv (from predictiondex)
+CSV columns: type_attaquant, type_defenseur, multiplicateur (French names)
 
-Ordre d'exécution : APRÈS load_db.py (types EN déjà en table, on ajoute name_fr)
+Run order: AFTER load_db.py (EN types already in the table, we add name_fr)
 
-Idempotent : ON CONFLICT DO NOTHING / DO UPDATE SET name_fr.
+Idempotent: ON CONFLICT DO NOTHING / DO UPDATE SET name_fr.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ LOGGER = setup_logging(__name__)
 
 CSV_PATH = Path(__file__).parent / "data" / "table_type.csv"
 
-# Correspondance FR ↔ EN pour les 18 types standards
+# FR ↔ EN mapping for the 18 standard types
 FR_TO_EN: dict[str, str] = {
     "Normal":   "Normal",
     "Feu":      "Fire",
@@ -47,10 +47,10 @@ FR_TO_EN: dict[str, str] = {
 
 def seed_types(cur) -> dict[str, int]:
     """
-    Insère les 18 types avec name_en + name_fr.
-    Si le type existe déjà (inséré par load_db avec name_en uniquement),
-    on met à jour name_fr via DO UPDATE.
-    Retourne {name_en: id}.
+    Insert the 18 types with name_en + name_fr.
+    If the type already exists (inserted by load_db with name_en only),
+    update name_fr via DO UPDATE.
+    Returns {name_en: id}.
     """
     for name_fr, name_en in FR_TO_EN.items():
         cur.execute(
@@ -65,17 +65,17 @@ def seed_types(cur) -> dict[str, int]:
 
     cur.execute("SELECT id, name_en FROM type WHERE is_triple_fusion_type = FALSE")
     type_map: dict[str, int] = {name_en: tid for tid, name_en in cur.fetchall()}
-    LOGGER.info("Types seedés/mis à jour : %d", len(type_map))
+    LOGGER.info("Types seeded/updated: %d", len(type_map))
     return type_map
 
 
 def seed_effectiveness(cur, type_map: dict[str, int]) -> None:
     """
-    Lit table_type.csv (noms FR) et insère les lignes non-neutres
-    dans type_effectiveness.
+    Read table_type.csv (FR names) and insert the non-neutral rows
+    into type_effectiveness.
     """
     if not CSV_PATH.exists():
-        LOGGER.error("CSV introuvable : %s", CSV_PATH)
+        LOGGER.error("CSV not found: %s", CSV_PATH)
         return
 
     inserted = skipped = neutral = 0
@@ -94,7 +94,7 @@ def seed_effectiveness(cur, type_map: dict[str, int]) -> None:
 
             if atk_en is None or def_en is None:
                 LOGGER.warning(
-                    "Type FR inconnu : %s / %s",
+                    "Unknown FR type: %s / %s",
                     row["type_attaquant"], row["type_defenseur"]
                 )
                 skipped += 1
@@ -118,7 +118,7 @@ def seed_effectiveness(cur, type_map: dict[str, int]) -> None:
                 inserted += 1
 
     LOGGER.info(
-        "type_effectiveness : %d insérés | %d neutres ignorés | %d inconnus",
+        "type_effectiveness: %d inserted | %d neutral skipped | %d unknown",
         inserted, neutral, skipped,
     )
 
@@ -130,7 +130,7 @@ def main() -> None:
         seed_effectiveness(cur, type_map)
         conn.commit()
         cur.close()
-    LOGGER.info("Terminé.")
+    LOGGER.info("Done.")
 
 
 if __name__ == "__main__":

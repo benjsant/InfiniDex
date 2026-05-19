@@ -1,18 +1,18 @@
 """
 ETL Step 9 — Download & extract fusion sprites from infinitefusion.net.
 
-Optimisations :
-  - Filtre par IDs IF réels (data/pokedex_if.json) → ignore les sprites hors-jeu
-  - Par défaut : sprites principaux uniquement (alt="")
-  - Option --alts : inclut les variantes communautaires (a, b, c...)
-  - Idempotent : skip les sprites déjà extraits (sauf --force)
-  - Une seule requête par spritesheet → crop de tous les body_ids en une passe
+Optimizations:
+  - Filter by real IF IDs (data/pokedex_if.json) → ignore out-of-game sprites
+  - By default: main sprites only (alt="")
+  - Option --alts: include community variants (a, b, c...)
+  - Idempotent: skip sprites already extracted (unless --force)
+  - A single request per spritesheet → crop all body_ids in one pass
 
-Sprite grid layout (CustomSpriteExtracter.rb) :
-  Taille : 96×96 px | Colonnes : 20
-  Position : col = body_id % 20 / row = body_id // 20
+Sprite grid layout (CustomSpriteExtracter.rb):
+  Size: 96×96 px | Columns: 20
+  Position: col = body_id % 20 / row = body_id // 20
 
-URLs (pif-downloadables/Settings.rb) :
+URLs (pif-downloadables/Settings.rb):
   Spritesheets : https://infinitefusion.net/customsprites/spritesheets/spritesheets_custom/{head}/{head}{alt}.png
   Credits      : https://infinitefusion.net/customsprites/Sprite_Credits.csv
   Sprite list  : https://raw.githubusercontent.com/infinitefusion/pif-downloadables/master/CUSTOM_SPRITES
@@ -49,7 +49,7 @@ SPRITESHEET_BASE_URL = "https://infinitefusion.net/customsprites/spritesheets/sp
 # ── Constants ─────────────────────────────────────────────────────────────────
 SPRITE_SIZE    = 96
 GRID_COLS      = 20
-DOWNLOAD_DELAY = 2.0    # secondes entre deux spritesheets (respectful)
+DOWNLOAD_DELAY = 2.0    # seconds between two spritesheets (respectful)
 
 SPRITE_RE = re.compile(r"^(\d+)\.(\d+)([a-z]*)\.png$")
 
@@ -58,9 +58,9 @@ SPRITE_RE = re.compile(r"^(\d+)\.(\d+)([a-z]*)\.png$")
 
 def load_if_ids() -> set[int]:
     """
-    Charge les IF IDs depuis data/pokedex_if.json.
-    Si le fichier n'existe pas encore (ETL lancé hors pipeline), retourne un set vide
-    qui désactive le filtre.
+    Load the IF IDs from data/pokedex_if.json.
+    If the file doesn't exist yet (ETL run outside the pipeline), return an
+    empty set which disables the filter.
     """
     if not POKEDEX_IF.exists():
         LOGGER.warning(
@@ -105,10 +105,10 @@ def parse_and_filter(
     include_alts: bool,
 ) -> dict[tuple[int, str], list[int]]:
     """
-    Parse CUSTOM_SPRITES et retourne {(head_id, alt): [body_id, ...]}
-    en appliquant deux filtres :
-      1. head_id ET body_id doivent être dans if_ids (si if_ids non vide)
-      2. Les alts (a, b, c...) sont exclus sauf si include_alts=True
+    Parse CUSTOM_SPRITES and return {(head_id, alt): [body_id, ...]}
+    applying two filters:
+      1. head_id AND body_id must be in if_ids (if if_ids is non-empty)
+      2. alts (a, b, c...) are excluded unless include_alts=True
     """
     groups: dict[tuple[int, str], list[int]] = defaultdict(list)
     total = skipped_id = skipped_alt = 0
@@ -124,12 +124,12 @@ def parse_and_filter(
         body_id  = int(m.group(2))
         alt      = m.group(3)
 
-        # Filtre 1 — IDs IF uniquement
+        # Filter 1 — IF IDs only
         if if_ids and (head_id not in if_ids or body_id not in if_ids):
             skipped_id += 1
             continue
 
-        # Filtre 2 — alts optionnels
+        # Filter 2 — optional alts
         if alt and not include_alts:
             skipped_alt += 1
             continue
@@ -138,7 +138,7 @@ def parse_and_filter(
 
     kept = sum(len(v) for v in groups.values())
     LOGGER.info(
-        "CUSTOM_SPRITES: %d total → gardés=%d / filtrés hors-IF=%d / alts exclus=%d",
+        "CUSTOM_SPRITES: %d total → kept=%d / filtered out-of-IF=%d / alts excluded=%d",
         total, kept, skipped_id, skipped_alt,
     )
     return groups
@@ -162,13 +162,13 @@ def extract_sprites(force: bool, include_alts: bool) -> None:
 
     n_sheets  = len(groups)
     n_sprites = sum(len(v) for v in groups.values())
-    LOGGER.info("À télécharger : %d spritesheets / %d sprites", n_sheets, n_sprites)
+    LOGGER.info("To download: %d spritesheets / %d sprites", n_sheets, n_sprites)
 
     extracted = skipped = failed = 0
 
     for idx, ((head_id, alt), body_ids) in enumerate(sorted(groups.items()), 1):
 
-        # Skip si tous les sprites existent déjà
+        # Skip if all sprites already exist
         if not force:
             missing = [
                 b for b in body_ids
@@ -179,37 +179,37 @@ def extract_sprites(force: bool, include_alts: bool) -> None:
                 continue
             body_ids = missing
 
-        # Télécharge la spritesheet une seule fois
+        # Download the spritesheet only once
         sheet_url  = f"{SPRITESHEET_BASE_URL}/{head_id}/{head_id}{alt}.png"
         sheet_data = fetch_bytes(sheet_url)
 
         if sheet_data is None:
-            LOGGER.warning("[%d/%d] Spritesheet manquante head=%d alt='%s'", idx, n_sheets, head_id, alt)
+            LOGGER.warning("[%d/%d] Missing spritesheet head=%d alt='%s'", idx, n_sheets, head_id, alt)
             failed += len(body_ids)
             continue
 
         try:
             sheet = Image.open(io.BytesIO(sheet_data)).convert("RGBA")
         except Exception as e:
-            LOGGER.warning("Impossible d'ouvrir la spritesheet %s : %s", sheet_url, e)
+            LOGGER.warning("Could not open spritesheet %s: %s", sheet_url, e)
             failed += len(body_ids)
             continue
 
-        # Crop de tous les body_ids en une seule passe
+        # Crop all body_ids in a single pass
         for body_id in body_ids:
             out_path = SPRITES_DIR / f"{head_id}.{body_id}{alt}.png"
             try:
                 crop_sprite(sheet, body_id).save(out_path, format="PNG")
                 extracted += 1
             except Exception as e:
-                LOGGER.warning("Crop échoué head=%d body=%d : %s", head_id, body_id, e)
+                LOGGER.warning("Crop failed head=%d body=%d: %s", head_id, body_id, e)
                 failed += 1
 
         LOGGER.info("[%d/%d] head=%d alt='%s' → %d sprites", idx, n_sheets, head_id, alt, len(body_ids))
         time.sleep(DOWNLOAD_DELAY)
 
     LOGGER.info(
-        "Terminé — extraits=%d / ignorés=%d / échecs=%d",
+        "Done — extracted=%d / skipped=%d / failed=%d",
         extracted, skipped, failed,
     )
 
