@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 from etl.utils.db import pg_connection
@@ -29,6 +30,18 @@ from etl.utils.sql import load_id_map
 log = setup_logging("audit_db")
 
 SEP = "─" * 60
+
+HISTORY_FILE = Path("data/audit_history.json")
+HISTORY_MAX  = 50
+
+# Metric → True if a DECREASE is the suspicious direction (core data that
+# should not silently shrink); False if an INCREASE is suspicious (defects).
+_DRIFT_BAD_ON_DROP = {
+    "pokemon": True, "move": True, "pokemon_move": True, "fusion_sprite": True,
+    "pokemon_type": True, "pokemon_ability": True,
+    "no_primary_type": False, "no_ability": False, "orphan_moves": False,
+    "blocking_issues": False,
+}
 
 
 def section(title: str) -> None:
@@ -47,6 +60,86 @@ def warn(msg: str) -> None:
 
 def fail(msg: str) -> None:
     print(f"  ❌  {msg}")
+
+
+def _scalar(cur, sql: str) -> int:
+    cur.execute(sql)
+    return cur.fetchone()[0]
+
+
+def _snapshot_and_diff(cur, issues: int) -> None:
+    """Telemetry only — never affects the gate / exit code.
+
+    Records key counters to data/audit_history.json and prints the delta
+    vs the previous run, to surface slow silent data erosion (the bug
+    class behind the slot_tracker / alt-form-type incidents).
+    """
+    try:
+        metrics = {
+            "pokemon":         _scalar(cur, "SELECT COUNT(*) FROM pokemon"),
+            "move":            _scalar(cur, "SELECT COUNT(*) FROM move"),
+            "pokemon_move":    _scalar(cur, "SELECT COUNT(*) FROM pokemon_move"),
+            "fusion_sprite":   _scalar(cur, "SELECT COUNT(*) FROM fusion_sprite"),
+            "pokemon_type":    _scalar(cur, "SELECT COUNT(*) FROM pokemon_type"),
+            "pokemon_ability": _scalar(cur, "SELECT COUNT(*) FROM pokemon_ability"),
+            "no_primary_type": _scalar(
+                cur,
+                "SELECT COUNT(*) FROM pokemon p WHERE NOT EXISTS "
+                "(SELECT 1 FROM pokemon_type pt WHERE pt.pokemon_id=p.id AND pt.slot=1)",
+            ),
+            "no_ability": _scalar(
+                cur,
+                "SELECT COUNT(*) FROM pokemon p WHERE NOT EXISTS "
+                "(SELECT 1 FROM pokemon_ability pa WHERE pa.pokemon_id=p.id)",
+            ),
+            "orphan_moves": _scalar(
+                cur,
+                "SELECT COUNT(*) FROM move m WHERE NOT EXISTS "
+                "(SELECT 1 FROM pokemon_move pm WHERE pm.move_id=m.id) AND NOT EXISTS "
+                "(SELECT 1 FROM tm t WHERE t.move_id=m.id)",
+            ),
+            "blocking_issues": issues,
+        }
+        record = {
+            "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            **metrics,
+        }
+
+        history: list = []
+        if HISTORY_FILE.exists():
+            try:
+                history = json.loads(HISTORY_FILE.read_text())
+                if not isinstance(history, list):
+                    history = []
+            except Exception:
+                history = []
+
+        section("Drift vs previous run (telemetry — does not affect the gate)")
+        prev = history[-1] if history else None
+        if prev is None:
+            ok(f"No previous snapshot — baseline recorded ({len(metrics)} metrics).")
+        else:
+            changed = False
+            for k, v in metrics.items():
+                pv = prev.get(k)
+                if pv is None or pv == v:
+                    continue
+                changed = True
+                delta = v - pv
+                suspicious = (
+                    (delta < 0) if _DRIFT_BAD_ON_DROP.get(k, False) else (delta > 0)
+                )
+                line = f"{k}: {pv} → {v} ({'+' if delta > 0 else ''}{delta})"
+                (warn if suspicious else ok)(line)
+            if not changed:
+                ok("No change vs previous run.")
+
+        history.append(record)
+        HISTORY_FILE.write_text(
+            json.dumps(history[-HISTORY_MAX:], indent=2, ensure_ascii=False)
+        )
+    except Exception as exc:  # telemetry must never break the audit/gate
+        log.warning("audit history snapshot skipped: %s", exc)
 
 
 def run_audit() -> int:
@@ -336,6 +429,8 @@ def run_audit() -> int:
                 issues += len(ty_bad)
             else:
                 ok("Types consistent with pokedex_if.json.")
+
+        _snapshot_and_diff(cur, issues)
 
         # ── Summary ───────────────────────────────────────────────────────
         section("Summary")
