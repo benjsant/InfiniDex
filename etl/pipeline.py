@@ -37,8 +37,11 @@ Steps:
                                    from data/sprite_credits.csv
 
 Usage:
-  python etl/pipeline.py          # skip if data already loaded
-  python etl/pipeline.py --force  # force full re-run
+  python etl/pipeline.py                 # skip if data already loaded
+  python etl/pipeline.py --force         # force full re-run
+  python etl/pipeline.py --from 9b-bis   # resume from a step (bypasses the
+                                         # already-loaded short-circuit)
+  python etl/pipeline.py --list          # list step names + labels and exit
 """
 
 from __future__ import annotations
@@ -47,11 +50,99 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Sequence
+from typing import NamedTuple, Sequence
 
 BASE_DIR    = Path(__file__).resolve().parent
 SCRIPTS_DIR = BASE_DIR / "scripts"
 SCRAPER_DIR = BASE_DIR / "pokepedia_scraper"
+
+
+class Step(NamedTuple):
+    """One ordered pipeline step. `name` is the stable id used by --from/--list."""
+    name:  str
+    label: str
+    cmd:   list[str]
+    cwd:   Path | None = None
+
+
+def _py(script: str) -> list[str]:
+    return ["python", str(SCRIPTS_DIR / script)]
+
+
+# Strict ordered DAG — encoded as a sequence. Order is load-bearing
+# (later steps depend on earlier ones); do not reorder.
+STEPS: list[Step] = [
+    Step("1",      "Step 1/8 — Extract Pokédex from IF wiki",
+         _py("extract_pokedex_if.py")),
+    Step("2a",     "Step 2a/8 — Enrich via PokeAPI (stats, FR names, evolutions)",
+         _py("extract_stats_pokeapi.py")),
+    Step("2b",     "Step 2b/8 — Build Pokepedia name mapping",
+         _py("extract_pokepedia_names.py")),
+    Step("3",      "Step 3/10 — Extract moves/TMs/tutors from IF wiki",
+         _py("extract_moves_if.py")),
+    Step("3b",     "Step 3b/10 — Enrich moves with FR names (PokeAPI)",
+         _py("enrich_moves_fr.py")),
+    Step("4",      "Step 4/10 — Extract abilities from IF wiki",
+         _py("extract_abilities_if.py")),
+    Step("4b",     "Step 4b/10 — Enrich abilities with FR names + descriptions (PokeAPI)",
+         _py("enrich_abilities_fr.py")),
+    Step("5",      "Step 5/10 — Extract encounters from IF wiki (wild + static + legendary)",
+         _py("extract_encounters_if.py")),
+    Step("6",      "Step 6/10 — Scrape Pokepedia movesets (USUL Gen 7 — level/tm/breeding/tutor)",
+         ["scrapy", "crawl", "if_movesets"], SCRAPER_DIR),
+    Step("7",      "Step 7/10 — Merge movesets (base + IF overrides)",
+         _py("transform_merge_movesets.py")),
+    Step("8",      "Step 8/10 — Load all data into PostgreSQL",
+         _py("load_db.py")),
+    Step("8b",     "Step 8b/10 — Fix Pokémon types from PokeAPI",
+         _py("fix_pokemon_types.py")),
+    Step("8c",     "Step 8c/10 — Inherit moves from pre-evolutions",
+         _py("enrich_evolution_movesets.py")),
+    Step("8d",     "Step 8d — Fix pokemon.national_id via PokeAPI name lookup",
+         _py("fix_national_ids.py")),
+    Step("8e",     "Step 8e — Re-sync stats + FR names after national_id correction",
+         _py("fix_stats_and_fr_names.py")),
+    Step("8e-bis", "Step 8e-bis — Re-sync types after national_id correction",
+         _py("fix_pokemon_types.py")),
+    Step("8f",     "Step 8f — Fill TM learners from PokeAPI (idempotent)",
+         _py("fix_tms_from_pokeapi.py")),
+    Step("9",      "Step 9/10 — Seed types FR + type effectiveness chart (Gen 7 / IF)",
+         _py("seed_type_effectiveness.py")),
+    Step("9b",     "Step 9b/10 — Load encounters into location + pokemon_location",
+         _py("load_encounters.py")),
+    Step("9b-bis", "Step 9b-bis — Fix legendary/gift/trade Pokémon locations (wiki-sourced)",
+         _py("fix_pokemon_locations.py")),
+    Step("9b-ter", "Step 9b-ter — Load wild/quest encounter locations from IF Pokédex wiki",
+         _py("load_pokedex_locations.py")),
+    Step("9c",     "Step 9c/10 — Enrich pokemon.pokepedia_url from Pokepedia mapping",
+         _py("enrich_pokemon_fr.py")),
+    Step("9d",     "Step 9d — Load items (fusion/evolution/valuable) from IF wiki",
+         _py("load_items.py")),
+    Step("9d-bis", "Step 9d-bis — Extract item locations from IF wiki",
+         _py("extract_item_locations.py")),
+    Step("9e",     "Step 9e — Load move tutors from IF wiki",
+         _py("load_move_tutors.py")),
+    Step("9e-bis", "Step 9e-bis — Fill tutor learners from PokeAPI (idempotent)",
+         _py("fix_tutors_from_pokeapi.py")),
+    Step("9f",     "Step 9f — Load TM locations from IF wiki",
+         _py("load_tm_locations.py")),
+    Step("9g",     "Step 9g — Load move_expert_move from IF wiki",
+         _py("fix_move_experts.py")),
+    Step("10",     "Step 10/12 — Download spritesheets & extract sprites (infinitefusion.net)",
+         _py("extract_sprites.py")),
+    Step("11a",    "Step 11a/12 — Extract triple fusions from IF wiki (23 entries)",
+         _py("extract_triple_fusions.py")),
+    Step("11b",    "Step 11b/12 — Load triple_fusion + components + types + abilities",
+         _py("load_triple_fusions.py")),
+    Step("11c",    "Step 11c/12 — Seed type_effectiveness for custom IF triple-fusion types",
+         _py("load_triple_fusion_type_effectiveness.py")),
+    Step("12",     "Step 12/12 — Load sprite credits from data/sprite_credits.csv",
+         _py("load_sprite_credits.py")),
+    Step("13",     "Step 13 — Clean orphan moves (no pokemon_move/tm/tutor/expert reference)",
+         _py("clean_orphan_moves.py")),
+    Step("14",     "Step 14 — Enrich missing abilities via PokeAPI",
+         _py("enrich_missing_abilities.py")),
+]
 
 
 def run(cmd: Sequence[str], label: str, cwd: Path | None = None) -> None:
@@ -111,228 +202,50 @@ def check_already_loaded() -> bool:
         return False
 
 
-def main(force: bool = False) -> None:
-    if check_already_loaded() and not force:
-        print("[ETL] Data already loaded. Skipping (use --force to rerun).")
+def main(argv: Sequence[str] | None = None) -> None:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    force = "--force" in argv
+
+    if "--list" in argv:
+        for s in STEPS:
+            print(f"  {s.name:<8} {s.label}")
         return
 
+    from_step: str | None = None
+    if "--from" in argv:
+        i = argv.index("--from")
+        if i + 1 >= len(argv):
+            print("[ETL] --from requires a step name (see --list).", flush=True)
+            sys.exit(2)
+        from_step = argv[i + 1]
+        names = [s.name for s in STEPS]
+        if from_step not in names:
+            print(f"[ETL] Unknown step '{from_step}'. Valid: {', '.join(names)}", flush=True)
+            sys.exit(2)
+
+    # --from is an explicit resume → bypass the already-loaded short-circuit.
+    # Otherwise preserve original behaviour: always probe the DB (so a
+    # DB-down condition still exits non-zero) then skip unless --force.
+    if from_step is None:
+        loaded = check_already_loaded()
+        if loaded and not force:
+            print("[ETL] Data already loaded. Skipping "
+                  "(use --force to rerun, or --from <step> to resume).")
+            return
+
     print("[ETL] Starting InfiniDex pipeline...", flush=True)
-
-    # Step 1 — Pokédex list from IF wiki
-    run(
-        ["python", str(SCRIPTS_DIR / "extract_pokedex_if.py")],
-        "Step 1/8 — Extract Pokédex from IF wiki",
-    )
-
-    # Step 2a — Stats + name_fr + evolutions from PokeAPI
-    run(
-        ["python", str(SCRIPTS_DIR / "extract_stats_pokeapi.py")],
-        "Step 2a/8 — Enrich via PokeAPI (stats, FR names, evolutions)",
-    )
-
-    # Step 2b — Pokepedia name mapping (name_en → slug + gen7 URL)
-    run(
-        ["python", str(SCRIPTS_DIR / "extract_pokepedia_names.py")],
-        "Step 2b/8 — Build Pokepedia name mapping",
-    )
-
-    # Step 3 — Moves, TMs, tutors from IF wiki
-    run(
-        ["python", str(SCRIPTS_DIR / "extract_moves_if.py")],
-        "Step 3/10 — Extract moves/TMs/tutors from IF wiki",
-    )
-
-    # Step 3b — Enrich moves with FR names via PokeAPI
-    run(
-        ["python", str(SCRIPTS_DIR / "enrich_moves_fr.py")],
-        "Step 3b/10 — Enrich moves with FR names (PokeAPI)",
-    )
-
-    # Step 4 — Abilities from IF wiki
-    run(
-        ["python", str(SCRIPTS_DIR / "extract_abilities_if.py")],
-        "Step 4/10 — Extract abilities from IF wiki",
-    )
-
-    # Step 4b — Enrich abilities with FR names + descriptions via PokeAPI
-    run(
-        ["python", str(SCRIPTS_DIR / "enrich_abilities_fr.py")],
-        "Step 4b/10 — Enrich abilities with FR names + descriptions (PokeAPI)",
-    )
-
-    # Step 5 — Wild/static/legendary encounters (replaces extract_locations_if.py)
-    run(
-        ["python", str(SCRIPTS_DIR / "extract_encounters_if.py")],
-        "Step 5/10 — Extract encounters from IF wiki (wild + static + legendary)",
-    )
-
-    # Step 6 — Pokepedia moveset scraper (USUL, Gen 7)
-    # Scrapes: level_up (USUL column) + tm + breeding + tutor for ALL Pokémon
-    run(
-        ["scrapy", "crawl", "if_movesets"],
-        "Step 6/10 — Scrape Pokepedia movesets (USUL Gen 7 — level/tm/breeding/tutor)",
-        cwd=SCRAPER_DIR,
-    )
-
-    # Step 7 — Merge base movesets with IF-specific overrides
-    run(
-        ["python", str(SCRIPTS_DIR / "transform_merge_movesets.py")],
-        "Step 7/10 — Merge movesets (base + IF overrides)",
-    )
-
-    # Step 8 — Load everything into PostgreSQL
-    run(
-        ["python", str(SCRIPTS_DIR / "load_db.py")],
-        "Step 8/10 — Load all data into PostgreSQL",
-    )
-
-    # Step 8b — Fix Pokémon types from PokeAPI (overrides potentially wrong wiki data)
-    run(
-        ["python", str(SCRIPTS_DIR / "fix_pokemon_types.py")],
-        "Step 8b/10 — Fix Pokémon types from PokeAPI",
-    )
-
-    # Step 8c — Inherit moves from pre-evolutions (Charizard ← Charmeleon ← Charmander)
-    run(
-        ["python", str(SCRIPTS_DIR / "enrich_evolution_movesets.py")],
-        "Step 8c/10 — Inherit moves from pre-evolutions",
-    )
-
-    # Step 8d — Fix national_id (IF dex diverges from national dex after #251)
-    run(
-        ["python", str(SCRIPTS_DIR / "fix_national_ids.py")],
-        "Step 8d — Fix pokemon.national_id via PokeAPI name lookup",
-    )
-
-    # Step 8e — Re-sync stats + name_fr + base_experience with corrected national_ids
-    run(
-        ["python", str(SCRIPTS_DIR / "fix_stats_and_fr_names.py")],
-        "Step 8e — Re-sync stats + FR names after national_id correction",
-    )
-
-    # Step 8e-bis — Re-sync types now that national_ids are correct
-    # (step 8b ran before 8d so types were fetched with wrong national_ids for IDs > 251)
-    run(
-        ["python", str(SCRIPTS_DIR / "fix_pokemon_types.py")],
-        "Step 8e-bis — Re-sync types after national_id correction",
-    )
-
-    # Step 8f — Fill TM learnability gaps from PokeAPI
-    run(
-        ["python", str(SCRIPTS_DIR / "fix_tms_from_pokeapi.py")],
-        "Step 8f — Fill TM learners from PokeAPI (idempotent)",
-    )
-
-    # Step 9 — Seed types FR + type effectiveness (après load_db pour DO UPDATE name_fr)
-    run(
-        ["python", str(SCRIPTS_DIR / "seed_type_effectiveness.py")],
-        "Step 9/10 — Seed types FR + type effectiveness chart (Gen 7 / IF)",
-    )
-
-    # Step 9b — Load encounters (locations + pokemon_location)
-    run(
-        ["python", str(SCRIPTS_DIR / "load_encounters.py")],
-        "Step 9b/10 — Load encounters into location + pokemon_location",
-    )
-
-    # Step 9b-bis — Fix location data: correct legendary/gift/trade entries from wiki
-    run(
-        ["python", str(SCRIPTS_DIR / "fix_pokemon_locations.py")],
-        "Step 9b-bis — Fix legendary/gift/trade Pokémon locations (wiki-sourced)",
-    )
-
-    # Step 9b-ter — Load wild/quest locations from IF Pokédex wiki page
-    run(
-        ["python", str(SCRIPTS_DIR / "load_pokedex_locations.py")],
-        "Step 9b-ter — Load wild/quest encounter locations from IF Pokédex wiki",
-    )
-
-    # Step 9c — Enrich pokemon.pokepedia_url from pokepedia_names.json
-    run(
-        ["python", str(SCRIPTS_DIR / "enrich_pokemon_fr.py")],
-        "Step 9c/10 — Enrich pokemon.pokepedia_url from Pokepedia mapping",
-    )
-
-    # Step 9d — Load items (fusion + evolution + valuables) from IF wiki
-    run(
-        ["python", str(SCRIPTS_DIR / "load_items.py")],
-        "Step 9d — Load items (fusion/evolution/valuable) from IF wiki",
-    )
-
-    # Step 9d-bis — Extract item locations from IF wiki
-    run(
-        ["python", str(SCRIPTS_DIR / "extract_item_locations.py")],
-        "Step 9d-bis — Extract item locations from IF wiki",
-    )
-
-    # Step 9e — Load move tutors from IF wiki
-    run(
-        ["python", str(SCRIPTS_DIR / "load_move_tutors.py")],
-        "Step 9e — Load move tutors from IF wiki",
-    )
-
-    # Step 9e-bis — Fill tutor learnability gaps from PokeAPI (needs tutors in DB)
-    run(
-        ["python", str(SCRIPTS_DIR / "fix_tutors_from_pokeapi.py")],
-        "Step 9e-bis — Fill tutor learners from PokeAPI (idempotent)",
-    )
-
-    # Step 9f — Load TM locations from IF wiki
-    run(
-        ["python", str(SCRIPTS_DIR / "load_tm_locations.py")],
-        "Step 9f — Load TM locations from IF wiki",
-    )
-
-    # Step 9g — Load move expert moves (Knot Island + Boon Island) from IF wiki
-    run(
-        ["python", str(SCRIPTS_DIR / "fix_move_experts.py")],
-        "Step 9g — Load move_expert_move from IF wiki",
-    )
-
-    # Step 10 — Download & extract fusion sprites from infinitefusion.net
-    run(
-        ["python", str(SCRIPTS_DIR / "extract_sprites.py")],
-        "Step 10/12 — Download spritesheets & extract sprites (infinitefusion.net)",
-    )
-
-    # Step 11a — Extract triple fusions from IF wiki
-    run(
-        ["python", str(SCRIPTS_DIR / "extract_triple_fusions.py")],
-        "Step 11a/12 — Extract triple fusions from IF wiki (23 entries)",
-    )
-
-    # Step 11b — Load triple fusions (+ components + types + abilities)
-    run(
-        ["python", str(SCRIPTS_DIR / "load_triple_fusions.py")],
-        "Step 11b/12 — Load triple_fusion + components + types + abilities",
-    )
-
-    # Step 11c — Seed type_effectiveness for the 8 custom IF triple-fusion types
-    run(
-        ["python", str(SCRIPTS_DIR / "load_triple_fusion_type_effectiveness.py")],
-        "Step 11c/12 — Seed type_effectiveness for custom IF triple-fusion types",
-    )
-
-    # Step 12 — Load sprite credits (creator + fusion_sprite + fusion_sprite_creator)
-    run(
-        ["python", str(SCRIPTS_DIR / "load_sprite_credits.py")],
-        "Step 12/12 — Load sprite credits from data/sprite_credits.csv",
-    )
-
-    # Step 13 — Delete moves with no reference in pokemon_move / tm / tutor / expert
-    run(
-        ["python", str(SCRIPTS_DIR / "clean_orphan_moves.py")],
-        "Step 13 — Clean orphan moves (no pokemon_move/tm/tutor/expert reference)",
-    )
-
-    # Step 14 — Enrich abilities for Pokémon that have a national_id but no ability rows
-    run(
-        ["python", str(SCRIPTS_DIR / "enrich_missing_abilities.py")],
-        "Step 14 — Enrich missing abilities via PokeAPI",
-    )
+    started = from_step is None
+    for s in STEPS:
+        if not started:
+            if s.name == from_step:
+                started = True
+            else:
+                print(f"[ETL] ⏭  skip {s.name} ({s.label})", flush=True)
+                continue
+        run(s.cmd, s.label, s.cwd)
 
     print("\n[ETL] Pipeline completed successfully.", flush=True)
 
 
 if __name__ == "__main__":
-    main(force="--force" in sys.argv)
+    main()

@@ -219,65 +219,96 @@ def load_pokemon(conn, pokedex: list[dict], stats: list[dict], gen_map: dict) ->
 
 
 def load_pokemon_types(conn, pokedex: list[dict], type_map: dict) -> None:
+    """Rebuild pokemon_type from the IF Pokédex.
+
+    Builds the full intended slot set in Python, then DELETE + bulk-insert
+    atomically (single commit). Replaces the old ON CONFLICT DO NOTHING
+    pattern, which silently dropped any (pokemon_id, slot) collision: with a
+    plain INSERT a real collision now raises a DB IntegrityError instead of
+    vanishing. Dropped rows (unknown type / mono-type dedup) are logged.
+    """
+    rows: list[tuple[int, int, int]] = []
+    for entry in pokedex:
+        if_id = entry["if_id"]
+        t1 = (entry.get("type1") or "").lower() or None
+        t2 = (entry.get("type2") or "").lower() or None
+        # Skip slot 2 if identical to slot 1 (wiki IF often duplicates for mono-type)
+        if t2 and t1 and t2 == t1:
+            t2 = None
+        for slot, type_key in ((1, t1), (2, t2)):
+            if not type_key:
+                continue
+            type_id = type_map.get(type_key)
+            if not type_id:
+                LOGGER.warning("Unknown type '%s' for Pokémon #%d", type_key, if_id)
+                continue
+            rows.append((if_id, type_id, slot))
+
     with conn.cursor() as cur:
-        for entry in pokedex:
-            if_id = entry["if_id"]
-            t1 = (entry.get("type1") or "").lower() or None
-            t2 = (entry.get("type2") or "").lower() or None
-            # Skip slot 2 if identical to slot 1 (wiki IF often duplicates for mono-type)
-            if t2 and t1 and t2 == t1:
-                t2 = None
-            for slot, type_key in ((1, t1), (2, t2)):
-                if not type_key:
-                    continue
-                type_id = type_map.get(type_key)
-                if not type_id:
-                    LOGGER.warning("Unknown type '%s' for Pokémon #%d", type_key, if_id)
-                    continue
-                cur.execute(
-                    "INSERT INTO pokemon_type (pokemon_id, type_id, slot) "
-                    "VALUES (%s, %s, %s) ON CONFLICT (pokemon_id, slot) DO NOTHING",
-                    (if_id, type_id, slot),
-                )
+        cur.execute("DELETE FROM pokemon_type")
+        cur.executemany(
+            "INSERT INTO pokemon_type (pokemon_id, type_id, slot) VALUES (%s, %s, %s)",
+            rows,
+        )
         conn.commit()
-    LOGGER.info("Loaded Pokémon types")
+    LOGGER.info("Loaded %d Pokémon type rows", len(rows))
 
 
 def load_pokemon_abilities(conn, abilities: list[dict], ability_map: dict) -> None:
     """Load pokemon_ability rows from abilities_if.json pokemon lists."""
     pokemon_name_to_id = load_id_map(conn, "pokemon")
 
-    with conn.cursor() as cur:
-        # Slot state must persist across ALL abilities for a given Pokémon:
-        # the JSON is keyed by ability, so a Pokémon's two normal abilities
-        # land in separate `ab` iterations. First normal=1, second=2, hidden=3.
-        slot_tracker: dict[int, int] = {}
-        for ab in abilities:
-            ability_id = ability_map.get(ab["name_en"].lower())
-            if not ability_id:
+    # Accumulate the full intended slot set per Pokémon, then DELETE +
+    # bulk-insert atomically. The JSON is keyed by ability, so a Pokémon's
+    # two normal abilities land in separate iterations: normal → slots 1,2
+    # in encounter order (capped at 2), hidden → slot 3. Every drop is
+    # logged (never silent); audit_db.py independently verifies DB vs JSON.
+    desired: dict[int, dict[int, tuple[int, bool]]] = {}
+    normal_count: dict[int, int] = {}
+
+    for ab in abilities:
+        ability_id = ability_map.get(ab["name_en"].lower())
+        if not ability_id:
+            continue
+        for poke in ab.get("pokemon", []):
+            poke_id = pokemon_name_to_id.get(poke["name"].lower())
+            if not poke_id:
                 continue
-
-            for poke in ab.get("pokemon", []):
-                poke_id = pokemon_name_to_id.get(poke["name"].lower())
-                if not poke_id:
+            slots = desired.setdefault(poke_id, {})
+            if poke["is_hidden"]:
+                slot = 3
+                if slot in slots:
+                    LOGGER.warning(
+                        "Pokémon id=%d: extra hidden ability '%s' dropped (slot 3 taken)",
+                        poke_id, ab["name_en"],
+                    )
                     continue
+            else:
+                n = normal_count.get(poke_id, 0) + 1
+                normal_count[poke_id] = n
+                if n > 2:
+                    LOGGER.warning(
+                        "Pokémon id=%d: >2 normal abilities, '%s' dropped (slot %d)",
+                        poke_id, ab["name_en"], n,
+                    )
+                    continue
+                slot = n
+            slots[slot] = (ability_id, poke["is_hidden"])
 
-                if poke["is_hidden"]:
-                    slot = 3
-                else:
-                    current = slot_tracker.get(poke_id, 0)
-                    slot    = current + 1
-                    slot_tracker[poke_id] = slot
-                    if slot > 2:
-                        continue   # only 2 normal slots
-
-                cur.execute(
-                    "INSERT INTO pokemon_ability (pokemon_id, ability_id, slot, is_hidden) "
-                    "VALUES (%s, %s, %s, %s) ON CONFLICT (pokemon_id, slot) DO NOTHING",
-                    (poke_id, ability_id, slot, poke["is_hidden"]),
-                )
+    rows = [
+        (pid, aid, slot, hidden)
+        for pid, smap in desired.items()
+        for slot, (aid, hidden) in smap.items()
+    ]
+    with conn.cursor() as cur:
+        cur.execute("DELETE FROM pokemon_ability")
+        cur.executemany(
+            "INSERT INTO pokemon_ability (pokemon_id, ability_id, slot, is_hidden) "
+            "VALUES (%s, %s, %s, %s)",
+            rows,
+        )
         conn.commit()
-    LOGGER.info("Loaded Pokémon abilities")
+    LOGGER.info("Loaded %d Pokémon ability rows", len(rows))
 
 
 def load_evolutions(conn, evolutions_base: list[dict]) -> None:

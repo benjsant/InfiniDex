@@ -18,6 +18,9 @@ Usage :
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from etl.utils.db import pg_connection
 from etl.utils.logging import setup_logging
 
@@ -260,6 +263,75 @@ def run_audit() -> None:
                 print(f"       head={hid} body={bid}  → {n} sprites default")
         else:
             ok("Aucune paire avec plusieurs sprites par défaut.")
+
+        # ── 12. Divergence DB vs JSON source (capacités & types) ──────────
+        # Détecte la perte silencieuse de données au chargement (ex: le bug
+        # du slot_tracker qui collapsait la 2e capacité normale). Compare le
+        # nombre attendu (source, plafonné au schéma) au réel en base.
+        section("12. Cohérence DB vs JSON source (capacités normales & types)")
+        cur.execute("SELECT id, lower(name_en), name_en FROM pokemon")
+        id_name = {r[0]: r[2] for r in cur.fetchall()}
+        cur.execute("SELECT lower(name_en), id FROM pokemon")
+        name_to_id = dict(cur.fetchall())
+
+        ab_path = Path("data/abilities_if.json")
+        dex_path = Path("data/pokedex_if.json")
+        if not ab_path.exists() or not dex_path.exists():
+            warn("data/abilities_if.json ou pokedex_if.json absent — check ignoré.")
+        else:
+            # Abilities: capacités normales distinctes attendues (cap schéma = 2)
+            expected_norm: dict[int, set[str]] = {}
+            for ab in json.loads(ab_path.read_text(encoding="utf-8")):
+                for poke in ab.get("pokemon", []):
+                    if poke.get("is_hidden"):
+                        continue
+                    pid = name_to_id.get(poke["name"].lower())
+                    if pid is not None:
+                        expected_norm.setdefault(pid, set()).add(ab["name_en"].lower())
+            cur.execute(
+                "SELECT pokemon_id, COUNT(*) FROM pokemon_ability "
+                "WHERE is_hidden = false GROUP BY pokemon_id"
+            )
+            actual_norm = dict(cur.fetchall())
+            ab_bad = [
+                (pid, min(len(n), 2), actual_norm.get(pid, 0))
+                for pid, n in expected_norm.items()
+                if actual_norm.get(pid, 0) < min(len(n), 2)
+            ]
+            if ab_bad:
+                fail(f"{len(ab_bad)} Pokémon avec moins de capacités normales que la source :")
+                for pid, exp, act in sorted(ab_bad)[:20]:
+                    print(f"       #{pid} {id_name.get(pid, '?')} : attendu {exp}, réel {act}")
+                if len(ab_bad) > 20:
+                    print(f"       … et {len(ab_bad) - 20} autres")
+                issues += len(ab_bad)
+            else:
+                ok("Capacités normales cohérentes avec abilities_if.json.")
+
+            # Types: nb de slots attendus (1 ou 2 après dédup mono-type)
+            expected_types: dict[int, int] = {}
+            for entry in json.loads(dex_path.read_text(encoding="utf-8")):
+                t1 = (entry.get("type1") or "").lower() or None
+                t2 = (entry.get("type2") or "").lower() or None
+                if t2 and t1 and t2 == t1:
+                    t2 = None
+                expected_types[entry["if_id"]] = (1 if t1 else 0) + (1 if t2 else 0)
+            cur.execute("SELECT pokemon_id, COUNT(*) FROM pokemon_type GROUP BY pokemon_id")
+            actual_types = dict(cur.fetchall())
+            ty_bad = [
+                (pid, exp, actual_types.get(pid, 0))
+                for pid, exp in expected_types.items()
+                if exp > 0 and actual_types.get(pid, 0) < exp
+            ]
+            if ty_bad:
+                fail(f"{len(ty_bad)} Pokémon avec moins de types que la source :")
+                for pid, exp, act in sorted(ty_bad)[:20]:
+                    print(f"       #{pid} {id_name.get(pid, '?')} : attendu {exp}, réel {act}")
+                if len(ty_bad) > 20:
+                    print(f"       … et {len(ty_bad) - 20} autres")
+                issues += len(ty_bad)
+            else:
+                ok("Types cohérents avec pokedex_if.json.")
 
         # ── Résumé ────────────────────────────────────────────────────────
         section("Résumé")

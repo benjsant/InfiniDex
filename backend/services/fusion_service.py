@@ -19,6 +19,7 @@ from __future__ import annotations
 import math
 from collections import defaultdict
 from decimal import Decimal
+from typing import NamedTuple
 
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, aliased, joinedload
@@ -93,18 +94,46 @@ def load_pokemon_for_fusion(db: Session, pid: int) -> Pokemon | None:
     )
 
 
+def fusion_stats(head, body) -> dict[str, int]:
+    """Single source of truth for the fusion base-stat formula.
+
+    Physical (HP/Atk/Def/Spe) = floor(body*2/3 + head/3)
+    Special  (SpA/SpD)        = floor(head*2/3 + body/3)
+
+    `head`/`body` are any objects exposing the six stat attributes
+    (Pokemon ORM rows or aliased query rows).
+    """
+    return {
+        "hp":         math.floor(body.hp         * 2 / 3 + head.hp         / 3),
+        "attack":     math.floor(body.attack     * 2 / 3 + head.attack     / 3),
+        "defense":    math.floor(body.defense    * 2 / 3 + head.defense    / 3),
+        "speed":      math.floor(body.speed      * 2 / 3 + head.speed      / 3),
+        "sp_attack":  math.floor(head.sp_attack  * 2 / 3 + body.sp_attack  / 3),
+        "sp_defense": math.floor(head.sp_defense * 2 / 3 + body.sp_defense / 3),
+    }
+
+
+def fusion_bst_expr(head, body):
+    """SQL expression for fusion BST — same formula as fusion_stats(), summed.
+
+    `head`/`body` are mapped classes or aliased() entities.
+    """
+    return (
+        func.floor(body.hp        * 2.0 / 3 + head.hp        * 1.0 / 3)
+        + func.floor(body.attack  * 2.0 / 3 + head.attack    * 1.0 / 3)
+        + func.floor(body.defense * 2.0 / 3 + head.defense   * 1.0 / 3)
+        + func.floor(head.sp_attack  * 2.0 / 3 + body.sp_attack  * 1.0 / 3)
+        + func.floor(head.sp_defense * 2.0 / 3 + body.sp_defense * 1.0 / 3)
+        + func.floor(body.speed   * 2.0 / 3 + head.speed     * 1.0 / 3)
+    )
+
+
 def compute_fusion_from_objects(head: Pokemon, body: Pokemon) -> dict:
     """Same as compute_fusion but takes already-loaded Pokemon objects.
 
     Avoids two extra load_pokemon_with_types queries when the caller
     already has the objects (e.g. the AI agent tool).
     """
-    def phys(b: int, h: int) -> int:
-        return math.floor(b * 2 / 3 + h * 1 / 3)
-
-    def spec(h: int, b: int) -> int:
-        return math.floor(h * 2 / 3 + b * 1 / 3)
-
     type1_obj, type2_obj = compute_fusion_types(head, body)
 
     return {
@@ -114,12 +143,7 @@ def compute_fusion_from_objects(head: Pokemon, body: Pokemon) -> dict:
         "head_name_fr": head.name_fr,
         "body_name_en": body.name_en,
         "body_name_fr": body.name_fr,
-        "hp":           phys(body.hp,        head.hp),
-        "attack":       phys(body.attack,    head.attack),
-        "defense":      phys(body.defense,   head.defense),
-        "speed":        phys(body.speed,     head.speed),
-        "sp_attack":    spec(head.sp_attack,  body.sp_attack),
-        "sp_defense":   spec(head.sp_defense, body.sp_defense),
+        **fusion_stats(head, body),
         "type1":        type1_obj,
         "type2":        type2_obj,
         "sprite_path":  f"{head.id}.{body.id}.png",
@@ -137,13 +161,33 @@ MOVE_EXPERT_PRICES_HEART_SCALES: dict[str, int] = {
 }
 
 
-def _slot_types(p: Pokemon) -> tuple[Type | None, Type | None]:
-    """Return (type_slot1, type_slot2) for a Pokémon (type2 is None for mono-type)."""
-    by_slot = {pt.slot: pt.type for pt in p.types}
+class TypeRef(NamedTuple):
+    """Immutable, session-free snapshot of a Type.
+
+    Returned by compute_fusion_types and stored in _fusion_cache instead of
+    detached ORM Type instances (which would raise DetachedInstanceError on
+    any lazy attribute accessed from a later request). Exposes exactly the
+    fields TypeOut serializes.
+    """
+    id: int
+    name_en: str
+    name_fr: str | None
+    is_triple_fusion_type: bool
+
+
+def _slot_types(p: Pokemon) -> tuple[TypeRef | None, TypeRef | None]:
+    """Return (type_slot1, type_slot2) for a Pokémon (type2 is None for mono-type).
+
+    Converts the eager-loaded ORM Type to a TypeRef here, while still attached.
+    """
+    by_slot = {
+        pt.slot: TypeRef(pt.type.id, pt.type.name_en, pt.type.name_fr, pt.type.is_triple_fusion_type)
+        for pt in p.types
+    }
     return by_slot.get(1), by_slot.get(2)
 
 
-def compute_fusion_types(head: Pokemon, body: Pokemon) -> tuple[Type | None, Type | None]:
+def compute_fusion_types(head: Pokemon, body: Pokemon) -> tuple[TypeRef | None, TypeRef | None]:
     """Compute (type1, type2) according to Infinite Fusion rules.
 
     See the module docstring for the full specification.
@@ -476,14 +520,7 @@ def list_top_fusions(db: Session, limit: int = 50) -> list[dict]:
     Head = aliased(Pokemon, name="head")
     Body = aliased(Pokemon, name="body")
 
-    bst_expr = (
-        func.floor(Body.hp        * 2.0 / 3 + Head.hp        * 1.0 / 3)
-        + func.floor(Body.attack  * 2.0 / 3 + Head.attack    * 1.0 / 3)
-        + func.floor(Body.defense * 2.0 / 3 + Head.defense   * 1.0 / 3)
-        + func.floor(Head.sp_attack  * 2.0 / 3 + Body.sp_attack  * 1.0 / 3)
-        + func.floor(Head.sp_defense * 2.0 / 3 + Body.sp_defense * 1.0 / 3)
-        + func.floor(Body.speed   * 2.0 / 3 + Head.speed     * 1.0 / 3)
-    )
+    bst_expr = fusion_bst_expr(Head, Body)
 
     rows = (
         db.query(Head, Body, bst_expr.label("bst"))
@@ -508,12 +545,7 @@ def list_top_fusions(db: Session, limit: int = 50) -> list[dict]:
             "head_name_fr": head.name_fr,
             "body_name_en": body.name_en,
             "body_name_fr": body.name_fr,
-            "hp":           math.floor(body.hp        * 2 / 3 + head.hp        / 3),
-            "attack":       math.floor(body.attack    * 2 / 3 + head.attack    / 3),
-            "defense":      math.floor(body.defense   * 2 / 3 + head.defense   / 3),
-            "sp_attack":    math.floor(head.sp_attack * 2 / 3 + body.sp_attack / 3),
-            "sp_defense":   math.floor(head.sp_defense* 2 / 3 + body.sp_defense/ 3),
-            "speed":        math.floor(body.speed     * 2 / 3 + head.speed     / 3),
+            **fusion_stats(head, body),
             "bst":          int(bst),
             "type1":        type1,
             "type2":        type2,
@@ -531,18 +563,8 @@ def list_top_fusions_for_pokemon(db: Session, pokemon_id: int, limit: int = 5) -
     Partner = aliased(Pokemon, name="partner")
     Fixed   = aliased(Pokemon, name="fixed")
 
-    def _bst(head_alias, body_alias):
-        return (
-            func.floor(body_alias.hp        * 2.0 / 3 + head_alias.hp        * 1.0 / 3)
-            + func.floor(body_alias.attack  * 2.0 / 3 + head_alias.attack    * 1.0 / 3)
-            + func.floor(body_alias.defense * 2.0 / 3 + head_alias.defense   * 1.0 / 3)
-            + func.floor(head_alias.sp_attack  * 2.0 / 3 + body_alias.sp_attack  * 1.0 / 3)
-            + func.floor(head_alias.sp_defense * 2.0 / 3 + body_alias.sp_defense * 1.0 / 3)
-            + func.floor(body_alias.speed   * 2.0 / 3 + head_alias.speed     * 1.0 / 3)
-        )
-
     # pokemon as head
-    as_head_bst = _bst(Fixed, Partner)
+    as_head_bst = fusion_bst_expr(Fixed, Partner)
     as_head = (
         db.query(Fixed, Partner, as_head_bst.label("bst"))
         .filter(Fixed.id == pokemon_id, Partner.id != pokemon_id)
@@ -550,7 +572,7 @@ def list_top_fusions_for_pokemon(db: Session, pokemon_id: int, limit: int = 5) -
     )
 
     # pokemon as body
-    as_body_bst = _bst(Partner, Fixed)
+    as_body_bst = fusion_bst_expr(Partner, Fixed)
     as_body = (
         db.query(Partner, Fixed, as_body_bst.label("bst"))
         .filter(Fixed.id == pokemon_id, Partner.id != pokemon_id)
@@ -587,12 +609,7 @@ def list_top_fusions_for_pokemon(db: Session, pokemon_id: int, limit: int = 5) -
             "head_name_fr": head.name_fr,
             "body_name_en": body.name_en,
             "body_name_fr": body.name_fr,
-            "hp":           math.floor(body.hp        * 2 / 3 + head.hp        / 3),
-            "attack":       math.floor(body.attack    * 2 / 3 + head.attack    / 3),
-            "defense":      math.floor(body.defense   * 2 / 3 + head.defense   / 3),
-            "sp_attack":    math.floor(head.sp_attack * 2 / 3 + body.sp_attack / 3),
-            "sp_defense":   math.floor(head.sp_defense* 2 / 3 + body.sp_defense/ 3),
-            "speed":        math.floor(body.speed     * 2 / 3 + head.speed     / 3),
+            **fusion_stats(head, body),
             "bst":          bst,
             "type1":        type1,
             "type2":        type2,
@@ -635,20 +652,6 @@ def compute_fusion(
     if not head or not body:
         return None
 
-    # ── Stats ────────────────────────────────────────────────────────────────
-    def phys(b: int, h: int) -> int:
-        return math.floor(b * 2 / 3 + h * 1 / 3)
-
-    def spec(h: int, b: int) -> int:
-        return math.floor(h * 2 / 3 + b * 1 / 3)
-
-    hp       = phys(body.hp,        head.hp)
-    attack   = phys(body.attack,    head.attack)
-    defense  = phys(body.defense,   head.defense)
-    speed    = phys(body.speed,     head.speed)
-    sp_attack  = spec(head.sp_attack,  body.sp_attack)
-    sp_defense = spec(head.sp_defense, body.sp_defense)
-
     type1_obj, type2_obj = compute_fusion_types(head, body)
 
     result = {
@@ -658,12 +661,7 @@ def compute_fusion(
         "head_name_fr": head.name_fr,
         "body_name_en": body.name_en,
         "body_name_fr": body.name_fr,
-        "hp":           hp,
-        "attack":       attack,
-        "defense":      defense,
-        "sp_attack":    sp_attack,
-        "sp_defense":   sp_defense,
-        "speed":        speed,
+        **fusion_stats(head, body),
         "type1":        type1_obj,
         "type2":        type2_obj,
         "sprite_path":  f"{head_id}.{body_id}.png",
