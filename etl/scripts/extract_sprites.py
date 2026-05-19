@@ -53,6 +53,11 @@ DOWNLOAD_DELAY = 2.0    # seconds between two spritesheets (respectful)
 
 SPRITE_RE = re.compile(r"^(\d+)\.(\d+)([a-z]*)\.png$")
 
+# Identifying User-Agent so infinitefusion.net / GitHub can identify this client
+HEADERS = {
+    "User-Agent": "InfiniDexETL/1.0 (+https://github.com/benjsant/InfiniDex-IA; educational)"
+}
+
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -74,21 +79,37 @@ def load_if_ids() -> set[int]:
 
 
 def fetch_text(url: str) -> str:
-    resp = requests.get(url, timeout=30)
+    resp = requests.get(url, headers=HEADERS, timeout=30)
     resp.raise_for_status()
     return resp.text
 
 
 def fetch_bytes(url: str) -> bytes | None:
-    try:
-        resp = requests.get(url, timeout=30)
-        if resp.status_code == 200:
-            return resp.content
-        LOGGER.warning("HTTP %s — %s", resp.status_code, url)
-        return None
-    except requests.RequestException as e:
-        LOGGER.warning("Request failed %s — %s", url, e)
-        return None
+    """GET binary content with a small retry/backoff on 429/503/network error.
+
+    404 (a genuinely missing spritesheet) returns None immediately — no retry.
+    """
+    for attempt in range(1, 4):
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=30)
+            if resp.status_code == 200:
+                return resp.content
+            if resp.status_code in (429, 503) and attempt < 3:
+                wait = 5 * 2 ** (attempt - 1)
+                LOGGER.warning("HTTP %s — %s — backing off %ss", resp.status_code, url, wait)
+                time.sleep(wait)
+                continue
+            LOGGER.warning("HTTP %s — %s", resp.status_code, url)
+            return None
+        except requests.RequestException as e:
+            if attempt < 3:
+                wait = 5 * 2 ** (attempt - 1)
+                LOGGER.warning("Request failed %s — %s — retry in %ss", url, e, wait)
+                time.sleep(wait)
+                continue
+            LOGGER.warning("Request failed %s — %s", url, e)
+            return None
+    return None
 
 
 def crop_sprite(sheet: Image.Image, body_id: int) -> Image.Image:

@@ -17,6 +17,7 @@ Output: data/pokemon_stats.json, data/evolutions_base.json
 
 from __future__ import annotations
 
+import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -32,8 +33,8 @@ INPUT_FILE      = Path("data/pokedex_if.json")
 OUTPUT_STATS    = Path("data/pokemon_stats.json")
 OUTPUT_EVOS     = Path("data/evolutions_base.json")
 
-MAX_WORKERS     = 8
-REQUEST_DELAY   = 0.05   # seconds between requests per thread
+MAX_WORKERS     = 2      # PokeAPI fair-use: keep concurrency low
+REQUEST_DELAY   = 0.2    # seconds between requests per thread (~10 req/s peak)
 
 STAT_MAP = {
     "hp":              "hp",
@@ -175,14 +176,36 @@ def main() -> None:
         raise FileNotFoundError(f"{INPUT_FILE} not found — run extract_pokedex_if.py first")
 
     entries = load_json(INPUT_FILE)
-    LOGGER.info("Enriching %d Pokémon via PokeAPI (threads=%d)...", len(entries), MAX_WORKERS)
+    force = "--force" in sys.argv
 
+    # Idempotence: reuse already-fetched stats so re-runs don't re-hammer
+    # PokeAPI. `--force` re-fetches everything.
     all_stats:  list[dict] = []
     all_evos:   list[dict] = []
-    seen_chains: set[str]  = set()   # avoid duplicate evolution chains
+    seen_chains: set[str]  = set()
+    if not force and OUTPUT_STATS.exists():
+        all_stats = load_json(OUTPUT_STATS)
+        if OUTPUT_EVOS.exists():
+            all_evos = load_json(OUTPUT_EVOS)
+            seen_chains = {
+                f"{e['from_name']}→{e['into_name']}→{e['trigger']}→{e['item']}"
+                for e in all_evos
+            }
+    done_ids = {r["if_id"] for r in all_stats}
+    todo = [e for e in entries if e["if_id"] not in done_ids]
+
+    LOGGER.info(
+        "Enriching %d/%d Pokémon via PokeAPI (threads=%d, %d cached)...",
+        len(todo), len(entries), MAX_WORKERS, len(done_ids),
+    )
+    if not todo:
+        LOGGER.info("All Pokémon already enriched — nothing to fetch.")
+        save_json(OUTPUT_STATS, sorted(all_stats, key=lambda x: x["if_id"]))
+        save_json(OUTPUT_EVOS, all_evos)
+        return
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = {executor.submit(process_pokemon, e): e for e in entries}
+        futures = {executor.submit(process_pokemon, e): e for e in todo}
         for future in as_completed(futures):
             stats, evos = future.result()
             if stats:

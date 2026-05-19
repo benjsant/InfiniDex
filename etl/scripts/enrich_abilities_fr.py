@@ -25,8 +25,8 @@ LOGGER = setup_logging(__name__)
 POKEAPI      = "https://pokeapi.co/api/v2/ability/{slug}"
 DATA_FILE    = Path("data/abilities_if.json")
 SAVE_EVERY   = 50
-MAX_WORKERS  = 4
-REQUEST_DELAY = 0.05
+MAX_WORKERS  = 2       # PokeAPI fair-use: keep concurrency low
+REQUEST_DELAY = 0.2    # ~10 req/s peak with 2 workers
 VERSION_PRIO = ["ultra-sun-ultra-moon", "sun-moon", "omega-ruby-alpha-sapphire", "x-y"]
 
 # Manual slug overrides for cases where IF wiki name differs from PokeAPI slug

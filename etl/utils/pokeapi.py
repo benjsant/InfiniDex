@@ -26,6 +26,11 @@ from typing import Callable, Iterable, Sequence
 
 import requests
 
+# Identifying User-Agent — PokeAPI fair-use asks consumers to identify
+# themselves; matches etl/utils/http.py and the fix_*_from_pokeapi scripts.
+USER_AGENT = "InfiniDexETL/1.0 (+https://github.com/benjsant/InfiniDex-IA; educational)"
+_HEADERS = {"User-Agent": USER_AGENT}
+
 
 def fetch_fr_translation(
     url: str,
@@ -39,15 +44,31 @@ def fetch_fr_translation(
     `version_prio` is an ordered list of `version_group` slugs — the first
     entry with a French flavor text wins. Newlines and non-breaking spaces
     in the description are normalized to regular spaces.
+
+    Retries with exponential backoff on 429/503 (honouring Retry-After).
     """
-    try:
-        resp = requests.get(url, timeout=timeout)
-        if resp.status_code != 200:
+    data = None
+    for attempt in range(1, 4):
+        try:
+            resp = requests.get(url, headers=_HEADERS, timeout=timeout)
+            if resp.status_code == 200:
+                data = resp.json()
+                break
+            if resp.status_code in (429, 503):
+                ra = resp.headers.get("Retry-After")
+                wait = int(ra) if (ra and ra.isdigit()) else 2 ** attempt
+                if logger is not None:
+                    logger.warning(
+                        "PokeAPI %s %s — backing off %ss", resp.status_code, url, wait
+                    )
+                time.sleep(wait)
+                continue
             return None, None
-        data = resp.json()
-    except Exception as exc:
-        if logger is not None:
-            logger.debug("PokeAPI error %s: %s", url, exc)
+        except Exception as exc:
+            if logger is not None:
+                logger.debug("PokeAPI error %s: %s", url, exc)
+            return None, None
+    if data is None:
         return None, None
 
     name_fr = next(
@@ -79,7 +100,7 @@ def enrich_items_parallel(
     save: Callable[[], None],
     logger: Logger,
     save_every: int = 100,
-    max_workers: int = 4,
+    max_workers: int = 2,
     label: str = "items",
 ) -> tuple[int, list[str]]:
     """Run `worker` over `items` in a thread pool with periodic saves.
@@ -113,7 +134,7 @@ def enrich_items_parallel(
                 if done % save_every == 0:
                     save()
                     logger.info(
-                        "[%d/%d] %s — %d trouvés, %d non trouvés",
+                        "[%d/%d] %s — %d found, %d not found",
                         done, total, label, found, len(not_found),
                     )
 
