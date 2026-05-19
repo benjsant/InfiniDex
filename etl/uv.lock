@@ -572,6 +572,7 @@ name = "fusiondex-etl"
 version = "0.2.0"
 source = { editable = "." }
 dependencies = [
+    { name = "lxml" },
     { name = "pillow" },
     { name = "prefect" },
     { name = "psycopg2-binary" },
@@ -582,6 +583,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "lxml", specifier = ">=5.0" },
     { name = "pillow", specifier = ">=11.0" },
     { name = "prefect", specifier = ">=3.0" },
     { name = "psycopg2-binary", specifier = ">=2.9" },
