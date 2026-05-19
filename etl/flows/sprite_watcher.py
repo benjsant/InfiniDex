@@ -44,6 +44,12 @@ BRANCH   = "master"
 API_BASE = f"https://api.github.com/repos/{REPO}"
 
 _DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK_URL", "")
+# Discord webhooks sit behind Cloudflare, which 403s requests with a default
+# python User-Agent (CF error 1010) — set a browser UA to get through.
+_DISCORD_UA = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+)
 
 # ── Tasks ─────────────────────────────────────────────────────────────────────
 
@@ -168,6 +174,7 @@ def notify_version_change(old_version: str | None, new_version: str) -> None:
         resp = requests.post(
             _DISCORD_WEBHOOK,
             json={"content": msg},
+            headers={"User-Agent": _DISCORD_UA},
             timeout=10,
         )
         resp.raise_for_status()
