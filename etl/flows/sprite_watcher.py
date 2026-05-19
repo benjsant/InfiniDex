@@ -1,22 +1,22 @@
 """
 Prefect flow — Sprite update watcher.
 
-Surveille le repo infinitefusion/pif-downloadables (branche master).
-À chaque run :
-  1. Compare le SHA du dernier commit avec le SHA connu localement
-  2. Si nouveau commit :
-     a. Lit Settings.rb → détecte un changement de version du jeu
-     b. Diff CUSTOM_SPRITES (ajouts / suppressions)
-     c. Diff BASE_SPRITES (ajouts / suppressions)
-     d. Nettoie les sprites supprimés du disque
-     e. Lance extract_sprites.py si des sprites ont été ajoutés
-     f. Notifie Discord si la version du jeu a changé
-  3. Sauvegarde le SHA + la version pour le prochain run
+Watches the infinitefusion/pif-downloadables repo (master branch).
+On each run:
+  1. Compare the latest commit SHA with the locally known SHA
+  2. If new commit:
+     a. Read Settings.rb → detect a game version change
+     b. Diff CUSTOM_SPRITES (additions / removals)
+     c. Diff BASE_SPRITES (additions / removals)
+     d. Clean up removed sprites from disk
+     e. Run extract_sprites.py if sprites were added
+     f. Notify Discord if the game version changed
+  3. Save the SHA + version for the next run
 
-Lancement manuel :
+Manual run:
   python -m etl.flows.sprite_watcher
 
-Lancement Prefect planifié (toutes les 24h) :
+Scheduled Prefect run (every 24h):
   prefect deployment run sprite-watcher/daily
 """
 
@@ -49,7 +49,7 @@ _DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK_URL", "")
 
 @task(name="fetch-latest-sha", retries=3, retry_delay_seconds=30)
 def fetch_latest_sha() -> str:
-    """Récupère le SHA du dernier commit sur master."""
+    """Fetch the SHA of the latest commit on master."""
     logger = get_run_logger()
     resp = requests.get(f"{API_BASE}/commits/{BRANCH}", timeout=15)
     resp.raise_for_status()
@@ -60,7 +60,7 @@ def fetch_latest_sha() -> str:
 
 @task(name="read-local-sha")
 def read_local_sha() -> str | None:
-    """Lit le SHA connu localement."""
+    """Read the locally known SHA."""
     if SHA_FILE.exists():
         return SHA_FILE.read_text().strip() or None
     return None
@@ -68,7 +68,7 @@ def read_local_sha() -> str | None:
 
 @task(name="fetch-settings-version", retries=2, retry_delay_seconds=20)
 def fetch_settings_version(sha: str) -> str | None:
-    """Lit LATEST_GAME_RELEASE dans Settings.rb au SHA donné."""
+    """Read LATEST_GAME_RELEASE in Settings.rb at the given SHA."""
     logger = get_run_logger()
     url  = f"https://raw.githubusercontent.com/{REPO}/{sha}/Settings.rb"
     resp = requests.get(url, timeout=15)
@@ -91,7 +91,7 @@ def read_local_version() -> str | None:
 
 @task(name="fetch-sprite-list", retries=3, retry_delay_seconds=30)
 def fetch_sprite_list(sha: str, filename: str = "CUSTOM_SPRITES") -> set[str]:
-    """Récupère la liste de sprites (CUSTOM_SPRITES ou BASE_SPRITES) à un SHA donné."""
+    """Fetch the sprite list (CUSTOM_SPRITES or BASE_SPRITES) at a given SHA."""
     url  = f"https://raw.githubusercontent.com/{REPO}/{sha}/{filename}"
     resp = requests.get(url, timeout=30)
     if resp.status_code == 404:
@@ -106,7 +106,7 @@ def fetch_sprite_list(sha: str, filename: str = "CUSTOM_SPRITES") -> set[str]:
 
 @task(name="compute-diff")
 def compute_diff(old: set[str], new: set[str], label: str) -> dict[str, list[str]]:
-    """Calcule les fichiers ajoutés et supprimés entre deux listes."""
+    """Compute the added and removed files between two lists."""
     logger  = get_run_logger()
     added   = sorted(new - old)
     removed = sorted(old - new)
@@ -116,10 +116,10 @@ def compute_diff(old: set[str], new: set[str], label: str) -> dict[str, list[str
 
 @task(name="cleanup-removed-sprites")
 def cleanup_removed_sprites(removed: list[str]) -> int:
-    """Supprime du disque les sprites retirés de CUSTOM_SPRITES.
+    """Delete from disk the sprites removed from CUSTOM_SPRITES.
 
-    Le nom de fichier dans la liste est au format '{head_id}.{body_id}.png'
-    (ou '{head_id}.{body_id}a.png' pour les alts).
+    The filename in the list is in the format '{head_id}.{body_id}.png'
+    (or '{head_id}.{body_id}a.png' for alts).
     """
     logger  = get_run_logger()
     deleted = 0
@@ -135,7 +135,7 @@ def cleanup_removed_sprites(removed: list[str]) -> int:
 
 @task(name="extract-new-sprites")
 def extract_new_sprites() -> None:
-    """Lance extract_sprites.py pour télécharger les nouveaux sprites."""
+    """Run extract_sprites.py to download the new sprites."""
     logger      = get_run_logger()
     scripts_dir = Path(__file__).resolve().parents[1] / "scripts"
     logger.info("Launching sprite extraction…")
@@ -151,12 +151,12 @@ def extract_new_sprites() -> None:
 
 @task(name="notify-version-change")
 def notify_version_change(old_version: str | None, new_version: str) -> None:
-    """Envoie une alerte Discord quand la version du jeu change."""
+    """Send a Discord alert when the game version changes."""
     logger = get_run_logger()
     msg = (
-        f"🎮 **Nouvelle version de Pokémon Infinite Fusion détectée !**\n"
-        f"> `{old_version or 'inconnue'}` → `{new_version}`\n\n"
-        "Un re-run ETL complet est peut-être nécessaire pour intégrer les changements de données."
+        f"🎮 **New Pokémon Infinite Fusion version detected!**\n"
+        f"> `{old_version or 'unknown'}` → `{new_version}`\n\n"
+        "A full ETL re-run may be needed to integrate the data changes."
     )
     logger.warning("Game version changed: %s → %s", old_version, new_version)
 
@@ -191,14 +191,14 @@ def save_state(sha: str, version: str | None) -> None:
 @flow(name="sprite-watcher", log_prints=True)
 def sprite_watcher_flow() -> None:
     """
-    Détecte les nouvelles versions du jeu et les mises à jour de sprites IF.
-    À planifier toutes les 24h via Prefect.
+    Detect new game versions and IF sprite updates.
+    Schedule every 24h via Prefect.
 
-    Actions :
-    - Alerte Discord si la version du jeu (Settings.rb) a changé
-    - Diff CUSTOM_SPRITES et BASE_SPRITES
-    - Supprime les sprites retirés du disque
-    - Lance extract_sprites.py si des sprites ont été ajoutés
+    Actions:
+    - Discord alert if the game version (Settings.rb) changed
+    - Diff CUSTOM_SPRITES and BASE_SPRITES
+    - Delete removed sprites from disk
+    - Run extract_sprites.py if sprites were added
     """
     logger = get_run_logger()
 
