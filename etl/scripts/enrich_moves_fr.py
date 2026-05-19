@@ -27,8 +27,8 @@ LOGGER = setup_logging(__name__)
 
 POKEAPI_MOVE  = "https://pokeapi.co/api/v2/move/{}"
 MOVES_FILE    = Path("data/moves_if.json")
-MAX_WORKERS   = 4
-REQUEST_DELAY = 0.05   # seconds per worker
+MAX_WORKERS   = 2      # PokeAPI fair-use: keep concurrency low
+REQUEST_DELAY = 0.2    # ~10 req/s peak with 2 workers
 
 # Version priority for the FR description — take the most recent available
 VERSION_PRIO = [

@@ -80,10 +80,21 @@ def parse_entries(wikitext: str) -> list[dict]:
         type1 = type1_raw if type1_raw in STANDARD_TYPES else None
         type2 = type2_raw if type2_raw in STANDARD_TYPES else None
 
-        if type1_raw and not type1:
-            LOGGER.warning("Invalid type1 %r for #%d %s — set to None", type1_raw, if_id, name)
-        if type2_raw and not type2:
-            LOGGER.warning("Invalid type2 %r for #%d %s — set to None", type2_raw, if_id, name)
+        # IF wiki convention: alternate-form rows put the form name in the
+        # type1 column (e.g. "pom-pom style", "midnight form", "sunny") and
+        # the form's single real type in type2. Promote type2 → type1 so
+        # these mono-type forms keep a primary type instead of none.
+        if type1 is None and type1_raw and type2 is not None:
+            LOGGER.info(
+                "Form label %r in type1 for #%d %s — promoting %r to primary type",
+                type1_raw, if_id, name, type2,
+            )
+            type1, type2 = type2, None
+        else:
+            if type1_raw and not type1:
+                LOGGER.warning("Invalid type1 %r for #%d %s — set to None", type1_raw, if_id, name)
+            if type2_raw and not type2:
+                LOGGER.warning("Invalid type2 %r for #%d %s — set to None", type2_raw, if_id, name)
         location = clean_wikitext(match.group("location"))
         notes    = clean_wikitext(match.group("notes") or "")
 
