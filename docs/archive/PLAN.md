@@ -1,4 +1,4 @@
-# FusionDex-IA — Plan d'action complet
+# InfiniDex-IA — Plan d'action complet
 
 ## Sources de données
 

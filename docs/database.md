@@ -1,6 +1,6 @@
 # Base de données
 
-PostgreSQL 16. Schéma défini dans [docker/init_postgres.sql](https://github.com/benjsant/FusionDex-IA/blob/main/docker/init_postgres.sql), modèles SQLAlchemy dans [backend/db/models/](https://github.com/benjsant/FusionDex-IA/tree/main/backend/db/models). Pour la ref des classes ORM, voir [Modèles DB](reference/models.md).
+PostgreSQL 16. Schéma défini dans [docker/init_postgres.sql](https://github.com/benjsant/InfiniDex-IA/blob/main/docker/init_postgres.sql), modèles SQLAlchemy dans [backend/db/models/](https://github.com/benjsant/InfiniDex-IA/tree/main/backend/db/models). Pour la ref des classes ORM, voir [Modèles DB](reference/models.md).
 
 ## Tables principales
 
@@ -10,7 +10,7 @@ PostgreSQL 16. Schéma défini dans [docker/init_postgres.sql](https://github.co
 | -------------- | -------------------------------------------- | ------ |
 | `type`         | 18 types standard + 9 types triple-fusion (`is_triple_fusion_type`) | 27 |
 | `ability`      | Talents (EN + FR + description)              | 178    |
-| `move`         | Capacités (nom, type, puissance, PP, …)      | 676    |
+| `move`         | Capacités (nom, type, puissance, PP, …)      | 659    |
 | `generation`   | Générations (1–9)                            | 9      |
 | `creator`      | Créateurs de sprites (attribution)           | 7 081  |
 
@@ -34,7 +34,8 @@ PostgreSQL 16. Schéma défini dans [docker/init_postgres.sql](https://github.co
 | `triple_fusion`    | 23 fusions triples reconnues                                  |
 | `move_expert_move` | 65 règles Move Expert (Knot Island + Boon Island)             |
 | `move_tutor`       | 41 Move Tutors classiques (NPC, prix, localisation)           |
-| `item`             | 70 items (6 fusion + 24 evolution + 40 valuables)             |
+| `item` + `item_location` | 70 items (fusion, évolution, valuable) + lieux d'obtention |
+| `type_effectiveness` | 648 entrées (27 types × multiplicateurs 0/0.5/1/2)       |
 
 ## Focus : `move_expert_move`
 
@@ -78,8 +79,207 @@ CREATE INDEX idx_move_expert_location ON move_expert_move(expert_location);
 - `national_dex_id` : ID officiel PokeAPI (nullable pour les formes IF exclusives).
 - Tous les `ON DELETE` utilisent `CASCADE` sur les jointures pour garder la cohérence si on regénère une table référentielle.
 
+## ERD
+
+Relations entre les tables principales. Les colonnes affichées sont les clés et contraintes structurantes ; pour le détail complet voir `init_postgres.sql`.
+
+```mermaid
+erDiagram
+    generation {
+        int  id PK
+        str  name_en
+        str  name_fr
+    }
+    type {
+        int  id PK
+        str  name_en
+        str  name_fr
+        bool is_triple_fusion_type
+    }
+    type_effectiveness {
+        int   id PK
+        int   attacking_type_id FK
+        int   defending_type_id FK
+        float multiplier
+    }
+    ability {
+        int  id PK
+        str  name_en
+        str  name_fr
+        str  description_en
+        str  description_fr
+    }
+    move {
+        int  id PK
+        str  name_en
+        str  name_fr
+        int  type_id FK
+        str  category
+        int  power
+        int  accuracy
+        int  pp
+        str  source
+    }
+    location {
+        int  id PK
+        str  name_en
+        str  name_fr
+        str  region
+    }
+    pokemon {
+        int  id PK
+        int  national_id
+        str  name_en
+        str  name_fr
+        int  generation_id FK
+        int  hp
+        int  attack
+        int  defense
+        int  sp_attack
+        int  sp_defense
+        int  speed
+        bool is_hoenn_only
+    }
+    pokemon_type {
+        int  pokemon_id FK
+        int  type_id FK
+        int  slot
+        bool if_override
+    }
+    pokemon_ability {
+        int  pokemon_id FK
+        int  ability_id FK
+        int  slot
+        bool is_hidden
+        bool if_swapped
+        bool if_override
+    }
+    pokemon_move {
+        int  pokemon_id FK
+        int  move_id FK
+        str  method
+        int  level
+        str  source
+    }
+    pokemon_evolution {
+        int  id PK
+        int  pokemon_id FK
+        int  evolves_into_id FK
+        str  trigger_type
+        int  min_level
+        str  item_name_en
+        bool if_override
+    }
+    pokemon_location {
+        int  id PK
+        int  pokemon_id FK
+        int  location_id FK
+        str  method
+        str  notes
+    }
+    tm {
+        int  id PK
+        int  number
+        int  move_id FK
+    }
+    tm_location {
+        int  id PK
+        int  tm_id FK
+        int  location_id FK
+        str  notes
+    }
+    creator {
+        int  id PK
+        str  name
+    }
+    fusion_sprite {
+        int  id PK
+        int  head_id FK
+        int  body_id FK
+        str  sprite_path
+        bool is_custom
+        bool is_default
+        str  source
+    }
+    fusion_sprite_credit {
+        int  fusion_sprite_id FK
+        int  creator_id FK
+    }
+    triple_fusion {
+        int  id PK
+        str  name_en
+        str  name_fr
+        str  sprite_path
+        int  hp
+        int  attack
+        int  defense
+        int  sp_attack
+        int  sp_defense
+        int  speed
+    }
+    move_tutor {
+        int  id PK
+        int  move_id FK
+        int  location_id FK
+        int  price
+        str  currency
+        str  npc_description
+    }
+    move_expert_move {
+        int    id PK
+        int    move_id FK
+        str    expert_location
+        int[]  required_pokemon_ids
+        int[]  required_type_ids
+        int[]  required_move_ids
+    }
+    item {
+        int  id PK
+        str  name_en
+        str  name_fr
+        str  category
+        str  effect
+        int  price_buy
+        int  price_sell
+    }
+    item_location {
+        int  id PK
+        int  item_id FK
+        int  location_id FK
+        str  method
+        str  notes
+    }
+
+    generation         ||--o{  pokemon              : "génération"
+    type               ||--o{  pokemon_type          : "classifie"
+    type               ||--o{  move                  : "typée"
+    type               ||--o{  type_effectiveness    : "attaque"
+    type               ||--o{  type_effectiveness    : "défend"
+    ability            ||--o{  pokemon_ability       : "attribuée à"
+    move               ||--o{  pokemon_move          : "apprise par"
+    move               ||--o{  tm                   : "encartée dans"
+    move               ||--o{  move_tutor           : "enseignée par"
+    move               ||--o{  move_expert_move     : "enseignée par expert"
+    tm                 ||--o{  tm_location           : "trouvable à"
+    location           ||--o{  tm_location           : "localise CT"
+    location           ||--o{  pokemon_location      : "localise Pokémon"
+    location           ||--o{  move_tutor            : "localise tuteur"
+    location           ||--o{  item_location         : "localise item"
+    pokemon            ||--o{  pokemon_type          : "possède type"
+    pokemon            ||--o{  pokemon_ability       : "possède talent"
+    pokemon            ||--o{  pokemon_move          : "apprend capacité"
+    pokemon            ||--o{  pokemon_evolution     : "évolue depuis"
+    pokemon            ||--o{  pokemon_evolution     : "évolue vers"
+    pokemon            ||--o{  pokemon_location      : "capturé à"
+    pokemon            ||--o{  fusion_sprite         : "tête"
+    pokemon            ||--o{  fusion_sprite         : "corps"
+    creator            ||--o{  fusion_sprite_credit  : "crédité pour"
+    fusion_sprite      ||--o{  fusion_sprite_credit  : "attribué à"
+    item               ||--o{  item_location         : "trouvable à"
+```
+
 ## Voir aussi
 
 - [ETL](etl.md) — comment la base est peuplée.
-- [docker/init_postgres.sql](https://github.com/benjsant/FusionDex-IA/blob/main/docker/init_postgres.sql) — source de vérité du schéma.
+- [docker/init_postgres.sql](https://github.com/benjsant/InfiniDex-IA/blob/main/docker/init_postgres.sql) — source de vérité du schéma.
 - [Modèles DB](reference/models.md) — classes SQLAlchemy auto-documentées.

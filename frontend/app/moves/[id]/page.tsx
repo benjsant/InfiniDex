@@ -12,13 +12,14 @@ export default function MoveDetailPage({ params }: { params: Promise<{ id: strin
   const { id } = use(params);
   const moveId = parseInt(id, 10);
 
-  const { data: move, isLoading } = useQuery({
+  const { data: move, isLoading, isError } = useQuery({
     queryKey: ["move", moveId],
     queryFn: () => getMove(moveId),
     staleTime: Infinity,
   });
 
   if (isLoading) return <PageSkeleton />;
+  if (isError) return <ErrorState />;
   if (!move) return <NotFound id={moveId} />;
 
   const catColor =
@@ -133,6 +134,17 @@ function NotFound({ id }: { id: number }) {
   return (
     <div className="max-w-2xl mx-auto px-4 py-12 text-center">
       <p style={{ color: "var(--color-if-muted)" }}>Capacité #{id} introuvable.</p>
+      <Link href="/moves" className="mt-4 block transition-colors" style={{ color: "var(--color-if-accent)" }}>
+        <ChevronLeft size={14} className="inline" /> Retour aux capacités
+      </Link>
+    </div>
+  );
+}
+
+function ErrorState() {
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-12 text-center">
+      <p style={{ color: "var(--color-if-muted)" }}>Impossible de charger la capacité.</p>
       <Link href="/moves" className="mt-4 block transition-colors" style={{ color: "var(--color-if-accent)" }}>
         <ChevronLeft size={14} className="inline" /> Retour aux capacités
       </Link>

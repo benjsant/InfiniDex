@@ -7,12 +7,12 @@ interface AiSuggestButtonProps {
   pokemonName: string;
   pokemonId: number;
   context?: string;
+  question?: string;
 }
 
-export function AiSuggestButton({ pokemonName, pokemonId, context }: AiSuggestButtonProps) {
-  const query = encodeURIComponent(
-    `Quels sont les meilleurs partenaires de fusion pour ${pokemonName} (#${pokemonId}) dans Pokémon Infinite Fusion ? Donne des conseils stratégiques.`,
-  );
+export function AiSuggestButton({ pokemonName, pokemonId, context, question }: AiSuggestButtonProps) {
+  const defaultQuestion = `Quels sont les meilleurs partenaires de fusion pour ${pokemonName} (#${pokemonId}) dans Pokémon Infinite Fusion ? Donne des conseils stratégiques.`;
+  const query = encodeURIComponent(question ?? defaultQuestion);
 
   const href = context
     ? `/ai?q=${query}&ctx=${encodeURIComponent(context)}`

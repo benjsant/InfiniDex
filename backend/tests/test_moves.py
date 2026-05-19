@@ -144,6 +144,35 @@ def test_experts_all(client: TestClient) -> None:
     assert isinstance(e["required_types"], list)
 
 
+def test_tms_list(client: TestClient) -> None:
+    r = client.get("/tms/")
+    assert r.status_code == 200
+    data = r.json()
+    assert len(data) == 121
+    assert data[0]["number"] == 1
+    assert data[-1]["number"] == 121
+    first = data[0]
+    assert "move_id" in first and "name_en" in first
+    assert "type" in first and "category" in first
+    assert "locations" in first and isinstance(first["locations"], list)
+
+
+def test_tm_by_number(client: TestClient) -> None:
+    r = client.get("/tms/5")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["number"] == 5
+    assert data["name_en"] == "Roar"
+    assert len(data["locations"]) >= 2
+    location_names = {loc["location_name_en"] for loc in data["locations"]}
+    assert "Celadon City" in location_names
+
+
+def test_tm_not_found(client: TestClient) -> None:
+    r = client.get("/tms/200")
+    assert r.status_code == 404
+
+
 def test_types_list(client: TestClient) -> None:
     r = client.get("/types/")
     assert r.status_code == 200

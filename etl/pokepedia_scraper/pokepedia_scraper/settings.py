@@ -1,4 +1,4 @@
-"""Scrapy settings for FusionDex Pokepedia scraper — Gen 7 USUM movesets."""
+"""Scrapy settings for InfiniDex Pokepedia scraper — Gen 7 USUM movesets."""
 
 BOT_NAME = "pokepedia_scraper"
 

@@ -11,7 +11,7 @@ from backend.services.pokemon_service import get_pokemon_by_id
 
 
 def get_pokemon_or_404(
-    pokemon_id: int = Path(..., ge=1),
+    pokemon_id: int = Path(..., ge=1, le=100_000),
     db: Session = Depends(get_db),
 ) -> Pokemon:
     """Resolve a Pokémon from the path parameter; raises 404 if not found."""

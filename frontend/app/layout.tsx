@@ -3,6 +3,7 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 
 const outfit = Outfit({
@@ -15,11 +16,11 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fusiondex.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "FusionDex — Pokédex Intelligent pour Infinite Fusion",
+  title: "InfiniDex — Pokédex Intelligent pour Infinite Fusion",
   description:
     "Explorez les 501 Pokémon de Pokémon Infinite Fusion, calculez les fusions, découvrez les faiblesses et posez vos questions à l'IA DeepSeek.",
   openGraph: {
-    siteName: "FusionDex",
+    siteName: "InfiniDex",
     type: "website",
   },
 };
@@ -31,11 +32,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className={`dark ${outfit.variable}`}>
-      <body className="min-h-screen bg-[#090c1a] text-[rgb(225,228,255)] font-sans antialiased">
+      <body className="min-h-screen bg-if-bg text-if-text font-sans antialiased">
         <Providers>
           <ErrorBoundary>
             <Navbar />
             <main className="pt-16">{children}</main>
+            <Footer />
           </ErrorBoundary>
         </Providers>
       </body>

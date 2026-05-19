@@ -53,7 +53,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const p = await fetchPokemonMeta(parseInt(id, 10));
-  if (!p) return { title: "Pokémon — FusionDex" };
+  if (!p) return { title: "Pokémon — InfiniDex" };
 
   const displayName = p.name_fr ?? p.name_en;
   const types = p.types.map((t) => t.name_fr ?? t.name_en).join("/");
@@ -61,14 +61,14 @@ export async function generateMetadata({
   const description = `${displayName} (IF #${p.id}${p.national_id ? `, National #${p.national_id}` : ""}) — Type ${types} · BST ${bst}. Stats, talents, capacités et fusions dans Pokémon Infinite Fusion.`;
 
   return {
-    title: `${displayName} — FusionDex`,
+    title: `${displayName} — InfiniDex`,
     description,
     openGraph: {
       title: `${displayName} — Pokémon Infinite Fusion`,
       description,
       type: "website",
     },
-    twitter: { card: "summary", title: `${displayName} — FusionDex`, description },
+    twitter: { card: "summary", title: `${displayName} — InfiniDex`, description },
   };
 }
 

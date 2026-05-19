@@ -11,9 +11,12 @@ from backend.db.models import Pokemon
 from backend.schemas.fusion import (
     FusionAbilityOut,
     FusionExpertMoveOut,
+    FusionFeaturedItem,
+    FusionFullOut,
     FusionInvolvingOut,
     FusionMoveOut,
     FusionResult,
+    FusionTopItem,
 )
 from backend.schemas.type_ import TypeOut
 from backend.schemas.weakness import WeaknessOut
@@ -24,7 +27,9 @@ from backend.services.fusion_service import (
     compute_fusion_expert_moves,
     compute_fusion_moves,
     compute_fusion_weaknesses,
+    list_featured_fusions,
     list_fusions_involving,
+    list_top_fusions_for_pokemon,
     random_fusion_ids,
 )
 
@@ -32,12 +37,68 @@ router = APIRouter(prefix="/fusion", tags=["Fusion"])
 plural_router = APIRouter(prefix="/fusions", tags=["Fusion"])
 
 
+@plural_router.get("/featured", response_model=list[FusionFeaturedItem])
+def get_featured_fusions(
+    limit: int = Query(50, ge=1, le=200),
+    db: Session = Depends(get_db),
+):
+    """Random sample of fusions that have a custom community sprite."""
+    rows = list_featured_fusions(db, limit=limit)
+    return [
+        FusionFeaturedItem(
+            head_id=r["head_id"],
+            body_id=r["body_id"],
+            head_name_en=r["head_name_en"],
+            head_name_fr=r["head_name_fr"],
+            body_name_en=r["body_name_en"],
+            body_name_fr=r["body_name_fr"],
+            type1=_to_type_out(r["type1"]),
+            type2=_to_type_out(r["type2"]),
+            sprite_path=r["sprite_path"],
+        )
+        for r in rows
+    ]
+
+
+@plural_router.get("/top-by-pokemon/{pokemon_id}", response_model=list[FusionTopItem])
+def get_top_fusions_for_pokemon(
+    p: Pokemon = Depends(get_pokemon_or_404),
+    limit: int = Query(5, ge=1, le=20),
+    db: Session = Depends(get_db),
+):
+    """Best fusions for a given Pokémon (as head OR body), ranked by BST."""
+    rows = list_top_fusions_for_pokemon(db, p.id, limit=limit)
+    return [
+        FusionTopItem(
+            rank=r["rank"],
+            head_id=r["head_id"],
+            body_id=r["body_id"],
+            head_name_en=r["head_name_en"],
+            head_name_fr=r["head_name_fr"],
+            body_name_en=r["body_name_en"],
+            body_name_fr=r["body_name_fr"],
+            hp=r["hp"],
+            attack=r["attack"],
+            defense=r["defense"],
+            sp_attack=r["sp_attack"],
+            sp_defense=r["sp_defense"],
+            speed=r["speed"],
+            bst=r["bst"],
+            type1=_to_type_out(r["type1"]),
+            type2=_to_type_out(r["type2"]),
+            sprite_path=r["sprite_path"],
+            role=r["role"],
+        )
+        for r in rows
+    ]
+
+
 @plural_router.get("/involving/{pokemon_id}", response_model=list[FusionInvolvingOut])
 def get_fusions_involving(
     p: Pokemon = Depends(get_pokemon_or_404),
     db: Session = Depends(get_db),
     limit: int | None = Query(None, ge=1, le=2000),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=100_000),
 ):
     """All fusion pairs (as head OR body) involving this Pokémon."""
     rows = list_fusions_involving(db, p.id, limit=limit, offset=offset)
@@ -79,7 +140,10 @@ def _load_pair_or_404(db: Session, head_id: int, body_id: int):
 @router.get("/random", response_model=FusionResult)
 def get_random_fusion(db: Session = Depends(get_db)):
     """Return a random fusion (head + body drawn at random)."""
-    head_id, body_id = random_fusion_ids(db)
+    try:
+        head_id, body_id = random_fusion_ids(db)
+    except ValueError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     return get_fusion(head_id, body_id, db)
 
 
@@ -117,6 +181,73 @@ def get_fusion(head_id: int = _id_path(), body_id: int = _id_path(), db: Session
         type2=_to_type_out(result["type2"]),
         sprite_path=result["sprite_path"],
     )
+
+
+@router.get("/{head_id}/{body_id}/full", response_model=FusionFullOut)
+def get_fusion_full(head_id: int = _id_path(), body_id: int = _id_path(), db: Session = Depends(get_db)):
+    """Stats + full moveset + expert moves in a single round-trip.
+
+    Replaces the three separate calls (/{h}/{b}, /{h}/{b}/moves,
+    /{h}/{b}/expert-moves) made by the fusion result page.
+    """
+    result = compute_fusion(db, head_id, body_id)
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Pokémon #{head_id} or #{body_id} not found",
+        )
+    head, body = _load_pair_or_404(db, head_id, body_id)
+
+    fusion = FusionResult(
+        head_id=result["head_id"],
+        body_id=result["body_id"],
+        head_name_en=result["head_name_en"],
+        head_name_fr=result["head_name_fr"],
+        body_name_en=result["body_name_en"],
+        body_name_fr=result["body_name_fr"],
+        hp=result["hp"],
+        attack=result["attack"],
+        defense=result["defense"],
+        sp_attack=result["sp_attack"],
+        sp_defense=result["sp_defense"],
+        speed=result["speed"],
+        type1=_to_type_out(result["type1"]),
+        type2=_to_type_out(result["type2"]),
+        sprite_path=result["sprite_path"],
+    )
+    moves = [
+        FusionMoveOut(
+            move_id=r["move_id"],
+            name_en=r["name_en"],
+            name_fr=r["name_fr"],
+            category=r["category"],
+            power=r["power"],
+            accuracy=r["accuracy"],
+            pp=r["pp"],
+            type=_to_type_out(r["type"]),
+            method=r["method"],
+            level=r["level"],
+            source=r["source"],
+            origin=r["origin"],
+        )
+        for r in compute_fusion_moves(db, head.id, body.id)
+    ]
+    expert_moves = [
+        FusionExpertMoveOut(
+            move_id=r["move_id"],
+            name_en=r["name_en"],
+            name_fr=r["name_fr"],
+            category=r["category"],
+            power=r["power"],
+            accuracy=r["accuracy"],
+            pp=r["pp"],
+            type=_to_type_out(r["type"]),
+            locations=r["locations"],
+            prices_heart_scales=r["prices_heart_scales"],
+        )
+        for r in compute_fusion_expert_moves(db, head, body)
+    ]
+    return FusionFullOut(fusion=fusion, moves=moves, expert_moves=expert_moves)
 
 
 @router.get("/{head_id}/{body_id}/moves", response_model=list[FusionMoveOut])

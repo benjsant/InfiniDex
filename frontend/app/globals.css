@@ -140,3 +140,6 @@
 [data-theme="light"] .if-drawer-bg {
   background: rgba(240, 242, 255, 0.98);
 }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

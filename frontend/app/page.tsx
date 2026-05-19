@@ -59,9 +59,9 @@ export default async function HomePage() {
       {/* Hero */}
       <div className="text-center mb-10">
         <h1 className="text-5xl sm:text-6xl font-bold mb-3 bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-300 bg-clip-text text-transparent">
-          FusionDex
+          InfiniDex
         </h1>
-        <p className="text-lg sm:text-xl text-[rgb(160,160,180)] mb-6 max-w-lg mx-auto">
+        <p className="text-lg sm:text-xl text-if-text-lo mb-6 max-w-lg mx-auto">
           Le Pokédex intelligent pour{" "}
           <span className="text-indigo-400 font-semibold">Pokémon Infinite Fusion</span>
         </p>
@@ -72,10 +72,10 @@ export default async function HomePage() {
             <div
               key={label}
               className="flex flex-col items-center px-4 py-2 rounded-xl"
-              style={{ background: "#111428", border: "1px solid #1e2240" }}
+              style={{ background: "var(--color-if-card)", border: "1px solid var(--color-if-border)" }}
             >
               <span className="text-xl font-bold font-mono text-indigo-300">{value}</span>
-              <span className="text-[11px] text-[rgb(100,100,130)]">{label}</span>
+              <span className="text-[11px] text-if-muted">{label}</span>
             </div>
           ))}
         </div>
@@ -93,7 +93,7 @@ export default async function HomePage() {
           <Link
             href="/fusion/random"
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm transition-all"
-            style={{ background: "#111428", border: "1px solid #1e2240", color: "#8b91c8" }}
+            style={{ background: "var(--color-if-card)", border: "1px solid var(--color-if-border)", color: "var(--color-if-text-lo)" }}
           >
             <Shuffle size={16} />
             Fusion aléatoire
@@ -121,8 +121,8 @@ function NavCard({
       href={href}
       className="group flex flex-col items-start gap-2 p-4 rounded-xl transition-all duration-200"
       style={{
-        background: accent ? "rgba(99,102,241,0.10)" : "#111428",
-        border: `1px solid ${accent ? "#6366f166" : "#1e2240"}`,
+        background: accent ? "rgba(99,102,241,0.10)" : "var(--color-if-card)",
+        border: `1px solid ${accent ? "#6366f166" : "var(--color-if-border)"}`,
       }}
     >
       <Icon
@@ -130,10 +130,10 @@ function NavCard({
         style={{ color: accent ? "#818cf8" : "#6366f1" }}
         className="group-hover:scale-110 transition-transform duration-200"
       />
-      <span className="font-semibold text-[rgb(220,220,255)] group-hover:text-indigo-300 transition-colors text-sm leading-tight">
+      <span className="font-semibold text-if-text-hi group-hover:text-indigo-300 transition-colors text-sm leading-tight">
         {label}
       </span>
-      <span className="text-xs text-[rgb(100,100,130)] text-left leading-snug">{desc}</span>
+      <span className="text-xs text-if-muted text-left leading-snug">{desc}</span>
     </Link>
   );
 }

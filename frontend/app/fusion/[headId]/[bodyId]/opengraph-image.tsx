@@ -29,6 +29,23 @@ async function fetchMeta(headId: number, bodyId: number) {
   }
 }
 
+// Satori fetches <img src> without our headers, so the key-protected sprite
+// endpoint 403s. Pre-fetch it server-side with the key and inline as a data URL.
+async function fetchSpriteDataUrl(url: string): Promise<string | null> {
+  try {
+    const headers: Record<string, string> = {};
+    if (INTERNAL_API_KEY) headers["X-Internal-Key"] = INTERNAL_API_KEY;
+    const res = await fetch(url, { headers });
+    if (!res.ok) return null;
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    let binary = "";
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return `data:image/png;base64,${btoa(binary)}`;
+  } catch {
+    return null;
+  }
+}
+
 export default async function Image({
   params,
 }: {
@@ -49,7 +66,7 @@ export default async function Image({
     ? [fusion.type1?.name_en, fusion.type2?.name_en].filter(Boolean).join(" / ")
     : "";
 
-  const spriteUrl = `${BACKEND_URL}/sprites/${hId}/${bId}/image`;
+  const spriteSrc = await fetchSpriteDataUrl(`${BACKEND_URL}/sprites/${hId}/${bId}/image`);
 
   return new ImageResponse(
     (
@@ -67,14 +84,16 @@ export default async function Image({
         }}
       >
         {/* Sprite */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={spriteUrl}
-          alt={name}
-          width={200}
-          height={200}
-          style={{ imageRendering: "pixelated" }}
-        />
+        {spriteSrc && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={spriteSrc}
+            alt={name}
+            width={200}
+            height={200}
+            style={{ imageRendering: "pixelated" }}
+          />
+        )}
 
         {/* Name */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
@@ -93,7 +112,7 @@ export default async function Image({
 
         {/* Watermark */}
         <span style={{ position: "absolute", bottom: 24, right: 36, fontSize: 18, color: "#2d3260" }}>
-          FusionDex
+          InfiniDex
         </span>
       </div>
     ),

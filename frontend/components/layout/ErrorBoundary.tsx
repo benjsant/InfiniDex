@@ -65,13 +65,13 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen flex items-center justify-center px-4">
           <div
             className="max-w-md w-full rounded-2xl p-6 text-center"
-            style={{ background: "#111428", border: "1px solid #1e2240" }}
+            style={{ background: "var(--color-if-card)", border: "1px solid var(--color-if-border)" }}
           >
             <div className="text-4xl mb-4">⚠</div>
-            <h2 className="text-lg font-bold mb-2" style={{ color: "#e1e4ff" }}>
+            <h2 className="text-lg font-bold mb-2" style={{ color: "var(--color-if-text)" }}>
               Une erreur inattendue s&apos;est produite
             </h2>
-            <p className="text-sm mb-4" style={{ color: "#6b7199" }}>
+            <p className="text-sm mb-4" style={{ color: "var(--color-if-muted)" }}>
               {this.state.error.message}
             </p>
             <button

@@ -6,11 +6,13 @@ import {
   getPokemonMoves,
   getPokemonEvolutions,
   getPokemonWeaknesses,
+  getPokemonIdMap,
   getTypes,
   getGenerations,
   getAbilities,
   searchPokemon,
 } from "@/lib/api";
+import type { PokemonSortBy } from "@/lib/api";
 
 // Pokémon data is static between deploys — never refetch in background.
 const STATIC: { staleTime: number } = { staleTime: Infinity };
@@ -18,13 +20,14 @@ const STATIC: { staleTime: number } = { staleTime: Infinity };
 export function usePokemonList(
   params?: {
     type_id?: number;
+    type2_id?: number;
     gen?: number;
     page?: number;
     page_size?: number;
     include_hoenn?: boolean;
     min_bst?: number;
     max_bst?: number;
-    sort_by?: "id" | "bst_asc" | "bst_desc";
+    sort_by?: PokemonSortBy;
     ability_id?: number;
   },
   options?: { enabled?: boolean },
@@ -40,6 +43,7 @@ export function usePokemonList(
 export function usePokemonCount(
   params?: {
     type_id?: number;
+    type2_id?: number;
     gen?: number;
     include_hoenn?: boolean;
     min_bst?: number;
@@ -125,4 +129,14 @@ export function usePokemonWeaknesses(id: number, options?: { enabled?: boolean }
     ...STATIC,
     ...options,
   });
+}
+
+/** IF internal id → national dex id map, loaded once for the whole app. */
+export function usePokemonIdMap(): Map<number, number> {
+  const { data } = useQuery({
+    queryKey: ["pokemon-id-map"],
+    queryFn: getPokemonIdMap,
+    ...STATIC,
+  });
+  return data ?? new Map();
 }

@@ -1,6 +1,6 @@
-# FusionDex-IA
+# InfiniDex-IA
 
-**Pokédex intelligent pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.com/)** — une application complète qui extrait, structure, expose et affiche les données du jeu (572 Pokémon, ~176k fusions, movepools, types, fusions triples, maîtres des capacités, Move Experts…) avec une interface bilingue EN/FR et un assistant IA agentique à 7 outils.
+**Pokédex intelligent pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.com/)** — une application complète qui extrait, structure, expose et affiche les données du jeu (572 Pokémon, ~176k fusions, movepools, types, fusions triples, maîtres des capacités, Move Experts…) avec une interface bilingue EN/FR et un assistant IA agentique à 9 outils.
 
 ## Vue rapide
 
@@ -10,7 +10,7 @@
 | Base       | PostgreSQL 16 (tables relationnelles + `INTEGER[]`) | ✅ stable |
 | Backend    | FastAPI + SQLAlchemy 2 + Pydantic           | ✅ stable  |
 | Frontend   | Next.js 15 App Router + TypeScript          | ✅ stable  |
-| IA         | Agent tool-calling DeepSeek/Ollama — 7 outils | ✅ stable  |
+| IA         | Agent tool-calling DeepSeek/OpenRouter/Ollama — 9 outils | ✅ stable  |
 | Infra      | Docker Compose (dev + prod), Next.js proxy  | ✅ stable  |
 
 ## Par où commencer
@@ -33,5 +33,21 @@
 | Sprites `PokeAPI/sprites` (GitHub) | 572 sprites base |
 | Fichiers du jeu (ROM extract) | 166 090 fusion_sprites, 41 move_tutors, 1 634 pokemon_location |
 
-!!! info "Pourquoi FusionDex-IA ?"
+!!! info "Pourquoi InfiniDex-IA ?"
     Pokémon Infinite Fusion a une richesse de données éparpillées sur plusieurs wikis, sans API officielle. Ce projet centralise tout dans une base PostgreSQL interrogeable, avec une API REST propre et un frontend pour explorer les ~176k combinaisons de fusion.
+
+## Aperçu visuel
+
+=== "Accueil"
+    ![Accueil](imgs/homepage-desktop.webp)
+
+=== "Pokédex"
+    ![Pokédex](imgs/pokedex-list.webp)
+
+=== "Fusion"
+    ![Résultat de fusion](imgs/fusion-result.webp)
+
+=== "Assistant IA"
+    ![Assistant IA](imgs/ai-chat.webp)
+
+→ Toutes les captures : [Captures d'écran](screenshots.md)

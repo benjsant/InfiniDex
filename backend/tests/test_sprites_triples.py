@@ -44,7 +44,10 @@ def test_triple_fusions_list(client: TestClient) -> None:
 
 
 def test_triple_fusion_detail(client: TestClient) -> None:
-    r = client.get("/triple-fusions/1")
+    # Resolve Zapmolcuno's ID from the list (IDs differ between dev and CI DBs).
+    listing = client.get("/triple-fusions/").json()
+    zapmolcuno = next(tf for tf in listing if tf["name_en"] == "Zapmolcuno")
+    r = client.get(f"/triple-fusions/{zapmolcuno['id']}")
     assert r.status_code == 200
     tf = r.json()
     assert tf["name_en"] == "Zapmolcuno"

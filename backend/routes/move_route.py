@@ -6,12 +6,14 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
-from backend.schemas.move import MoveDetail, MoveExpertOut, MoveListItem, MoveTutorOut, PokemonMoveOut, TMInfo, TMLocationOut
+from backend.schemas.move import MoveDetail, MoveExpertOut, MoveListItem, MoveTutorOut, PokemonMoveOut, TMInfo, TMListItem, TMLocationOut
 from backend.schemas.type_ import TypeOut
 from backend.services.move_service import (
     get_move_by_id,
+    get_tm_by_number,
     get_tm_for_move,
     list_all_expert_moves,
+    list_all_tms,
     list_all_tutors,
     list_moves,
     list_moves_by_type,
@@ -20,6 +22,56 @@ from backend.services.move_service import (
 )
 
 router = APIRouter(prefix="/moves", tags=["Moves"])
+tms_router = APIRouter(prefix="/tms", tags=["TMs"])
+
+
+def _tm_to_schema(tm) -> TMListItem:
+    locations = [
+        TMLocationOut(
+            location_id=tl.location_id,
+            location_name_en=tl.location.name_en,
+            location_name_fr=tl.location.name_fr,
+            notes=tl.notes,
+        )
+        for tl in tm.locations
+    ]
+    summary_parts = [
+        f"{loc.location_name_en} ({loc.notes})" if loc.notes else loc.location_name_en
+        for loc in locations
+    ]
+    return TMListItem(
+        number=tm.number,
+        move_id=tm.move_id,
+        name_en=tm.move.name_en,
+        name_fr=tm.move.name_fr,
+        type=TypeOut(
+            id=tm.move.type.id,
+            name_en=tm.move.type.name_en,
+            name_fr=tm.move.type.name_fr,
+            is_triple_fusion_type=tm.move.type.is_triple_fusion_type,
+        ),
+        category=tm.move.category,
+        power=tm.move.power,
+        accuracy=tm.move.accuracy,
+        pp=tm.move.pp,
+        location_summary=", ".join(summary_parts) or None,
+        locations=locations,
+    )
+
+
+@tms_router.get("/", response_model=list[TMListItem])
+def get_all_tms(db: Session = Depends(get_db)):
+    """All 121 TMs ordered by number, with move info and obtention locations."""
+    return [_tm_to_schema(tm) for tm in list_all_tms(db)]
+
+
+@tms_router.get("/{number}", response_model=TMListItem)
+def get_tm(number: int = Path(..., ge=1, le=200), db: Session = Depends(get_db)):
+    """Single TM by its number (e.g. 1 = TM01, 121 = TM121)."""
+    tm = get_tm_by_number(db, number)
+    if not tm:
+        raise HTTPException(status_code=404, detail=f"TM{number:03d} not found")
+    return _tm_to_schema(tm)
 
 
 def _move_to_list_item(m) -> MoveListItem:
@@ -48,7 +100,7 @@ def get_moves(
     power_min: int | None = Query(None, ge=0),
     power_max: int | None = Query(None, ge=0),
     limit: int | None = Query(None, ge=1, le=1000),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=100_000),
 ):
     """List moves with optional filters (category/type/power/pagination)."""
     moves = list_moves(
@@ -144,18 +196,24 @@ def get_move(move_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
     tm_info: TMInfo | None = None
     tm = get_tm_for_move(db, move.id)
     if tm is not None:
+        tm_locations = [
+            TMLocationOut(
+                location_id=tl.location_id,
+                location_name_en=tl.location.name_en,
+                location_name_fr=tl.location.name_fr,
+                notes=tl.notes,
+            )
+            for tl in tm.locations
+        ]
+        # Build location_summary from FK rows (no longer stored in tm.location).
+        summary_parts = [
+            f"{tl.location_name_en} ({tl.notes})" if tl.notes else tl.location_name_en
+            for tl in tm_locations
+        ]
         tm_info = TMInfo(
             number=tm.number,
-            location_summary=tm.location,
-            locations=[
-                TMLocationOut(
-                    location_id=tl.location_id,
-                    location_name_en=tl.location.name_en,
-                    location_name_fr=tl.location.name_fr,
-                    notes=tl.notes,
-                )
-                for tl in tm.locations
-            ],
+            location_summary=", ".join(summary_parts) or None,
+            locations=tm_locations,
         )
 
     return MoveDetail(

@@ -7,6 +7,7 @@ const IKEY      = process.env.INTERNAL_API_KEY       ?? "";
 const STATIC_ROUTES = [
   "/",
   "/fusion",
+  "/fusion/top",
   "/pokedex",
   "/moves",
   "/abilities",
@@ -14,6 +15,22 @@ const STATIC_ROUTES = [
   "/types",
   "/fusion/compare",
 ];
+
+async function fetchTopFusionPairs(): Promise<{ headId: number; bodyId: number }[]> {
+  try {
+    const headers: Record<string, string> = {};
+    if (IKEY) headers["X-Internal-Key"] = IKEY;
+    const res = await fetch(`${BACKEND}/fusions/top?limit=50`, {
+      headers,
+      next: { revalidate: 86400 },
+    });
+    if (!res.ok) return [];
+    const data: { head_id: number; body_id: number }[] = await res.json();
+    return data.map((f) => ({ headId: f.head_id, bodyId: f.body_id }));
+  } catch {
+    return [];
+  }
+}
 
 async function fetchPokemonIds(): Promise<number[]> {
   try {
@@ -33,7 +50,10 @@ async function fetchPokemonIds(): Promise<number[]> {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
-  const pokemonIds = await fetchPokemonIds();
+  const [pokemonIds, topFusions] = await Promise.all([
+    fetchPokemonIds(),
+    fetchTopFusionPairs(),
+  ]);
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((route) => ({
     url: `${SITE_URL}${route}`,
@@ -49,5 +69,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...staticEntries, ...pokemonEntries];
+  const fusionEntries: MetadataRoute.Sitemap = topFusions.map(({ headId, bodyId }) => ({
+    url: `${SITE_URL}/fusion/${headId}/${bodyId}`,
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: 0.65,
+  }));
+
+  return [...staticEntries, ...pokemonEntries, ...fusionEntries];
 }

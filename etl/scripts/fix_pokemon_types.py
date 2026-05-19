@@ -27,20 +27,35 @@ REQUEST_DELAY = 0.15  # secondes entre requêtes
 SKIP_NATIONAL_IDS: set[int] = set()
 
 
-def fetch_types(national_id: int) -> list[tuple[int, str]]:
-    """Retourne [(slot, type_name_en)] depuis PokeAPI pour un national_id."""
-    try:
-        resp = requests.get(POKEAPI.format(national_id), timeout=10)
-        if resp.status_code != 200:
-            return []
-        data = resp.json()
-        return [
-            (t["slot"], t["type"]["name"].capitalize())
-            for t in data["types"]
-        ]
-    except Exception as e:
-        LOGGER.warning("PokeAPI error pour #%d : %s", national_id, e)
-        return []
+def fetch_types(national_id: int, retries: int = 3) -> list[tuple[int, str]]:
+    """Retourne [(slot, type_name_en)] depuis PokeAPI pour un national_id.
+
+    Retente jusqu'à `retries` fois en cas de 429 ou d'erreur réseau,
+    avec backoff exponentiel (2s, 4s, 8s).
+    """
+    for attempt in range(retries):
+        try:
+            resp = requests.get(POKEAPI.format(national_id), timeout=15)
+            if resp.status_code == 429:
+                wait = 2 ** (attempt + 1)
+                LOGGER.warning("PokeAPI 429 pour #%d — attente %ds", national_id, wait)
+                time.sleep(wait)
+                continue
+            if resp.status_code != 200:
+                LOGGER.warning("PokeAPI HTTP %d pour #%d", resp.status_code, national_id)
+                return []
+            data = resp.json()
+            return [
+                (t["slot"], t["type"]["name"].capitalize())
+                for t in data["types"]
+            ]
+        except Exception as e:
+            wait = 2 ** (attempt + 1)
+            LOGGER.warning("PokeAPI error pour #%d (tentative %d/%d) : %s — attente %ds",
+                           national_id, attempt + 1, retries, e, wait)
+            if attempt < retries - 1:
+                time.sleep(wait)
+    return []
 
 
 def fix_pokemon_types(conn) -> None:

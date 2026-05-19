@@ -98,26 +98,99 @@ Navigateur → http://localhost:53000/pokedex
 
 Identique, sauf que `http://backend:8000` n'est joignable que depuis le conteneur `frontend`. Le navigateur ne voit jamais l'URL réelle du backend, uniquement `/api/*` sur le domaine public.
 
+### Flux requête Pokémon (exemple `/pokedex/[id]`)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Br as Navigateur
+    participant Nx as Next.js SSR
+    participant Px as Proxy /api/*
+    participant FA as FastAPI
+    participant PG as PostgreSQL
+
+    Br  ->>  Nx : GET /pokedex/25
+    Nx  ->>  Px : fetch /api/pokemon/25
+    Px  ->>  FA : GET /pokemon/25 (réseau Docker)
+    FA  ->>  PG : SELECT pokemon + types + abilities\n+ evolutions + locations
+    PG  -->> FA : JSON rows
+    FA  -->> Px : PokemonDetail JSON
+    Px  -->> Nx : JSON
+    Nx  -->> Br : HTML (SSR hydraté)
+
+    note over Br,Nx: React Query staleTime=Infinity\n→ aucun refetch si déjà en cache
+```
+
+### Flux résolution sprite de fusion
+
+```mermaid
+flowchart TD
+    REQ([Fusion head_id · body_id])
+
+    REQ --> CHK{Sprite custom\ndans nginx ?}
+    CHK -->|Oui| PNG["/sprites/{head}.{body}.png\nnginx sidecar — direct"]
+    CHK -->|Non| FB[FusionSprite fallback]
+
+    FB --> MAP[usePokemonIdMap\nIF id → national_id]
+    MAP --> PA1[PokeAPI sprite head\n/pokemon/{nationalHead}.png]
+    MAP --> PA2[PokeAPI sprite body\n/pokemon/{nationalBody}.png]
+    PA1 & PA2 --> COMP[Affichage côte à côte\nhead 55% · body 55%]
+
+    style PNG  fill:#1e3b2f,color:#6ee7b7
+    style COMP fill:#3b2f1e,color:#fcd34d
+```
+
+!!! note "IF id ≠ national dex id"
+    Pour Gen 1–2 les deux IDs coïncident (1–251). Au-delà, IF utilise sa propre numérotation — ex. Arceus est `#315` en IF mais `#493` au national dex. `usePokemonIdMap` charge une fois la liste complète des 572 Pokémon et construit la map en mémoire (React Query `staleTime: Infinity`).
+
 ### Flux IA (SSE)
 
-```
-Navigateur → POST /api/ai/ask  {"message": "...", "context": "..."}
-           → proxy Next.js
-           → FastAPI /ai/ask → stream_ai_response()
-               ├─ itération 1 : LLM → tool_call get_pokemon
-               │    yield ToolCallEvent {"type":"tool_call","name":"get_pokemon"}
-               │    dispatch_tool() → DB query → résultat JSON
-               ├─ itération 2 : LLM → réponse textuelle
-               │    yield TokenEvent {"type":"token","chunk":"…"} × N
-               └─ fin de stream
-           → SSE data: {"type":"token","chunk":"..."}\n\n
-           → AiChat.tsx accumule les chunks → affichage progressif
+```mermaid
+sequenceDiagram
+    autonumber
+    participant B  as Navigateur<br/>(AiChat.tsx)
+    participant N  as Next.js<br/>proxy /api/*
+    participant F  as FastAPI<br/>/ai/ask
+    participant L  as LLM<br/>(DeepSeek / Ollama)
+    participant T  as Tools<br/>(DB · Wiki · DDG)
+
+    B  ->>  N : POST /api/ai/ask<br/>{message, context, history}
+    N  ->>  F : POST /ai/ask (réseau Docker interne)
+    F  -->> B : HTTP 200 + headers SSE<br/>Content-Type: text/event-stream
+
+    note over F,L: Itération 1 — l'agent appelle un outil
+    F  ->>  L : chat.completions.create(stream=True)<br/>[system, history, user]
+    L  -->> F : delta tool_call {name, arguments}
+    F  -->> B : data: {"type":"tool_call","name":"get_pokemon"}
+    F  ->>  T : dispatch_tool(name, args)
+    T  -->> F : {found: true, ...résultat JSON}
+    F  ->>  L : messages += [tool_result]
+
+    note over F,L: Itération 2 — l'agent génère la réponse
+    F  ->>  L : chat.completions.create(stream=True)<br/>[system, history, user, tool_result]
+    loop streaming tokens
+        L  -->> F : delta content chunk
+        F  -->> B : data: {"type":"token","chunk":"..."}
+    end
+    L  -->> F : usage {total_tokens: N}
+
+    note over F,B: Fin de stream — attribution des sources
+    F  -->> B : data: {"type":"source","sources":["db"],"web_urls":[]}
+    F  -->> B : data: {"type":"usage","total_tokens":412}
+
+    note over B: AiChat.tsx
+    note over B: • tool_call → pastille ⚙ avant la bulle<br/>• token → chunk accumulé dans la bulle<br/>• source → badges db/wiki/web sous la bulle<br/>  (web = cliquable, ouvre les URLs consultées)<br/>• usage → compteur tokens sous la bulle
 ```
 
-Le SSE stream émet deux types d'événements distincts :
+**Événements SSE émis :**
 
-- `{"type": "tool_call", "name": "get_pokemon"}` — affiché comme pastille ⚙ dans l'UI
-- `{"type": "token", "chunk": "..."}` — accumulé dans la bulle de réponse
+| Type | Payload | Affiché comme |
+|------|---------|---------------|
+| `tool_call` | `{name}` | Pastille ⚙ avant la réponse |
+| `token` | `{chunk}` | Texte accumulé dans la bulle (streaming) |
+| `source` | `{sources, web_urls}` | Badges db / wiki / web sous la bulle — web cliquable |
+| `usage` | `{total_tokens}` | Compteur tokens sous la bulle |
+| `error` | `{message}` | Message d'erreur inline, bulle supprimée |
 
 ## Architecture IA agentique
 
@@ -125,7 +198,7 @@ L'assistant IA est un **agent tool-calling** — il ne génère pas de réponse 
 
 ### System prompt
 
-Stocké dans [`backend/prompts/system.md`](https://github.com/benjsant/FusionDex-IA/blob/main/backend/prompts/system.md) — fichier Markdown chargé au démarrage via `pathlib`. Écrit en anglais (meilleure instruction-following), avec règle explicite de répondre en français. Mis à jour sans redéploiement (hot-reload au prochain démarrage du conteneur).
+Stocké dans [`backend/prompts/system.md`](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/prompts/system.md) — fichier Markdown chargé au démarrage via `pathlib`. Écrit en anglais (meilleure instruction-following), avec règle explicite de répondre en français. Mis à jour sans redéploiement (hot-reload au prochain démarrage du conteneur).
 
 ### Boucle agent (`ai_service.py`)
 
@@ -151,11 +224,48 @@ yield TokenEvent(FAILURE_MESSAGE)  # circuit breaker
 |------|--------|-------------|
 | `get_pokemon` | DB | Fiche complète (stats, types, talents) par nom ou ID |
 | `get_fusion` | DB | Stats, types et moveset d'une fusion head/body |
+| `get_triple_fusion` | DB | Données d'une triple fusion (Zapmolcuno, Enraicune…) |
 | `search_move` | DB | Recherche de capacité par nom (EN ou FR) |
 | `get_item` | DB | Fiche item par nom |
 | `get_move_tutors` | DB | NPCs enseignant une capacité + prix |
 | `search_pokemon_locations` | DB | Cherche les Pokémon par condition/méthode dans `pokemon_location` |
 | `search_wiki` | Wiki IF (HTTP) | Résumé de page wiki avec cache TTL 10 min — fetch page complète si intro < 300 caractères |
+| `search_web` | DuckDuckGo (HTTP) | Fallback web en dernier recours, cache TTL 5 min, max 1 appel par tour |
+
+### Cascade de retrieval
+
+L'agent ne suit pas un script fixe — c'est le LLM qui décide quels outils appeler. Le system prompt le guide vers cette priorité :
+
+```mermaid
+flowchart TD
+    Q([Question utilisateur]) --> LLM1[LLM — itération 1]
+
+    LLM1 -->|tool_call DB| DB["Outils DB\nget_pokemon · get_fusion\nsearch_move · get_item\nget_move_tutors\nsearch_pokemon_locations"]
+    DB -->|found: true| RESP([Réponse synthétisée])
+    DB -->|found: false| LLM2[LLM — itération 2]
+
+    LLM2 -->|tool_call wiki| WIKI["search_wiki\n(MediaWiki API IF)\ncache TTL 10 min"]
+    WIKI -->|found: true| RESP
+    WIKI -->|found: false| LLM3[LLM — itération 3]
+
+    LLM3 -->|tool_call web| WEB["search_web\n(DuckDuckGo)\ncache TTL 5 min\nmax 1 500 chars"]
+    WEB -->|found: true| RESP
+    WEB -->|found: false| FAIL([Fail-closed\n&#34;Je n'ai pas trouvé cette information.&#34;])
+
+    LLM1 -->|no tool_call| RESP
+    LLM2 -->|no tool_call| RESP
+    LLM3 -->|no tool_call| RESP
+
+    CIRC["⚡ Circuit breaker\nmax 5 itérations"] -.->|stop| FAIL
+
+    style DB   fill:#1e3a5f,color:#93c5fd
+    style WIKI fill:#3b2f1e,color:#fcd34d
+    style WEB  fill:#1e3b2f,color:#6ee7b7
+    style FAIL fill:#3b1e1e,color:#fca5a5
+    style CIRC fill:#2d1e3b,color:#c4b5fd
+```
+
+Chaque résultat d'outil est injecté dans le contexte avant l'itération suivante. Le LLM peut enchaîner plusieurs outils DB dans une même itération (ex. `get_pokemon` + `get_fusion`).
 
 ### Cache et performances
 
@@ -181,11 +291,11 @@ Interface `LLMProvider` abstraite — sélection runtime :
 
 ## Références
 
-- [backend/main.py](https://github.com/benjsant/FusionDex-IA/blob/main/backend/main.py) — wiring FastAPI + CORS + StaticCacheMiddleware
-- [backend/services/ai_service.py](https://github.com/benjsant/FusionDex-IA/blob/main/backend/services/ai_service.py) — boucle agent + SSE
-- [backend/services/tools/](https://github.com/benjsant/FusionDex-IA/blob/main/backend/services/tools/) — db_tools, wiki_tool, dispatch
-- [backend/prompts/system.md](https://github.com/benjsant/FusionDex-IA/blob/main/backend/prompts/system.md) — system prompt
-- [docker-compose.yml](https://github.com/benjsant/FusionDex-IA/blob/main/docker-compose.yml) — services dev
-- [docker-compose.prod.yml](https://github.com/benjsant/FusionDex-IA/blob/main/docker-compose.prod.yml) — override prod
-- [frontend/app/api/[...path]/route.ts](https://github.com/benjsant/FusionDex-IA/blob/main/frontend/app/api/%5B...path%5D/route.ts) — proxy catch-all
+- [backend/main.py](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/main.py) — wiring FastAPI + CORS + StaticCacheMiddleware
+- [backend/services/ai_service.py](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/services/ai_service.py) — boucle agent + SSE
+- [backend/services/tools/](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/services/tools/) — db_tools, wiki_tool, dispatch
+- [backend/prompts/system.md](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/prompts/system.md) — system prompt
+- [docker-compose.yml](https://github.com/benjsant/InfiniDex-IA/blob/main/docker-compose.yml) — services dev
+- [docker-compose.prod.yml](https://github.com/benjsant/InfiniDex-IA/blob/main/docker-compose.prod.yml) — override prod
+- [frontend/app/api/[...path]/route.ts](https://github.com/benjsant/InfiniDex-IA/blob/main/frontend/app/api/%5B...path%5D/route.ts) — proxy catch-all
 - [Référence routes](reference/routes.md) — endpoints FastAPI auto-documentés.

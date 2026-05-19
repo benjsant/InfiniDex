@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 LOGGER = logging.getLogger(__name__)
 
 from backend.db.session import get_db
-from backend.schemas.ai import AiPromptInfo, AiProviderInfo, AiRequest, FeedbackRequest
+from backend.schemas.ai import AiPromptInfo, AiProviderInfo, AiRequest, FeedbackRequest, FeedbackResponse
 from backend.services.ai_service import MAX_HISTORY_MSGS, stream_ai_response
 from backend.services.llm_providers import provider_setup_instructions, select_provider
 from backend.services.prompt import SYSTEM_PROMPT
@@ -71,8 +71,8 @@ async def ask_ai(request: AiRequest, db: Session = Depends(get_db)):
                 db, request.message, request.context, request.history, provider
             ):
                 yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
-        except Exception as exc:
-            LOGGER.error("SSE stream exception: %s", type(exc).__name__)
+        except Exception:
+            LOGGER.error("SSE stream exception", exc_info=True)
             yield f"data: {json.dumps({'type': 'error', 'message': 'Une erreur est survenue, réessaie.'}, ensure_ascii=False)}\n\n"
 
     return StreamingResponse(
@@ -86,7 +86,7 @@ async def ask_ai(request: AiRequest, db: Session = Depends(get_db)):
     )
 
 
-@router.post("/feedback")
+@router.post("/feedback", response_model=FeedbackResponse)
 async def submit_feedback(request: FeedbackRequest):
     """Record a thumbs-up/down on an AI response.
 
@@ -97,7 +97,7 @@ async def submit_feedback(request: FeedbackRequest):
     if request.rating == "down" and _DISCORD_WEBHOOK:
         color = 0xE74C3C  # red
         embed = {
-            "title": "👎 Mauvaise réponse — Assistant IA FusionDex",
+            "title": "👎 Mauvaise réponse — Assistant IA InfiniDex",
             "color": color,
             "fields": [
                 {

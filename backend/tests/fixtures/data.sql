@@ -58275,128 +58275,128 @@ COPY public.pokemon_type (pokemon_id, type_id, slot, if_override) FROM stdin;
 -- Data for Name: tm; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY public.tm (id, number, move_id, location) FROM stdin;
-1	1	43	Route 13 (Surf)
-2	2	69	Route 26
-3	3	589	Saffron City (Gym)
-4	4	549	Cerulean Cave
-5	5	458	Celadon Dept. Store, Route 32
-6	6	540	Fuchsia City (Gym)
-7	7	327	Seafoam Islands
-8	8	133	Viridian City (Surf)
-9	9	544	Mt. Moon
-10	10	407	Route 24 (Surf)
-11	11	203	Cerulean City
-12	12	60	Route 46 (Waterfall)
-13	13	330	Game Corner, Celadon City (Team Rocket mission)
-14	14	322	Pokémon Mansion (Cinnabar)
-15	15	413	Celadon Dept. Store, Game Corner
-16	16	568	Brine Road
-17	17	444	Route 34 (Required Surf)
-18	18	661	Route 25
-19	19	599	Route 24
-20	20	461	Cerulean Cave
-21	21	393	Pewter City (Quest Reward)
-22	22	283	Celadon City (Gym)
-23	23	618	Union Cave
-24	24	104	Game Corner, Celadon City (Team Rocket mission)
-25	25	99	Power Plant
-26	26	301	Viridian City (Gym)
-27	27	456	Route 15, Goldenrod City (Surf)
-28	28	298	Celadon Dept. Store
-29	29	583	Saffron City
-30	30	243	Route 27
-31	31	132	S.S. Anne, Celadon Dept. Store
-32	32	374	Celadon Dept. Store, Safari Zone Area 5
-33	33	592	Power Plant
-34	34	538	Celadon Sewers
-35	35	188	Game Corner, Celadon City (Team Rocket mission)
-36	36	537	Route 15
-37	37	617	Mt. Moon (Route 4 Entrance)
-38	38	179	Cinnabar Island (Gym)
-39	39	614	Pewter City (Gym)
-40	40	207	Cerulean City (Bike Race)
-41	41	64	Lavender Town
-43	43	186	Route 9
-44	44	593	Route 13 (Surf)
-45	45	345	Celadon Dept. Store
-46	46	61	Mt. Moon
-47	47	152	Rock Tunnel
-49	49	376	Route 7
-50	50	199	Mt. Ember
-51	51	546	Route 9
-52	52	144	Victory Road
-53	53	258	Route 18
-54	54	386	Route 6
-55	55	670	Cerulean City (Gym)
-57	57	83	Power Plant
-58	58	228	Mt. Moon Summit
-60	60	55	Safari Zone Area 1
-61	61	205	Pokémon Tower (Lavender)
-62	62	206	Safari Zone Area 3
-63	63	37	Saffron City
-64	64	382	Pokémon Mansion (Cinnabar)
-65	65	245	Safari Zone Area 5 Temple
-67	67	455	Union Cave (Surf)
-68	68	396	Celadon Sewers (Surf)
-70	70	226	Cycling Road
-71	71	620	Victory Road
-73	73	103	Vermillion City (Gym)
-74	74	630	Victory Road
-75	75	497	Victory Road
-76	76	24	National Park
-78	78	297	Cycling Road (NPC)
-79	79	325	Mahogany Gym
-80	80	612	Rock Tunnel
-81	81	28	Celadon City
-82	82	75	Victory Road
-83	83	515	Route 36
-84	84	531	Rock Tunnel
-85	85	552	Berry Forest
-86	86	262	Kindle Road (Dive)
-87	87	493	Name Rater
-88	88	476	Route 35
-89	89	27	Bond Bridge
-90	90	490	Celadon City (Surf)
-91	91	627	Route 23
-92	92	602	Silph Co. (5F)
-93	93	107	Route 10 (Surf)
-94	94	159	Outside Mt. Moon
-95	95	56	Route 9
-96	96	125	Mt. Moon Summit
-97	97	47	Ecruteak City (Gym)
-98	98	347	Goldenrod City (Gym)
-99	99	16	Azalea Town (Gym)
-100	100	215	Violet City (Gym)
-101	101	70	Blackthorn City (Gym)
-104	104	450	Cinnabar Island (Quest reward for bringing back the relic vase)
-105	105	646	Route 23
-106	106	116	Mt. Moon
-107	107	128	Silph Co. (4F)
-108	108	227	Sky Pillar
-109	109	32	Battle Factory and Battle Tower
-110	110	320	Battle Factory and Battle Tower
-112	112	145	Battle Factory and Battle Tower
-113	113	9	Battle Factory and Battle Tower
-114	114	10	Kin Island
-117	117	643	Battle Factory and Battle Tower
-119	119	316	Battle Factory and Battle Tower
-120	120	62	Battle Factory and Battle Tower
-121	121	663	Ember Spa
-42	42	384	Mode aléatoire uniquement
-48	48	460	Mode aléatoire uniquement
-56	56	41	Mode aléatoire uniquement
-59	59	193	Mode aléatoire uniquement
-66	66	51	Mode aléatoire uniquement
-69	69	611	Mode aléatoire uniquement
-72	72	105	Mode aléatoire uniquement
-77	77	445	Mode aléatoire uniquement
-102	102	286	Mode aléatoire uniquement
-103	103	541	Mode aléatoire uniquement
-111	111	114	Mode aléatoire uniquement
-115	115	155	Mode aléatoire uniquement
-116	116	97	Mode aléatoire uniquement
-118	118	644	Mode aléatoire uniquement
+COPY public.tm (id, number, move_id) FROM stdin;
+1	1	43
+2	2	69
+3	3	589
+4	4	549
+5	5	458
+6	6	540
+7	7	327
+8	8	133
+9	9	544
+10	10	407
+11	11	203
+12	12	60
+13	13	330
+14	14	322
+15	15	413
+16	16	568
+17	17	444
+18	18	661
+19	19	599
+20	20	461
+21	21	393
+22	22	283
+23	23	618
+24	24	104
+25	25	99
+26	26	301
+27	27	456
+28	28	298
+29	29	583
+30	30	243
+31	31	132
+32	32	374
+33	33	592
+34	34	538
+35	35	188
+36	36	537
+37	37	617
+38	38	179
+39	39	614
+40	40	207
+41	41	64
+43	43	186
+44	44	593
+45	45	345
+46	46	61
+47	47	152
+49	49	376
+50	50	199
+51	51	546
+52	52	144
+53	53	258
+54	54	386
+55	55	670
+57	57	83
+58	58	228
+60	60	55
+61	61	205
+62	62	206
+63	63	37
+64	64	382
+65	65	245
+67	67	455
+68	68	396
+70	70	226
+71	71	620
+73	73	103
+74	74	630
+75	75	497
+76	76	24
+78	78	297
+79	79	325
+80	80	612
+81	81	28
+82	82	75
+83	83	515
+84	84	531
+85	85	552
+86	86	262
+87	87	493
+88	88	476
+89	89	27
+90	90	490
+91	91	627
+92	92	602
+93	93	107
+94	94	159
+95	95	56
+96	96	125
+97	97	47
+98	98	347
+99	99	16
+100	100	215
+101	101	70
+104	104	450
+105	105	646
+106	106	116
+107	107	128
+108	108	227
+109	109	32
+110	110	320
+112	112	145
+113	113	9
+114	114	10
+117	117	643
+119	119	316
+120	120	62
+121	121	663
+42	42	384
+48	48	460
+56	56	41
+59	59	193
+66	66	51
+69	69	611
+72	72	105
+77	77	445
+102	102	286
+103	103	541
+111	111	114
+115	115	155
+116	116	97
+118	118	644
 \.
 
 

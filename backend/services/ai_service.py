@@ -28,7 +28,7 @@ LOGGER = logging.getLogger(__name__)
 
 MAX_ITERATIONS   = 5
 MAX_TOKENS       = 2048
-TEMPERATURE      = 0.3
+TEMPERATURE      = 0.1
 FAILURE_MESSAGE  = "Je n'ai pas trouvé cette information."
 MAX_HISTORY_MSGS = 10
 
@@ -53,7 +53,8 @@ class TokenEvent(TypedDict):
 
 class SourceEvent(TypedDict):
     type: Literal["source"]
-    sources: list[str]  # e.g. ["db", "wiki", "web"]
+    sources: list[str]           # e.g. ["db", "wiki", "web"]
+    web_urls: list[dict]         # [{title, url}] from search_web results, empty if web unused
 
 
 class UsageEvent(TypedDict):
@@ -173,6 +174,7 @@ async def stream_ai_response(
     ]
 
     sources_used: set[str] = set()
+    web_urls: list[dict] = []
     total_tokens = 0
 
     for iteration in range(MAX_ITERATIONS):
@@ -200,7 +202,7 @@ async def stream_ai_response(
             if not assistant_parts:
                 yield TokenEvent(type="token", chunk=FAILURE_MESSAGE)
             if sources_used:
-                yield SourceEvent(type="source", sources=sorted(sources_used))
+                yield SourceEvent(type="source", sources=sorted(sources_used), web_urls=web_urls)
             if total_tokens:
                 yield UsageEvent(type="usage", total_tokens=total_tokens)
             return
@@ -249,6 +251,12 @@ async def stream_ai_response(
                 result: dict = {"error": f"Invalid JSON arguments: {exc}"}
             else:
                 result = await dispatch_tool(db, name, args)
+
+            # Collect URLs from web search results for source attribution.
+            if name == "search_web" and result.get("found") and result.get("results"):
+                for r in result["results"]:
+                    if r.get("url") and r.get("title"):
+                        web_urls.append({"title": r["title"][:80], "url": r["url"]})
 
             messages.append({
                 "role":         "tool",

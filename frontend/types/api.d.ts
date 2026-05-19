@@ -1,5 +1,12 @@
 // Mirror of backend Pydantic schemas — aligned with actual API responses
 
+export interface ItemLocationOut {
+  id: number;
+  location_name: string;
+  method: "shop" | "found" | "wild" | "other";
+  notes: string | null;
+}
+
 export interface ItemOut {
   id: number;
   name_en: string;
@@ -8,6 +15,7 @@ export interface ItemOut {
   effect: string | null;
   price_buy: number | null;
   price_sell: number | null;
+  locations: ItemLocationOut[];
 }
 
 export interface GenerationOut {
@@ -141,6 +149,20 @@ export interface TMInfo {
   locations: TMLocationOut[];
 }
 
+export interface TMListItem {
+  number: number;
+  move_id: number;
+  name_en: string;
+  name_fr: string | null;
+  type: TypeOut;
+  category: string;
+  power: number | null;
+  accuracy: number | null;
+  pp: number;
+  location_summary: string | null;
+  locations: TMLocationOut[];
+}
+
 export interface MoveDetail extends MoveListItem {
   description_en: string | null;
   description_fr: string | null;
@@ -184,6 +206,39 @@ export interface FusionResult {
   type1: TypeOut | null;
   type2: TypeOut | null;
   sprite_path: string;
+}
+
+export interface FusionFeaturedItem {
+  head_id: number;
+  body_id: number;
+  head_name_en: string;
+  head_name_fr: string | null;
+  body_name_en: string;
+  body_name_fr: string | null;
+  type1: TypeOut | null;
+  type2: TypeOut | null;
+  sprite_path: string;
+}
+
+export interface FusionTopItem {
+  rank: number;
+  head_id: number;
+  body_id: number;
+  head_name_en: string;
+  head_name_fr: string | null;
+  body_name_en: string;
+  body_name_fr: string | null;
+  hp: number;
+  attack: number;
+  defense: number;
+  sp_attack: number;
+  sp_defense: number;
+  speed: number;
+  bst: number;
+  type1: TypeOut | null;
+  type2: TypeOut | null;
+  sprite_path: string;
+  role: "head" | "body" | null;
 }
 
 export interface SpriteOut {
@@ -234,6 +289,12 @@ export interface FusionExpertMoveOut {
   prices_heart_scales: Record<string, number>;
 }
 
+export interface FusionFullOut {
+  fusion: FusionResult;
+  moves: FusionMoveOut[];
+  expert_moves: FusionExpertMoveOut[];
+}
+
 export interface TripleFusionTypeOut {
   slot: number;
   name_en: string;
@@ -244,6 +305,7 @@ export interface TripleFusionTypeOut {
 export interface TripleFusionComponentOut {
   position: number;
   pokemon_id: number;
+  national_id: number | null;
   name_en: string;
   name_fr: string | null;
 }

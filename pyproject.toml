@@ -1,7 +1,7 @@
 [project]
 name = "fusiondex-workspace"
 version = "0.1.0"
-description = "FusionDex-IA — documentation tooling (root workspace)"
+description = "InfiniDex-IA — documentation tooling (root workspace)"
 requires-python = ">=3.12"
 
 [dependency-groups]

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FusionDex — PostgreSQL backup script.
+InfiniDex — PostgreSQL backup script.
 
 Crée un dump pg_dump compressé (.sql.gz) horodaté dans backups/.
 Garde les N backups les plus récents et supprime les anciens.
@@ -98,7 +98,7 @@ def prune(backup_dir: Path, keep: int) -> None:
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="FusionDex DB backup")
+    parser = argparse.ArgumentParser(description="InfiniDex DB backup")
     parser.add_argument(
         "--backup-dir",
         type=Path,
@@ -119,7 +119,7 @@ def main() -> None:
     ts      = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     outfile = backup_dir / f"fusiondex_{ts}.sql.gz"
 
-    print(f"FusionDex backup — {ts}")
+    print(f"InfiniDex backup — {ts}")
     print(f"  Destination : {outfile}")
 
     try:

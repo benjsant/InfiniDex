@@ -1,5 +1,5 @@
 -- ============================================================
--- FusionDex-IA — Schéma PostgreSQL complet v2
+-- InfiniDex-IA — Schéma PostgreSQL complet v2
 -- Bilingue EN/FR — Pokémon Infinite Fusion
 -- ============================================================
 --
@@ -15,6 +15,7 @@
 --   Les types triple-fusion sont traités comme des types uniques dans les calculs.
 -- ============================================================
 
+BEGIN;
 
 -- ============================================================
 -- BLOC 1 — Référentiels de base
@@ -72,14 +73,12 @@ CREATE TABLE IF NOT EXISTS move (
 
 -- 5. tm  (121 CTs disponibles dans Infinite Fusion)
 --
---    `location` est conservé comme résumé texte prêt à afficher (ex:
---    "Route 13 (Surf)"). Pour une résolution structurée (1 TM ↔ N lieux),
---    voir la table `tm_location` ci-dessous.
+-- Pour une résolution structurée (1 TM ↔ N lieux), voir `tm_location`.
+-- Le résumé texte est calculé à la volée par le backend depuis ces lignes.
 CREATE TABLE IF NOT EXISTS tm (
-    id       SERIAL  PRIMARY KEY,
-    number   INTEGER NOT NULL UNIQUE,   -- 1 = TM01, 121 = TM121
-    move_id  INTEGER NOT NULL REFERENCES move(id),
-    location TEXT                       -- résumé texte prêt à afficher
+    id      SERIAL  PRIMARY KEY,
+    number  INTEGER NOT NULL UNIQUE,   -- 1 = TM01, 121 = TM121
+    move_id INTEGER NOT NULL REFERENCES move(id)
 );
 
 -- ============================================================
@@ -158,9 +157,12 @@ CREATE TABLE IF NOT EXISTS pokemon_evolution (
     item_name_en    VARCHAR(100),-- nom de l'objet requis (use_item ou trade+item)
     item_name_fr    VARCHAR(100),
     if_override     BOOLEAN      NOT NULL DEFAULT FALSE,
-    if_notes        TEXT,        -- description lisible de la condition modifiée dans IF
-    UNIQUE (pokemon_id, evolves_into_id, trigger_type, item_name_en)
+    if_notes        TEXT         -- description lisible de la condition modifiée dans IF
 );
+
+-- Index expression pour ON CONFLICT (COALESCE gère les item_name_en NULL comme '')
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pokemon_evolution
+    ON pokemon_evolution(pokemon_id, evolves_into_id, trigger_type, COALESCE(item_name_en, ''));
 
 
 -- ============================================================
@@ -384,6 +386,16 @@ CREATE TABLE IF NOT EXISTS item (
 );
 
 
+-- 21ter. item_location
+CREATE TABLE IF NOT EXISTS item_location (
+    id            SERIAL       PRIMARY KEY,
+    item_id       INTEGER      NOT NULL REFERENCES item(id) ON DELETE CASCADE,
+    location_name VARCHAR(200) NOT NULL,  -- nom brut depuis le wiki IF
+    method        VARCHAR(20)  NOT NULL CHECK (method IN ('shop', 'found', 'wild', 'other')),
+    notes         TEXT,                   -- infos complémentaires (ex: "après la salle 4")
+    UNIQUE (item_id, location_name, method)
+);
+
 -- 21. move_expert_move
 CREATE TABLE IF NOT EXISTS move_expert_move (
     id                   SERIAL      PRIMARY KEY,
@@ -447,9 +459,10 @@ CREATE INDEX IF NOT EXISTS idx_evolution_into        ON pokemon_evolution(evolve
 CREATE INDEX IF NOT EXISTS idx_evolution_override    ON pokemon_evolution(if_override);
 
 -- moves
-CREATE INDEX IF NOT EXISTS idx_pokemon_move_pokemon  ON pokemon_move(pokemon_id);
-CREATE INDEX IF NOT EXISTS idx_pokemon_move_move     ON pokemon_move(move_id);
-CREATE INDEX IF NOT EXISTS idx_pokemon_move_method   ON pokemon_move(method);
+CREATE INDEX IF NOT EXISTS idx_pokemon_move_pokemon        ON pokemon_move(pokemon_id);
+CREATE INDEX IF NOT EXISTS idx_pokemon_move_move           ON pokemon_move(move_id);
+CREATE INDEX IF NOT EXISTS idx_pokemon_move_method         ON pokemon_move(method);
+CREATE INDEX IF NOT EXISTS idx_pokemon_move_pokemon_method ON pokemon_move(pokemon_id, method);
 CREATE INDEX IF NOT EXISTS idx_move_type             ON move(type_id);
 CREATE INDEX IF NOT EXISTS idx_move_category         ON move(category);
 
@@ -490,7 +503,10 @@ CREATE INDEX IF NOT EXISTS idx_move_tutor_location      ON move_tutor(location_i
 
 -- items
 CREATE INDEX IF NOT EXISTS idx_item_category            ON item(category);
+CREATE INDEX IF NOT EXISTS idx_item_location_item       ON item_location(item_id);
 
 -- tm
 CREATE INDEX IF NOT EXISTS idx_tm_location_tm           ON tm_location(tm_id);
 CREATE INDEX IF NOT EXISTS idx_tm_location_location     ON tm_location(location_id);
+
+COMMIT;

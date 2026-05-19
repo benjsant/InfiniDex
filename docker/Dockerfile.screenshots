@@ -1,0 +1,8 @@
+FROM mcr.microsoft.com/playwright:v1.60.0-noble
+
+WORKDIR /app
+
+# Install only the playwright npm package (browser already bundled in image)
+RUN npm init -y && npm install playwright
+
+COPY scripts/screenshots.mjs ./scripts/screenshots.mjs

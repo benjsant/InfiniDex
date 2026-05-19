@@ -161,6 +161,49 @@ async def test_get_move_tutors_empty(db) -> None:
     assert result["tutors"] == []
 
 
+# ─── search_pokemon_locations ────────────────────────────────────────────────
+
+async def test_search_pokemon_locations_by_method(db) -> None:
+    result = await dispatch_tool(db, "search_pokemon_locations", {"method": "gift"})
+    assert result["found"] is True
+    assert result["count"] > 0
+    for r in result["results"]:
+        assert r["method"] == "gift"
+        assert "location" in r
+        assert "name_en" in r
+
+
+async def test_search_pokemon_locations_by_condition(db) -> None:
+    # "Starter" appears in notes of gift starters in fixtures
+    result = await dispatch_tool(db, "search_pokemon_locations", {"condition": "Starter"})
+    assert result["found"] is True
+    assert result["count"] > 0
+    for r in result["results"]:
+        assert "name_en" in r
+        assert "location" in r
+
+
+async def test_search_pokemon_locations_no_results(db) -> None:
+    result = await dispatch_tool(db, "search_pokemon_locations", {"condition": "XYZ_NOWHERE_REAL_9999"})
+    assert result["found"] is False
+    assert result["results"] == []
+
+
+async def test_search_pokemon_locations_missing_args(db) -> None:
+    result = await dispatch_tool(db, "search_pokemon_locations", {})
+    assert "error" in result
+
+
+async def test_search_pokemon_locations_combined(db) -> None:
+    # "Starter" in notes + gift method → starter Pokémon
+    result = await dispatch_tool(db, "search_pokemon_locations", {"condition": "Starter", "method": "gift"})
+    assert result["found"] is True
+    starter_names = {r["name_en"] for r in result["results"]}
+    assert "Bulbasaur" in starter_names
+    for r in result["results"]:
+        assert r["method"] == "gift"
+
+
 # ─── search_wiki ─────────────────────────────────────────────────────────────
 
 async def test_search_wiki_found(db) -> None:

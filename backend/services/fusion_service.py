@@ -20,8 +20,8 @@ import math
 from collections import defaultdict
 from decimal import Decimal
 
-from sqlalchemy import or_
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func, or_
+from sqlalchemy.orm import Session, aliased, joinedload
 
 from backend.db.models import (
     Move,
@@ -34,15 +34,46 @@ from backend.db.models import (
     TypeEffectiveness,
 )
 
+# ── In-process static caches ─────────────────────────────────────────────────
+# Pokémon data never changes between deploys — cleared automatically on restart.
+# _pokemon_cache is bounded by the 572-Pokémon warmup (exact size known).
+# _fusion_cache is bounded at _FUSION_CACHE_MAX to prevent unbounded growth
+# across all 501×501 = ~251k combinations; eviction clears the whole dict
+# (LRU would be better but adds complexity — clear-on-full is sufficient here).
+_FUSION_CACHE_MAX = 4096
+_pokemon_cache: dict[int, Pokemon | None] = {}
+_fusion_cache: dict[tuple[int, int], dict | None] = {}
+
+
+def _batch_warm_cache(db: Session, ids: set[int]) -> None:
+    """Load a set of Pokémon with types into _pokemon_cache in one query."""
+    missing = [pid for pid in ids if pid not in _pokemon_cache]
+    if not missing:
+        return
+    rows = (
+        db.query(Pokemon)
+        .options(joinedload(Pokemon.types).joinedload(PokemonType.type))
+        .filter(Pokemon.id.in_(missing))
+        .all()
+    )
+    for p in rows:
+        _pokemon_cache[p.id] = p
+    for pid in missing:
+        _pokemon_cache.setdefault(pid, None)
+
 
 def load_pokemon_with_types(db: Session, pid: int) -> Pokemon | None:
     """Load a Pokémon + types (slot1/slot2) eagerly loaded. Public: reused by `fusion_route`."""
-    return (
+    if pid in _pokemon_cache:
+        return _pokemon_cache[pid]
+    result = (
         db.query(Pokemon)
         .options(joinedload(Pokemon.types).joinedload(PokemonType.type))
         .filter(Pokemon.id == pid)
         .first()
     )
+    _pokemon_cache[pid] = result
+    return result
 
 
 def load_pokemon_for_fusion(db: Session, pid: int) -> Pokemon | None:
@@ -77,21 +108,21 @@ def compute_fusion_from_objects(head: Pokemon, body: Pokemon) -> dict:
     type1_obj, type2_obj = compute_fusion_types(head, body)
 
     return {
-        "head_id":       head.id,
-        "body_id":       body.id,
-        "head_name_en":  head.name_en,
-        "head_name_fr":  head.name_fr,
-        "body_name_en":  body.name_en,
-        "body_name_fr":  body.name_fr,
-        "hp":            phys(body.hp,        head.hp),
-        "attack":        phys(body.attack,    head.attack),
-        "defense":       phys(body.defense,   head.defense),
-        "speed":         phys(body.speed,     head.speed),
-        "sp_attack":     spec(head.sp_attack,  body.sp_attack),
-        "sp_defense":    spec(head.sp_defense, body.sp_defense),
-        "type1":         type1_obj,
-        "type2":         type2_obj,
-        "sprite_path":   f"{head.id}.{body.id}.png",
+        "head_id":      head.id,
+        "body_id":      body.id,
+        "head_name_en": head.name_en,
+        "head_name_fr": head.name_fr,
+        "body_name_en": body.name_en,
+        "body_name_fr": body.name_fr,
+        "hp":           phys(body.hp,        head.hp),
+        "attack":       phys(body.attack,    head.attack),
+        "defense":      phys(body.defense,   head.defense),
+        "speed":        phys(body.speed,     head.speed),
+        "sp_attack":    spec(head.sp_attack,  body.sp_attack),
+        "sp_defense":   spec(head.sp_defense, body.sp_defense),
+        "type1":        type1_obj,
+        "type2":        type2_obj,
+        "sprite_path":  f"{head.id}.{body.id}.png",
     }
 
 
@@ -389,6 +420,188 @@ def list_fusions_involving(
     return rows
 
 
+def list_featured_fusions(db: Session, limit: int = 50) -> list[dict]:
+    """Random sample of fusions that have at least one custom sprite.
+
+    Replaces the BST-based top list to avoid always surfacing legendaries
+    and to avoid spoiling which legendary Pokémon are available in IF.
+    """
+    from backend.db.models import FusionSprite
+
+    # DISTINCT + ORDER BY random() is invalid in PostgreSQL unless random()
+    # is in the SELECT list. Use a subquery to shuffle after deduplication.
+    subq = (
+        db.query(FusionSprite.head_id, FusionSprite.body_id)
+        .filter(FusionSprite.is_custom.is_(True))
+        .distinct()
+        .subquery()
+    )
+    pairs = (
+        db.query(subq.c.head_id, subq.c.body_id)
+        .order_by(func.random())
+        .limit(limit)
+        .all()
+    )
+
+    all_ids = {hid for hid, bid in pairs} | {bid for hid, bid in pairs}
+    _batch_warm_cache(db, all_ids)
+
+    result = []
+    for head_id, body_id in pairs:
+        head = load_pokemon_with_types(db, head_id)
+        body = load_pokemon_with_types(db, body_id)
+        if not head or not body:
+            continue
+        type1, type2 = compute_fusion_types(head, body)
+        result.append({
+            "head_id":      head_id,
+            "body_id":      body_id,
+            "head_name_en": head.name_en,
+            "head_name_fr": head.name_fr,
+            "body_name_en": body.name_en,
+            "body_name_fr": body.name_fr,
+            "type1":        type1,
+            "type2":        type2,
+            "sprite_path":  f"{head_id}.{body_id}.png",
+        })
+    return result
+
+
+def list_top_fusions(db: Session, limit: int = 50) -> list[dict]:
+    """Top fusions ranked by BST, computed entirely in SQL via cross-join.
+
+    Returns at most `limit` rows. Cross-join over 501 Pokémon = 251,001 rows,
+    trivially handled by PostgreSQL with ORDER BY + LIMIT.
+    """
+    Head = aliased(Pokemon, name="head")
+    Body = aliased(Pokemon, name="body")
+
+    bst_expr = (
+        func.floor(Body.hp        * 2.0 / 3 + Head.hp        * 1.0 / 3)
+        + func.floor(Body.attack  * 2.0 / 3 + Head.attack    * 1.0 / 3)
+        + func.floor(Body.defense * 2.0 / 3 + Head.defense   * 1.0 / 3)
+        + func.floor(Head.sp_attack  * 2.0 / 3 + Body.sp_attack  * 1.0 / 3)
+        + func.floor(Head.sp_defense * 2.0 / 3 + Body.sp_defense * 1.0 / 3)
+        + func.floor(Body.speed   * 2.0 / 3 + Head.speed     * 1.0 / 3)
+    )
+
+    rows = (
+        db.query(Head, Body, bst_expr.label("bst"))
+        .filter(Head.id != Body.id)
+        .order_by(bst_expr.desc())
+        .limit(limit)
+        .all()
+    )
+
+    _batch_warm_cache(db, {head.id for head, body, bst in rows} | {body.id for head, body, bst in rows})
+
+    result = []
+    for rank, (head, body, bst) in enumerate(rows, start=1):
+        h_full = load_pokemon_with_types(db, head.id)
+        b_full = load_pokemon_with_types(db, body.id)
+        type1, type2 = compute_fusion_types(h_full, b_full)
+        result.append({
+            "rank":         rank,
+            "head_id":      head.id,
+            "body_id":      body.id,
+            "head_name_en": head.name_en,
+            "head_name_fr": head.name_fr,
+            "body_name_en": body.name_en,
+            "body_name_fr": body.name_fr,
+            "hp":           math.floor(body.hp        * 2 / 3 + head.hp        / 3),
+            "attack":       math.floor(body.attack    * 2 / 3 + head.attack    / 3),
+            "defense":      math.floor(body.defense   * 2 / 3 + head.defense   / 3),
+            "sp_attack":    math.floor(head.sp_attack * 2 / 3 + body.sp_attack / 3),
+            "sp_defense":   math.floor(head.sp_defense* 2 / 3 + body.sp_defense/ 3),
+            "speed":        math.floor(body.speed     * 2 / 3 + head.speed     / 3),
+            "bst":          int(bst),
+            "type1":        type1,
+            "type2":        type2,
+            "sprite_path":  f"{head.id}.{body.id}.png",
+        })
+    return result
+
+
+def list_top_fusions_for_pokemon(db: Session, pokemon_id: int, limit: int = 5) -> list[dict]:
+    """Best fusions involving a specific Pokémon (as head OR body), ranked by BST.
+
+    Computes BST for all (pokemon as head, q as body) and (q as head, pokemon as body)
+    across all Pokémon q ≠ pokemon. Returns top `limit` unique pairs.
+    """
+    Partner = aliased(Pokemon, name="partner")
+    Fixed   = aliased(Pokemon, name="fixed")
+
+    def _bst(head_alias, body_alias):
+        return (
+            func.floor(body_alias.hp        * 2.0 / 3 + head_alias.hp        * 1.0 / 3)
+            + func.floor(body_alias.attack  * 2.0 / 3 + head_alias.attack    * 1.0 / 3)
+            + func.floor(body_alias.defense * 2.0 / 3 + head_alias.defense   * 1.0 / 3)
+            + func.floor(head_alias.sp_attack  * 2.0 / 3 + body_alias.sp_attack  * 1.0 / 3)
+            + func.floor(head_alias.sp_defense * 2.0 / 3 + body_alias.sp_defense * 1.0 / 3)
+            + func.floor(body_alias.speed   * 2.0 / 3 + head_alias.speed     * 1.0 / 3)
+        )
+
+    # pokemon as head
+    as_head_bst = _bst(Fixed, Partner)
+    as_head = (
+        db.query(Fixed, Partner, as_head_bst.label("bst"))
+        .filter(Fixed.id == pokemon_id, Partner.id != pokemon_id)
+        .all()
+    )
+
+    # pokemon as body
+    as_body_bst = _bst(Partner, Fixed)
+    as_body = (
+        db.query(Partner, Fixed, as_body_bst.label("bst"))
+        .filter(Fixed.id == pokemon_id, Partner.id != pokemon_id)
+        .all()
+    )
+
+    all_ids = (
+        {fixed.id for fixed, partner, _ in as_head}
+        | {partner.id for fixed, partner, _ in as_head}
+        | {partner.id for partner, fixed, _ in as_body}
+        | {fixed.id for partner, fixed, _ in as_body}
+    )
+    _batch_warm_cache(db, all_ids)
+
+    combined = []
+    for fixed, partner, bst in as_head:
+        combined.append(("head", fixed, partner, int(bst)))
+    for partner, fixed, bst in as_body:
+        combined.append(("body", partner, fixed, int(bst)))
+
+    combined.sort(key=lambda x: x[3], reverse=True)
+    top = combined[:limit]
+
+    result = []
+    for rank, (role, head, body, bst) in enumerate(top, start=1):
+        h_full = load_pokemon_with_types(db, head.id)
+        b_full = load_pokemon_with_types(db, body.id)
+        type1, type2 = compute_fusion_types(h_full, b_full)
+        result.append({
+            "rank":         rank,
+            "head_id":      head.id,
+            "body_id":      body.id,
+            "head_name_en": head.name_en,
+            "head_name_fr": head.name_fr,
+            "body_name_en": body.name_en,
+            "body_name_fr": body.name_fr,
+            "hp":           math.floor(body.hp        * 2 / 3 + head.hp        / 3),
+            "attack":       math.floor(body.attack    * 2 / 3 + head.attack    / 3),
+            "defense":      math.floor(body.defense   * 2 / 3 + head.defense   / 3),
+            "sp_attack":    math.floor(head.sp_attack * 2 / 3 + body.sp_attack / 3),
+            "sp_defense":   math.floor(head.sp_defense* 2 / 3 + body.sp_defense/ 3),
+            "speed":        math.floor(body.speed     * 2 / 3 + head.speed     / 3),
+            "bst":          bst,
+            "type1":        type1,
+            "type2":        type2,
+            "sprite_path":  f"{head.id}.{body.id}.png",
+            "role":         role,
+        })
+    return result
+
+
 def random_fusion_ids(db: Session) -> tuple[int, int]:
     """Pick two distinct random Pokémon IDs for a random fusion.
 
@@ -398,6 +611,8 @@ def random_fusion_ids(db: Session) -> tuple[int, int]:
     """
     from sqlalchemy import func
     rows = db.query(Pokemon.id).order_by(func.random()).limit(2).all()
+    if len(rows) < 2:
+        raise ValueError("Not enough Pokémon in the database for a random fusion")
     return rows[0][0], rows[1][0]
 
 
@@ -410,6 +625,10 @@ def compute_fusion(
     Returns a dict with computed fusion stats, types, and sprite path.
     Returns None if either Pokémon is not found.
     """
+    key = (head_id, body_id)
+    if key in _fusion_cache:
+        return _fusion_cache[key]
+
     head = load_pokemon_with_types(db, head_id)
     body = load_pokemon_with_types(db, body_id)
 
@@ -432,20 +651,24 @@ def compute_fusion(
 
     type1_obj, type2_obj = compute_fusion_types(head, body)
 
-    return {
-        "head_id":       head_id,
-        "body_id":       body_id,
-        "head_name_en":  head.name_en,
-        "head_name_fr":  head.name_fr,
-        "body_name_en":  body.name_en,
-        "body_name_fr":  body.name_fr,
-        "hp":            hp,
-        "attack":        attack,
-        "defense":       defense,
-        "sp_attack":     sp_attack,
-        "sp_defense":    sp_defense,
-        "speed":         speed,
-        "type1":         type1_obj,
-        "type2":         type2_obj,
-        "sprite_path":   f"{head_id}.{body_id}.png",
+    result = {
+        "head_id":      head_id,
+        "body_id":      body_id,
+        "head_name_en": head.name_en,
+        "head_name_fr": head.name_fr,
+        "body_name_en": body.name_en,
+        "body_name_fr": body.name_fr,
+        "hp":           hp,
+        "attack":       attack,
+        "defense":      defense,
+        "sp_attack":    sp_attack,
+        "sp_defense":   sp_defense,
+        "speed":        speed,
+        "type1":        type1_obj,
+        "type2":        type2_obj,
+        "sprite_path":  f"{head_id}.{body_id}.png",
     }
+    if len(_fusion_cache) >= _FUSION_CACHE_MAX:
+        _fusion_cache.clear()
+    _fusion_cache[key] = result
+    return result

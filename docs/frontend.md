@@ -2,6 +2,9 @@
 
 Next.js 15 (App Router) + TypeScript. Rendu SSR par défaut, déploiement en mode `output: "standalone"` dans Docker.
 
+!!! tip "Captures d'écran"
+    Toutes les pages sont documentées visuellement → [Captures d'écran](screenshots.md)
+
 ## Organisation
 
 ```
@@ -40,19 +43,26 @@ frontend/
 
 ## Pages
 
-| Route                                  | Contenu                                                                   |
-| -------------------------------------- | ------------------------------------------------------------------------- |
-| `/`                                    | Landing                                                                   |
-| `/pokedex`                             | Liste paginée (40/page) + recherche accent-insensitive + filtre par type  |
-| `/pokedex/[id]`                        | Fiche avec onglets : Stats · Capacités · Évolutions · Faiblesses · Fusion |
-| `/fusion`                              | Sélecteur head/body (pré-sélection via `?head=ID&?body=ID`)               |
-| `/fusion/[headId]/[bodyId]`            | Résultat : double sprite + crédit artiste + stats + moveset + fusion IA   |
-| `/ai`                                  | Chat IA plein écran avec suggestions et historique                        |
-| `/moves`                               | Liste + recherche + filtre par type                                       |
-| `/moves/tutors`                        | Tuteurs classiques groupés par lieu + Move Experts groupés par île        |
-| `/types`                               | Grille des 27 types (18 standard + 9 triple-fusion) + matchups            |
-| `/abilities`                           | Liste + recherche                                                         |
-| `/triple-fusions`                      | 23 fusions triples disponibles dans le jeu                                |
+| Route                                  | Contenu                                                                   | Capture |
+| -------------------------------------- | ------------------------------------------------------------------------- | ------- |
+| `/`                                    | Landing — stats globales + liens rapides vers toutes les sections         | [↗](screenshots.md#accueil) |
+| `/pokedex`                             | Liste paginée + recherche accent-insensitive + filtres type/génération/BST | [↗](screenshots.md#pokedex) |
+| `/pokedex/[id]`                        | Fiche avec onglets : Stats · Capacités · Évolutions · Faiblesses · Fusion | [↗](screenshots.md#fiche-pokemon) |
+| `/fusion`                              | Sélecteur head/body (pré-sélection via `?head=ID&body=ID`) + historique  | [↗](screenshots.md#calculateur-de-fusion) |
+| `/fusion/[headId]/[bodyId]`            | Sprite carousel · stats fusionnées · moveset · couverture défensive · IA  | [↗](screenshots.md#resultat-de-fusion) |
+| `/fusion/compare`                      | Comparateur côte à côte de deux fusions avec delta de stats               | [↗](screenshots.md#comparateur-de-fusions) |
+| `/fusion/top`                          | Top fusions classées par BST avec filtre par type                         | [↗](screenshots.md#top-fusions) |
+| `/fusion/history`                      | Historique local des fusions consultées (localStorage)                    | [↗](screenshots.md#historique-des-fusions) |
+| `/fusion/random`                       | Redirection vers une fusion aléatoire via l'API                           | — |
+| `/ai`                                  | Chat IA plein écran avec streaming SSE et suggestions contextuelles       | [↗](screenshots.md#assistant-ia) |
+| `/moves`                               | Liste + recherche + filtre par type                                       | [↗](screenshots.md#capacites) |
+| `/moves/tutors`                        | Tuteurs classiques groupés par lieu + Move Experts groupés par île        | [↗](screenshots.md#tuteurs-de-capacites) |
+| `/types`                               | Table 18×18 desktop + sélecteur interactif mobile                         | [↗](screenshots.md#table-des-types) |
+| `/abilities`                           | Liste + recherche                                                         | [↗](screenshots.md#talents) |
+| `/items`                               | Catalogue des objets avec icônes et descriptions                          | [↗](screenshots.md#objets) |
+| `/triple-fusions`                      | 23 fusions triples avec spoiler gate + stats + types IF                   | [↗](screenshots.md#triple-fusions) |
+| `/creators`                            | Galerie des créateurs de sprites avec modal de prévisualisation           | [↗](screenshots.md#createurs-de-sprites) |
+| `/pokedex/favorites`                   | Pokémon mis en favoris (localStorage)                                     | [↗](screenshots.md#favoris-pokedex) |
 
 ## Proxy Next.js
 
@@ -66,7 +76,7 @@ Deux bénéfices :
 1. **Zéro fuite d'URL backend** dans le bundle client. Le navigateur ne voit que `/api/*`.
 2. **Config runtime** : `BACKEND_INTERNAL_URL` est lu à chaque requête (pas d'env bakée au build), on peut changer la cible sans rebuild.
 
-Implémentation : [frontend/app/api/[...path]/route.ts](https://github.com/benjsant/FusionDex-IA/blob/main/frontend/app/api/%5B...path%5D/route.ts) et [frontend/app/sprites-cdn/[...path]/route.ts](https://github.com/benjsant/FusionDex-IA/blob/main/frontend/app/sprites-cdn/%5B...path%5D/route.ts).
+Implémentation : [frontend/app/api/[...path]/route.ts](https://github.com/benjsant/InfiniDex-IA/blob/main/frontend/app/api/%5B...path%5D/route.ts) et [frontend/app/sprites-cdn/[...path]/route.ts](https://github.com/benjsant/InfiniDex-IA/blob/main/frontend/app/sprites-cdn/%5B...path%5D/route.ts).
 
 !!! note "Pourquoi pas `next.config.ts` rewrites ?"
     Next.js standalone fige les destinations de rewrite dans `.next/required-server-files.json` au build. Les route handlers, eux, évaluent `process.env` à chaque requête — c'est ce qu'on veut.

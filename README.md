@@ -1,8 +1,8 @@
-# FusionDex-IA
+# InfiniDex-IA
 
 Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.com/) — 572 Pokémon (501 Kanto + 71 Hoenn), 168 000+ fusions calculées, movepools, types, triple-fusions, Move Experts, maîtres des capacités, galerie des créateurs de sprites, et un **assistant IA agentique** à 9 outils.
 
-📖 **[Documentation complète →](https://benjsant.github.io/FusionDex-IA/)**
+📖 **[Documentation complète →](https://benjsant.github.io/InfiniDex-IA/)**
 
 ---
 
@@ -12,7 +12,7 @@ Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.c
 | ---------- | -------------------------------------------------------- | --------- |
 | ETL        | Python 3.12 + `uv` + MediaWiki API + PokeAPI             | ✅ stable |
 | Base       | PostgreSQL 16 (relationnelle + `INTEGER[]`)              | ✅ stable |
-| Backend    | FastAPI + SQLAlchemy 2 + Pydantic — 48 endpoints         | ✅ stable |
+| Backend    | FastAPI + SQLAlchemy 2 + Pydantic — 49 endpoints         | ✅ stable |
 | Frontend   | Next.js 15 App Router + TypeScript — 14 pages            | ✅ stable |
 | IA         | Agent tool-calling DeepSeek / OpenRouter / Ollama local  | ✅ stable |
 | Infra      | Docker Compose (dev + prod), proxy Next.js, CI GitHub    | ✅ stable |
@@ -24,8 +24,8 @@ Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.c
 Pré-requis : **Docker + Docker Compose**.
 
 ```bash
-git clone https://github.com/benjsant/FusionDex-IA.git
-cd FusionDex-IA
+git clone https://github.com/benjsant/InfiniDex-IA.git
+cd InfiniDex-IA
 
 cp .env.example .env
 # Optionnel : renseigner DEEPSEEK_API_KEY ou OPENROUTER_API_KEY pour l'IA
@@ -67,7 +67,7 @@ Sans provider → `POST /ai/ask` retourne `503` avec les instructions de configu
 | `/moves` | Table des 676 capacités + recherche + filtre type + filtre catégorie |
 | `/moves/[id]` | Fiche capacité : type, puissance, précision, TM, tuteurs, description EN/FR |
 | `/moves/tutors` | 41 tuteurs classiques groupés par lieu + Move Experts par île |
-| `/types` | Grille des 26 types (18 standard + 8 triple-fusion) avec matchups complets |
+| `/types` | Grille des 27 types (18 standard + 9 triple-fusion) avec matchups complets |
 | `/abilities` | 178 talents + recherche |
 | `/abilities/[id]` | Fiche talent : description EN/FR |
 | `/triple-fusions` | 23 fusions triples — sprites, composants, stats, faiblesses |
@@ -121,7 +121,7 @@ ETL (Python/uv)
                     └── /ai/ask  →  agent tool-calling (DeepSeek / OpenRouter / Ollama)
 ```
 
-Voir la [documentation complète](https://benjsant.github.io/FusionDex-IA/) pour les diagrammes détaillés, la référence API et le guide de développement.
+Voir la [documentation complète](https://benjsant.github.io/InfiniDex-IA/) pour les diagrammes détaillés, la référence API et le guide de développement.
 
 ---
 
@@ -129,7 +129,7 @@ Voir la [documentation complète](https://benjsant.github.io/FusionDex-IA/) pour
 
 | Workflow | Déclencheur | Contenu |
 |----------|-------------|---------|
-| `backend-ci` | Push/PR sur `backend/` | Import check + tests DB-free + 148 tests pytest contre PostgreSQL réel |
+| `backend-ci` | Push/PR sur `backend/` | Import check + tests DB-free + 160 tests pytest contre PostgreSQL réel |
 | `docs` | Push sur `main` (docs/) | Build MkDocs → déploiement GitHub Pages |
 
 ---

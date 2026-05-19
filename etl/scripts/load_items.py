@@ -213,7 +213,7 @@ def run(conn) -> None:
         seen.add(key)
         unique.append(it)
 
-    cur.execute("TRUNCATE item RESTART IDENTITY")
+    cur.execute("TRUNCATE item RESTART IDENTITY CASCADE")
     for it in unique:
         cur.execute(
             """

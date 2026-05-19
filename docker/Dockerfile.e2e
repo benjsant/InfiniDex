@@ -1,0 +1,11 @@
+FROM mcr.microsoft.com/playwright:v1.60.0-jammy
+
+WORKDIR /app
+
+COPY e2e/package.json e2e/package-lock.json* ./
+RUN npm install --frozen-lockfile 2>/dev/null || npm install
+
+COPY e2e/ ./
+
+ENTRYPOINT ["npx", "playwright", "test"]
+CMD ["--reporter=list"]

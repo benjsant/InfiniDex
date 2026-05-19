@@ -132,3 +132,41 @@ def test_fusion_expert_moves_heart_scale_prices(client: TestClient) -> None:
             assert price == (2 if loc == "knot_island" else 10)
         # Keys of prices_heart_scales must match locations list
         assert set(m["prices_heart_scales"].keys()) == set(m["locations"])
+
+
+# ─── /fusion/{h}/{b}/full ────────────────────────────────────────────────────
+
+def test_fusion_full_structure(client: TestClient) -> None:
+    """Full endpoint returns fusion + moves + expert_moves in a single payload."""
+    r = client.get("/fusion/1/4/full")
+    assert r.status_code == 200
+    data = r.json()
+    assert set(data.keys()) >= {"fusion", "moves", "expert_moves"}
+
+
+def test_fusion_full_consistent_with_individual(client: TestClient) -> None:
+    """Full endpoint data matches individual endpoints for the same pair."""
+    full = client.get("/fusion/1/4/full").json()
+    stat = client.get("/fusion/1/4").json()
+    moves = client.get("/fusion/1/4/moves").json()
+
+    assert full["fusion"]["hp"] == stat["hp"]
+    assert full["fusion"]["head_name_en"] == stat["head_name_en"]
+    assert len(full["moves"]) == len(moves)
+    # move_ids must be the same set
+    assert {m["move_id"] for m in full["moves"]} == {m["move_id"] for m in moves}
+
+
+def test_fusion_full_expert_moves_prices(client: TestClient) -> None:
+    """Full endpoint expert_moves carry Heart Scale prices."""
+    data = client.get("/fusion/197/1/full").json()
+    expert = data["expert_moves"]
+    assert len(expert) > 0
+    for m in expert:
+        for loc, price in m["prices_heart_scales"].items():
+            assert price == (2 if loc == "knot_island" else 10)
+
+
+def test_fusion_full_not_found(client: TestClient) -> None:
+    r = client.get("/fusion/999/1/full")
+    assert r.status_code == 404

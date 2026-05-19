@@ -79,7 +79,7 @@ function ToastItem({ toast: t, onDismiss }: { toast: Toast; onDismiss: (id: numb
       style={{
         background: colors.bg,
         border: `1px solid ${colors.border}`,
-        color: "#e1e4ff",
+        color: "var(--color-if-text)",
         backdropFilter: "blur(8px)",
         minWidth: 200,
         maxWidth: 320,

@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import Link from "next/link";
-import { Clock, Trash2, Star, GitCompare, Download } from "lucide-react";
+import { Clock, Trash2, Star, GitCompare, Download, Sparkles } from "lucide-react";
 import { FusionSelector } from "@/components/fusion/FusionSelector";
 import { FusionSprite } from "@/components/fusion/FusionSprite";
 import { useHistory } from "@/hooks/useHistory";
@@ -23,17 +23,17 @@ function FusionMiniCard({ entry }: { entry: FusionCardEntry }) {
     <Link
       href={`/fusion/${entry.headId}/${entry.bodyId}`}
       className="flex-shrink-0 flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all hover:border-indigo-500/60 group"
-      style={{ background: "#0f1225", border: "1px solid #1e2240", width: 84 }}
+      style={{ background: "var(--color-if-surface)", border: "1px solid var(--color-if-border)", width: 84 }}
     >
       <div
         className="flex items-center justify-center rounded-lg overflow-hidden"
-        style={{ width: 56, height: 56, background: "#090c1a" }}
+        style={{ width: 56, height: 56, background: "var(--color-if-bg)" }}
       >
         <FusionSprite headId={entry.headId} bodyId={entry.bodyId} size={56} />
       </div>
       <span
         className="text-[10px] text-center leading-tight font-medium group-hover:text-indigo-300 transition-colors line-clamp-2"
-        style={{ color: "#9aa0c0" }}
+        style={{ color: "var(--color-if-text-xs)" }}
       >
         {entry.headName}/{entry.bodyName}
       </span>
@@ -72,7 +72,7 @@ function FavoritesSection() {
           <button
             onClick={() => exportFavoritesJson(favorites)}
             className="flex items-center gap-1 text-xs transition-colors hover:text-[#e8b84b]"
-            style={{ color: "#6b7199" }}
+            style={{ color: "var(--color-if-muted)" }}
             title="Exporter en JSON"
           >
             <Download size={11} />
@@ -81,7 +81,7 @@ function FavoritesSection() {
           <button
             onClick={clearFavorites}
             className="flex items-center gap-1 text-xs transition-colors hover:text-red-400"
-            style={{ color: "#6b7199" }}
+            style={{ color: "var(--color-if-muted)" }}
           >
             <Trash2 size={11} />
             Effacer
@@ -115,7 +115,7 @@ function ComparisonBanner() {
               {s.headName}/{s.bodyName}
             </span>
           ) : (
-            <span key={i} className="text-xs italic" style={{ color: "#3d4170" }}>
+            <span key={i} className="text-xs italic" style={{ color: "var(--color-if-border-hi)" }}>
               — sélectionne une fusion
             </span>
           ),
@@ -133,7 +133,7 @@ function ComparisonBanner() {
         <button
           onClick={clearComparison}
           className="text-xs transition-colors hover:text-red-400"
-          style={{ color: "#6b7199" }}
+          style={{ color: "var(--color-if-muted)" }}
         >
           <Trash2 size={12} />
         </button>
@@ -149,7 +149,7 @@ function RecentFusions() {
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-3">
-        <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: "#6b7199" }}>
+        <span className="flex items-center gap-1.5 text-xs font-medium" style={{ color: "var(--color-if-muted)" }}>
           <Clock size={12} />
           Récemment consultées
         </span>
@@ -157,14 +157,14 @@ function RecentFusions() {
           <Link
             href="/fusion/history"
             className="text-xs transition-colors hover:text-indigo-300"
-            style={{ color: "#4a4f75" }}
+            style={{ color: "var(--color-if-text-lo)" }}
           >
             Voir tout →
           </Link>
           <button
             onClick={clearHistory}
             className="flex items-center gap-1 text-xs transition-colors hover:text-red-400"
-            style={{ color: "#6b7199" }}
+            style={{ color: "var(--color-if-muted)" }}
           >
             <Trash2 size={11} />
             Effacer
@@ -183,10 +183,19 @@ function RecentFusions() {
 export default function FusionPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-2 text-[rgb(220,220,255)]">
-        Calculateur de Fusion
-      </h1>
-      <p className="text-sm text-[rgb(120,120,140)] mb-8">
+      <div className="flex items-start justify-between mb-2">
+        <h1 className="text-2xl font-bold text-if-text-hi">
+          Calculateur de Fusion
+        </h1>
+        <Link
+          href="/fusion/top"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+          style={{ background: "rgba(232,184,75,0.1)", border: "1px solid rgba(232,184,75,0.25)", color: "#e8b84b" }}
+        >
+          <Sparkles size={12} /> Galerie
+        </Link>
+      </div>
+      <p className="text-sm text-if-text-xs mb-8">
         Sélectionne la tête et le corps pour calculer les stats, types et voir le sprite de la fusion.
       </p>
 

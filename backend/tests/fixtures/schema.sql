@@ -505,8 +505,7 @@ CREATE TABLE public.pokemon_type (
 CREATE TABLE public.tm (
     id integer NOT NULL,
     number integer NOT NULL,
-    move_id integer NOT NULL,
-    location text
+    move_id integer NOT NULL
 );
 
 
@@ -959,8 +958,8 @@ ALTER TABLE ONLY public.pokemon_evolution
 -- Name: pokemon_evolution pokemon_evolution_pokemon_id_evolves_into_id_trigger_type_i_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.pokemon_evolution
-    ADD CONSTRAINT pokemon_evolution_pokemon_id_evolves_into_id_trigger_type_i_key UNIQUE (pokemon_id, evolves_into_id, trigger_type, item_name_en);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pokemon_evolution
+    ON public.pokemon_evolution(pokemon_id, evolves_into_id, trigger_type, COALESCE(item_name_en, ''));
 
 
 --

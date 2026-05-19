@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
+from pathlib import Path as FilePath
 
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi import Path as FPath
+from fastapi import APIRouter, Depends, HTTPException, Path
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
-SPECIAL_SPRITES_DIR = Path(os.environ.get("SPECIAL_SPRITES_DIR", "/app/data/special_sprites"))
+SPECIAL_SPRITES_DIR = FilePath(os.environ.get("SPECIAL_SPRITES_DIR", "/app/data/special_sprites"))
 
 from backend.db.session import get_db
 from backend.schemas.triple_fusion import (
@@ -58,7 +57,7 @@ def list_all(db: Session = Depends(get_db)):
 
 
 @router.get("/{tf_id}/sprite")
-def get_triple_fusion_sprite(tf_id: int = FPath(..., ge=1), db: Session = Depends(get_db)):
+def get_triple_fusion_sprite(tf_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
     """Serve the battle sprite PNG for a triple fusion."""
     tf = get_triple_fusion(db, tf_id)
     if not tf:
@@ -66,13 +65,14 @@ def get_triple_fusion_sprite(tf_id: int = FPath(..., ge=1), db: Session = Depend
     ids = sorted(c.pokemon_id for c in tf.components)
     filename = ".".join(str(i) for i in ids) + ".png"
     path = SPECIAL_SPRITES_DIR / filename
-    if not path.exists():
+    resolved = path.resolve()
+    if not resolved.is_relative_to(SPECIAL_SPRITES_DIR.resolve()) or not resolved.is_file():
         raise HTTPException(status_code=404, detail="Sprite not found")
-    return FileResponse(path, media_type="image/png")
+    return FileResponse(resolved, media_type="image/png")
 
 
 @router.get("/{tf_id}/weaknesses", response_model=list[WeaknessOut])
-def get_triple_fusion_weaknesses(tf_id: int = FPath(..., ge=1), db: Session = Depends(get_db)):
+def get_triple_fusion_weaknesses(tf_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
     """Damage multipliers against this triple fusion's type combination."""
     tf = get_triple_fusion(db, tf_id)
     if not tf:
@@ -81,7 +81,7 @@ def get_triple_fusion_weaknesses(tf_id: int = FPath(..., ge=1), db: Session = De
 
 
 @router.get("/{tf_id}", response_model=TripleFusionDetail)
-def get_detail(tf_id: int = FPath(..., ge=1), db: Session = Depends(get_db)):
+def get_detail(tf_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
     """Full detail of a triple fusion: stats, components, types, and abilities."""
     tf = get_triple_fusion(db, tf_id)
     if not tf:
@@ -105,6 +105,7 @@ def get_detail(tf_id: int = FPath(..., ge=1), db: Session = Depends(get_db)):
             TripleFusionComponentOut(
                 position=c.position,
                 pokemon_id=c.pokemon_id,
+                national_id=c.pokemon.national_id,
                 name_en=c.pokemon.name_en,
                 name_fr=c.pokemon.name_fr,
             )

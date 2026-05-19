@@ -1,4 +1,4 @@
-# PLAN_FRONTEND.md — FusionDex-IA Next.js Frontend
+# PLAN_FRONTEND.md — InfiniDex-IA Next.js Frontend
 
 ## Décision : Tailwind CSS + shadcn/ui (pas MUI)
 

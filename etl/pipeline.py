@@ -1,5 +1,5 @@
 """
-FusionDex ETL pipeline orchestrator.
+InfiniDex ETL pipeline orchestrator.
 
 Steps:
   1.   extract_pokedex_if       — 572 Pokémon from IF wiki (501 in-game + 71 Hoenn-only)
@@ -21,6 +21,8 @@ Steps:
   8f.  fix_tms_from_pokeapi     — fill TM learnability gaps from PokeAPI
   9.   seed_type_effectiveness  — 18×18 type chart with FR names from table_type.csv
   9b.  load_encounters          — load locations + pokemon_location from encounters_if.json
+  9b-bis. fix_pokemon_locations — correct legendary/gift/trade locations from IF wiki
+  9b-ter. load_pokedex_locations — wild/quest locations from IF Pokédex wiki page
   9c.  enrich_pokemon_fr        — enrich pokemon.pokepedia_url from Pokepedia mapping
   9d.  load_items               — fusion + evolution + valuable items from IF wiki
   9e.  load_move_tutors         — move tutors (NPC teachers) from IF wiki
@@ -56,7 +58,7 @@ def run(cmd: Sequence[str], label: str, cwd: Path | None = None) -> None:
     print(f"\n▶ {label}", flush=True)
     result = subprocess.run(cmd, shell=False, check=False, cwd=cwd)
     if result.returncode != 0:
-        print(f"[FAIL] {label}", flush=True)
+        print(f"[FAIL] {label} (returncode={result.returncode})", flush=True)
         sys.exit(1)
 
 
@@ -101,7 +103,11 @@ def check_already_loaded() -> bool:
         cur.close()
         conn.close()
         return True
-    except Exception:
+    except psycopg2.OperationalError as e:
+        print(f"[ETL] Cannot connect to DB: {e}", flush=True)
+        sys.exit(1)
+    except Exception as e:
+        print(f"[ETL] check_already_loaded unexpected error: {e}", flush=True)
         return False
 
 
@@ -110,7 +116,7 @@ def main(force: bool = False) -> None:
         print("[ETL] Data already loaded. Skipping (use --force to rerun).")
         return
 
-    print("[ETL] Starting FusionDex pipeline...", flush=True)
+    print("[ETL] Starting InfiniDex pipeline...", flush=True)
 
     # Step 1 — Pokédex list from IF wiki
     run(
@@ -204,6 +210,13 @@ def main(force: bool = False) -> None:
         "Step 8e — Re-sync stats + FR names after national_id correction",
     )
 
+    # Step 8e-bis — Re-sync types now that national_ids are correct
+    # (step 8b ran before 8d so types were fetched with wrong national_ids for IDs > 251)
+    run(
+        ["python", str(SCRIPTS_DIR / "fix_pokemon_types.py")],
+        "Step 8e-bis — Re-sync types after national_id correction",
+    )
+
     # Step 8f — Fill TM learnability gaps from PokeAPI
     run(
         ["python", str(SCRIPTS_DIR / "fix_tms_from_pokeapi.py")],
@@ -226,6 +239,12 @@ def main(force: bool = False) -> None:
     run(
         ["python", str(SCRIPTS_DIR / "fix_pokemon_locations.py")],
         "Step 9b-bis — Fix legendary/gift/trade Pokémon locations (wiki-sourced)",
+    )
+
+    # Step 9b-ter — Load wild/quest locations from IF Pokédex wiki page
+    run(
+        ["python", str(SCRIPTS_DIR / "load_pokedex_locations.py")],
+        "Step 9b-ter — Load wild/quest encounter locations from IF Pokédex wiki",
     )
 
     # Step 9c — Enrich pokemon.pokepedia_url from pokepedia_names.json
@@ -298,6 +317,18 @@ def main(force: bool = False) -> None:
     run(
         ["python", str(SCRIPTS_DIR / "load_sprite_credits.py")],
         "Step 12/12 — Load sprite credits from data/sprite_credits.csv",
+    )
+
+    # Step 13 — Delete moves with no reference in pokemon_move / tm / tutor / expert
+    run(
+        ["python", str(SCRIPTS_DIR / "clean_orphan_moves.py")],
+        "Step 13 — Clean orphan moves (no pokemon_move/tm/tutor/expert reference)",
+    )
+
+    # Step 14 — Enrich abilities for Pokémon that have a national_id but no ability rows
+    run(
+        ["python", str(SCRIPTS_DIR / "enrich_missing_abilities.py")],
+        "Step 14 — Enrich missing abilities via PokeAPI",
     )
 
     print("\n[ETL] Pipeline completed successfully.", flush=True)

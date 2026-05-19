@@ -3,7 +3,7 @@
 import { useState, useMemo, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import {
   usePokemon,
   usePokemonMoves,
@@ -22,6 +22,10 @@ import { AiSuggestButton } from "@/components/ai/AiSuggestButton";
 import { basePokemonSprite, typeColor } from "@/lib/constants";
 import { primaryType, secondaryType, cn } from "@/lib/utils";
 import { FusionSprite } from "@/components/fusion/FusionSprite";
+import { usePokemonFavorites } from "@/hooks/usePokemonFavorites";
+import { useToast } from "@/components/layout/Toast";
+import { useTopFusionsForPokemon } from "@/hooks/useFusion";
+import type { FusionTopItem } from "@/types/api";
 
 type Tab = "stats" | "moves" | "evolutions" | "weaknesses" | "locations" | "fusion";
 
@@ -43,6 +47,8 @@ export default function PokemonDetailPage({
   const pokemonId = parseInt(id, 10);
   const [activeTab, setActiveTab] = useState<Tab>("stats");
   const [spritePage, setSpritePage] = useState(1);
+  const { isFavorite, toggleFavorite } = usePokemonFavorites();
+  const { toast } = useToast();
 
   const SPRITES_PER_PAGE = 48;
 
@@ -62,6 +68,11 @@ export default function PokemonDetailPage({
     enabled: activeTab === "fusion",
     staleTime: Infinity,
   });
+  const { data: topFusions = [], isLoading: topFusionsLoading } = useTopFusionsForPokemon(
+    pokemonId,
+    5,
+    { enabled: activeTab === "fusion" },
+  );
   const { data: customSprites = [], isLoading: spritesLoading } = useQuery({
     queryKey: ["custom-sprites", pokemonId],
     queryFn: () => getSpritesByPokemon(pokemonId),
@@ -150,15 +161,36 @@ export default function PokemonDetailPage({
                   <p className="text-base" style={{ color: "var(--color-if-muted)" }}>{pokemon.name_en}</p>
                 )}
               </div>
-              <AiSuggestButton
-                pokemonName={pokemon.name_en}
-                pokemonId={pokemonId}
-                context={[
-                  `Pokémon consulté : ${pokemon.name_en}${pokemon.name_fr ? ` / ${pokemon.name_fr}` : ""} (IF #${pokemon.id}${pokemon.national_id ? `, National #${pokemon.national_id}` : ""})`,
-                  `Types : ${[t1, t2].filter(Boolean).map(t => t!.name_en).join(" / ")}`,
-                  `Stats : HP ${pokemon.hp} / Atk ${pokemon.attack} / Def ${pokemon.defense} / SpA ${pokemon.sp_attack} / SpD ${pokemon.sp_defense} / Spe ${pokemon.speed}`,
-                ].join(" · ")}
-              />
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const wasFav = isFavorite(pokemonId);
+                    toggleFavorite({ id: pokemonId, nationalId: pokemon.national_id ?? null, nameEn: pokemon.name_en, nameFr: pokemon.name_fr ?? null });
+                    toast(wasFav ? "Retiré des favoris" : "Ajouté aux favoris", wasFav ? "info" : "success");
+                  }}
+                  title={isFavorite(pokemonId) ? "Retirer des favoris" : "Ajouter aux favoris"}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
+                  style={{
+                    background: isFavorite(pokemonId) ? "rgba(232,184,75,0.15)" : "var(--color-if-elevated)",
+                    border: `1px solid ${isFavorite(pokemonId) ? "#e8b84b66" : "var(--color-if-border-mid)"}`,
+                    color: isFavorite(pokemonId) ? "#e8b84b" : "var(--color-if-text-lo)",
+                  }}
+                >
+                  <Star size={13} fill={isFavorite(pokemonId) ? "currentColor" : "none"} />
+                </button>
+                <AiSuggestButton
+                  pokemonName={pokemon.name_en}
+                  pokemonId={pokemonId}
+                  context={[
+                    `Pokémon : ${pokemon.name_en}${pokemon.name_fr ? ` / ${pokemon.name_fr}` : ""} (IF #${pokemon.id}${pokemon.national_id ? `, National #${pokemon.national_id}` : ""})`,
+                    `Types : ${[t1, t2].filter(Boolean).map((t) => t!.name_en).join("/")}`,
+                    `Stats : HP ${pokemon.hp} Atk ${pokemon.attack} Déf ${pokemon.defense} AtkSpé ${pokemon.sp_attack} DéfSpé ${pokemon.sp_defense} Vit ${pokemon.speed} (BST ${pokemon.bst})`,
+                    pokemon.abilities.length > 0
+                      ? `Talents : ${pokemon.abilities.map((a) => `${a.name_fr ?? a.name_en}${a.is_hidden ? " [caché]" : ""}`).join(", ")}`
+                      : null,
+                  ].filter(Boolean).join(". ")}
+                />
+              </div>
             </div>
 
             <div className="flex gap-2 mt-3 flex-wrap">
@@ -172,7 +204,7 @@ export default function PokemonDetailPage({
                   <span
                     key={a.slot}
                     className="px-2 py-1 rounded-lg text-sm"
-                    style={{ background: "var(--color-if-border)", color: "var(--color-if-text)", border: "1px solid #2d3260" }}
+                    style={{ background: "var(--color-if-border)", color: "var(--color-if-text)", border: "1px solid var(--color-if-border-hi)" }}
                   >
                     {a.name_fr ?? a.name_en}
                   </span>
@@ -180,7 +212,7 @@ export default function PokemonDetailPage({
                 {hiddenAbility && (
                   <span
                     className="px-2 py-1 rounded-lg text-sm italic"
-                    style={{ background: "var(--color-if-border)", color: "var(--color-if-muted)", border: "1px solid #2d3260" }}
+                    style={{ background: "var(--color-if-border)", color: "var(--color-if-muted)", border: "1px solid var(--color-if-border-hi)" }}
                   >
                     {hiddenAbility.name_fr ?? hiddenAbility.name_en} (caché)
                   </span>
@@ -257,7 +289,7 @@ export default function PokemonDetailPage({
                   </div>
                   <span
                     className="text-xs px-2 py-1 rounded-lg font-mono capitalize"
-                    style={{ background: "var(--color-if-border)", color: "var(--color-if-accent)" }}
+                    style={{ background: "var(--color-if-surface)", color: "var(--color-if-text-dim)" }}
                   >
                     {loc.method}
                   </span>
@@ -269,21 +301,67 @@ export default function PokemonDetailPage({
 
       {activeTab === "fusion" && (
         <div className="space-y-6">
+          {/* Top fusions by BST */}
+          <div>
+            <h3 className="text-sm font-semibold text-if-muted uppercase tracking-wider mb-3">
+              Meilleures fusions BST
+            </h3>
+            {topFusionsLoading ? (
+              <div className="space-y-2 animate-pulse">
+                {[1,2,3].map(i => <div key={i} className="h-12 rounded-xl bg-if-card" />)}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {topFusions.map((f: FusionTopItem) => (
+                  <Link
+                    key={`${f.head_id}-${f.body_id}`}
+                    href={`/fusion/${f.head_id}/${f.body_id}`}
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all"
+                    style={{ background: "var(--color-if-card)", border: "1px solid var(--color-if-border)" }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "#e8b84b44"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "var(--color-if-border)"; }}
+                  >
+                    <span className="text-xs font-mono w-5 text-center shrink-0" style={{ color: "var(--color-if-text-lo)" }}>#{f.rank}</span>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={`/api/sprites/${f.head_id}/${f.body_id}/image`} alt="" width={36} height={36} loading="lazy" style={{ imageRendering: "pixelated" }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-if-text-hi truncate">{f.head_name_en}/{f.body_name_en}</p>
+                      <div className="flex gap-1 mt-0.5">
+                        {f.type1 && <TypeBadge typeName={f.type1.name_en} size="sm" />}
+                        {f.type2 && <TypeBadge typeName={f.type2.name_en} size="sm" />}
+                      </div>
+                    </div>
+                    <span className="text-xs font-mono font-bold shrink-0" style={{ color: "#e8b84b" }}>
+                      {f.bst} BST
+                    </span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded shrink-0" style={{
+                      background: f.role === "head" ? "rgba(99,102,241,0.12)" : "rgba(16,185,129,0.12)",
+                      border: `1px solid ${f.role === "head" ? "#6366f144" : "#10b98144"}`,
+                      color: f.role === "head" ? "#818cf8" : "#34d399",
+                    }}>
+                      {f.role === "head" ? "Tête" : "Corps"}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Quick links */}
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
-              href={`/fusion?head=${pokemonId}`}
+              href={`/fusion/${pokemonId}`}
               className="flex-1 px-4 py-3 rounded-xl text-center transition-all if-panel if-glow-hover"
             >
               <p className="text-xs mb-1 text-if-muted">{pokemon.name_fr ?? pokemon.name_en} en tant que…</p>
-              <p className="font-semibold text-if-accent">Tête (Head)</p>
+              <p className="font-semibold text-if-accent">Tête — voir toutes les fusions →</p>
             </Link>
             <Link
-              href={`/fusion?body=${pokemonId}`}
+              href={`/fusion/body/${pokemonId}`}
               className="flex-1 px-4 py-3 rounded-xl text-center transition-all if-panel if-glow-hover"
             >
               <p className="text-xs mb-1 text-if-muted">{pokemon.name_fr ?? pokemon.name_en} en tant que…</p>
-              <p className="font-semibold text-if-accent">Corps (Body)</p>
+              <p className="font-semibold text-if-accent">Corps — voir toutes les fusions →</p>
             </Link>
           </div>
 

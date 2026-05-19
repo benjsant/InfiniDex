@@ -4,11 +4,17 @@ import { useState, useCallback, useRef } from "react";
 import { askAi } from "@/lib/api";
 import type { HistoryMessage } from "@/types/api";
 
+export interface WebSource {
+  title: string;
+  url: string;
+}
+
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   toolCalls?: string[];
   sources?: string[];
+  webUrls?: WebSource[];
   totalTokens?: number;
 }
 
@@ -42,7 +48,10 @@ export function useAiChat() {
 
       const history: HistoryMessage[] = messagesRef.current
         .filter((m) => m.content.trim() !== "")
-        .map((m) => ({ role: m.role, content: m.content }));
+        .map((m) => ({ role: m.role, content: m.content.slice(0, 7900) }))
+        .slice(-20);
+
+      const safeContext = context ? context.slice(0, 1900) : undefined;
 
       setMessages((prev) => [
         ...prev.filter((m) => m.content.trim() !== ""),
@@ -52,7 +61,7 @@ export function useAiChat() {
       setIsStreaming(true);
 
       try {
-        const res = await askAi({ message, context, history }, controller.signal);
+        const res = await askAi({ message, context: safeContext, history }, controller.signal);
         const reader = res.body?.getReader();
         if (!reader) throw new Error("No response body");
 
@@ -76,6 +85,7 @@ export function useAiChat() {
                   name?: string;
                   chunk?: string;
                   sources?: string[];
+                  web_urls?: WebSource[];
                   total_tokens?: number;
                   message?: string;
                 };
@@ -104,7 +114,11 @@ export function useAiChat() {
                   setMessages((cur) => {
                     const updated = [...cur];
                     const last = updated[updated.length - 1];
-                    updated[updated.length - 1] = { ...last, sources: event.sources };
+                    updated[updated.length - 1] = {
+                      ...last,
+                      sources: event.sources,
+                      webUrls: event.web_urls ?? [],
+                    };
                     return updated;
                   });
                 } else if (event.type === "usage" && event.total_tokens != null) {

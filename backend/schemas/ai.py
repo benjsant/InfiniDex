@@ -9,12 +9,12 @@ from pydantic import BaseModel, Field, field_validator
 
 class HistoryMessage(BaseModel):
     role: Literal["user", "assistant"]
-    content: str = Field(..., min_length=1, max_length=2000)
+    content: str = Field(..., min_length=1, max_length=8000)
 
 
 class AiRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000)
-    context: str | None = Field(None, max_length=500)
+    context: str | None = Field(None, max_length=2000)
     history: list[HistoryMessage] = Field(default_factory=list, max_length=20)
 
     @field_validator("message")
@@ -45,3 +45,7 @@ class FeedbackRequest(BaseModel):
     question: str = Field(..., max_length=2000)
     answer: str = Field(..., max_length=4000)
     rating: Literal["up", "down"]
+
+
+class FeedbackResponse(BaseModel):
+    ok: bool

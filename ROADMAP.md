@@ -1,20 +1,21 @@
-# FusionDex-IA — Roadmap
+# InfiniDex-IA — Roadmap
 
 État d'avancement et prochaines étapes par couche.
 
 ## ETL — ✅ stabilisé
 
-Pipeline complet en 12 étapes, factorisé en helpers :
+Pipeline complet en 14 étapes (orchestrateur `etl/pipeline.py`), factorisé en helpers :
 - `etl/utils/sql.py` — `load_id_map`
 - `etl/utils/wikitext.py` — fetch MediaWiki + clean
 - `etl/utils/io.py` — `load_json` / `save_json`
 - Héritage des moves de pré-évolutions (`enrich_evolution_movesets.py`)
 
-**Données finales** : 572 Pokémon · 676 moves · 178 abilities · 40067 pokemon_move · 166090 fusion_sprite · 7081 créateurs · 23 triple_fusion · 1634 pokemon_location
+**Données finales** : 572 Pokémon · 659 moves · 183 abilities · 45105 pokemon_move · 168154 fusion_sprite · 7126 créateurs · 23 triple_fusion · 2560 pokemon_location · 188 locations · 121 TMs · 41 tuteurs
 
 **Pistes restantes**
-- Audit DB — Pokémon sans sprites, moves orphelins, cohérence des fusions
-- Scheduler (Prefect ou n8n) pour automatiser les refresh
+- [x] Audit DB — `audit_db.py` (11 checks) : 17 moves orphelins supprimés, 76 Pokémon enrichis (171 abilities ajoutées)
+- [x] Scheduler Prefect self-hosted — `etl/flows/etl_pipeline.py` + `prefect.yaml` + services docker-compose (profil `prefect`)
+- [x] Localisations sauvages — `load_pokedex_locations.py` parse la page Pokédex du wiki IF (541/572 Pokémon couverts, 2 560 entrées `pokemon_location`)
 
 ## Base de données — ✅ stable
 
@@ -23,11 +24,11 @@ Pipeline complet en 12 étapes, factorisé en helpers :
 - [x] **pokemon_location enrichie** — 55 entrées "gift", 25 entrées "trade", tags `respawn:elite4|gold|none` sur les légendaires
 - [x] **type_effectiveness** — 87 entrées ajoutées pour les 8 types triple-fusion (IDs 37-44), types custom indépendants
 - [x] **Fix triple fusion weaknesses** — `compute_triple_fusion_weaknesses` utilise les IDs de type directement
-- [ ] **TM location cleanup** — normaliser `tm.location` (texte libre avec bugs de parsing) et lier via FK à `location(id)`
+- [x] **TM location cleanup** — colonne `tm.location` supprimée, `location_summary` dérivé des FK `tm_location`
 
 ## Backend FastAPI — ✅ base solide
 
-**36 endpoints + `/health`** couvrant Pokémon, moves, abilities, types, fusions, sprites, triple-fusions, générations, créateurs, stats, IA. **53 tests pytest** (voir [backend/tests/](backend/tests/)).
+**51 endpoints + `/health`** couvrant Pokémon, moves, abilities, types, fusions, sprites, triple-fusions, générations, créateurs, stats, IA, CTs. **163 tests pytest** (voir [backend/tests/](backend/tests/)).
 
 **Optimisations DB** (PR #9 en cours) — index `idx_fusion_sprite_body` (seq scan 7.8ms → BitmapOr 2.76ms sur `/fusions/involving`), contrainte partielle `uq_fusion_sprite_default`, `compute_fusion_abilities` 2→1 query.
 
@@ -38,7 +39,7 @@ Pipeline complet en 12 étapes, factorisé en helpers :
 
 **Pistes restantes**
 - [x] **CI full pytest** — dump SQL committé sous `backend/tests/fixtures/`, workflow `full` avec postgres:16
-- [ ] Endpoints pour les nouveaux ajouts BDD (TM enrichi)
+- [x] **Endpoints TM enrichi** — `GET /tms/` + `GET /tms/{number}` avec move complet + lieux d'obtention
 
 ## Frontend Next.js — ✅ stable
 
@@ -53,9 +54,9 @@ Pages en place : `/pokedex` + `/pokedex/[id]`, `/fusion` + `/fusion/[headId]/[bo
 - [x] `search_pokemon_locations` — outil IA pour chercher les Pokémon par condition/méthode
 
 **Pistes restantes**
-- [x] Galerie sprites + crédits (par créateur) — page `/creators` avec 7081 créateurs, recherche, modal sprites
+- [x] Galerie sprites + crédits (par créateur) — page `/creators` avec 7 126 créateurs, recherche, modal sprites
 - [ ] Toggle EN/FR global persistent
-- [ ] Tests Playwright
+- [x] Tests Playwright — 10 tests E2E (homepage, pokédex, fusion, types/items, moves) via `docker compose --profile e2e run --rm e2e`
 - [x] UI transparence IA — ToolPill, SourceBadge, token count, PromptModal
 
 ## IA — 🚧 en cours : phases avancées (transparence, privacy)
@@ -79,9 +80,9 @@ Chaque phase = une PR + un post LinkedIn *building in public*.
 |-------|-------|------|
 | 1 | **Tools DB + refus strict** | ✅ livré — 7 tools (`get_pokemon`, `get_fusion`, `search_move`, `get_item`, `get_move_tutors`, `search_wiki`, `search_pokemon_locations`), boucle tool-call, system prompt anti-hallucination, circuit breaker (max 5 tool calls/turn) |
 | 2 | **Tool MediaWiki IF** | ✅ livré — `search_wiki` avec cache TTL 10 min, fetch page complète si intro < 300 caractères |
-| 3 | **Tool DuckDuckGo** | non démarré — fallback dernier recours, rate-limit, summarize les résultats avant ré-injection |
+| 3 | **Tool DuckDuckGo** | ✅ livré — `search_web` via `ddgs`, cache 5 min, déduplication concurrente, max 1500 chars, 3 tests mockés |
 | 4 | **UI transparence** | ✅ livré — tool pills en temps réel, source badges (db/wiki/web), compteur tokens, bouton « voir le prompt » + PromptModal (system prompt + outils) |
-| 5 | **Privacy layer + provider pluggable** | partiellement livré — `LLMProvider` ABC + DeepSeek/OpenRouter/Ollama ; PII redactor non démarré |
+| 5 | **Privacy layer + provider pluggable** | ✅ livré — `LLMProvider` ABC, DeepSeek/OpenRouter/Ollama, PII redactor (key removal + regex Discord/@ en profondeur), 19 tests |
 
 ### Contraintes techniques
 
@@ -109,17 +110,17 @@ L'assistant cible 3 usages (par ordre de priorité) :
 - [x] Dump SQL fixture → full pytest en CI
 - [ ] Choix de l'hébergement (Fly.io, Railway, VPS ?)
 - [ ] TLS + domaine pour la démo publique
-- [x] Déployer la doc MkDocs (GitHub Pages) — workflow `docs.yml`, URL `benjsant.github.io/FusionDex-IA`
+- [x] Déployer la doc MkDocs (GitHub Pages) — workflow `docs.yml`, URL `benjsant.github.io/InfiniDex-IA`
 
-## Documentation — 🚧 en cours
+## Documentation — ✅ complète
 
-MVP documentaire livré (PR #8) : 9 pages MkDocs Material + référence auto-générée via `mkdocstrings`. Build strict vert. Hébergée via profil Compose `docs` sur `:58100`.
+10 pages MkDocs Material + référence auto-générée via `mkdocstrings`. Build strict vert. Hébergée via profil Compose `docs` sur `:58100`.
 
 **Pistes restantes**
-- [ ] Diagrammes Mermaid enrichis (séquences, ERD complet)
+- [x] Diagrammes Mermaid enrichis — pipeline ETL, ERD complet (toutes tables), séquences requête Pokémon + résolution sprite
 - [x] Guide contributeur (`CONTRIBUTING.md`)
-- [ ] Captures d'écran frontend
-- [ ] Page dédiée à l'architecture IA agentique (après phase 1)
+- [x] Captures d'écran frontend — 30 captures (desktop, mobile, light/dark) via Playwright
+- [x] Page dédiée à l'architecture IA agentique — `docs/ia.md` : boucle agent, cascade retrieval, privacy PII, provider pluggable
 
 ## Cap v1.0
 
@@ -131,4 +132,4 @@ Les critères pour désarchiver les plans initiaux et considérer l'app complèt
 - Déploiement public accessible
 - Documentation à jour sur chaque page
 
-Les phases 3-5 IA (DDG, transparence, privacy) sont cibles **v1.1** — amélioration continue post-lancement.
+Les phases 3-5 IA (DDG, transparence, privacy) sont livrées en **v1.0** — toutes les phases IA sont complètes.

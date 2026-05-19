@@ -1,55 +1,116 @@
 # Pipeline ETL
 
-Le pipeline ETL extrait les données depuis plusieurs sources externes, les transforme, puis les charge dans PostgreSQL. Il tourne en **mode one-shot** via `load_db.py` — pas encore de scheduler (Prefect prévu).
+Le pipeline ETL extrait les données depuis plusieurs sources externes, les transforme, puis les charge dans PostgreSQL. Il tourne en **mode one-shot** via `pipeline.py` (Prefect disponible sous le profil `prefect`).
 
 ## Sources
 
-| Source                     | Utilisée pour                                       |
-| -------------------------- | --------------------------------------------------- |
-| **PokeAPI** (REST)         | Stats de base, national dex IDs, learnsets TM/tutor |
-| **Wiki IF** (MediaWiki)    | Fusions, Move Experts, mécaniques IF spécifiques    |
-| **Poképédia** (MediaWiki)  | Noms FR                                             |
-| **GitHub PokeAPI/sprites** | Sprites PNG statiques                               |
+| Source                            | Utilisée pour                                                   |
+| --------------------------------- | --------------------------------------------------------------- |
+| **PokeAPI** (REST)                | Stats de base, national dex IDs, learnsets TM/tutor             |
+| **Wiki IF — pages spécifiques**   | Fusions, Move Experts, légendaires, tuteurs, mécaniques IF      |
+| **Wiki IF — page Pokédex**        | Localisations sauvages et quêtes (572 entrées `PokedexTable`)   |
+| **Poképédia** (MediaWiki + Scrapy)| Noms FR, learnsets Gen 7 (USUL)                                 |
+| **GitHub PokeAPI/sprites**        | Sprites PNG statiques                                           |
 
 ## Stack
 
 - Python 3.12 + [`uv`](https://github.com/astral-sh/uv) (lockfile + venv)
-- `requests` pour l'HTTP, `psycopg2-binary` + `sqlalchemy` pour la DB
+- `httpx` pour l'HTTP, `psycopg2-binary` + `sqlalchemy` pour la DB
 - Parsers maison (wikitext) dans `etl/utils/wikitext.py`
+- Scrapy pour les learnsets Pokepédia (projet `etl/pokepedia_scraper/`)
 
 ## Séquence d'exécution
 
-Le script principal [etl/scripts/load_db.py](https://github.com/benjsant/FusionDex-IA/blob/main/etl/scripts/load_db.py) enchaîne une douzaine d'étapes :
+L'orchestrateur [etl/pipeline.py](https://github.com/benjsant/InfiniDex-IA/blob/main/etl/pipeline.py) enchaîne 14 étapes numérotées :
 
-1. **Initialisation** — création des tables via `init_postgres.sql` (si absentes).
-2. **Types** — import des 18 types standard + 9 types triple-fusion (27 au total).
-3. **Pokémon de base** — 501 espèces IF.
-4. **Abilities + relations** — talents et leurs liens aux Pokémon.
-5. **Moves + learnsets** — capacités et leur apprentissage.
-6. **Évolutions** — chaînes evolve-into/evolve-from.
-7. **Fusion sprites** — 166k lignes, fichiers disponibles sur le sidecar nginx.
-8. **Créateurs** — attribution des sprites custom.
-9. **Triple fusions** — les 23 cas reconnus.
-10. **Locations** — zones de capture IF.
-11. **Fix scripts** (correctifs canoniques post-import) :
-    - `fix_national_ids.py`
-    - `fix_stats_and_fr_names.py`
-    - `fix_tms_from_pokeapi.py`
-    - `fix_tutors_from_pokeapi.py`
-    - `fix_pokemon_types.py`
-    - `fix_move_experts.py`
-12. **Audit** — comptages de cohérence (exposés via `/stats/coverage` côté API).
+| Étape | Script | Rôle |
+|-------|--------|------|
+| 1 | `extract_pokedex_if.py` | 572 Pokémon depuis le wiki IF |
+| 2a | `extract_stats_pokeapi.py` | Stats + name_fr + évolutions via PokeAPI |
+| 2b | `extract_pokepedia_names.py` | Mapping name_en → slug Pokepédia + URL Gen 7 |
+| 3 | `extract_moves_if.py` | 676 moves + 121 TMs + 40 tuteurs + 57 Move Experts |
+| 3b | `enrich_moves_fr.py` | name_fr + description_fr des moves via PokeAPI |
+| 4 | `extract_abilities_if.py` | 178 talents depuis le wiki IF |
+| 4b | `enrich_abilities_fr.py` | name_fr + description_fr des talents via PokeAPI |
+| 5 | `extract_encounters_if.py` | Rencontres sauvages/statiques/légendaires |
+| 6 | `scrapy if_movesets` | Learnsets Gen 7 depuis Pokepédia (USUL) |
+| 7 | `transform_merge_movesets.py` | Fusion learnsets de base + overrides IF |
+| 8 | `load_db.py` | Chargement de tout dans PostgreSQL |
+| 8b–8f | `fix_pokemon_types.py` `fix_national_ids.py` `fix_stats_and_fr_names.py` `fix_tms_from_pokeapi.py` `enrich_evolution_movesets.py` | Correctifs canoniques post-import |
+| 9–9g | `seed_type_effectiveness.py` `load_encounters.py` `fix_pokemon_locations.py` `load_pokedex_locations.py` `load_items.py` `load_move_tutors.py` `fix_tutors_from_pokeapi.py` `load_tm_locations.py` `fix_move_experts.py` | Enrichissements et localisations |
+| 10–12 | `extract_sprites.py` `extract_triple_fusions.py` `load_triple_fusions.py` `load_sprite_credits.py` | Sprites, triple fusions, crédits |
+| 13–14 | `clean_orphan_moves.py` `enrich_missing_abilities.py` | Nettoyage et complétion |
+
+!!! note "Étape 9b-ter — `load_pokedex_locations.py`"
+    Parse la page Pokédex du wiki IF (`{{PokedexTable/Data|...}}`) pour extraire les localisations sauvages et quêtes manquantes. Utilise `ON CONFLICT DO NOTHING` — ne réécrit jamais les données prioritaires de `fix_pokemon_locations.py`. Gère le `|` dans les liens wiki (`[[Page|Display]]`) en reconstruisant le champ depuis `parts[6:]`.
+
+## Diagramme de pipeline
+
+```mermaid
+flowchart TD
+    subgraph SRC["Sources externes"]
+        PA[PokeAPI\nREST JSON]
+        WI[Wiki IF\nMediaWiki API]
+        PK[Pokepédia\nMediaWiki API]
+        GH[PokeAPI/sprites\nGitHub]
+    end
+
+    subgraph ETL["ETL — etl/scripts/"]
+        direction TB
+        S1[1. init_postgres.sql\ncréation des tables]
+        S2[2. types + générations]
+        S3[3. pokedex_if → 572 Pokémon]
+        S4[4. abilities + pokemon_ability]
+        S5[5. moves + learnsets\n45 100 pokemon_move]
+        S6[6. évolutions]
+        S7[7. fusion_sprite\n168 k lignes + créateurs]
+        S8[8. triple_fusions]
+        S9[9. locations + pokemon_location]
+        S10[10. TMs + tm_location]
+        S11[11. move_tutors + move_experts]
+        FX[fix_*.py\ncorrectifs canoniques]
+        AU[audit_db.py\nvérification cohérence]
+
+        S1 --> S2 --> S3 --> S4 --> S5 --> S6
+        S6 --> S7 --> S8 --> S9 --> S10 --> S11 --> FX --> AU
+    end
+
+    subgraph DB[(PostgreSQL 16)]
+        T1[pokemon · move\nability · type]
+        T2[fusion_sprite\n168 k sprites]
+        T3[move_expert_move\npokemon_location]
+    end
+
+    PA -->|stats · national_id\nlearnsets · abilities| S3
+    PA -->|TMs · tuteurs| S10
+    WI -->|Move Experts\nfusions spéciales| S11
+    PK -->|noms FR| FX
+    GH -->|sprites PNG\n→ nginx sidecar| S7
+    ETL --> DB
+
+    style SRC fill:#1e2d40,color:#93c5fd
+    style ETL fill:#1e3b2f,color:#6ee7b7
+    style DB  fill:#2d1e3b,color:#c4b5fd
+```
 
 ## Lancer le pipeline
 
 ```bash
-cd etl
-uv sync
-uv run python -m etl.scripts.load_db
+# Via Docker (recommandé)
+docker compose run --rm etl
+
+# Ou localement
+cd etl && uv sync && uv run python etl/pipeline.py
 ```
 
 !!! warning "Requiert la DB up"
-    Le pipeline se connecte à Postgres via `DATABASE_URL` (cf. `.env`). Lance d'abord `docker compose up -d db` si tu pars de zéro.
+    Le pipeline attend PostgreSQL via `docker/wait_for_db.py`. Lance d'abord `docker compose up -d db` si tu pars de zéro.
+
+Pour forcer une réexécution complète (même si les données sont déjà chargées) :
+
+```bash
+docker compose run --rm etl python etl/pipeline.py --force
+```
 
 ## Patterns récurrents
 

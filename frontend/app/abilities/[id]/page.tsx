@@ -10,13 +10,14 @@ export default function AbilityDetailPage({ params }: { params: Promise<{ id: st
   const { id } = use(params);
   const abilityId = parseInt(id, 10);
 
-  const { data: ability, isLoading } = useQuery({
+  const { data: ability, isLoading, isError } = useQuery({
     queryKey: ["ability", abilityId],
     queryFn: () => getAbility(abilityId),
     staleTime: Infinity,
   });
 
   if (isLoading) return <PageSkeleton />;
+  if (isError) return <ErrorState />;
   if (!ability) return <NotFound id={abilityId} />;
 
   return (
@@ -85,6 +86,17 @@ function NotFound({ id }: { id: number }) {
   return (
     <div className="max-w-2xl mx-auto px-4 py-12 text-center">
       <p style={{ color: "var(--color-if-muted)" }}>Talent #{id} introuvable.</p>
+      <Link href="/abilities" className="mt-4 block transition-colors" style={{ color: "var(--color-if-accent)" }}>
+        <ChevronLeft size={14} className="inline" /> Retour aux talents
+      </Link>
+    </div>
+  );
+}
+
+function ErrorState() {
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-12 text-center">
+      <p style={{ color: "var(--color-if-muted)" }}>Impossible de charger le talent.</p>
       <Link href="/abilities" className="mt-4 block transition-colors" style={{ color: "var(--color-if-accent)" }}>
         <ChevronLeft size={14} className="inline" /> Retour aux talents
       </Link>

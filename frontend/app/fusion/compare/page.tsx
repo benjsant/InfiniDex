@@ -1,12 +1,13 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { GitCompare, Trash2, ArrowLeft } from "lucide-react";
+import { GitCompare, X, Search, ChevronRight, ArrowUpDown } from "lucide-react";
 import { useFusion } from "@/hooks/useFusion";
-import { useComparison } from "@/hooks/useComparison";
+import { usePokemonSearch } from "@/hooks/usePokemon";
 import { FusionSprite } from "@/components/fusion/FusionSprite";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
-import type { FusionResult } from "@/types/api";
+import type { FusionResult, PokemonListItem } from "@/types/api";
 
 const STAT_KEYS: { key: keyof FusionResult; label: string }[] = [
   { key: "hp",         label: "HP"     },
@@ -17,186 +18,210 @@ const STAT_KEYS: { key: keyof FusionResult; label: string }[] = [
   { key: "speed",      label: "Vit"    },
 ];
 
-function StatRow({
+function PokemonCombobox({
   label,
-  a,
-  b,
+  value,
+  onChange,
 }: {
   label: string;
-  a: number;
-  b: number;
+  value: PokemonListItem | null;
+  onChange: (p: PokemonListItem | null) => void;
 }) {
-  const max = Math.max(a, b, 1);
-  const aWins = a > b;
-  const bWins = b > a;
+  const [q, setQ] = useState("");
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const { data: results = [] } = usePokemonSearch(q.length >= 2 ? q : "", { enabled: q.length >= 2 });
 
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  if (value) {
+    return (
+      <div className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: "var(--color-if-card)", border: "1px solid #e8b84b44" }}>
+        <span className="text-sm" style={{ color: "var(--color-if-text)" }}>
+          <span className="text-xs mr-2" style={{ color: "var(--color-if-muted)" }}>#{String(value.id).padStart(3, "0")}</span>
+          {value.name_fr ?? value.name_en}
+        </span>
+        <button onClick={() => { onChange(null); setQ(""); }} style={{ color: "var(--color-if-muted)" }}>
+          <X size={14} />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "var(--color-if-bg)", border: "1px solid var(--color-if-border)" }}>
+        <Search size={13} style={{ color: "var(--color-if-muted)", flexShrink: 0 }} />
+        <input
+          className="flex-1 bg-transparent text-sm outline-none placeholder:text-if-text-lo"
+          style={{ color: "var(--color-if-text)" }}
+          placeholder={label}
+          value={q}
+          onChange={(e) => { setQ(e.target.value); setOpen(true); }}
+          onFocus={() => setOpen(true)}
+        />
+      </div>
+      {open && results.length > 0 && (
+        <div
+          className="absolute z-50 w-full mt-1 rounded-lg overflow-hidden shadow-xl max-h-52 overflow-y-auto"
+          style={{ background: "var(--color-if-card)", border: "1px solid var(--color-if-border)" }}
+        >
+          {results.slice(0, 12).map((p) => (
+            <button
+              key={p.id}
+              className="w-full text-left px-3 py-2 text-sm transition-colors hover:bg-if-border"
+              style={{ color: "var(--color-if-text)" }}
+              onMouseDown={(e) => { e.preventDefault(); onChange(p); setQ(""); setOpen(false); }}
+            >
+              <span className="text-xs mr-2" style={{ color: "var(--color-if-muted)" }}>#{String(p.id).padStart(3, "0")}</span>
+              {p.name_fr ?? p.name_en}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SlotSelector({
+  slotLabel,
+  head,
+  body,
+  onHead,
+  onBody,
+  onClear,
+  onSwap,
+}: {
+  slotLabel: string;
+  head: PokemonListItem | null;
+  body: PokemonListItem | null;
+  onHead: (p: PokemonListItem | null) => void;
+  onBody: (p: PokemonListItem | null) => void;
+  onClear: () => void;
+  onSwap: () => void;
+}) {
+  return (
+    <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--color-if-card)", border: "1px solid var(--color-if-border)" }}>
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-if-muted)" }}>{slotLabel}</p>
+        <div className="flex items-center gap-2">
+          {head && body && (
+            <button
+              onClick={onSwap}
+              title="Intervertir tête et corps"
+              className="flex items-center gap-1 text-xs px-2 py-0.5 rounded transition-colors hover:opacity-80"
+              style={{ color: "var(--color-if-text-lo)", background: "var(--color-if-elevated)", border: "1px solid var(--color-if-border-mid)" }}
+            >
+              <ArrowUpDown size={11} />
+              Inverser
+            </button>
+          )}
+          {(head || body) && (
+            <button onClick={onClear} className="text-xs" style={{ color: "var(--color-if-text-lo)" }}>
+              <X size={12} className="inline" /> Effacer
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="space-y-2">
+        <PokemonCombobox label="Pokémon tête…" value={head} onChange={onHead} />
+        <PokemonCombobox label="Pokémon corps…" value={body} onChange={onBody} />
+      </div>
+      {head && body && (
+        <div className="flex items-center justify-center pt-1">
+          <FusionSprite headId={head.id} bodyId={body.id} size={80} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatRow({ label, a, b }: { label: string; a: number; b: number }) {
+  const max = Math.max(a, b, 1);
   return (
     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 py-1.5">
-      {/* Left stat */}
       <div className="flex items-center justify-end gap-2">
-        <span
-          className="text-sm font-mono font-bold w-8 text-right"
-          style={{ color: aWins ? "#4ade80" : "#e1e4ff" }}
-        >
-          {a}
-        </span>
-        <div className="h-2 rounded-full flex-1 max-w-[80px]" style={{ background: "#1e2240" }}>
-          <div
-            className="h-full rounded-full ml-auto"
-            style={{
-              width: `${Math.round((a / max) * 100)}%`,
-              background: aWins ? "#4ade80" : "#6366f1",
-            }}
-          />
+        <span className="text-sm font-mono font-bold w-8 text-right" style={{ color: a > b ? "#4ade80" : "var(--color-if-text-dim)" }}>{a}</span>
+        <div className="h-2 rounded-full flex-1 max-w-[80px]" style={{ background: "var(--color-if-border)" }}>
+          <div className="h-full rounded-full ml-auto" style={{ width: `${Math.round((a / max) * 100)}%`, background: a > b ? "#4ade80" : "#6366f1" }} />
         </div>
       </div>
-
-      {/* Label */}
-      <span className="text-xs text-center w-14 shrink-0" style={{ color: "#6b7199" }}>
-        {label}
-      </span>
-
-      {/* Right stat */}
+      <span className="text-xs text-center w-14 shrink-0" style={{ color: "var(--color-if-muted)" }}>{label}</span>
       <div className="flex items-center gap-2">
-        <div className="h-2 rounded-full flex-1 max-w-[80px]" style={{ background: "#1e2240" }}>
-          <div
-            className="h-full rounded-full"
-            style={{
-              width: `${Math.round((b / max) * 100)}%`,
-              background: bWins ? "#4ade80" : "#6366f1",
-            }}
-          />
+        <div className="h-2 rounded-full flex-1 max-w-[80px]" style={{ background: "var(--color-if-border)" }}>
+          <div className="h-full rounded-full" style={{ width: `${Math.round((b / max) * 100)}%`, background: b > a ? "#4ade80" : "#6366f1" }} />
         </div>
-        <span
-          className="text-sm font-mono font-bold w-8"
-          style={{ color: bWins ? "#4ade80" : "#e1e4ff" }}
-        >
-          {b}
-        </span>
+        <span className="text-sm font-mono font-bold w-8" style={{ color: b > a ? "#4ade80" : "var(--color-if-text-dim)" }}>{b}</span>
       </div>
     </div>
   );
 }
 
-function FusionColumn({ fusion }: { fusion: FusionResult }) {
+function FusionHeader({ fusion }: { fusion: FusionResult }) {
   const total = STAT_KEYS.reduce((s, { key }) => s + (fusion[key] as number), 0);
   return (
-    <div className="flex flex-col items-center gap-3">
-      <div
-        className="w-28 h-28 flex items-center justify-center rounded-xl"
-        style={{ background: "#090c1a", border: "1px solid #1e2240" }}
-      >
-        <FusionSprite headId={fusion.head_id} bodyId={fusion.body_id} size={104} />
-      </div>
+    <div className="flex flex-col items-center gap-2">
+      <Link href={`/fusion/${fusion.head_id}/${fusion.body_id}`} className="hover:opacity-80 transition-opacity">
+        <div className="w-24 h-24 flex items-center justify-center rounded-xl" style={{ background: "var(--color-if-bg)", border: "1px solid var(--color-if-border)" }}>
+          <FusionSprite headId={fusion.head_id} bodyId={fusion.body_id} size={88} />
+        </div>
+      </Link>
       <div className="text-center">
-        <p className="font-semibold text-sm" style={{ color: "#e1e4ff" }}>
-          {fusion.head_name_en}/{fusion.body_name_en}
+        <p className="text-xs font-semibold" style={{ color: "var(--color-if-text)" }}>
+          {fusion.head_name_fr ?? fusion.head_name_en}/{fusion.body_name_fr ?? fusion.body_name_en}
         </p>
         <div className="flex gap-1 justify-center mt-1">
-          {fusion.type1 && <TypeBadge typeName={fusion.type1.name_en} size="sm" />}
-          {fusion.type2 && <TypeBadge typeName={fusion.type2.name_en} size="sm" />}
+          {fusion.type1 && <TypeBadge typeName={fusion.type1.name_en} label={fusion.type1.name_fr ?? fusion.type1.name_en} size="sm" />}
+          {fusion.type2 && <TypeBadge typeName={fusion.type2.name_en} label={fusion.type2.name_fr ?? fusion.type2.name_en} size="sm" />}
         </div>
-        <p className="text-xs mt-1" style={{ color: "#6b7199" }}>
-          Total{" "}
-          <span className="font-mono font-bold" style={{ color: "#c8cbf0" }}>
-            {total}
-          </span>
-        </p>
+        <p className="text-xs mt-1" style={{ color: "var(--color-if-muted)" }}>BST <span className="font-mono font-bold" style={{ color: "var(--color-if-text-dim)" }}>{total}</span></p>
       </div>
     </div>
   );
 }
 
-function ComparePanel({
-  slotA,
-  slotB,
+function CompareResult({
+  headA, bodyA, headB, bodyB,
 }: {
-  slotA: { headId: number; bodyId: number };
-  slotB: { headId: number; bodyId: number };
+  headA: PokemonListItem; bodyA: PokemonListItem;
+  headB: PokemonListItem; bodyB: PokemonListItem;
 }) {
-  const { data: fusionA, isLoading: loadA } = useFusion(slotA.headId, slotA.bodyId);
-  const { data: fusionB, isLoading: loadB } = useFusion(slotB.headId, slotB.bodyId);
+  const { data: fusionA, isLoading: la } = useFusion(headA.id, bodyA.id);
+  const { data: fusionB, isLoading: lb } = useFusion(headB.id, bodyB.id);
 
-  if (loadA || loadB) {
-    return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-32 bg-[#111428] rounded-xl" />
-        <div className="h-48 bg-[#111428] rounded-xl" />
-      </div>
-    );
-  }
-
-  if (!fusionA || !fusionB) {
-    return (
-      <p className="text-center py-12" style={{ color: "#6b7199" }}>
-        Impossible de charger une des fusions.
-      </p>
-    );
-  }
+  if (la || lb) return <div className="animate-pulse h-48 rounded-xl bg-if-card" />;
+  if (!fusionA || !fusionB) return <p className="text-center py-8" style={{ color: "var(--color-if-muted)" }}>Erreur de chargement.</p>;
 
   const totalA = STAT_KEYS.reduce((s, { key }) => s + (fusionA[key] as number), 0);
   const totalB = STAT_KEYS.reduce((s, { key }) => s + (fusionB[key] as number), 0);
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
+    <div className="space-y-4 mt-6">
+      {/* Sprite + name + types */}
       <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-center">
-        <Link href={`/fusion/${slotA.headId}/${slotA.bodyId}`}>
-          <FusionColumn fusion={fusionA} />
-        </Link>
-        <span className="text-lg font-bold" style={{ color: "#2d3260" }}>VS</span>
-        <Link href={`/fusion/${slotB.headId}/${slotB.bodyId}`}>
-          <FusionColumn fusion={fusionB} />
-        </Link>
+        <FusionHeader fusion={fusionA} />
+        <span className="text-lg font-bold" style={{ color: "var(--color-if-border-hi)" }}>VS</span>
+        <FusionHeader fusion={fusionB} />
       </div>
 
       {/* Stats */}
-      <div className="rounded-xl p-4" style={{ background: "#111428", border: "1px solid #1e2240" }}>
-        <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "#6b7199" }}>
-          Statistiques
-        </p>
-        <div className="divide-y" style={{ borderColor: "#1a1d35" }}>
+      <div className="rounded-xl p-4" style={{ background: "var(--color-if-card)", border: "1px solid var(--color-if-border)" }}>
+        <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--color-if-muted)" }}>Statistiques</p>
+        <div className="divide-y" style={{ borderColor: "var(--color-if-border-lo)" }}>
           {STAT_KEYS.map(({ key, label }) => (
-            <StatRow
-              key={key}
-              label={label}
-              a={fusionA[key] as number}
-              b={fusionB[key] as number}
-            />
+            <StatRow key={key} label={label} a={fusionA[key] as number} b={fusionB[key] as number} />
           ))}
         </div>
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 pt-3 mt-1 border-t" style={{ borderColor: "#1e2240" }}>
-          <span
-            className="text-sm font-bold font-mono text-right"
-            style={{ color: totalA > totalB ? "#4ade80" : "#e1e4ff" }}
-          >
-            {totalA}
-          </span>
-          <span className="text-xs text-center w-14" style={{ color: "#6b7199" }}>Total</span>
-          <span
-            className="text-sm font-bold font-mono"
-            style={{ color: totalB > totalA ? "#4ade80" : "#e1e4ff" }}
-          >
-            {totalB}
-          </span>
-        </div>
-      </div>
-
-      {/* Type comparison */}
-      <div className="rounded-xl p-4" style={{ background: "#111428", border: "1px solid #1e2240" }}>
-        <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "#6b7199" }}>
-          Types
-        </p>
-        <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-center">
-          <div className="flex gap-1 justify-end">
-            {fusionA.type1 && <TypeBadge typeName={fusionA.type1.name_en} />}
-            {fusionA.type2 && <TypeBadge typeName={fusionA.type2.name_en} />}
-          </div>
-          <span className="text-xs w-4 text-center" style={{ color: "#2d3260" }}>vs</span>
-          <div className="flex gap-1">
-            {fusionB.type1 && <TypeBadge typeName={fusionB.type1.name_en} />}
-            {fusionB.type2 && <TypeBadge typeName={fusionB.type2.name_en} />}
-          </div>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 pt-3 mt-1 border-t" style={{ borderColor: "var(--color-if-border)" }}>
+          <span className="text-sm font-bold font-mono text-right" style={{ color: totalA > totalB ? "#4ade80" : "var(--color-if-text-dim)" }}>{totalA}</span>
+          <span className="text-xs text-center w-14" style={{ color: "var(--color-if-muted)" }}>Total</span>
+          <span className="text-sm font-bold font-mono" style={{ color: totalB > totalA ? "#4ade80" : "var(--color-if-text-dim)" }}>{totalB}</span>
         </div>
       </div>
     </div>
@@ -204,55 +229,49 @@ function ComparePanel({
 }
 
 export default function ComparePage() {
-  const { slots, clearComparison, canCompare } = useComparison();
+  const [headA, setHeadA] = useState<PokemonListItem | null>(null);
+  const [bodyA, setBodyA] = useState<PokemonListItem | null>(null);
+  const [headB, setHeadB] = useState<PokemonListItem | null>(null);
+  const [bodyB, setBodyB] = useState<PokemonListItem | null>(null);
+
+  const readyA = headA && bodyA;
+  const readyB = headB && bodyB;
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <Link
-            href="/fusion"
-            className="text-sm transition-colors hover:text-[#e8b84b]"
-            style={{ color: "#6b7199" }}
-          >
-            <ArrowLeft size={14} className="inline mr-1" />
-            Fusion
-          </Link>
-          <span style={{ color: "#2d3260" }}>/</span>
-          <span className="text-sm flex items-center gap-1.5" style={{ color: "#e1e4ff" }}>
-            <GitCompare size={14} />
-            Comparaison
-          </span>
-        </div>
-        {(slots[0] || slots[1]) && (
-          <button
-            onClick={clearComparison}
-            className="flex items-center gap-1 text-xs transition-colors hover:text-red-400"
-            style={{ color: "#6b7199" }}
-          >
-            <Trash2 size={12} />
-            Réinitialiser
-          </button>
-        )}
+      <div className="flex items-center gap-2 mb-6">
+        <GitCompare size={20} style={{ color: "#e8b84b" }} />
+        <h1 className="text-xl font-bold" style={{ color: "var(--color-if-text)" }}>Comparateur de fusions</h1>
       </div>
 
-      {!canCompare ? (
-        <div className="text-center py-16 space-y-3">
-          <GitCompare size={32} className="mx-auto" style={{ color: "#2d3260" }} />
-          <p style={{ color: "#6b7199" }}>
-            {slots[0]
-              ? `"${slots[0].headName}/${slots[0].bodyName}" sélectionné — choisis une deuxième fusion.`
-              : "Sélectionne deux fusions à comparer depuis leurs pages de détail."}
-          </p>
-          <Link
-            href="/fusion"
-            className="inline-block mt-2 text-sm px-4 py-2 rounded-lg transition-all bg-indigo-600 hover:bg-indigo-500 text-white"
-          >
-            Aller au calculateur
-          </Link>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <SlotSelector
+          slotLabel="Fusion A"
+          head={headA} body={bodyA}
+          onHead={setHeadA} onBody={setBodyA}
+          onClear={() => { setHeadA(null); setBodyA(null); }}
+          onSwap={() => { setHeadA(bodyA); setBodyA(headA); }}
+        />
+        <SlotSelector
+          slotLabel="Fusion B"
+          head={headB} body={bodyB}
+          onHead={setHeadB} onBody={setBodyB}
+          onClear={() => { setHeadB(null); setBodyB(null); }}
+          onSwap={() => { setHeadB(bodyB); setBodyB(headB); }}
+        />
+      </div>
+
+      {readyA && readyB ? (
+        <CompareResult headA={headA} bodyA={bodyA} headB={headB} bodyB={bodyB} />
       ) : (
-        <ComparePanel slotA={slots[0]!} slotB={slots[1]!} />
+        <div className="mt-8 flex items-center gap-3 text-sm" style={{ color: "var(--color-if-text-lo)" }}>
+          <ChevronRight size={14} />
+          {!readyA && !readyB
+            ? "Choisis un Pokémon tête + corps pour chaque fusion."
+            : !readyA
+            ? "Complète la fusion A (tête et corps)."
+            : "Complète la fusion B (tête et corps)."}
+        </div>
       )}
     </div>
   );

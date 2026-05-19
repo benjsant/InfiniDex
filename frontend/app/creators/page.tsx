@@ -23,7 +23,7 @@ export default function CreatorsPage() {
 
   const offset = (page - 1) * PAGE_SIZE;
 
-  const { data: creators = [], isLoading, isFetching } = useQuery({
+  const { data: creators = [], isLoading, isFetching, isError } = useQuery({
     queryKey: ["creators-list", debouncedQ, offset],
     queryFn: () => listCreators(debouncedQ, PAGE_SIZE, offset),
     placeholderData: keepPreviousData,
@@ -69,6 +69,8 @@ export default function CreatorsPage() {
       {/* Grid */}
       {isLoading ? (
         <LoadingSkeleton />
+      ) : isError ? (
+        <p className="text-center text-sm text-if-muted py-16">Impossible de charger les créateurs.</p>
       ) : creators.length === 0 ? (
         <p className="text-center text-sm text-if-muted py-16">Aucun créateur trouvé pour « {debouncedQ} ».</p>
       ) : (
@@ -119,7 +121,7 @@ function CreatorCard({ creator, onClick }: { creator: CreatorOut; onClick: () =>
   return (
     <button
       onClick={onClick}
-      className="group flex flex-col items-center gap-2 p-3 rounded-xl border border-if-border bg-if-elevated hover:border-indigo-500 hover:bg-[rgb(22,22,35)] transition-all text-center"
+      className="group flex flex-col items-center gap-2 p-3 rounded-xl border border-if-border bg-if-elevated hover:border-indigo-500 hover:bg-if-elevated transition-all text-center"
     >
       <div className="w-10 h-10 rounded-full bg-indigo-950/60 border border-indigo-700/40 flex items-center justify-center shrink-0">
         <Palette size={16} className="text-indigo-400" />
@@ -141,10 +143,10 @@ function LoadingSkeleton() {
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
       {Array.from({ length: PAGE_SIZE }).map((_, i) => (
         <div key={i} className="flex flex-col items-center gap-2 p-3 rounded-xl border border-if-border bg-if-elevated animate-pulse">
-          <div className="w-10 h-10 rounded-full bg-[rgb(35,35,50)]" />
+          <div className="w-10 h-10 rounded-full bg-if-input" />
           <div className="w-full space-y-1">
-            <div className="h-3 bg-[rgb(35,35,50)] rounded w-3/4 mx-auto" />
-            <div className="h-2 bg-[rgb(35,35,50)] rounded w-1/2 mx-auto" />
+            <div className="h-3 bg-if-input rounded w-3/4 mx-auto" />
+            <div className="h-2 bg-if-input rounded w-1/2 mx-auto" />
           </div>
         </div>
       ))}

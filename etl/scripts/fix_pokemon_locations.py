@@ -77,13 +77,20 @@ LEGENDARIES: list[tuple[str, str, int | None, str]] = [
     ("Jirachi", "Unknown",       20,
      "Legendary. Dream encounter after seeing 777 unique Pokémon."),
 
-    # Sinnoh creation trio
+    # Sinnoh creation trio — encounter 1: Sinjoh Ruins (egg, with Arceus)
     ("Dialga",   "Sinjoh Ruins", 1,
-     "Legendary. Obtained as Egg with Arceus in party, or lv75 post-Mt. Silver."),
+     "Legendary. Obtained as Egg with Arceus in party (Mr. Pokemon on Route 30 → Sinjoh Ruins)."),
     ("Palkia",   "Sinjoh Ruins", 1,
-     "Legendary. Obtained as Egg with Arceus in party, or lv75 post-Mt. Silver."),
+     "Legendary. Obtained as Egg with Arceus in party (Mr. Pokemon on Route 30 → Sinjoh Ruins)."),
     ("Giratina", "Sinjoh Ruins", 1,
-     "Legendary. Obtained as Egg with Arceus in party, or lv75 post-Mt. Silver."),
+     "Legendary. Obtained as Egg with Arceus in party (Mr. Pokemon on Route 30 → Sinjoh Ruins)."),
+    # Sinnoh creation trio — encounter 2: Strange Vortex post-Mt. Silver (Gold defeated)
+    ("Dialga",   "Boon Island",       75,
+     "Legendary. Strange Vortex on the highest mountain. Requires Rock Climb and defeating Gold on Mt. Silver."),
+    ("Palkia",   "Blackthorn City",   75,
+     "Legendary. Strange Vortex near the cave exit. Requires Rock Climb and defeating Gold on Mt. Silver."),
+    ("Giratina", "Route 4",           75,
+     "Legendary. Strange Vortex near the Mt. Moon exit. Requires Rock Climb and defeating Gold on Mt. Silver."),
 
     # Lunar duo
     ("Cresselia", "Lavender Town", 50,
@@ -126,10 +133,15 @@ LEGENDARIES: list[tuple[str, str, int | None, str]] = [
 # Gift Pokémon (method='gift')
 # ---------------------------------------------------------------------------
 GIFTS: list[tuple[str, str, int | None, str]] = [
-    # Gen 1 starters
-    ("Bulbasaur",  "Pallet Town", 5, "Starter Pokémon"),
-    ("Charmander", "Pallet Town", 5, "Starter Pokémon"),
-    ("Squirtle",   "Pallet Town", 5, "Starter Pokémon"),
+    # Gen 1 starters — also obtainable as a sibling egg (lv.1) after 4 Gyms.
+    # Merged into one entry per species because the DB enforces
+    # UNIQUE(pokemon_id, location_id, method); two rows would collide.
+    ("Bulbasaur",  "Pallet Town", 5,
+     "Starter Pokémon. Also a lv.1 Egg from sibling after 4 Gyms (starter strong against yours)."),
+    ("Charmander", "Pallet Town", 5,
+     "Starter Pokémon. Also a lv.1 Egg from sibling after 4 Gyms (starter strong against yours)."),
+    ("Squirtle",   "Pallet Town", 5,
+     "Starter Pokémon. Also a lv.1 Egg from sibling after 4 Gyms (starter strong against yours)."),
 
     # Step-based PC gift
     ("Porygon", "Any PC", 1,
@@ -212,14 +224,6 @@ GIFTS: list[tuple[str, str, int | None, str]] = [
 
     # Saffron quest
     ("Smeargle", "Saffron City", 40, "Quest Reward."),
-
-    # Sibling starter egg (after 4 Gyms, strong against player's starter)
-    ("Bulbasaur",  "Pallet Town", 1,
-     "Egg from sibling after 4 Gyms. Starter strong against yours."),
-    ("Charmander", "Pallet Town", 1,
-     "Egg from sibling after 4 Gyms. Starter strong against yours."),
-    ("Squirtle",   "Pallet Town", 1,
-     "Egg from sibling after 4 Gyms. Starter strong against yours."),
 
     # Elm's assistant in Goldenrod
     ("Chikorita", "Goldenrod City", 15, "Elm's assistant."),
@@ -369,7 +373,8 @@ def fix_locations(conn) -> None:
         cur.execute("DELETE FROM pokemon_location WHERE method IN ('static', 'gift', 'trade')")
         deleted = cur.rowcount
         LOGGER.info("Cleared %d old static/gift/trade entries", deleted)
-        conn.commit()
+        # No commit here: keep the delete + re-inserts in one transaction so a
+        # later insert failure rolls back the deletion instead of wiping data.
 
         # ── Insert legendaries ────────────────────────────────────────────
         leg_ok = leg_skip = 0

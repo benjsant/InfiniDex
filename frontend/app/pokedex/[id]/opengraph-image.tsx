@@ -31,7 +31,22 @@ async function fetchMeta(id: number) {
   }
 }
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fusiondex.app";
+// Satori fetches <img src> without our headers, so the key-protected sprite
+// endpoint 403s. Pre-fetch it server-side with the key and inline as a data URL.
+async function fetchSpriteDataUrl(url: string): Promise<string | null> {
+  try {
+    const headers: Record<string, string> = {};
+    if (INTERNAL_API_KEY) headers["X-Internal-Key"] = INTERNAL_API_KEY;
+    const res = await fetch(url, { headers });
+    if (!res.ok) return null;
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    let binary = "";
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return `data:image/png;base64,${btoa(binary)}`;
+  } catch {
+    return null;
+  }
+}
 
 export default async function Image({
   params,
@@ -45,7 +60,7 @@ export default async function Image({
   const nameEn = p?.name_fr ? p.name_en : null;
   const bst = p ? p.hp + p.attack + p.defense + p.sp_attack + p.sp_defense + p.speed : null;
   const types = p ? p.types.map((t) => t.name_fr ?? t.name_en).join(" / ") : "";
-  const spriteUrl = p?.sprite_path ? `${SITE_URL}${p.sprite_path}` : null;
+  const spriteSrc = p ? await fetchSpriteDataUrl(`${BACKEND_URL}/sprites/${p.id}/${p.id}/image`) : null;
 
   return new ImageResponse(
     (
@@ -62,9 +77,9 @@ export default async function Image({
           gap: 20,
         }}
       >
-        {spriteUrl && (
+        {spriteSrc && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={spriteUrl} alt={name} width={180} height={180} style={{ imageRendering: "pixelated" }} />
+          <img src={spriteSrc} alt={name} width={180} height={180} style={{ imageRendering: "pixelated" }} />
         )}
 
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
@@ -89,7 +104,7 @@ export default async function Image({
         </div>
 
         <span style={{ position: "absolute", bottom: 24, right: 36, fontSize: 18, color: "#2d3260" }}>
-          FusionDex
+          InfiniDex
         </span>
       </div>
     ),

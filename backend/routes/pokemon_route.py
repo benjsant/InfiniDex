@@ -61,10 +61,19 @@ def pokemon_to_list_item(p: Pokemon) -> PokemonListItem:
     )
 
 
+_SORT_PATTERN = (
+    "^(id|id_desc|name_asc|name_desc|bst_asc|bst_desc"
+    "|hp_asc|hp_desc|attack_asc|attack_desc|defense_asc|defense_desc"
+    "|sp_attack_asc|sp_attack_desc|sp_defense_asc|sp_defense_desc"
+    "|speed_asc|speed_desc)$"
+)
+
+
 @router.get("/count", response_model=int)
 def get_pokemon_count(
     db: Session = Depends(get_db),
     type_id: int | None = Query(None, ge=1),
+    type2_id: int | None = Query(None, ge=1, description="Second type filter (AND)"),
     generation_id: int | None = Query(None, ge=1),
     include_hoenn: bool = Query(True),
     min_bst: int | None = Query(None, ge=0),
@@ -75,6 +84,7 @@ def get_pokemon_count(
     return count_pokemon(
         db,
         type_id=type_id,
+        type2_id=type2_id,
         generation_id=generation_id,
         include_hoenn=include_hoenn,
         min_bst=min_bst,
@@ -87,13 +97,14 @@ def get_pokemon_count(
 def get_pokemon_list(
     db: Session = Depends(get_db),
     limit: int | None = Query(None, ge=1, le=1000),
-    offset: int = Query(0, ge=0),
-    type_id: int | None = Query(None, ge=1, description="Filter by type (id)"),
+    offset: int = Query(0, ge=0, le=100_000),
+    type_id: int | None = Query(None, ge=1, description="Filter by primary type (id)"),
+    type2_id: int | None = Query(None, ge=1, description="Filter by second type (AND)"),
     generation_id: int | None = Query(None, ge=1, description="Filter by generation"),
     include_hoenn: bool = Query(True, description="Include Hoenn-only Pokémon"),
     min_bst: int | None = Query(None, ge=0, description="Minimum BST"),
     max_bst: int | None = Query(None, ge=0, description="Maximum BST"),
-    sort_by: str = Query("id", pattern="^(id|bst_asc|bst_desc)$", description="Sort order"),
+    sort_by: str = Query("id", pattern=_SORT_PATTERN, description="Sort order"),
     ability_id: int | None = Query(None, ge=1, description="Filter by ability (id)"),
 ):
     """List Pokémon in the Infinite Fusion game, with pagination and filters."""
@@ -102,6 +113,7 @@ def get_pokemon_list(
         limit=limit,
         offset=offset,
         type_id=type_id,
+        type2_id=type2_id,
         generation_id=generation_id,
         include_hoenn=include_hoenn,
         min_bst=min_bst,

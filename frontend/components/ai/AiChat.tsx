@@ -3,10 +3,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
-import { Bot, Cog, Globe, Database, BookOpen, Eye, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Bot, Cog, Globe, Database, BookOpen, Eye, ThumbsUp, ThumbsDown, ExternalLink, Lightbulb } from "lucide-react";
 import { useAiChat } from "@/hooks/useAiChat";
 import { getAiProvider, sendAiFeedback } from "@/lib/api";
-import type { ChatMessage } from "@/hooks/useAiChat";
+import type { ChatMessage, WebSource } from "@/hooks/useAiChat";
 import { AI_TOOL_LABELS, AI_SOURCE_LABELS, AI_SOURCE_COLORS } from "@/lib/constants";
 import { PromptModal } from "@/components/ai/PromptModal";
 
@@ -27,6 +27,7 @@ export function AiChat({
   const { messages, isStreaming, error, sendMessage, reset } = useAiChat();
   const [input, setInput] = useState("");
   const [showPrompt, setShowPrompt] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [ratings, setRatings] = useState<Record<number, "up" | "down">>({});
 
   const handleRate = useCallback((msgIndex: number, rating: "up" | "down") => {
@@ -76,20 +77,9 @@ export function AiChat({
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 gap-6">
             <div className="text-indigo-400"><Bot size={40} /></div>
-            <p className="text-if-text-lo text-sm text-center max-w-xs">
+            <p className="text-sm text-center max-w-xs" style={{ color: "var(--color-if-text-lo)" }}>
               Pose-moi une question sur Pokémon Infinite Fusion, les stratégies de fusion, les équipes…
             </p>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {SUGGESTIONS.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => sendMessage(s)}
-                  className="text-xs px-3 py-1.5 rounded-full bg-if-elevated border border-if-border-mid text-[rgb(160,160,200)] hover:border-indigo-500 hover:text-indigo-300 transition-all"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
           </div>
         )}
 
@@ -130,10 +120,41 @@ export function AiChat({
             </button>
           ) : <span />}
           <div className="flex items-center gap-2">
+            {/* Popover suggestions */}
+            <div className="relative">
+              <button
+                onClick={() => setShowSuggestions((v) => !v)}
+                title="Questions suggérées"
+                className="p-1 rounded transition-colors"
+                style={{ color: showSuggestions ? "#e8b84b" : "var(--color-if-muted)" }}
+              >
+                <Lightbulb size={14} />
+              </button>
+              {showSuggestions && (
+                <div
+                  className="absolute bottom-full right-0 mb-2 z-30 rounded-xl shadow-2xl p-2 space-y-1 w-64"
+                  style={{ background: "var(--color-if-deep)", border: "1px solid var(--color-if-border-hi)" }}
+                >
+                  {SUGGESTIONS.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => { if (!isStreaming) { sendMessage(s); setShowSuggestions(false); } }}
+                      disabled={isStreaming}
+                      className="w-full text-left text-xs px-3 py-2 rounded-lg transition-colors disabled:opacity-40"
+                      style={{ color: "var(--color-if-text-dim)" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--color-if-elevated)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <button
               onClick={() => setShowPrompt(true)}
               title="Voir le prompt envoyé au LLM"
-              className="p-1 rounded text-[rgb(80,80,110)] hover:text-indigo-400 transition-colors"
+              className="p-1 rounded text-if-muted hover:text-indigo-400 transition-colors"
             >
               <Eye size={14} />
             </button>
@@ -184,13 +205,38 @@ const SOURCE_ICONS: Record<string, React.ReactNode> = {
   web:  <Globe    size={9} className="opacity-70" />,
 };
 
-function SourceBadge({ source }: { source: string }) {
+function SourceBadge({ source, webUrls }: { source: string; webUrls?: WebSource[] }) {
+  const [open, setOpen] = useState(false);
   const label  = AI_SOURCE_LABELS[source] ?? source;
   const colors = AI_SOURCE_COLORS[source] ?? "bg-zinc-900/60 border-zinc-700/50 text-zinc-300";
+  const hasUrls = source === "web" && (webUrls ?? []).length > 0;
+
   return (
-    <span className={`inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full border ${colors}`}>
-      {SOURCE_ICONS[source]}
-      {label}
+    <span className="relative">
+      <button
+        onClick={() => hasUrls && setOpen((v) => !v)}
+        className={`inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full border ${colors} ${hasUrls ? "cursor-pointer hover:brightness-125" : "cursor-default"} transition-all`}
+      >
+        {SOURCE_ICONS[source]}
+        {label}
+        {hasUrls && <ExternalLink size={7} className="opacity-60 ml-0.5" />}
+      </button>
+      {open && hasUrls && (
+        <div className="absolute bottom-full left-0 mb-1 z-20 w-64 rounded-lg bg-if-deep border border-if-border-mid shadow-xl p-2 space-y-1">
+          {(webUrls ?? []).map((u, i) => (
+            <a
+              key={i}
+              href={u.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start gap-1.5 rounded px-2 py-1 hover:bg-if-elevated group transition-colors"
+            >
+              <ExternalLink size={10} className="shrink-0 mt-0.5 text-emerald-400 group-hover:text-emerald-300" />
+              <span className="text-[10px] text-if-text-lo group-hover:text-if-text-dim leading-snug line-clamp-2">{u.title}</span>
+            </a>
+          ))}
+        </div>
+      )}
     </span>
   );
 }
@@ -215,23 +261,12 @@ function MessageBubble({
         </div>
       )}
       <div className="flex flex-col gap-1 max-w-[80%]">
+        {/* Tool pills appear before the response — they fire before LLM answers */}
         {toolCalls.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {toolCalls.map((tc, i) => (
               <ToolPill key={i} name={tc} />
             ))}
-          </div>
-        )}
-        {((message.sources ?? []).length > 0 || message.totalTokens != null) && (
-          <div className="flex flex-wrap gap-1">
-            {(message.sources ?? []).map((src) => (
-              <SourceBadge key={src} source={src} />
-            ))}
-            {message.totalTokens != null && (
-              <span className="inline-flex items-center text-[9px] px-1.5 py-0.5 rounded-full bg-zinc-900/40 border border-zinc-700/30 text-zinc-500">
-                {message.totalTokens.toLocaleString()} tokens
-              </span>
-            )}
           </div>
         )}
         <div
@@ -259,6 +294,20 @@ function MessageBubble({
           )}
         </div>
 
+        {/* Sources + token count — emitted after stream ends, shown below message */}
+        {((message.sources ?? []).length > 0 || message.totalTokens != null) && (
+          <div className="flex flex-wrap items-center gap-1 mt-0.5">
+            {(message.sources ?? []).map((src) => (
+              <SourceBadge key={src} source={src} webUrls={src === "web" ? message.webUrls : undefined} />
+            ))}
+            {message.totalTokens != null && (
+              <span className="inline-flex items-center text-[9px] px-1.5 py-0.5 rounded-full bg-zinc-900/40 border border-zinc-700/30 text-zinc-500">
+                {message.totalTokens.toLocaleString()} tokens
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Feedback buttons — assistant only */}
         {onRate && message.content && (
           <div className="flex gap-1 mt-1">
@@ -268,7 +317,7 @@ function MessageBubble({
               title="Bonne réponse"
               className="p-1 rounded transition-colors"
               style={{
-                color: rating === "up" ? "#4ade80" : "#3d4170",
+                color: rating === "up" ? "#4ade80" : "var(--color-if-border-hi)",
                 background: rating === "up" ? "rgba(74,222,128,0.1)" : "transparent",
               }}
             >
@@ -280,7 +329,7 @@ function MessageBubble({
               title="Mauvaise réponse"
               className="p-1 rounded transition-colors"
               style={{
-                color: rating === "down" ? "#f87171" : "#3d4170",
+                color: rating === "down" ? "#f87171" : "var(--color-if-border-hi)",
                 background: rating === "down" ? "rgba(248,113,113,0.1)" : "transparent",
               }}
             >

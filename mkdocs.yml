@@ -1,8 +1,8 @@
-site_name: FusionDex-IA
+site_name: InfiniDex-IA
 site_description: Pokédex intelligent pour Pokémon Infinite Fusion — documentation complète
-site_url: https://benjsant.github.io/FusionDex-IA/
-repo_name: benjsant/FusionDex-IA
-repo_url: https://github.com/benjsant/FusionDex-IA
+site_url: https://benjsant.github.io/InfiniDex-IA/
+repo_name: benjsant/InfiniDex-IA
+repo_url: https://github.com/benjsant/InfiniDex-IA
 edit_uri: edit/main/docs/
 docs_dir: docs
 
@@ -48,6 +48,8 @@ nav:
   - ETL: etl.md
   - API backend: api.md
   - Frontend: frontend.md
+  - IA agentique: ia.md
+  - Captures d'écran: screenshots.md
   - Règles de fusion: fusion-rules.md
   - Développement: development.md
   - Référence code:
@@ -64,6 +66,7 @@ nav:
       - Notes Claude: archive/claude.md
       - Fiche projet: archive/fiche-projet.md
       - Post LinkedIn 2026-04-20: archive/linkedin-2026-04-20.md
+      - Plan captures (fait): archive/screenshots-todo.md
 
 markdown_extensions:
   - admonition

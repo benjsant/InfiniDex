@@ -1,8 +1,10 @@
-"""FusionDex API — FastAPI entry point."""
+"""InfiniDex API — FastAPI entry point."""
 
+import asyncio
 import logging
 import os
 import time
+from contextlib import asynccontextmanager
 from secrets import compare_digest
 
 from fastapi import FastAPI, Request
@@ -27,18 +29,10 @@ from backend.routes import (
     type_route,
 )
 
+logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
 _is_prod = os.getenv("FUSIONDEX_ENV") == "production"
-
-app = FastAPI(
-    title="FusionDex API",
-    description="Pokédex API for Pokémon Infinite Fusion — EN/FR",
-    version="0.3.0",
-    docs_url=None if _is_prod else "/docs",
-    redoc_url=None if _is_prod else "/redoc",
-    openapi_url=None if _is_prod else "/openapi.json",
-)
 
 
 class RequestLogMiddleware(BaseHTTPMiddleware):
@@ -75,7 +69,7 @@ class StaticCacheMiddleware(BaseHTTPMiddleware):
         "default-src 'self'; "
         "script-src 'self' 'unsafe-inline'; "
         "style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data: https://raw.githubusercontent.com https://projectpokemon.org; "
+        "img-src 'self' https://raw.githubusercontent.com https://projectpokemon.org; "
         "font-src 'self'; "
         "connect-src 'self'; "
         "frame-ancestors 'none';"
@@ -97,20 +91,27 @@ class StaticCacheMiddleware(BaseHTTPMiddleware):
         return response
 
 
-class SearchRateLimitMiddleware(BaseHTTPMiddleware):
-    """Sliding-window rate limiter for GET /*/search endpoints, keyed by IP.
+class SlidingWindowRateLimitMiddleware(BaseHTTPMiddleware):
+    """Generic sliding-window rate limiter keyed by client IP.
 
-    Limit is read from RATE_LIMIT_SEARCH_RPM env var (requests per minute).
-    Set to 0 to disable. Uses the same IP resolution logic as AiRateLimitMiddleware.
+    Parameters
+    ----------
+    rpm:
+        Maximum requests per minute per IP. 0 = disabled.
+    trusted_proxy:
+        If True, read the client IP from the leftmost X-Forwarded-For value
+        (set TRUSTED_PROXY=1 when behind a reverse proxy).  Otherwise use
+        request.client.host directly to prevent header spoofing.
+    match:
+        Callable ``(method, path) -> bool`` — return True when this request
+        should be rate-limited.  Called only when rpm > 0.
     """
 
-    _SEARCH_SUFFIX = "/search"
-    _RANDOM_PATHS  = {"/fusion/random"}
-
-    def __init__(self, app, rpm: int, trusted_proxy: bool) -> None:
+    def __init__(self, app, rpm: int, trusted_proxy: bool, match) -> None:
         super().__init__(app)
         self._rpm = rpm
         self._trusted_proxy = trusted_proxy
+        self._match = match
         self._window: dict[str, list[float]] = {}
         self._request_count = 0
 
@@ -122,14 +123,8 @@ class SearchRateLimitMiddleware(BaseHTTPMiddleware):
                 return ip
         return (request.client.host or "unknown") if request.client else "unknown"
 
-    def _should_limit(self, request: Request) -> bool:
-        if self._rpm <= 0 or request.method != "GET":
-            return False
-        path = request.url.path
-        return path.endswith(self._SEARCH_SUFFIX) or path in self._RANDOM_PATHS
-
     async def dispatch(self, request: Request, call_next):
-        if not self._should_limit(request):
+        if self._rpm <= 0 or not self._match(request.method, request.url.path):
             return await call_next(request)
 
         ip = self._get_ip(request)
@@ -154,60 +149,12 @@ class SearchRateLimitMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 
-class AiRateLimitMiddleware(BaseHTTPMiddleware):
-    """Sliding-window rate limiter for POST /ai/ask, keyed by client IP.
+def _match_search(method: str, path: str) -> bool:
+    return method == "GET" and (path.endswith("/search") or path == "/fusion/random")
 
-    Limit is read from RATE_LIMIT_AI_RPM env var (requests per minute).
-    Set to 0 to disable.
 
-    IP resolution:
-    - If TRUSTED_PROXY=1 (set when behind a reverse proxy), the leftmost IP
-      from X-Forwarded-For is used (after stripping all values after the first).
-    - Otherwise, request.client.host is used directly (direct connection).
-    This prevents clients from spoofing their IP by injecting X-Forwarded-For
-    headers when there is no trusted proxy in front.
-    """
-
-    def __init__(self, app, rpm: int, trusted_proxy: bool) -> None:
-        super().__init__(app)
-        self._rpm = rpm
-        self._trusted_proxy = trusted_proxy
-        self._window: dict[str, list[float]] = {}
-        self._request_count = 0
-
-    def _get_ip(self, request: Request) -> str:
-        if self._trusted_proxy:
-            fwd = request.headers.get("x-forwarded-for", "")
-            ip = fwd.split(",")[0].strip()
-            if ip:
-                return ip
-        return (request.client.host or "unknown") if request.client else "unknown"
-
-    async def dispatch(self, request: Request, call_next):
-        if self._rpm <= 0 or request.url.path != "/ai/ask" or request.method != "POST":
-            return await call_next(request)
-
-        ip = self._get_ip(request)
-        now = time.monotonic()
-        cutoff = now - 60.0
-
-        hits = [t for t in self._window.get(ip, []) if t > cutoff]
-        if len(hits) >= self._rpm:
-            from fastapi.responses import JSONResponse
-            return JSONResponse(
-                {"detail": "Trop de requêtes. Réessaie dans une minute."},
-                status_code=429,
-                headers={"Retry-After": "60"},
-            )
-        hits.append(now)
-        self._window[ip] = hits
-
-        # Purge stale IP entries every 500 requests to prevent unbounded growth.
-        self._request_count += 1
-        if self._request_count >= 500:
-            self._request_count = 0
-            self._window = {k: v for k, v in self._window.items() if v and v[-1] > cutoff}
-        return await call_next(request)
+def _match_ai(method: str, path: str) -> bool:
+    return method == "POST" and path == "/ai/ask"
 
 
 class InternalKeyMiddleware(BaseHTTPMiddleware):
@@ -247,12 +194,56 @@ _search_rpm = int(os.getenv("RATE_LIMIT_SEARCH_RPM", "0"))
 _internal_key  = os.getenv("INTERNAL_API_KEY", "")
 _trusted_proxy = os.getenv("TRUSTED_PROXY", "0") == "1"
 
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    """Application lifespan — runs startup tasks before yielding to serve requests."""
+    from backend.db.session import SessionLocal
+    from backend.services.fusion_service import load_pokemon_with_types
+
+    def _warm() -> int:
+        db = SessionLocal()
+        try:
+            from backend.db.models import Pokemon
+            ids = [row[0] for row in db.query(Pokemon.id).all()]
+            for pid in ids:
+                load_pokemon_with_types(db, pid)
+            return len(ids)
+        finally:
+            db.close()
+
+    loop = asyncio.get_running_loop()
+    count = await loop.run_in_executor(None, _warm)
+    LOGGER.info("cache_warmup count=%d", count)
+    yield
+
+
+app = FastAPI(
+    title="InfiniDex API",
+    description="Pokédex API for Pokémon Infinite Fusion — EN/FR",
+    version="0.3.0",
+    lifespan=lifespan,
+    docs_url=None if _is_prod else "/docs",
+    redoc_url=None if _is_prod else "/redoc",
+    openapi_url=None if _is_prod else "/openapi.json",
+)
+
 app.add_middleware(RequestLogMiddleware)
 app.add_middleware(StaticCacheMiddleware)
 if _search_rpm > 0:
-    app.add_middleware(SearchRateLimitMiddleware, rpm=_search_rpm, trusted_proxy=_trusted_proxy)
+    app.add_middleware(
+        SlidingWindowRateLimitMiddleware,
+        rpm=_search_rpm,
+        trusted_proxy=_trusted_proxy,
+        match=_match_search,
+    )
 if _ai_rpm > 0:
-    app.add_middleware(AiRateLimitMiddleware, rpm=_ai_rpm, trusted_proxy=_trusted_proxy)
+    app.add_middleware(
+        SlidingWindowRateLimitMiddleware,
+        rpm=_ai_rpm,
+        trusted_proxy=_trusted_proxy,
+        match=_match_ai,
+    )
 if _internal_key:
     app.add_middleware(InternalKeyMiddleware, key=_internal_key)
 app.add_middleware(
@@ -272,6 +263,7 @@ def healthcheck():
 
 app.include_router(pokemon_route.router)
 app.include_router(move_route.router)
+app.include_router(move_route.tms_router)
 app.include_router(ability_route.router)
 app.include_router(type_route.router)
 app.include_router(fusion_route.router)

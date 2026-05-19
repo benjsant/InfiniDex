@@ -21,7 +21,7 @@ from backend.db.models.creator import Creator
 from backend.db.models.fusion_sprite import FusionSprite, FusionSpriteCreator
 from backend.db.models.move_expert_move import MoveExpertMove
 from backend.db.models.move_tutor import MoveTutor
-from backend.db.models.item import Item
+from backend.db.models.item import Item, ItemLocation
 
 __all__ = [
     "Generation",
@@ -48,4 +48,5 @@ __all__ = [
     "MoveExpertMove",
     "MoveTutor",
     "Item",
+    "ItemLocation",
 ]

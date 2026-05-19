@@ -21,7 +21,7 @@ router = APIRouter(prefix="/creators", tags=["Creators"])
 def get_creators(
     db: Session = Depends(get_db),
     limit: int | None = Query(None, ge=1, le=1000),
-    offset: int = Query(0, ge=0),
+    offset: int = Query(0, ge=0, le=100_000),
     q: str | None = Query(None, max_length=100, description="Filter by name (ilike)"),
 ):
     """List sprite artists, sorted by sprite count in descending order."""

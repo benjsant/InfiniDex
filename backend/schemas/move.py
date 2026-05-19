@@ -31,7 +31,7 @@ class TMLocationOut(BaseModel):
 class TMInfo(BaseModel):
     """TM information for a move (if this move is a TM)."""
     number: int                      # 1 = TM01, 121 = TM121
-    location_summary: str | None     # human-readable text summary ready to display
+    location_summary: str | None     # derived from tm_location rows — never stored
     locations: list[TMLocationOut]   # structured locations (0..N)
 
     model_config = {"from_attributes": True}
@@ -57,6 +57,23 @@ class PokemonMoveOut(BaseModel):
     method: str         # level_up | tm | tutor | breeding | special
     level: int | None   # only for level_up
     source: str         # base | infinite_fusion
+
+    model_config = {"from_attributes": True}
+
+
+class TMListItem(BaseModel):
+    """A TM with its move info and obtention locations."""
+    number: int
+    move_id: int
+    name_en: str
+    name_fr: str | None
+    type: TypeOut
+    category: str
+    power: int | None
+    accuracy: int | None
+    pp: int
+    location_summary: str | None
+    locations: list[TMLocationOut]
 
     model_config = {"from_attributes": True}
 

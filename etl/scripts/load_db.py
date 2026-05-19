@@ -170,9 +170,9 @@ def load_tms(conn, tms: list[dict], move_map: dict) -> None:
                 LOGGER.warning("TM%02d: move '%s' not found", tm["number"], tm["move_name"])
                 continue
             cur.execute(
-                "INSERT INTO tm (number, move_id, location) VALUES (%s, %s, %s) "
+                "INSERT INTO tm (number, move_id) VALUES (%s, %s) "
                 "ON CONFLICT (number) DO NOTHING",
-                (tm["number"], move_id, tm.get("location")),
+                (tm["number"], move_id),
             )
         conn.commit()
     LOGGER.info("Loaded %d TMs", len(tms))
@@ -248,12 +248,14 @@ def load_pokemon_abilities(conn, abilities: list[dict], ability_map: dict) -> No
     pokemon_name_to_id = load_id_map(conn, "pokemon")
 
     with conn.cursor() as cur:
+        # Slot state must persist across ALL abilities for a given Pokémon:
+        # the JSON is keyed by ability, so a Pokémon's two normal abilities
+        # land in separate `ab` iterations. First normal=1, second=2, hidden=3.
+        slot_tracker: dict[int, int] = {}
         for ab in abilities:
             ability_id = ability_map.get(ab["name_en"].lower())
             if not ability_id:
                 continue
-            # Track slot per Pokémon: first normal=1, second normal=2, hidden=3
-            slot_tracker: dict[int, int] = {}
 
             for poke in ab.get("pokemon", []):
                 poke_id = pokemon_name_to_id.get(poke["name"].lower())
@@ -306,7 +308,7 @@ def load_evolutions(conn, evolutions_base: list[dict]) -> None:
                            (pokemon_id, evolves_into_id, trigger_type, min_level,
                             item_name_en, if_override, if_notes)
                            VALUES (%s, %s, %s, %s, %s, TRUE, %s)
-                           ON CONFLICT (pokemon_id, evolves_into_id, trigger_type, item_name_en)
+                           ON CONFLICT (pokemon_id, evolves_into_id, trigger_type, COALESCE(item_name_en, ''))
                            DO NOTHING""",
                         (from_id, into_id, cond["trigger"], cond["min_level"],
                          cond["item"], cond["notes"]),
@@ -318,7 +320,7 @@ def load_evolutions(conn, evolutions_base: list[dict]) -> None:
                     """INSERT INTO pokemon_evolution
                        (pokemon_id, evolves_into_id, trigger_type, min_level, item_name_en)
                        VALUES (%s, %s, %s, %s, %s)
-                       ON CONFLICT (pokemon_id, evolves_into_id, trigger_type, item_name_en)
+                       ON CONFLICT (pokemon_id, evolves_into_id, trigger_type, COALESCE(item_name_en, ''))
                        DO NOTHING""",
                     (from_id, into_id, trigger, evo.get("min_level"), evo.get("item")),
                 )

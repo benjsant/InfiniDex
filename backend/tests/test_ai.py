@@ -9,6 +9,16 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.services import ai_service, llm_providers
+from backend.services.llm_providers import select_provider
+
+
+@pytest.fixture(autouse=True)
+def clear_provider_cache():
+    """select_provider() is @functools.cache — clear before each test so
+    monkeypatch env-var changes are visible to the function."""
+    select_provider.cache_clear()
+    yield
+    select_provider.cache_clear()
 
 
 # ─── SSE helpers ─────────────────────────────────────────────────────────────
@@ -316,7 +326,7 @@ def test_ai_system_prompt_is_injected(client: TestClient, fake_client_factory) -
 
     msgs = fake.chat.completions.received_calls[0]["messages"]
     assert msgs[0]["role"] == "system"
-    assert "FusionDex AI" in msgs[0]["content"]
+    assert "InfiniDex AI" in msgs[0]["content"]
     assert "Je n'ai pas trouvé" in msgs[0]["content"]
 
 

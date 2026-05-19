@@ -7,6 +7,7 @@ class TripleFusionComponentOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     position: int
     pokemon_id: int
+    national_id: int | None
     name_en: str
     name_fr: str | None
 

@@ -44,7 +44,7 @@ export function SearchBar({
       value={value}
       onChange={(e) => setValue(e.target.value)}
       placeholder={placeholder}
-      className={`w-full px-4 py-2 rounded-lg bg-[rgb(30,30,42)] border border-[rgb(50,50,70)] text-[rgb(220,220,255)] placeholder:text-[rgb(100,100,120)] focus:outline-none focus:border-indigo-500 transition-colors ${className ?? ""}`}
+      className={`w-full px-4 py-2 rounded-lg bg-if-input border border-if-border-mid text-if-text-hi placeholder:text-if-muted focus:outline-none focus:border-indigo-500 transition-colors ${className ?? ""}`}
     />
   );
 }

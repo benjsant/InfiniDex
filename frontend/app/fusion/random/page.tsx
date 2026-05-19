@@ -7,7 +7,7 @@ export default function RandomFusionPage() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch("/api/fusion/random")
+    fetch(`/api/fusion/random?_=${Date.now()}`)
       .then((r) => r.json())
       .then((data) => {
         if (data?.head_id && data?.body_id) {
@@ -23,7 +23,7 @@ export default function RandomFusionPage() {
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="text-center space-y-3">
         <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
-        <p className="text-sm text-[rgb(120,120,140)]">Fusion aléatoire en cours…</p>
+        <p className="text-sm text-if-text-xs">Fusion aléatoire en cours…</p>
       </div>
     </div>
   );

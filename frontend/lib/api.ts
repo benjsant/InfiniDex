@@ -15,7 +15,10 @@ import type {
   AbilityDetail,
   FusionResult,
   FusionAbilityOut,
+  FusionFullOut,
+  FusionFeaturedItem,
   FusionInvolvingOut,
+  FusionTopItem,
   SpriteOut,
   FusionMoveOut,
   FusionExpertMoveOut,
@@ -31,6 +34,7 @@ import type {
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     headers: { "Content-Type": "application/json" },
+    cache: "no-store",
     ...init,
   });
   if (!res.ok) {
@@ -39,7 +43,7 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
       const seconds = retryAfter ? parseInt(retryAfter, 10) : 60;
       throw Object.assign(new Error(`Trop de requêtes — réessayez dans ${seconds}s`), { status: 429, retryAfter: seconds });
     }
-    throw new Error(`API error ${res.status} — ${path}`);
+    throw Object.assign(new Error(`API error ${res.status} — ${path}`), { status: res.status });
   }
   try {
     return await res.json() as Promise<T>;
@@ -50,8 +54,20 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
 // ── Pokémon ──────────────────────────────────────────────────────────────────
 
+export type PokemonSortBy =
+  | "id" | "id_desc"
+  | "name_asc" | "name_desc"
+  | "bst_asc"  | "bst_desc"
+  | "hp_asc"         | "hp_desc"
+  | "attack_asc"     | "attack_desc"
+  | "defense_asc"    | "defense_desc"
+  | "sp_attack_asc"  | "sp_attack_desc"
+  | "sp_defense_asc" | "sp_defense_desc"
+  | "speed_asc"      | "speed_desc";
+
 export function getPokemonCount(params?: {
   type_id?: number;
+  type2_id?: number;
   gen?: number;
   include_hoenn?: boolean;
   min_bst?: number;
@@ -59,8 +75,9 @@ export function getPokemonCount(params?: {
   ability_id?: number;
 }): Promise<number> {
   const sp = new URLSearchParams();
-  if (params?.type_id)   sp.set("type_id", String(params.type_id));
-  if (params?.gen)       sp.set("generation_id", String(params.gen));
+  if (params?.type_id)    sp.set("type_id",  String(params.type_id));
+  if (params?.type2_id)   sp.set("type2_id", String(params.type2_id));
+  if (params?.gen)        sp.set("generation_id", String(params.gen));
   if (params?.include_hoenn === false) sp.set("include_hoenn", "false");
   if (params?.min_bst !== undefined) sp.set("min_bst", String(params.min_bst));
   if (params?.max_bst !== undefined) sp.set("max_bst", String(params.max_bst));
@@ -71,18 +88,20 @@ export function getPokemonCount(params?: {
 
 export function getPokemonList(params?: {
   type_id?: number;
+  type2_id?: number;
   gen?: number;
   page?: number;
   page_size?: number;
   include_hoenn?: boolean;
   min_bst?: number;
   max_bst?: number;
-  sort_by?: "id" | "bst_asc" | "bst_desc";
+  sort_by?: PokemonSortBy;
   ability_id?: number;
 }): Promise<PokemonListItem[]> {
   const sp = new URLSearchParams();
-  if (params?.type_id)   sp.set("type_id", String(params.type_id));
-  if (params?.gen)       sp.set("generation_id", String(params.gen));
+  if (params?.type_id)    sp.set("type_id",  String(params.type_id));
+  if (params?.type2_id)   sp.set("type2_id", String(params.type2_id));
+  if (params?.gen)        sp.set("generation_id", String(params.gen));
   if (params?.include_hoenn === false) sp.set("include_hoenn", "false");
   if (params?.min_bst !== undefined) sp.set("min_bst", String(params.min_bst));
   if (params?.max_bst !== undefined) sp.set("max_bst", String(params.max_bst));
@@ -95,6 +114,16 @@ export function getPokemonList(params?: {
   }
   const qs = sp.toString() ? `?${sp}` : "";
   return apiFetch<PokemonListItem[]>(`/pokemon/${qs}`);
+}
+
+export function getPokemonIdMap(): Promise<Map<number, number>> {
+  return apiFetch<PokemonListItem[]>("/pokemon/?limit=600").then((list) => {
+    const map = new Map<number, number>();
+    for (const p of list) {
+      if (p.national_id != null) map.set(p.id, p.national_id);
+    }
+    return map;
+  });
 }
 
 export function searchPokemon(q: string): Promise<PokemonListItem[]> {
@@ -127,6 +156,10 @@ export function getFusion(headId: number, bodyId: number): Promise<FusionResult>
   return apiFetch<FusionResult>(`/fusion/${headId}/${bodyId}`);
 }
 
+export function getFusionFull(headId: number, bodyId: number): Promise<FusionFullOut> {
+  return apiFetch<FusionFullOut>(`/fusion/${headId}/${bodyId}/full`);
+}
+
 export function getFusionMoves(headId: number, bodyId: number): Promise<FusionMoveOut[]> {
   return apiFetch<FusionMoveOut[]>(`/fusion/${headId}/${bodyId}/moves`);
 }
@@ -141,6 +174,14 @@ export function getFusionAbilities(headId: number, bodyId: number): Promise<Fusi
 
 export function getFusionsInvolving(pokemonId: number, limit = 24): Promise<FusionInvolvingOut[]> {
   return apiFetch<FusionInvolvingOut[]>(`/fusions/involving/${pokemonId}?limit=${limit}`);
+}
+
+export function getFeaturedFusions(limit = 50): Promise<FusionFeaturedItem[]> {
+  return apiFetch<FusionFeaturedItem[]>(`/fusions/featured?limit=${limit}`);
+}
+
+export function getTopFusionsForPokemon(pokemonId: number, limit = 5): Promise<FusionTopItem[]> {
+  return apiFetch<FusionTopItem[]>(`/fusions/top-by-pokemon/${pokemonId}?limit=${limit}`);
 }
 
 export function getSprites(headId: number, bodyId: number): Promise<SpriteOut[]> {

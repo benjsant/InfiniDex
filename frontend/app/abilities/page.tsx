@@ -11,9 +11,10 @@ import { normalize } from "@/lib/utils";
 const PAGE_SIZE = 40;
 
 export default function AbilitiesPage() {
-  const { data: abilities = [], isLoading } = useQuery({
+  const { data: abilities = [], isLoading, isError } = useQuery({
     queryKey: ["abilities"],
     queryFn: getAbilities,
+    staleTime: Infinity,
   });
 
   const [q, setQ] = useState("");
@@ -63,6 +64,8 @@ export default function AbilitiesPage() {
                 <div key={i} className="h-10 bg-if-elevated rounded" />
               ))}
             </div>
+          ) : isError ? (
+            <p className="p-6 text-sm text-center" style={{ color: "var(--color-if-muted)" }}>Impossible de charger les talents.</p>
           ) : (
             paginated.map((a) => (
               <button

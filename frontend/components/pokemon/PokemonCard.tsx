@@ -29,7 +29,7 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
         (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px ${color1}30`;
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = "#1e2240";
+        (e.currentTarget as HTMLElement).style.borderColor = "var(--color-if-border)";
         (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.4)";
       }}
     >
@@ -59,14 +59,14 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
       </div>
 
       <div className="text-center">
-        <p className="text-[10px] font-mono" style={{ color: "#6b7199" }}>
+        <p className="text-[10px] font-mono" style={{ color: "var(--color-if-muted)" }}>
           #{String(pokemon.id).padStart(3, "0")}
         </p>
-        <p className="text-sm font-semibold text-[rgb(225,228,255)] group-hover:text-white transition-colors leading-tight">
+        <p className="text-sm font-semibold text-if-text group-hover:text-white transition-colors leading-tight">
           {pokemon.name_fr ?? pokemon.name_en}
         </p>
         {pokemon.name_fr && (
-          <p className="text-[10px]" style={{ color: "#6b7199" }}>{pokemon.name_en}</p>
+          <p className="text-[10px]" style={{ color: "var(--color-if-muted)" }}>{pokemon.name_en}</p>
         )}
       </div>
 
@@ -75,7 +75,7 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
         {t2 && <TypeBadge typeName={t2.name_en} label={t2.name_fr ?? t2.name_en} size="sm" />}
       </div>
 
-      <p className="text-[10px] font-mono" style={{ color: "#4a4f75" }}>
+      <p className="text-[10px] font-mono" style={{ color: "var(--color-if-text-lo)" }}>
         BST {pokemon.bst}
       </p>
     </Link>

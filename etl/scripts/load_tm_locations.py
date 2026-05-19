@@ -1,13 +1,14 @@
-"""Script ETL — nettoie `tm.location` et peuple `tm_location` depuis le wiki.
+"""Script ETL — peuple `tm_location` depuis le wiki IF.
 
 Source : https://infinitefusion.fandom.com/wiki/List_of_TMs (section TMs).
 
 Ce script :
   1. Parse la table wiki (122 lignes, TM00 à TM121)
   2. Résout chaque location vers `location.id` (avec alias + création si absent)
-  3. Met à jour `tm.location` avec un résumé texte propre (remplace les
-     valeurs cassées type "[[Celadon City" issues du vieux parseur)
-  4. Repopule `tm_location` (TRUNCATE + INSERT)
+  3. Repopule `tm_location` (TRUNCATE + INSERT)
+
+Le résumé texte `location_summary` n'est plus stocké en base — il est calculé
+à la volée par le backend depuis les lignes `tm_location`.
 
 Idempotent.
 """
@@ -242,12 +243,6 @@ def run(conn) -> None:
             unresolved_tm.append(entry.number)
             continue
 
-        # Met à jour le résumé texte (tm.location) avec la version propre
-        cur.execute(
-            "UPDATE tm SET location = %s WHERE id = %s",
-            (entry.summary or None, tm_id),
-        )
-
         for display_name, context in entry.locations:
             canonical = LOCATION_ALIASES.get(display_name, display_name)
             location_id = loc_idx.get(canonical)
@@ -281,9 +276,8 @@ def run(conn) -> None:
     if unresolved_loc:
         LOGGER.warning("Locations non résolues : %s", sorted(unresolved_loc))
 
-    LOGGER.info("Terminé — %d lignes insérées dans tm_location, "
-                "%d TMs mis à jour",
-                inserted_rows, len(entries) - len(unresolved_tm))
+    LOGGER.info("Terminé — %d lignes insérées dans tm_location",
+                inserted_rows)
 
 
 def main() -> None:

@@ -1,4 +1,4 @@
-# Plan vidéo — FusionDex-IA
+# Plan vidéo — InfiniDex-IA
 
 Durée cible : **2 min 30** · Format : screen recording 1440×900 · Pas de voix-off obligatoire
 
@@ -12,7 +12,7 @@ Durée cible : **2 min 30** · Format : screen recording 1440×900 · Pas de voi
 - [ ] Zoom navigateur à **110%** (Ctrl + +) — les textes seront lisibles une fois compressés
 - [ ] Masquer la barre de favoris (Ctrl+Shift+B)
 - [ ] Mode "Ne pas déranger" activé (désactiver les notifications)
-- [ ] Fermer tous les onglets inutiles — seul onglet visible : FusionDex
+- [ ] Fermer tous les onglets inutiles — seul onglet visible : InfiniDex
 
 ### Pré-charger les pages (évite les temps de chargement à l'écran)
 Ouvrir ces onglets **avant** de lancer l'enregistrement :
@@ -124,12 +124,12 @@ Elle force l'agent à enchaîner `get_pokemon` → `get_fusion` → `search_move
 Afficher une slide simple (fond sombre `#090c1a`) avec :
 
 ```
-FusionDex-IA
+InfiniDex-IA
 
 FastAPI · PostgreSQL · Next.js 15 · DeepSeek
 
 572 Pokémon · 176 000 fusions · 9 outils IA
-Code open-source → github.com/benjsant/FusionDex-IA
+Code open-source → github.com/benjsant/InfiniDex-IA
 ```
 
 ---
@@ -193,7 +193,7 @@ Voilà ce que ça donne :
 
 Stack : FastAPI · PostgreSQL · Next.js 15 · DeepSeek
 
-Code open-source : github.com/benjsant/FusionDex-IA
+Code open-source : github.com/benjsant/InfiniDex-IA
 ```
 
 **Hashtags (en commentaire, pas dans le post) :**

@@ -1,4 +1,4 @@
-# Contributing to FusionDex-IA
+# Contributing to InfiniDex-IA
 
 Thanks for your interest in contributing. This guide covers local setup, conventions, and the PR process.
 
@@ -14,8 +14,8 @@ Thanks for your interest in contributing. This guide covers local setup, convent
 ## Local setup
 
 ```bash
-git clone https://github.com/benjsant/FusionDex-IA.git
-cd FusionDex-IA
+git clone https://github.com/benjsant/InfiniDex-IA.git
+cd InfiniDex-IA
 
 cp .env.example .env
 # Optional: add DEEPSEEK_API_KEY or OPENROUTER_API_KEY for AI features
@@ -58,20 +58,28 @@ npm run dev   # http://localhost:3000
 
 ## Running tests
 
-```bash
-# Backend (requires a populated test DB — see backend/tests/fixtures/)
-cd backend
-uv run pytest
+All tests run via Docker — never install pytest or Playwright locally.
 
-# Type-check frontend
-cd frontend
-npm run build
+**Backend (160 tests against a real Postgres):**
+```bash
+docker compose --profile test run --rm test-backend
+```
+
+**E2E Playwright (10 tests — requires the stack to be running):**
+```bash
+docker compose up -d          # start frontend + backend + db
+docker compose --profile e2e run --rm e2e
+```
+
+**Type-check frontend only:**
+```bash
+docker compose run --rm --no-deps frontend sh -c "npm run build"
 ```
 
 The CI runs two workflows:
 
 - `ci.yml` — lint + mypy + build on every push
-- `full-pytest.yml` — 53 backend tests against a real Postgres, triggered on PRs
+- `full-pytest.yml` — 160 backend tests against a real Postgres, triggered on PRs
 
 ## Commit conventions
 
@@ -103,21 +111,21 @@ Work from `main`. Open PRs against `main`.
 
 ## Pull request checklist
 
-- [ ] Tests pass locally (`uv run pytest`)
-- [ ] No new mypy errors (`uv run mypy backend/`)
-- [ ] Frontend builds without TypeScript errors
+- [ ] Backend tests pass (`docker compose --profile test run --rm test-backend`)
+- [ ] No new mypy errors (`docker compose run --rm --no-deps backend uv run mypy backend/`)
+- [ ] Frontend builds without TypeScript errors (`docker compose run --rm --no-deps frontend sh -c "npm run build"`)
 - [ ] New tools registered in `TOOLS` list and covered by a test
 - [ ] Prompt changes in `backend/prompts/system.md` reviewed for fail-closed behavior
 
 ## Project structure
 
 ```
-backend/        FastAPI + SQLAlchemy 2 + Pydantic (41 endpoints, 53 tests)
+backend/        FastAPI + SQLAlchemy 2 + Pydantic (49 endpoints, 160 tests)
 ├── routes/     API route handlers
 ├── services/   Business logic, AI agent, tools
 │   └── tools/  Agent tools (db_tools, wiki_tool, web_tool)
 ├── prompts/    LLM system prompt
-└── tests/      pytest suite (requires fixtures/)
+└── tests/      pytest suite (fixtures/ = dump SQL Postgres)
 
 frontend/       Next.js 15 App Router + TypeScript
 ├── app/        Pages and layouts
@@ -126,6 +134,7 @@ frontend/       Next.js 15 App Router + TypeScript
 └── lib/        Constants, API client, types
 
 etl/            Data pipeline (MediaWiki + PokeAPI → Postgres)
+e2e/            Playwright E2E tests (10 happy-path tests, Chromium)
 docker/         Dockerfiles + init_postgres.sql
 docs/           MkDocs documentation source
 ```
@@ -151,4 +160,4 @@ Adding a tool:
 
 ## Getting help
 
-Open a [GitHub issue](https://github.com/benjsant/FusionDex-IA/issues) for bugs or questions. The [docs](https://benjsant.github.io/FusionDex-IA/) cover architecture, API reference, and the full development guide.
+Open a [GitHub issue](https://github.com/benjsant/InfiniDex-IA/issues) for bugs or questions. The [docs](https://benjsant.github.io/InfiniDex-IA/) cover architecture, API reference, and the full development guide.

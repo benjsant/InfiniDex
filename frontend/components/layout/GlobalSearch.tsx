@@ -2,17 +2,21 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Search, X, BookOpen, Zap, Star } from "lucide-react";
-import { searchPokemon, searchMoves, searchAbilities } from "@/lib/api";
-import type { PokemonListItem, MoveListItem, AbilityListItem } from "@/types/api";
+import { Search, X, BookOpen, Zap, Star, Package, GitMerge } from "lucide-react";
+import { searchPokemon, searchMoves, searchAbilities, searchItems } from "@/lib/api";
+import type { PokemonListItem, MoveListItem, AbilityListItem, ItemOut } from "@/types/api";
+
+interface FusionMatch { headId: number; bodyId: number; headName: string; bodyName: string }
 
 interface Results {
   pokemon:   PokemonListItem[];
   moves:     MoveListItem[];
   abilities: AbilityListItem[];
+  items:     ItemOut[];
+  fusion:    FusionMatch | null;
 }
 
-const EMPTY: Results = { pokemon: [], moves: [], abilities: [] };
+const EMPTY: Results = { pokemon: [], moves: [], abilities: [], items: [], fusion: null };
 const MAX_PER_SECTION = 4;
 // Minimum query length before firing requests
 const MIN_Q = 2;
@@ -58,16 +62,41 @@ export function GlobalSearch() {
 
     setLoading(true);
     debounceRef.current = setTimeout(async () => {
-      const [pokemon, moves, abilities] = await Promise.allSettled([
-        searchPokemon(value),
-        searchMoves(value),
-        searchAbilities(value),
-      ]);
-      setResults({
-        pokemon:   pokemon.status   === "fulfilled" ? pokemon.value.slice(0, MAX_PER_SECTION)   : [],
-        moves:     moves.status     === "fulfilled" ? moves.value.slice(0, MAX_PER_SECTION)     : [],
-        abilities: abilities.status === "fulfilled" ? abilities.value.slice(0, MAX_PER_SECTION) : [],
-      });
+      const slashIdx = value.indexOf("/");
+      const isFusion = slashIdx > 0 && slashIdx < value.length - 1;
+
+      if (isFusion) {
+        // "Charizard/Blastoise" → resolve both and show direct fusion link
+        const headQ = value.slice(0, slashIdx).trim();
+        const bodyQ = value.slice(slashIdx + 1).trim();
+        const [headRes, bodyRes] = await Promise.allSettled([
+          searchPokemon(headQ),
+          searchPokemon(bodyQ),
+        ]);
+        const head = headRes.status === "fulfilled" ? headRes.value[0] : null;
+        const body = bodyRes.status === "fulfilled" ? bodyRes.value[0] : null;
+        setResults({
+          ...EMPTY,
+          fusion: head && body
+            ? { headId: head.id, bodyId: body.id, headName: head.name_fr ?? head.name_en, bodyName: body.name_fr ?? body.name_en }
+            : null,
+          pokemon: head ? [head] : [],
+        });
+      } else {
+        const [pokemon, moves, abilities, items] = await Promise.allSettled([
+          searchPokemon(value),
+          searchMoves(value),
+          searchAbilities(value),
+          searchItems(value),
+        ]);
+        setResults({
+          pokemon:   pokemon.status   === "fulfilled" ? pokemon.value.slice(0, MAX_PER_SECTION)   : [],
+          moves:     moves.status     === "fulfilled" ? moves.value.slice(0, MAX_PER_SECTION)     : [],
+          abilities: abilities.status === "fulfilled" ? abilities.value.slice(0, MAX_PER_SECTION) : [],
+          items:     items.status     === "fulfilled" ? items.value.slice(0, MAX_PER_SECTION)     : [],
+          fusion:    null,
+        });
+      }
       setLoading(false);
       setCursor(-1);
     }, 220);
@@ -80,9 +109,11 @@ export function GlobalSearch() {
 
   // ── Flat list of navigable items for keyboard nav ─────────────────────────
   const items: { href: string; label: string }[] = [
+    ...(results.fusion ? [{ href: `/fusion/${results.fusion.headId}/${results.fusion.bodyId}`, label: `${results.fusion.headName}/${results.fusion.bodyName}` }] : []),
     ...results.pokemon.map(  (p) => ({ href: `/pokedex/${p.id}`,    label: p.name_fr ?? p.name_en })),
     ...results.moves.map(    (m) => ({ href: `/moves/${m.id}`,      label: m.name_fr ?? m.name_en })),
     ...results.abilities.map((a) => ({ href: `/abilities/${a.id}`,  label: a.name_fr ?? a.name_en })),
+    ...results.items.map(    (it) => ({ href: `/items`,             label: it.name_fr ?? it.name_en })),
   ];
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -100,13 +131,15 @@ export function GlobalSearch() {
 
   const navigate = (href: string) => { router.push(href); setOpen(false); };
 
-  const hasResults = results.pokemon.length > 0 || results.moves.length > 0 || results.abilities.length > 0;
+  const hasResults = results.fusion != null || results.pokemon.length > 0 || results.moves.length > 0 || results.abilities.length > 0 || results.items.length > 0;
   const showEmpty  = q.trim().length >= MIN_Q && !loading && !hasResults;
 
   // Cursor index offsets per section
-  const pokemonOffset   = 0;
-  const movesOffset     = results.pokemon.length;
-  const abilitiesOffset = results.pokemon.length + results.moves.length;
+  const fusionOffset    = 0;
+  const pokemonOffset   = results.fusion ? 1 : 0;
+  const movesOffset     = pokemonOffset + results.pokemon.length;
+  const abilitiesOffset = movesOffset + results.moves.length;
+  const itemsOffset     = abilitiesOffset + results.abilities.length;
 
   return (
     <>
@@ -114,12 +147,13 @@ export function GlobalSearch() {
       <button
         onClick={() => setOpen(true)}
         className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors"
-        style={{ color: "#6b7199", background: "rgba(30,34,64,0.6)", border: "1px solid #1e2240" }}
+        style={{ color: "var(--color-if-muted)", background: "var(--color-if-elevated)", border: "1px solid var(--color-if-border-mid)" }}
+        aria-label="Recherche globale (Ctrl+K)"
         title="Recherche globale (Ctrl+K)"
       >
         <Search size={13} />
         <span className="hidden sm:inline text-xs">Rechercher…</span>
-        <kbd className="hidden lg:inline text-[10px] px-1 rounded opacity-50" style={{ background: "#111428", border: "1px solid #2d3260" }}>⌃K</kbd>
+        <kbd className="hidden lg:inline text-[10px] px-1 rounded opacity-50" style={{ background: "var(--color-if-card)", border: "1px solid var(--color-if-border-hi)" }}>⌃K</kbd>
       </button>
 
       {/* Overlay */}
@@ -131,31 +165,28 @@ export function GlobalSearch() {
         >
           <div
             className="w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl"
-            style={{ background: "#0d1020", border: "1px solid #2d3260" }}
+            style={{ background: "var(--color-if-bg)", border: "1px solid var(--color-if-border-hi)" }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Input */}
             <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid #1e2240" }}>
-              <Search size={16} style={{ color: "#6b7199", flexShrink: 0 }} />
+              <Search size={16} style={{ color: "var(--color-if-muted)", flexShrink: 0 }} />
               <input
                 ref={inputRef}
                 value={q}
                 onChange={handleChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Pokémon, capacité, talent…"
-                className="flex-1 bg-transparent text-[rgb(225,228,255)] placeholder:text-[#4a4f75] outline-none text-sm"
+                placeholder="Pokémon, capacité, talent… ou Tête/Corps"
+                className="flex-1 bg-transparent text-if-text placeholder:text-if-text-lo outline-none text-sm"
               />
-              {q && (
-                <button onClick={() => { setQ(""); setResults(EMPTY); inputRef.current?.focus(); }}>
-                  <X size={14} style={{ color: "#6b7199" }} />
-                </button>
-              )}
-              <kbd
-                className="text-[10px] px-1.5 py-0.5 rounded shrink-0"
-                style={{ background: "#111428", border: "1px solid #2d3260", color: "#4a4f75" }}
+              <button
+                onClick={() => q ? (setQ(""), setResults(EMPTY), inputRef.current?.focus()) : setOpen(false)}
+                aria-label={q ? "Effacer la recherche" : "Fermer"}
+                className="flex items-center justify-center w-6 h-6 rounded shrink-0 transition-colors hover:opacity-70"
+                style={{ background: "var(--color-if-surface)", border: "1px solid var(--color-if-border-hi)", color: "var(--color-if-text-lo)" }}
               >
-                Esc
-              </kbd>
+                <X size={12} />
+              </button>
             </div>
 
             {/* Results */}
@@ -167,11 +198,37 @@ export function GlobalSearch() {
               )}
 
               {!loading && showEmpty && (
-                <p className="text-center text-sm py-6" style={{ color: "#4a4f75" }}>Aucun résultat pour « {q} »</p>
+                <p className="text-center text-sm py-6" style={{ color: "var(--color-if-text-lo)" }}>Aucun résultat pour « {q} »</p>
               )}
 
               {!loading && !hasResults && q.trim().length < MIN_Q && (
-                <p className="text-center text-xs py-6" style={{ color: "#4a4f75" }}>Tape au moins 2 caractères…</p>
+                <p className="text-center text-xs py-6" style={{ color: "var(--color-if-text-lo)" }}>Tape au moins 2 caractères…</p>
+              )}
+
+              {!loading && results.fusion && (
+                <div className="mb-1">
+                  <div className="flex items-center gap-1.5 px-4 py-1.5">
+                    <GitMerge size={11} className="opacity-50" />
+                    <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--color-if-text-lo)" }}>Fusion directe</span>
+                  </div>
+                  <button
+                    onClick={() => navigate(`/fusion/${results.fusion!.headId}/${results.fusion!.bodyId}`)}
+                    className="w-full flex items-center justify-between gap-3 px-4 py-2 text-left transition-colors"
+                    style={{
+                      background: cursor === fusionOffset ? "rgba(99,102,241,0.12)" : undefined,
+                      borderLeft: cursor === fusionOffset ? "2px solid #6366f1" : "2px solid transparent",
+                    }}
+                  >
+                    <span className="text-sm" style={{ color: cursor === fusionOffset ? "#c7d2fe" : "#c8cbe8" }}>
+                      {results.fusion.headName}
+                      <span style={{ color: "var(--color-if-text-lo)" }}> / </span>
+                      {results.fusion.bodyName}
+                    </span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded shrink-0" style={{ background: "var(--color-if-card)", border: "1px solid var(--color-if-border-hi)", color: "var(--color-if-muted)" }}>
+                      Voir la fusion →
+                    </span>
+                  </button>
+                </div>
               )}
 
               {!loading && results.pokemon.length > 0 && (
@@ -220,6 +277,22 @@ export function GlobalSearch() {
                   onNavigate={navigate}
                 />
               )}
+
+              {!loading && results.items.length > 0 && (
+                <Section
+                  label="Objets"
+                  Icon={Package}
+                  items={results.items.map((it, i) => ({
+                    key: it.id,
+                    href: `/items`,
+                    primary: it.name_fr ?? it.name_en,
+                    secondary: it.name_fr ? it.name_en : undefined,
+                    badge: it.category,
+                    active: cursor === itemsOffset + i,
+                  }))}
+                  onNavigate={navigate}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -249,7 +322,7 @@ function Section({
     <div className="mb-1">
       <div className="flex items-center gap-1.5 px-4 py-1.5">
         <Icon size={11} className="opacity-50" />
-        <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#4a4f75" }}>{label}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--color-if-text-lo)" }}>{label}</span>
       </div>
       {items.map((item) => (
         <button
@@ -266,13 +339,13 @@ function Section({
               {item.primary}
             </span>
             {item.secondary && (
-              <span className="text-xs truncate hidden sm:inline" style={{ color: "#4a4f75" }}>
+              <span className="text-xs truncate hidden sm:inline" style={{ color: "var(--color-if-text-lo)" }}>
                 {item.secondary}
               </span>
             )}
           </div>
           {item.badge && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded shrink-0" style={{ background: "#111428", border: "1px solid #2d3260", color: "#6b7199" }}>
+            <span className="text-[10px] px-1.5 py-0.5 rounded shrink-0" style={{ background: "var(--color-if-card)", border: "1px solid var(--color-if-border-hi)", color: "var(--color-if-muted)" }}>
               {item.badge}
             </span>
           )}

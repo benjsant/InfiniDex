@@ -144,7 +144,8 @@ def load_triple_fusions(conn) -> None:
         cur.execute("DELETE FROM triple_fusion_type")
         cur.execute("DELETE FROM triple_fusion_component")
         cur.execute("DELETE FROM triple_fusion")
-        LOGGER.info("Wiped existing triple fusion rows")
+        cur.execute("ALTER SEQUENCE triple_fusion_id_seq RESTART WITH 1")
+        LOGGER.info("Wiped existing triple fusion rows (sequence reset to 1)")
 
         # ── Pass 1 : insert triple_fusion rows (no evolves_from yet) ─────────
         id_by_name: dict[str, int] = {}

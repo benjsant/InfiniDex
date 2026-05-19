@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CreatorBadge } from "@/components/fusion/CreatorModal";
+import { usePokemonIdMap } from "@/hooks/usePokemon";
 import type { SpriteOut } from "@/types/api";
 
 interface SpriteCarouselProps {
@@ -20,14 +21,16 @@ export function SpriteCarousel({
   size = 128,
   loading = false,
 }: SpriteCarouselProps) {
+  const idMap = usePokemonIdMap();
   const [idx, setIdx] = useState(0);
+  const [imgError, setImgError] = useState(false);
 
   const sprite = sprites[idx];
   const total  = sprites.length;
   const hasMany = total > 1;
 
-  const prev = () => setIdx((i) => (i - 1 + total) % total);
-  const next = () => setIdx((i) => (i + 1) % total);
+  const prev = () => { setIdx((i) => (i - 1 + total) % total); setImgError(false); };
+  const next = () => { setIdx((i) => (i + 1) % total); setImgError(false); };
 
   const src = sprite
     ? `/api/sprites/${headId}/${bodyId}/image?variant_id=${sprite.id}`
@@ -38,9 +41,9 @@ export function SpriteCarousel({
       <div className="flex flex-col items-center gap-2">
         <div
           className="rounded-xl animate-pulse shrink-0"
-          style={{ width: size, height: size, background: "#1e2240" }}
+          style={{ width: size, height: size, background: "var(--color-if-border)" }}
         />
-        <div className="h-2.5 w-16 rounded bg-[#1e2240] animate-pulse" />
+        <div className="h-2.5 w-16 rounded bg-if-border animate-pulse" />
       </div>
     );
   }
@@ -54,19 +57,42 @@ export function SpriteCarousel({
           style={{
             width: size,
             height: size,
-            background: "#090c1a",
-            border: "1px solid #1e2240",
+            background: "var(--color-if-bg)",
+            border: "1px solid var(--color-if-border)",
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            key={sprite?.id ?? "default"}
-            src={src}
-            alt={`Fusion ${headId}/${bodyId} variant ${idx + 1}`}
-            width={size}
-            height={size}
-            style={{ imageRendering: "pixelated", objectFit: "contain" }}
-          />
+          {imgError ? (
+            <div className="flex items-center justify-center gap-0.5" title="Aperçu de base — pas de sprite custom">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${idMap.get(headId) ?? headId}.png`}
+                alt={`Sprite Pokémon tête #${headId}`}
+                width={Math.round(size * 0.55)}
+                height={Math.round(size * 0.55)}
+                style={{ imageRendering: "pixelated", objectFit: "contain", opacity: 0.75 }}
+              />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${idMap.get(bodyId) ?? bodyId}.png`}
+                alt={`Sprite Pokémon corps #${bodyId}`}
+                width={Math.round(size * 0.55)}
+                height={Math.round(size * 0.55)}
+                style={{ imageRendering: "pixelated", objectFit: "contain", opacity: 0.75 }}
+              />
+            </div>
+          ) : (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              key={sprite?.id ?? "default"}
+              src={src}
+              alt={`Fusion ${headId}/${bodyId} variant ${idx + 1}`}
+              width={size}
+              height={size}
+              loading="lazy"
+              onError={() => setImgError(true)}
+              style={{ imageRendering: "pixelated", objectFit: "contain" }}
+            />
+          )}
         </div>
 
         {hasMany && (
@@ -74,7 +100,7 @@ export function SpriteCarousel({
             <button
               onClick={prev}
               className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-              style={{ background: "#1e2240", border: "1px solid #2d3260" }}
+              style={{ background: "var(--color-if-border)", border: "1px solid var(--color-if-border-hi)" }}
               aria-label="Sprite précédent"
             >
               <ChevronLeft size={12} className="text-indigo-300" />
@@ -82,7 +108,7 @@ export function SpriteCarousel({
             <button
               onClick={next}
               className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-              style={{ background: "#1e2240", border: "1px solid #2d3260" }}
+              style={{ background: "var(--color-if-border)", border: "1px solid var(--color-if-border-hi)" }}
               aria-label="Sprite suivant"
             >
               <ChevronRight size={12} className="text-indigo-300" />
@@ -108,13 +134,17 @@ export function SpriteCarousel({
 
       {/* Counter + creator */}
       {hasMany && (
-        <p className="text-[10px]" style={{ color: "#4a4f75" }}>
+        <p className="text-[10px]" style={{ color: "var(--color-if-text-lo)" }}>
           {idx + 1} / {total}
         </p>
       )}
 
-      {sprite && sprite.creators.length > 0 ? (
-        <p className="text-[10px] text-center leading-tight" style={{ color: "#6b7199" }}>
+      {imgError ? (
+        <p className="text-[10px] italic" style={{ color: "var(--color-if-border-hi)" }}>
+          Pas de sprite custom
+        </p>
+      ) : sprite && sprite.creators.length > 0 ? (
+        <p className="text-[10px] text-center leading-tight" style={{ color: "var(--color-if-muted)" }}>
           par{" "}
           {sprite.creators.map((c, i) => (
             <span key={c}>
@@ -124,7 +154,7 @@ export function SpriteCarousel({
           ))}
         </p>
       ) : (
-        <p className="text-[10px] italic" style={{ color: "#3a3f65" }}>
+        <p className="text-[10px] italic" style={{ color: "var(--color-if-border-hi)" }}>
           Auto-généré
         </p>
       )}

@@ -1,0 +1,48 @@
+name: fusiondex-etl
+prefect-version: "3.*"
+
+# Pas de build/push — le code est monté via volume dans le worker.
+build: null
+push: null
+
+pull:
+  - prefect.deployments.steps.set_working_directory:
+      directory: /app
+
+deployments:
+
+  # ── Surveillance Pokédex ─────────────────────────────────────────────────
+  # Détecte les nouveaux Pokémon sur le wiki IF et le repo GitHub du jeu.
+  # Alerte Discord si de nouveaux IDs apparaissent.
+  - name: pokedex-watcher-daily
+    entrypoint: etl/flows/pokedex_watcher.py:pokedex_watcher_flow
+    work_pool:
+      name: fusiondex-pool
+    schedules:
+      - cron: "0 6 * * *"
+        timezone: "Europe/Paris"
+        active: true
+
+  # ── Surveillance sprites ─────────────────────────────────────────────────
+  # Diff CUSTOM_SPRITES / BASE_SPRITES du repo pif-downloadables.
+  # Supprime les sprites retirés, lance extract_sprites.py si ajouts.
+  # Alerte Discord si la version du jeu (Settings.rb) a changé.
+  - name: sprite-watcher-daily
+    entrypoint: etl/flows/sprite_watcher.py:sprite_watcher_flow
+    work_pool:
+      name: fusiondex-pool
+    schedules:
+      - cron: "0 7 * * *"
+        timezone: "Europe/Paris"
+        active: true
+
+  # ── Pipeline ETL complet ─────────────────────────────────────────────────
+  # À déclencher manuellement après une mise à jour majeure du jeu.
+  # force=true pour ignorer le check "données déjà chargées".
+  - name: etl-pipeline-manual
+    entrypoint: etl/flows/etl_pipeline.py:etl_pipeline_flow
+    work_pool:
+      name: fusiondex-pool
+    parameters:
+      force: false
+    schedules: []

@@ -10,7 +10,7 @@ import asyncio
 import logging
 import time
 
-from duckduckgo_search import DDGS
+from ddgs import DDGS
 
 LOGGER = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ async def search_web(query: str) -> dict:
         LOGGER.debug("web in-flight hit for query=%r", query)
         return await _web_inflight[cache_key]
 
-    fut: asyncio.Future[dict] = asyncio.get_event_loop().create_future()
+    fut: asyncio.Future[dict] = asyncio.get_running_loop().create_future()
     _web_inflight[cache_key] = fut
     try:
         result = await _do_search_web(query, cache_key)

@@ -46,25 +46,25 @@ function OriginPill({ origin, headName, bodyName }: { origin: "head" | "body" | 
 
 function MoveRow({ mv, showLevel, headName, bodyName }: { mv: FusionMoveOut; showLevel: boolean; headName: string; bodyName: string }) {
   return (
-    <tr className="border-t hover:bg-[#1e2240] transition-colors" style={{ borderColor: "#1a1d35" }}>
+    <tr className="border-t hover:bg-if-border transition-colors" style={{ borderColor: "var(--color-if-border-lo)" }}>
       {showLevel && (
-        <td className="px-2 sm:px-3 py-2 font-mono text-xs w-8" style={{ color: "#6b7199" }}>
+        <td className="px-2 sm:px-3 py-2 font-mono text-xs w-8" style={{ color: "var(--color-if-muted)" }}>
           {mv.level ?? "—"}
         </td>
       )}
-      <td className="px-2 sm:px-3 py-2 font-medium" style={{ color: "#e1e4ff" }}>
+      <td className="px-2 sm:px-3 py-2 font-medium" style={{ color: "var(--color-if-text)" }}>
         <span>{mv.name_fr ?? mv.name_en}</span>
         {mv.name_fr && (
-          <span className="ml-1 text-xs hidden sm:inline" style={{ color: "#6b7199" }}>({mv.name_en})</span>
+          <span className="ml-1 text-xs hidden sm:inline" style={{ color: "var(--color-if-muted)" }}>({mv.name_en})</span>
         )}
       </td>
       <td className="px-2 sm:px-3 py-2">
         <TypeBadge typeName={mv.type.name_en} label={mv.type.name_fr ?? mv.type.name_en} size="sm" />
       </td>
-      <td className="hidden sm:table-cell px-3 py-2 text-xs" style={{ color: "#9aa0c0" }}>{formatCategory(mv.category)}</td>
-      <td className="px-2 sm:px-3 py-2 text-right font-mono text-xs" style={{ color: "#c8cbf0" }}>{formatPower(mv.power)}</td>
-      <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs" style={{ color: "#c8cbf0" }}>{formatAccuracy(mv.accuracy)}</td>
-      <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs" style={{ color: "#c8cbf0" }}>{mv.pp}</td>
+      <td className="hidden sm:table-cell px-3 py-2 text-xs" style={{ color: "var(--color-if-text-xs)" }}>{formatCategory(mv.category)}</td>
+      <td className="px-2 sm:px-3 py-2 text-right font-mono text-xs" style={{ color: "var(--color-if-text-dim)" }}>{formatPower(mv.power)}</td>
+      <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs" style={{ color: "var(--color-if-text-dim)" }}>{formatAccuracy(mv.accuracy)}</td>
+      <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs" style={{ color: "var(--color-if-text-dim)" }}>{mv.pp}</td>
       <td className="px-2 sm:px-3 py-2">
         <OriginPill origin={mv.origin} headName={headName} bodyName={bodyName} />
       </td>
@@ -80,21 +80,21 @@ function ExpertMoveRow({ mv }: { mv: FusionExpertMoveOut }) {
       : "Boon Island";
 
   return (
-    <tr className="border-t hover:bg-[#1e2240] transition-colors" style={{ borderColor: "#1a1d35" }}>
-      <td className="px-2 sm:px-3 py-2 font-medium" style={{ color: "#e1e4ff" }}>
+    <tr className="border-t hover:bg-if-border transition-colors" style={{ borderColor: "var(--color-if-border-lo)" }}>
+      <td className="px-2 sm:px-3 py-2 font-medium" style={{ color: "var(--color-if-text)" }}>
         <span>{mv.name_fr ?? mv.name_en}</span>
         {mv.name_fr && (
-          <span className="ml-1 text-xs hidden sm:inline" style={{ color: "#6b7199" }}>({mv.name_en})</span>
+          <span className="ml-1 text-xs hidden sm:inline" style={{ color: "var(--color-if-muted)" }}>({mv.name_en})</span>
         )}
       </td>
       <td className="px-2 sm:px-3 py-2">
         <TypeBadge typeName={mv.type.name_en} label={mv.type.name_fr ?? mv.type.name_en} size="sm" />
       </td>
-      <td className="hidden sm:table-cell px-3 py-2 text-xs" style={{ color: "#9aa0c0" }}>{formatCategory(mv.category)}</td>
-      <td className="px-2 sm:px-3 py-2 text-right font-mono text-xs" style={{ color: "#c8cbf0" }}>{formatPower(mv.power)}</td>
-      <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs" style={{ color: "#c8cbf0" }}>{formatAccuracy(mv.accuracy)}</td>
-      <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs" style={{ color: "#c8cbf0" }}>{mv.pp}</td>
-      <td className="hidden sm:table-cell px-3 py-2 text-xs" style={{ color: "#9aa0c0" }}>{locationLabel}</td>
+      <td className="hidden sm:table-cell px-3 py-2 text-xs" style={{ color: "var(--color-if-text-xs)" }}>{formatCategory(mv.category)}</td>
+      <td className="px-2 sm:px-3 py-2 text-right font-mono text-xs" style={{ color: "var(--color-if-text-dim)" }}>{formatPower(mv.power)}</td>
+      <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs" style={{ color: "var(--color-if-text-dim)" }}>{formatAccuracy(mv.accuracy)}</td>
+      <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs" style={{ color: "var(--color-if-text-dim)" }}>{mv.pp}</td>
+      <td className="hidden sm:table-cell px-3 py-2 text-xs" style={{ color: "var(--color-if-text-xs)" }}>{locationLabel}</td>
     </tr>
   );
 }
@@ -115,7 +115,7 @@ export function FusionMovesetTable({ moves, expertMoves, headName, bodyName }: F
   return (
     <div className="space-y-6">
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-3 text-xs" style={{ color: "#6b7199" }}>
+      <div className="flex flex-wrap items-center gap-3 text-xs" style={{ color: "var(--color-if-muted)" }}>
         <span className="font-semibold">Origine :</span>
         <span className="inline-flex items-center gap-1.5">
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-900/60 border border-indigo-700/40 text-indigo-300">H</span>
@@ -139,13 +139,13 @@ export function FusionMovesetTable({ moves, expertMoves, headName, bodyName }: F
 
         return (
           <div key={method}>
-            <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "#6b7199" }}>
+            <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--color-if-muted)" }}>
               {METHOD_LABELS[method]} ({group.length})
             </h3>
-            <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid #1e2240" }}>
+            <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid var(--color-if-border)" }}>
               <table className="w-full text-sm" style={{ minWidth: isLevelUp ? "380px" : "340px" }}>
                 <thead>
-                  <tr className="text-xs" style={{ background: "#0f1225", color: "#6b7199" }}>
+                  <tr className="text-xs" style={{ background: "var(--color-if-surface)", color: "var(--color-if-muted)" }}>
                     {isLevelUp && <th className="px-2 sm:px-3 py-2 text-left w-8">Niv.</th>}
                     <th className="px-2 sm:px-3 py-2 text-left">Capacité</th>
                     <th className="px-2 sm:px-3 py-2 text-left">Type</th>
@@ -169,13 +169,13 @@ export function FusionMovesetTable({ moves, expertMoves, headName, bodyName }: F
 
       {expertMoves.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "#6b7199" }}>
+          <h3 className="text-sm font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--color-if-muted)" }}>
             Donneur expert ({expertMoves.length})
           </h3>
-          <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid #1e2240" }}>
+          <div className="overflow-x-auto rounded-lg" style={{ border: "1px solid var(--color-if-border)" }}>
             <table className="w-full text-sm" style={{ minWidth: "340px" }}>
               <thead>
-                <tr className="text-xs" style={{ background: "#0f1225", color: "#6b7199" }}>
+                <tr className="text-xs" style={{ background: "var(--color-if-surface)", color: "var(--color-if-muted)" }}>
                   <th className="px-2 sm:px-3 py-2 text-left">Capacité</th>
                   <th className="px-2 sm:px-3 py-2 text-left">Type</th>
                   <th className="hidden sm:table-cell px-3 py-2 text-left">Cat.</th>

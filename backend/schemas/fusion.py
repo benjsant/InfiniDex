@@ -71,6 +71,17 @@ class FusionExpertMoveOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class FusionFullOut(BaseModel):
+    """Combined response for the /fusion/{h}/{b}/full endpoint.
+
+    Bundles stats, moveset, and expert moves into a single round-trip,
+    replacing the three separate calls made by the fusion result page.
+    """
+    fusion: FusionResult
+    moves: list[FusionMoveOut]
+    expert_moves: list[FusionExpertMoveOut]
+
+
 class FusionInvolvingOut(BaseModel):
     head_id: int
     body_id: int
@@ -80,3 +91,38 @@ class FusionInvolvingOut(BaseModel):
     partner_name_fr: str | None
 
     model_config = {"from_attributes": True}
+
+
+class FusionFeaturedItem(BaseModel):
+    """Fusion with a custom sprite — used by GET /fusions/featured."""
+    head_id: int
+    body_id: int
+    head_name_en: str
+    head_name_fr: str | None
+    body_name_en: str
+    body_name_fr: str | None
+    type1: TypeOut | None
+    type2: TypeOut | None
+    sprite_path: str
+
+
+class FusionTopItem(BaseModel):
+    """Top fusion by BST — kept for /fusions/top-by-pokemon only."""
+    rank: int
+    head_id: int
+    body_id: int
+    head_name_en: str
+    head_name_fr: str | None
+    body_name_en: str
+    body_name_fr: str | None
+    hp: int
+    attack: int
+    defense: int
+    sp_attack: int
+    sp_defense: int
+    speed: int
+    bst: int
+    type1: TypeOut | None
+    type2: TypeOut | None
+    sprite_path: str
+    role: str | None = None  # 'head' | 'body' — set when queried per-Pokémon

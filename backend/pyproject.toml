@@ -10,7 +10,7 @@ dependencies = [
     "pydantic>=2.11",
     "openai>=1.0",
     "httpx>=0.27",
-    "duckduckgo-search>=6.0",
+    "ddgs>=9.0",
 ]
 
 [dependency-groups]

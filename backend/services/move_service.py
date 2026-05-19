@@ -67,16 +67,14 @@ def search_moves(db: Session, name: str) -> list[Move]:
 
 
 def list_moves_by_type(db: Session, type_name: str) -> list[Move]:
-    """All moves for a given type (name_en or name_fr, case-insensitive)."""
-    from backend.db.models import Type  # avoid circular at module level
+    """All moves for a given type (name_en or name_fr, case-insensitive).
 
-    type_obj = (
-        db.query(Type)
-        .filter(
-            Type.name_en.ilike(f"{ilike_escape(type_name)}%", escape="\\") | Type.name_fr.ilike(f"{ilike_escape(type_name)}%", escape="\\")
-        )
-        .first()
-    )
+    Uses the same disambiguation as find_type_by_name: exact match and
+    non-triple-fusion types take priority over prefix matches.
+    """
+    from backend.services.type_service import find_type_by_name  # avoid circular
+
+    type_obj = find_type_by_name(db, type_name)
     if not type_obj:
         return []
 
@@ -108,6 +106,32 @@ def get_tm_for_move(db: Session, move_id: int) -> TM | None:
         db.query(TM)
         .options(joinedload(TM.locations).joinedload(TMLocation.location))
         .filter(TM.move_id == move_id)
+        .first()
+    )
+
+
+def list_all_tms(db: Session) -> list[TM]:
+    """All 121 TMs ordered by number, with move + locations eagerly loaded."""
+    return (
+        db.query(TM)
+        .options(
+            joinedload(TM.move).joinedload(Move.type),
+            joinedload(TM.locations).joinedload(TMLocation.location),
+        )
+        .order_by(TM.number)
+        .all()
+    )
+
+
+def get_tm_by_number(db: Session, number: int) -> TM | None:
+    """Single TM by its number (1–121), with move + locations eagerly loaded."""
+    return (
+        db.query(TM)
+        .options(
+            joinedload(TM.move).joinedload(Move.type),
+            joinedload(TM.locations).joinedload(TMLocation.location),
+        )
+        .filter(TM.number == number)
         .first()
     )
 

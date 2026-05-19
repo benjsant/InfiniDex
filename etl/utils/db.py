@@ -11,6 +11,17 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 
+def _require_password() -> str:
+    """Return POSTGRES_PASSWORD or raise — no insecure default fallback."""
+    pwd = os.getenv("POSTGRES_PASSWORD")
+    if not pwd:
+        raise RuntimeError(
+            "Missing required environment variable(s): POSTGRES_PASSWORD. "
+            "Set them in your .env file or Docker environment."
+        )
+    return pwd
+
+
 def get_pg_connection():
     """Raw psycopg2 connection — for bulk inserts."""
     return psycopg2.connect(
@@ -18,7 +29,7 @@ def get_pg_connection():
         port=int(os.getenv("POSTGRES_PORT", "5432")),
         dbname=os.getenv("POSTGRES_DB", "fusiondex_db"),
         user=os.getenv("POSTGRES_USER", "fusiondex_user"),
-        password=os.getenv("POSTGRES_PASSWORD", "changeme"),
+        password=_require_password(),
     )
 
 
@@ -46,7 +57,7 @@ def pg_connection() -> Iterator[psycopg2.extensions.connection]:
 def get_engine():
     url = (
         f"postgresql://{os.getenv('POSTGRES_USER', 'fusiondex_user')}"
-        f":{os.getenv('POSTGRES_PASSWORD', 'changeme')}"
+        f":{_require_password()}"
         f"@{os.getenv('POSTGRES_HOST', 'db')}"
         f":{os.getenv('POSTGRES_PORT', '5432')}"
         f"/{os.getenv('POSTGRES_DB', 'fusiondex_db')}"

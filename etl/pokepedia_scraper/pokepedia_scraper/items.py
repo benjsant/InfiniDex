@@ -1,4 +1,4 @@
-"""Scrapy items for FusionDex Pokepedia moveset scraper."""
+"""Scrapy items for InfiniDex Pokepedia moveset scraper."""
 
 import scrapy
 

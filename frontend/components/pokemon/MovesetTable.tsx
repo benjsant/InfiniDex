@@ -87,7 +87,6 @@ export function MovesetTable({ moves }: MovesetTableProps) {
                     <th className="px-2 sm:px-3 py-2 text-right">Puiss.</th>
                     <th className="hidden sm:table-cell px-3 py-2 text-right">Préc.</th>
                     <th className="hidden sm:table-cell px-3 py-2 text-right">PP</th>
-                    <th className="hidden md:table-cell px-3 py-2 text-left">Source</th>
                     <th className="px-2 py-2 w-8" />
                   </tr>
                 </thead>
@@ -128,18 +127,6 @@ export function MovesetTable({ moves }: MovesetTableProps) {
                           </td>
                           <td className="hidden sm:table-cell px-3 py-2 text-right font-mono text-xs" style={{ color: "var(--color-if-text-dim)" }}>
                             {mv.pp ?? "—"}
-                          </td>
-                          <td className="hidden md:table-cell px-3 py-2">
-                            <span
-                              className="text-xs px-1.5 py-0.5 rounded"
-                              style={
-                                mv.source === "infinite_fusion"
-                                  ? { background: "rgba(232,184,75,0.12)", color: "var(--color-if-accent)", border: "1px solid rgba(232,184,75,0.3)" }
-                                  : { background: "var(--color-if-border)", color: "var(--color-if-muted)" }
-                              }
-                            >
-                              {mv.source === "infinite_fusion" ? "IF" : "Base"}
-                            </span>
                           </td>
                           <td className="px-2 py-2 text-center">
                             <button

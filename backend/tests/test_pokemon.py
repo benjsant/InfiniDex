@@ -100,7 +100,23 @@ def test_weaknesses_endpoint(client: TestClient) -> None:
 def test_locations_endpoint_structure(client: TestClient) -> None:
     r = client.get("/pokemon/1/locations")
     assert r.status_code == 200
-    assert isinstance(r.json(), list)
+    locs = r.json()
+    assert isinstance(locs, list)
+    # Bulbasaur is a gift in Pallet Town — fixture confirms this
+    assert any(loc["method"] == "gift" for loc in locs)
+    for loc in locs:
+        assert "location_name" in loc
+        assert "method" in loc
+
+
+def test_locations_endpoint_gift_starter(client: TestClient) -> None:
+    """Bulbasaur (#1), Charmander (#4), Squirtle (#7) are gift starters in Pallet Town."""
+    for pid in [1, 4, 7]:
+        r = client.get(f"/pokemon/{pid}/locations")
+        assert r.status_code == 200
+        locs = r.json()
+        gifts = [l for l in locs if l["method"] == "gift"]
+        assert gifts, f"Pokemon {pid} should have at least one gift location"
 
 
 def test_weaknesses_include_immunities(client: TestClient) -> None:

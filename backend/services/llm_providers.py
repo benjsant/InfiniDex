@@ -12,6 +12,7 @@ so the tool-calling loop in ai_service.py never needs to know which is active.
 
 from __future__ import annotations
 
+import functools
 import os
 from abc import ABC, abstractmethod
 
@@ -75,8 +76,8 @@ class OpenRouterProvider(LLMProvider):
             api_key=api_key,
             base_url=self.BASE_URL,
             default_headers={
-                "HTTP-Referer": "https://github.com/benjsant/FusionDex-IA",
-                "X-Title":      "FusionDex-IA",
+                "HTTP-Referer": "https://github.com/benjsant/InfiniDex-IA",
+                "X-Title":      "InfiniDex-IA",
             },
         )
 
@@ -122,8 +123,13 @@ class OllamaProvider(LLMProvider):
 
 # ─── Runtime selection ───────────────────────────────────────────────────────
 
+@functools.cache
 def select_provider() -> LLMProvider | None:
     """Return the first available provider based on environment (first match wins).
+
+    Cached at process level — the provider and its httpx connection pool are
+    reused across requests. Changing env vars requires a restart (expected in
+    Docker). Call select_provider.cache_clear() in tests to reset state.
 
     Order:
       1. DEEPSEEK_API_KEY   → DeepSeek

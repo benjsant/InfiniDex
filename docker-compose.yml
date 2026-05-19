@@ -15,11 +15,13 @@ services:
       - "${FUSIONDEX_DB_PORT:-55432}:5432"
     networks:
       - backend
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fusiondex_user} -d ${POSTGRES_DB:-fusiondex_db}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
 
   etl:
     build:
@@ -132,6 +134,126 @@ services:
       - backend
     restart: unless-stopped
 
+  # Service optionnel : run de la suite pytest complète contre la DB de dev.
+  # Usage :
+  #   docker compose --profile test run --rm test-backend
+  #   docker compose --profile test run --rm test-backend pytest tests/test_fusion.py -v
+  test-backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+      target: test
+    profiles: ["test"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PYTHONPATH: /app
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-fusiondex_db}
+      POSTGRES_USER: ${POSTGRES_USER:-fusiondex_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fusiondex_password}
+      SPRITES_DIR: tests/fixtures/sprites
+      FUSIONDEX_TEST_DOCKER: "1"
+    volumes:
+      - ./backend:/app/backend
+    networks:
+      - backend
+    working_dir: /app/backend
+    entrypoint: ["uv", "run", "pytest"]
+    command: ["-v", "--tb=short"]
+
+  # Service optionnel : tests E2E Playwright contre le frontend en cours.
+  # Usage :
+  #   docker compose --profile e2e run --rm e2e
+  #   docker compose --profile e2e run --rm e2e --grep "fusion detail"
+  e2e:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.e2e
+    profiles: ["e2e"]
+    depends_on:
+      frontend:
+        condition: service_started
+    environment:
+      BASE_URL: http://frontend:3000
+    volumes:
+      - ./e2e/tests:/app/tests:ro
+      - ./e2e/playwright.config.ts:/app/playwright.config.ts:ro
+    networks:
+      - backend
+
+  # ── Prefect self-hosted (profil "prefect") ──────────────────────────────────
+  # Démarre le serveur Prefect + un worker process pour les flows ETL.
+  #
+  # Premier démarrage :
+  #   docker compose --profile prefect up -d
+  #   docker compose --profile prefect exec prefect-worker \
+  #     prefect work-pool create fusiondex-pool --type process --skip-if-exists
+  #   docker compose --profile prefect exec prefect-worker \
+  #     prefect --no-prompt deploy --all
+  #
+  # UI : http://localhost:54200
+  # Déclencher un flow manuellement :
+  #   docker compose --profile prefect exec prefect-worker \
+  #     prefect deployment run 'fusiondex-etl-pipeline/etl-pipeline-manual'
+
+  prefect-server:
+    image: prefecthq/prefect:3-latest
+    container_name: fusiondex_prefect_server
+    profiles: ["prefect"]
+    command: prefect server start --host 0.0.0.0 --port 4200
+    environment:
+      PREFECT_UI_URL: http://localhost:54200
+      PREFECT_API_URL: http://localhost:54200/api
+      PREFECT_SERVER_API_HOST: 0.0.0.0
+      PREFECT_HOME: /prefect
+    volumes:
+      - prefect_data:/prefect
+    ports:
+      - "${FUSIONDEX_PREFECT_PORT:-54200}:4200"
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4200/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  prefect-worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.etl
+    container_name: fusiondex_prefect_worker
+    profiles: ["prefect"]
+    command: prefect worker start --pool fusiondex-pool --type process
+    depends_on:
+      prefect-server:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    environment:
+      PYTHONPATH: /app
+      PREFECT_API_URL: http://prefect-server:4200/api
+      PREFECT_HOME: /prefect
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-fusiondex_db}
+      POSTGRES_USER: ${POSTGRES_USER:-fusiondex_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fusiondex_password}
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+    volumes:
+      - ./etl:/app/etl
+      - ./data:/app/data
+      - ./docker:/app/docker:ro
+      - prefect_data:/prefect
+    networks:
+      - backend
+    restart: unless-stopped
+
   # Service optionnel : LLM local Ollama pour fallback IA sans clé DeepSeek.
   # Démarre uniquement sur demande :
   #   docker compose --profile ollama up -d ollama
@@ -180,6 +302,23 @@ services:
   #   docker compose --profile docs up docs
   # N'entre pas dans `docker compose up` par défaut (pas nécessaire au run
   # de l'app) ni dans l'override prod.
+  screenshots:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.screenshots
+    container_name: fusiondex_screenshots
+    profiles: ["screenshots"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      FUSIONDEX_URL: "http://host.docker.internal:${FUSIONDEX_FRONTEND_PORT:-53000}"
+    volumes:
+      - ./screenshots:/app/screenshots
+      - ./scripts/screenshots.mjs:/app/scripts/screenshots.mjs:ro
+    command: node scripts/screenshots.mjs
+    networks:
+      - backend
+
   docs:
     build:
       context: .
@@ -207,3 +346,4 @@ networks:
 volumes:
   postgres_data:
   ollama_data:
+  prefect_data:

@@ -1,4 +1,4 @@
-"""System prompt for the FusionDex AI agent — loaded from prompts/system.md."""
+"""System prompt for the InfiniDex AI agent — loaded from prompts/system.md."""
 
 from pathlib import Path
 

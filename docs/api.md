@@ -1,6 +1,6 @@
 # API backend
 
-FastAPI exposant 41 endpoints (+ `/health`). Swagger interactif en dev : [http://localhost:58000/docs](http://localhost:58000/docs). Référence auto-générée : [Routes](reference/routes.md).
+FastAPI exposant 49 endpoints + `/health`. Swagger interactif en dev : [http://localhost:58000/docs](http://localhost:58000/docs). Référence auto-générée : [Routes](reference/routes.md).
 
 En prod le backend n'est **pas** exposé publiquement — les requêtes passent par le proxy Next.js (`/api/*` sur le domaine public).
 
@@ -18,7 +18,7 @@ backend/
   db/
     models/               # SQLAlchemy
     base.py               # engine + session
-  tests/                  # pytest + TestClient (109 tests collectés)
+  tests/                  # pytest + TestClient (160 tests)
 ```
 
 Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les routes ne touchent jamais directement SQLAlchemy.
@@ -33,6 +33,7 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 
 | Méthode | Chemin                                          | Description                               |
 | ------- | ----------------------------------------------- | ----------------------------------------- |
+| GET     | `/pokemon/count`                                | Nombre total de Pokémon (entier brut)     |
 | GET     | `/pokemon/`                                     | Liste paginée + filtres type/gen/Hoenn    |
 | GET     | `/pokemon/search?q={nom}`                       | Recherche par nom EN ou FR (ilike accent-insensitive) |
 | GET     | `/pokemon/{id}`                                 | Fiche complète (types, talents, stats)    |
@@ -82,6 +83,7 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 | Méthode | Chemin                                      | Description                                    |
 | ------- | ------------------------------------------- | ---------------------------------------------- |
 | GET     | `/fusion/{head_id}/{body_id}`               | Stats, types et sprite d'une fusion            |
+| GET     | `/fusion/{head_id}/{body_id}/full`          | Stats + moves + expert_moves en une seule requête |
 | GET     | `/fusion/{head_id}/{body_id}/moves`         | Moveset combiné head+body, dédupliqué — chaque move inclut `origin: "head"\|"body"\|"both"` |
 | GET     | `/fusion/{head_id}/{body_id}/abilities`     | Talents combinés selon règles IF (head slot1 + body slot1 + hiddens) |
 | GET     | `/fusion/{head_id}/{body_id}/weaknesses`    | Matchups défensifs de la combinaison de types  |
@@ -93,6 +95,7 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 
 | Méthode | Chemin                                     | Description                                   |
 | ------- | ------------------------------------------ | --------------------------------------------- |
+| GET     | `/sprites/by_pokemon/{pokemon_id}`         | Toutes les variantes impliquant ce Pokémon (head ou body) |
 | GET     | `/sprites/{head_id}/{body_id}`             | Liste des variantes + crédits (`creators: list[str]`) |
 | GET     | `/sprites/{head_id}/{body_id}/image`       | PNG — default ou `?variant_id=N`              |
 
@@ -108,6 +111,8 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 | GET     | `/creators/{id}/sprites`            | Sprites d'un créateur                          |
 | GET     | `/triple-fusions/`                  | 23 fusions triples                             |
 | GET     | `/triple-fusions/{id}`              | Détail d'une triple-fusion                     |
+| GET     | `/triple-fusions/{id}/sprite`       | Sprite PNG de la triple-fusion                 |
+| GET     | `/triple-fusions/{id}/weaknesses`   | Matchups défensifs de la triple-fusion         |
 | GET     | `/stats/coverage`                   | Audit de complétude DB                         |
 | GET     | `/health`                           | Healthcheck (Docker + CI)                      |
 
@@ -116,7 +121,9 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 | Méthode | Chemin           | Description                                                                 |
 | ------- | ---------------- | --------------------------------------------------------------------------- |
 | POST    | `/ai/ask`        | Agent tool-calling — réponse en streaming SSE                               |
+| POST    | `/ai/feedback`   | Envoie un retour utilisateur (webhook Discord) — toujours 200, best-effort  |
 | GET     | `/ai/provider`   | Provider actif (`{"name": "DeepSeek", "model": "deepseek-chat"}`)           |
+| GET     | `/ai/prompt`     | System prompt actif (contenu de `prompts/system.md`) + liste des outils     |
 
 **Payload `/ai/ask`** : `{ "message": "...", "context": "...", "history": [...] }`
 
@@ -134,15 +141,15 @@ Les événements `tool_call` permettent à l'UI d'afficher les outils invoqués 
 
 **Fonctionnement de la boucle agent** :
 
-1. Le LLM reçoit la question + `TOOL_SPECS` (6 tools : 5 DB + 1 wiki)
+1. Le LLM reçoit la question + `TOOL_SPECS` (9 outils : 7 DB + 1 wiki + 1 web)
 2. Il peut invoquer 1+ tools → le backend exécute et renvoie les résultats JSON
 3. Boucle jusqu'à réponse textuelle ou MAX_ITERATIONS (5)
 4. **Circuit breaker** : si MAX_ITERATIONS atteint → *« Je n'ai pas trouvé cette information. »*
 5. **Fail-closed** : réponse vide → même message de refus
 
-**Provider sélectionné à runtime** : `DEEPSEEK_API_KEY` → DeepSeek · `OLLAMA_URL` → Ollama · Aucun → `503` avec instructions de setup.
+**Provider sélectionné à runtime** : `DEEPSEEK_API_KEY` → DeepSeek · `OPENROUTER_API_KEY` → OpenRouter · `OLLAMA_URL` → Ollama · Aucun → `503` avec instructions de setup.
 
-Implémentation : [`backend/services/ai_service.py`](https://github.com/benjsant/FusionDex-IA/blob/main/backend/services/ai_service.py) (boucle), [`backend/services/tools/`](https://github.com/benjsant/FusionDex-IA/blob/main/backend/services/tools/) (handlers).
+Implémentation : [`backend/services/ai_service.py`](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/services/ai_service.py) (boucle), [`backend/services/tools/`](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/services/tools/) (handlers).
 
 ## CORS
 
@@ -168,11 +175,10 @@ En prod, `CORS_ALLOWED_ORIGINS` doit lister uniquement le domaine public.
 
 ## Tests
 
-109 tests collectés (`uv run pytest --collect-only`). Ils nécessitent un dump SQL sous `backend/tests/fixtures/` (actuellement non committé — seul `test_ai.py` tourne en CI sans fixture).
+160 tests. Ils nécessitent le dump SQL sous `backend/tests/fixtures/` (committé). Lance via Docker :
 
 ```bash
-cd backend
-uv run pytest
+docker compose --profile test run --rm test-backend
 ```
 
 ## Voir aussi

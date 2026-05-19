@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "FusionDex — Pokémon Infinite Fusion",
-    short_name: "FusionDex",
+    name: "InfiniDex — Pokémon Infinite Fusion",
+    short_name: "InfiniDex",
     description:
       "Pokédex intelligent pour Pokémon Infinite Fusion — fusions, stats, IA.",
     start_url: "/fusion",

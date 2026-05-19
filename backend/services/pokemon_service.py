@@ -20,6 +20,7 @@ def _base_query(
     db: Session,
     *,
     type_id: int | None = None,
+    type2_id: int | None = None,
     generation_id: int | None = None,
     include_hoenn: bool = True,
     min_bst: int | None = None,
@@ -30,6 +31,9 @@ def _base_query(
     query = db.query(Pokemon)
     if type_id is not None:
         sub = db.query(PokemonType.pokemon_id).filter(PokemonType.type_id == type_id)
+        query = query.filter(Pokemon.id.in_(sub))
+    if type2_id is not None:
+        sub = db.query(PokemonType.pokemon_id).filter(PokemonType.type_id == type2_id)
         query = query.filter(Pokemon.id.in_(sub))
     if ability_id is not None:
         sub = db.query(PokemonAbility.pokemon_id).filter(PokemonAbility.ability_id == ability_id)
@@ -45,10 +49,21 @@ def _base_query(
     return query
 
 
+_STAT_COLS = {
+    "hp":         Pokemon.hp,
+    "attack":     Pokemon.attack,
+    "defense":    Pokemon.defense,
+    "sp_attack":  Pokemon.sp_attack,
+    "sp_defense": Pokemon.sp_defense,
+    "speed":      Pokemon.speed,
+}
+
+
 def count_pokemon(
     db: Session,
     *,
     type_id: int | None = None,
+    type2_id: int | None = None,
     generation_id: int | None = None,
     include_hoenn: bool = True,
     min_bst: int | None = None,
@@ -56,7 +71,7 @@ def count_pokemon(
     ability_id: int | None = None,
 ) -> int:
     """Count Pokémon matching the given filters (no pagination)."""
-    return _base_query(db, type_id=type_id, generation_id=generation_id,
+    return _base_query(db, type_id=type_id, type2_id=type2_id, generation_id=generation_id,
                        include_hoenn=include_hoenn, min_bst=min_bst, max_bst=max_bst,
                        ability_id=ability_id).count()
 
@@ -67,6 +82,7 @@ def list_pokemon(
     limit: int | None = None,
     offset: int = 0,
     type_id: int | None = None,
+    type2_id: int | None = None,
     generation_id: int | None = None,
     include_hoenn: bool = True,
     min_bst: int | None = None,
@@ -75,7 +91,7 @@ def list_pokemon(
     ability_id: int | None = None,
 ) -> list[Pokemon]:
     """Paginated list of Pokémon with type / generation / Hoenn-only / BST / ability filters."""
-    query = _base_query(db, type_id=type_id, generation_id=generation_id,
+    query = _base_query(db, type_id=type_id, type2_id=type2_id, generation_id=generation_id,
                         include_hoenn=include_hoenn, min_bst=min_bst, max_bst=max_bst,
                         ability_id=ability_id)
     query = query.options(joinedload(Pokemon.types))
@@ -83,6 +99,18 @@ def list_pokemon(
         query = query.order_by(_BST.asc(), Pokemon.id)
     elif sort_by == "bst_desc":
         query = query.order_by(_BST.desc(), Pokemon.id)
+    elif sort_by == "name_asc":
+        query = query.order_by(Pokemon.name_fr.asc().nullsfirst(), Pokemon.name_en.asc())
+    elif sort_by == "name_desc":
+        query = query.order_by(Pokemon.name_fr.desc().nullslast(), Pokemon.name_en.desc())
+    elif sort_by.endswith("_asc") and sort_by[:-4] in _STAT_COLS:
+        col = _STAT_COLS[sort_by[:-4]]
+        query = query.order_by(col.asc(), Pokemon.id)
+    elif sort_by.endswith("_desc") and sort_by[:-5] in _STAT_COLS:
+        col = _STAT_COLS[sort_by[:-5]]
+        query = query.order_by(col.desc(), Pokemon.id)
+    elif sort_by == "id_desc":
+        query = query.order_by(Pokemon.id.desc())
     else:
         query = query.order_by(Pokemon.id)
     query = query.offset(offset)
@@ -244,4 +272,4 @@ def search_pokemon_locations(
         query = query.filter(PokemonLocation.method == method)
     if condition:
         query = query.filter(PokemonLocation.notes.ilike(f"%{ilike_escape(condition)}%", escape="\\"))
-    return query.order_by(Pokemon.id).all()
+    return query.order_by(Pokemon.id).limit(200).all()

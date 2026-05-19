@@ -12,7 +12,7 @@ Guide pour installer, lancer et contribuer au projet.
 
 ```bash
 git clone <repo-url>
-cd FusionDex-IA
+cd InfiniDex-IA
 cp .env.example .env               # ajuste POSTGRES_PASSWORD si besoin
 docker compose up -d               # db + backend + sprites + frontend
 ```
@@ -108,8 +108,9 @@ En prod, lister uniquement le domaine public.
 L'endpoint `POST /ai/ask` est un agent tool-calling (cf. [API](api.md#ia-agentique)). Il sélectionne automatiquement un provider à runtime :
 
 1. **DeepSeek** si `DEEPSEEK_API_KEY` est défini (priorité, qualité maximale)
-2. **Ollama local** si `OLLAMA_URL` est défini
-3. Sinon → `503` avec instructions de setup retournées en JSON
+2. **OpenRouter** si `OPENROUTER_API_KEY` est défini (tier gratuit disponible)
+3. **Ollama local** si `OLLAMA_URL` est défini
+4. Sinon → `503` avec instructions de setup retournées en JSON
 
 #### Option 1 — DeepSeek (cloud)
 
@@ -192,15 +193,19 @@ En prod, seul `frontend` est exposé publiquement. Prérequis : `.env.prod` avec
 ### Backend
 
 ```bash
-cd backend
-uv run pytest
+docker compose --profile test run --rm test-backend
 ```
 
-53 tests. **Ils nécessitent un dump SQL** sous `backend/tests/fixtures/` (non committé). La CI actuelle ne lance que `test_ai.py` (smoke test DeepSeek). Cf. [Roadmap](roadmap.md).
+160 tests contre un vrai Postgres. Le dump SQL est sous `backend/tests/fixtures/` (committé).
 
-### Frontend
+### E2E Playwright
 
-Pas encore de suite de tests (Playwright prévu).
+```bash
+docker compose up -d                           # frontend + backend + db
+docker compose --profile e2e run --rm e2e      # 10 tests Chromium
+```
+
+10 tests happy-path : homepage, pokédex (liste + recherche + fiche), fusion (sélecteur + résultat), types, items, moves.
 
 ## Commits
 
@@ -221,9 +226,10 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
 ## Structure du repo
 
 ```
-backend/        # FastAPI + SQLAlchemy + tests
+backend/        # FastAPI + SQLAlchemy + 160 tests
 etl/            # pipeline Python + uv
 frontend/       # Next.js 15 App Router
+e2e/            # Playwright (10 tests E2E Chromium)
 docker/         # Dockerfiles + init_postgres.sql
 docs/           # cette documentation (MkDocs)
 data/           # dumps + caches (gitignored)

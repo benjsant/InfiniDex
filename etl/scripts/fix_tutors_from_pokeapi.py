@@ -29,7 +29,7 @@ from etl.utils.logging import setup_logging
 LOGGER = setup_logging(__name__)
 
 WIKI_API = "https://infinitefusion.fandom.com/api.php"
-WIKI_UA  = "FusionDexETL/1.0 (github.com/benjsant/FusionDex-IA)"
+WIKI_UA  = "InfiniDexETL/1.0 (github.com/benjsant/InfiniDex-IA)"
 POKEAPI  = "https://pokeapi.co/api/v2"
 DELAY    = 0.1
 

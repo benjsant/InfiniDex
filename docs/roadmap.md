@@ -1,23 +1,24 @@
 # Roadmap
 
-Version live du suivi : [ROADMAP.md](https://github.com/benjsant/FusionDex-IA/blob/main/ROADMAP.md) à la racine du repo. Cette page reprend l'état au moment de la dernière mise à jour de la doc et liste les pistes ouvertes.
+Version live du suivi : [ROADMAP.md](https://github.com/benjsant/InfiniDex-IA/blob/main/ROADMAP.md) à la racine du repo. Cette page reprend l'état au moment de la dernière mise à jour de la doc et liste les pistes ouvertes.
 
 ## État par couche
 
 ### ETL — ✅ stabilisé
 
-Pipeline en 12 étapes. Données actuelles :
+Pipeline en 14 étapes (orchestrateur `etl/pipeline.py`). Données actuelles :
 
 - **572 Pokémon** (501 IF + 71 formes)
-- **676 moves** · **178 abilities** · **40 067** pokemon_move
-- **166 090** fusion_sprite · **23** triple_fusion
-- **7 081** créateurs · **1 634** pokemon_location
-- **65** règles Move Expert (36 Knot + 29 Boon)
+- **659 moves** · **183 abilities** · **45 105** pokemon_move
+- **168 154** fusion_sprite · **23** triple_fusion
+- **7 126** créateurs · **2 560** pokemon_location · **188** locations
+- **121** TMs · **41** tuteurs de capacités
 
 **Pistes ouvertes :**
 
-- [ ] Audit DB — Pokémon sans sprites, moves orphelins, cohérence des fusions
-- [ ] Scheduler (Prefect ou n8n) pour automatiser les refresh
+- [x] Audit DB — moves orphelins nettoyés, Pokémon sans abilities enrichis
+- [x] Scheduler Prefect self-hosted — `etl/flows/etl_pipeline.py` (profil `prefect`)
+- [x] Localisations sauvages — `load_pokedex_locations.py` depuis la page Pokédex du wiki IF (541/572 Pokémon couverts)
 
 ### Base de données — ✅ enrichie
 
@@ -28,11 +29,11 @@ Pipeline en 12 étapes. Données actuelles :
 
 **Piste ouverte :**
 
-- [ ] **TM location** — nettoyer `tm.location` (texte libre avec bugs de parsing) et la lier via FK à `location(id)`
+- [x] **TM location** — `tm.location` (texte libre) supprimée, `location_summary` dérivé des FK `tm_location`
 
 ### Backend — ✅ base solide
 
-41 endpoints (+ `/health`) + 109 tests collectés. Couvre pokémon, moves, abilities, types, fusions, sprites, triple-fusions, générations, créateurs, stats, IA.
+49 endpoints + `/health` + 160 tests. Couvre pokémon, moves, abilities, types, fusions, sprites, triple-fusions, générations, créateurs, stats, IA.
 
 **Optimisations livées (PRs #9 → #31)** :
 
@@ -58,58 +59,56 @@ Pipeline en 12 étapes. Données actuelles :
 
 ### Frontend — ✅ complet
 
-Toutes les pages livrées : `/pokedex`, `/fusion`, `/moves`, `/moves/tutors`, `/types`, `/abilities`, `/triple-fusions`, `/ai`. Composants : `EvolutionChain`, `MovesetTable`, `FusionMovesetTable`, `FusionSprite`, `AiChat`, `AiSuggestButton`, `WeaknessGrid`, `PokemonCard`, `TypeBadge`, `StatBar`, `CreatorModal`.
+Pages : `/pokedex`, `/pokedex/[id]`, `/pokedex/favorites`, `/fusion`, `/fusion/[headId]/[bodyId]`, `/fusion/compare`, `/fusion/top`, `/fusion/history`, `/fusion/random`, `/moves`, `/moves/tutors`, `/types`, `/abilities`, `/items`, `/triple-fusions`, `/creators`, `/creators/[id]`, `/ai`. Composants : `EvolutionChain`, `MovesetTable`, `FusionMovesetTable`, `FusionSprite`, `AiChat`, `WeaknessGrid`, `PokemonCard`, `TypeBadge`, `StatBar`, `CreatorModal`.
 
 **Livraisons récentes :**
 
-- Streaming SSE IA avec pastilles ⚙ tool-call + badge provider
-- Rendu Markdown des réponses IA (react-markdown + styles Tailwind)
-- `staleTime: Infinity` sur tous les hooks — zéro refetch en arrière-plan
-- Double sprite sur la page fusion (variante normale + inversée, cliquable)
-- Crédit artiste sous chaque sprite (par créateur, ou "Auto-généré")
-- `FusionMovesetTable` : moveset head+body avec pastilles H/B/H+B par origine
-- Requêtes différées par onglet sur la fiche Pokédex (−3 requêtes au chargement)
-- `FusionSelector` pré-sélectionne via `?head=ID` et `?body=ID` + filtre `GameFilter` (Kanto/Hoenn/Tous)
-- [x] Page `/moves/tutors` — 41 tuteurs classiques + Move Experts groupés par île
-- [x] Page `/triple-fusions` — 23 fusions triples avec faiblesses
-- [x] **Responsive mobile/tablette** — hamburger Navbar, tables avec `hidden sm:table-cell`, panels `flex-col md:flex-row`
-- [x] **Design IF-style** — palette navy `#090c1a`, gold `#e8b84b`, tokens CSS `@theme`, grid texture, TypeBadge glow, PokemonCard gradient type, StatBar gradient + glow
+- [x] Page `/fusion/compare` — comparateur côte à côte avec delta stats + bouton d'inversion head↔body
+- [x] Page `/fusion/history` — historique local (localStorage)
+- [x] Page `/creators` et `/creators/[id]` — galerie des 7 126 créateurs de sprites
+- [x] Suggestions IA en popover (icône ampoule dans la toolbar)
+- [x] Footer masqué sur `/ai` pour maximiser l'espace chat
+- [x] Refonte OG images + JSON-LD + sitemap + PWA icons
+- [x] `cache: "no-store"` sur `apiFetch` — évite le cache HTTP navigateur après un re-run ETL
 
 **Pistes ouvertes :**
 
-- [ ] Galerie sprites + crédits (par créateur)
 - [ ] Toggle EN/FR global persistent
-- [ ] Tests Playwright
-- [ ] UI transparence IA (sources, tokens, prompt envoyé)
+- [x] Tests Playwright — 10 tests E2E Chromium (`docker compose --profile e2e run --rm e2e`)
 
-### IA — 🚀 phases 1 et 2 livrées
+### IA — ✅ phases 1 à 5 livrées
 
 **Phase 1 ✅** — Tools DB + circuit breaker + fail-closed :
 
-- 6 tools DB : `get_pokemon`, `get_fusion`, `search_move`, `get_item`, `get_move_tutors`, `search_pokemon_locations`
-- `search_pokemon_locations` : cherche les Pokémon par condition/méthode dans `pokemon_location` (gift, trade, static, wild…)
+- 8 tools : `get_pokemon`, `get_fusion`, `get_triple_fusion`, `search_move`, `get_item`, `get_move_tutors`, `search_pokemon_locations`, `search_wiki`
 - Boucle agent MAX_ITERATIONS=5, fail-closed sur réponse vide ou dépassement
 - Provider pluggable : DeepSeek (prod) / Ollama (local)
-- System prompt externe (`prompts/system.md`) en anglais, réponses forcées en français + règles anti-boucle, guidage `search_pokemon_locations`, section "Key game mechanics" (trade evos, HMs, triple fusion unlock, respawn, OHKO+NoGuard, Hidden Power)
+- System prompt externe (`prompts/system.md`) — règles anti-hallucination, anti-extrapolation jeux officiels, anti-emojis, fail-closed strict
 
 **Phase 2 ✅** — Tool wiki IF + cache :
 
-- `search_wiki` (7e outil) : requête MediaWiki API IF + cache TTL 10 min in-process ; fetch page complète si intro < 300 caractères
-- Cascade retrieval : DB → wiki IF (→ futur : web DuckDuckGo)
+- `search_wiki` : MediaWiki API IF + cache TTL 10 min in-process
 
-**Phases restantes :**
+**Phase 3 ✅** — Tool web DuckDuckGo :
 
-| Phase | Scope | État |
-|-------|-------|------|
-| 3 | Tool DuckDuckGo (fallback web) + rate-limit | ⬜ à faire |
-| 4 | UI transparence (sources, tokens, prompt affiché) | ⬜ à faire |
-| 5 | Privacy layer (PII redactor) + provider OpenAI/Anthropic | ⬜ à faire |
+- `search_web` : fallback web en dernier recours, cache TTL 5 min, max 1 appel par tour
+
+**Phase 4 ✅** — Transparence UI :
+
+- Pastilles ⚙ tool-call + badges `db` / `wiki` / `web` avec URLs cliquables
+- Compteur de tokens sous chaque réponse
+
+**Phase 5 ✅** — Privacy + robustesse :
+
+- `pii_redact` sur tous les résultats d'outils avant envoi au LLM
+- Temperature abaissée à 0.1 (moins d'hallucinations)
+- Historique tronqué côté client à 20 messages (évite erreur 422 sur longues sessions)
 
 **Contraintes maintenues :**
 
-- Latence cascade ≤ 6s
-- Max 5 tool calls par tour (circuit breaker)
-- MAX_TOKENS=2048 (réponses longues sans troncature)
+- Max 5 itérations agent (circuit breaker)
+- MAX_TOKENS=2048
+- Fail-closed strict : "Je n'ai pas trouvé cette information." si aucun tool ne remonte de données IF
 
 ### Infra — ✅ v1 stable
 
@@ -128,25 +127,21 @@ Toutes les pages livrées : `/pokedex`, `/fusion`, `/moves`, `/moves/tutors`, `/
 
 ### Documentation — ✅ mise à jour
 
-Pages MkDocs Material à jour : README, ROADMAP, architecture (outils IA, flux SSE), API (41 endpoints + tutors/experts), frontend (design IF, responsive, nouvelles pages), roadmap (état réel), `docs/index.md`.
+Pages MkDocs Material à jour : README, ROADMAP, architecture (9 outils IA, flux SSE, cascade DB→wiki→web), API, frontend (toutes les pages + hooks), ETL (pipeline.py 14 étapes + load_pokedex_locations), database, roadmap.
 
 **Pistes ouvertes :**
 
-- [ ] Diagrammes Mermaid de séquence (flux SSE détaillé)
 - [ ] ERD complet de la base de données
-- [ ] Guide contributeur (`CONTRIBUTING.md`)
-- [ ] Captures d'écran frontend
+- [ ] Diagrammes Mermaid de séquence supplémentaires
 
 ## Cap v1.0
 
 Les critères pour désarchiver les plans initiaux et considérer l'app complète :
 
 - ✅ Frontend stable (toutes les pages principales en place)
-- ✅ IA agentique phases 1-2 livrées (tool calling DB + wiki IF + refus strict)
+- ✅ IA agentique phases 1-5 livrées (tool calling DB + wiki IF + web + privacy + transparence)
 - [ ] CI full verte (dump fixture committé)
 - [ ] Déploiement public accessible
 - ✅ Documentation à jour sur chaque page
-
-Les phases 3-5 IA (DDG, transparence, privacy) sont cibles **v1.1** — amélioration continue post-lancement.
 
 Avant cette étape, les docs historiques restent figées sous [Archive](archive/index.md).

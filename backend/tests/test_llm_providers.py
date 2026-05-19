@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from backend.services.llm_providers import (
     DeepSeekProvider,
     OllamaProvider,
@@ -9,6 +11,15 @@ from backend.services.llm_providers import (
     provider_setup_instructions,
     select_provider,
 )
+
+
+@pytest.fixture(autouse=True)
+def clear_provider_cache():
+    """select_provider() is @functools.cache — clear before each test so
+    monkeypatch env-var changes are visible to the function."""
+    select_provider.cache_clear()
+    yield
+    select_provider.cache_clear()
 
 
 def test_select_deepseek_when_key_present(monkeypatch) -> None:
