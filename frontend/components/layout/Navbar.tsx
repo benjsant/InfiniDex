@@ -150,8 +150,10 @@ export function Navbar() {
         {/* Logo */}
         <Link
           href="/"
-          className="text-lg font-bold whitespace-nowrap mr-2 text-if-accent hover:text-if-accent-hi transition-colors"
+          className="flex items-center gap-2 text-lg font-bold whitespace-nowrap mr-2 text-if-accent hover:text-if-accent-hi transition-colors"
         >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon.svg" alt="" width={28} height={28} className="shrink-0" />
           InfiniDex
         </Link>
 
