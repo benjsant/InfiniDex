@@ -38,6 +38,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-fusiondex_db}
       POSTGRES_USER: ${POSTGRES_USER:-fusiondex_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fusiondex_password}
+      # Required by the Prefect watcher flows to post to Discord (no fallback
+      # — if absent, watchers log "DISCORD_WEBHOOK_URL not set" and skip).
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
     volumes:
       - ./etl:/app/etl
       - ./data:/app/data

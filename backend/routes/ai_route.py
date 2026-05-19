@@ -23,6 +23,12 @@ from backend.services.tools import TOOL_SPECS
 router = APIRouter(prefix="/ai", tags=["AI"])
 
 _DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK_URL", "")
+# Discord webhooks sit behind Cloudflare, which 403s requests with a default
+# python User-Agent (CF error 1010) — set a browser UA to get through.
+_DISCORD_UA = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+)
 
 
 @router.get("/provider", response_model=AiProviderInfo)
@@ -114,7 +120,11 @@ async def submit_feedback(request: FeedbackRequest):
         }
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
-                await client.post(_DISCORD_WEBHOOK, json={"embeds": [embed]})
+                await client.post(
+                    _DISCORD_WEBHOOK,
+                    json={"embeds": [embed]},
+                    headers={"User-Agent": _DISCORD_UA},
+                )
         except Exception as exc:
             LOGGER.warning("Discord feedback webhook failed: %s", type(exc).__name__)
 

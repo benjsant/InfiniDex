@@ -44,6 +44,12 @@ GAME_DEX_FILE = "Data/pokedex/all_entries.json"
 GAME_SHA_FILE = DATA_DIR / "game_dex_last_sha.txt"
 
 _DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK_URL", "")
+# Discord webhooks sit behind Cloudflare, which 403s requests with a default
+# python User-Agent (CF error 1010) — set a browser UA to get through.
+_DISCORD_UA = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+)
 
 # PokedexTable/Data template:  {{PokedexTable/Data|index|id|name|...}}
 _ENTRY_RE = re.compile(
@@ -181,6 +187,7 @@ def notify_new_pokemon(new_entries: list[tuple[int, str]], source: str) -> None:
         resp = requests.post(
             _DISCORD_WEBHOOK,
             json={"content": msg},
+            headers={"User-Agent": _DISCORD_UA},
             timeout=10,
         )
         resp.raise_for_status()
