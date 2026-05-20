@@ -23,14 +23,49 @@ POKEAPI = "https://pokeapi.co/api/v2"
 DELAY   = 0.1  # seconds between PokeAPI requests (politeness)
 
 
+_ACCENT_MAP = str.maketrans({
+    "é": "e", "è": "e", "ê": "e", "ë": "e",
+    "à": "a", "â": "a", "ä": "a",
+    "ô": "o", "ö": "o",
+    "û": "u", "ü": "u",
+    "î": "i", "ï": "i",
+    "ç": "c",
+})
+
+
 def pokeapi_move_slug(name_en: str) -> str:
-    """Convert a move's English name to its PokeAPI URL slug."""
-    return (
-        name_en.lower()
-        .replace("'", "")
-        .replace(".", "")
-        .replace(" ", "-")
+    """Convert a Pokémon or move name (EN) to its PokeAPI URL slug.
+
+    Handles:
+      - case → lowercase
+      - apostrophes, dots, colons → stripped
+      - ♀ → '-f', ♂ → '-m'
+      - accents → ASCII equivalents
+      - spaces → '-'
+
+    Examples:
+      "Mime Jr."     → "mime-jr"
+      "Nidoran♀"     → "nidoran-f"
+      "Type: Null"   → "type-null"
+      "Flabébé"      → "flabebe"
+      "Farfetch'd"   → "farfetchd"
+      "Ho-Oh"        → "ho-oh"
+      "Porygon-Z"    → "porygon-z"
+    """
+    s = name_en.translate(_ACCENT_MAP).lower()
+    s = (
+        s.replace("♀", "-f")
+         .replace("♂", "-m")
+         .replace("'", "")
+         .replace("’", "")
+         .replace(".", "")
+         .replace(":", "")
+         .replace(" ", "-")
     )
+    # Collapse accidental double hyphens introduced by " -" or "- " etc.
+    while "--" in s:
+        s = s.replace("--", "-")
+    return s.strip("-")
 
 
 def fetch_move_detail(

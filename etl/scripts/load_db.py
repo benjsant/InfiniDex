@@ -37,6 +37,7 @@ from psycopg2.extras import execute_values
 from etl.utils.db import pg_connection
 from etl.utils.io import load_json
 from etl.utils.logging import setup_logging
+from etl.utils.pokeapi_moves import pokeapi_move_slug
 from etl.utils.sql import load_id_map
 
 LOGGER = setup_logging(__name__)
@@ -314,17 +315,30 @@ def load_pokemon_abilities(conn, abilities: list[dict], ability_map: dict) -> No
 def load_evolutions(conn, evolutions_base: list[dict]) -> None:
     """
     Load evolution data.
-    Base evolutions come from PokeAPI (evolutions_base.json).
+    Base evolutions come from PokeAPI (evolutions_base.json) and carry
+    PokeAPI URL slugs as `from_name` / `into_name` (e.g. "mime-jr",
+    "mr-mime"). Resolve these to our `pokemon.id` via slug-normalized lookup
+    so special-character names ("Mime Jr.", "Nidoran♀", "Flabébé", …) match.
     IF overrides replace or augment those based on if_evolution_overrides.json.
     """
     if_overrides_map = _load_if_evolution_overrides()
 
-    pokemon_name_to_id = load_id_map(conn, "pokemon")
+    # Build both maps : EN name (lowercased) — kept for legacy lookups — AND
+    # PokeAPI slug (which is what evolutions_base.json carries).
+    with conn.cursor() as cur:
+        cur.execute("SELECT id, name_en FROM pokemon")
+        rows = cur.fetchall()
+    pokemon_id_by_slug: dict[str, int] = {pokeapi_move_slug(name): pid for pid, name in rows}
+    pokemon_id_by_name: dict[str, int] = {name.lower(): pid for pid, name in rows}
+
+    def _resolve(key: str) -> int | None:
+        k = key.lower()
+        return pokemon_id_by_slug.get(k) or pokemon_id_by_name.get(k)
 
     with conn.cursor() as cur:
         for evo in evolutions_base:
-            from_id  = pokemon_name_to_id.get(evo["from_name"].lower())
-            into_id  = pokemon_name_to_id.get(evo["into_name"].lower())
+            from_id = _resolve(evo["from_name"])
+            into_id = _resolve(evo["into_name"])
             if not from_id or not into_id:
                 continue
 

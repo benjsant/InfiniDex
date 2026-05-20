@@ -18,6 +18,7 @@ Steps:
   8c.  enrich_evolution_movesets — inherit moves from pre-evolutions
   8d.  fix_national_ids         — fix national_id (IF dex diverges from national after #251)
   8e.  fix_stats_and_fr_names   — re-sync stats + name_fr with corrected national_ids
+  8e-ter. fix_evolutions        — re-fetch evolution chains with corrected national_ids
   8f.  fix_tms_from_pokeapi     — fill TM learnability gaps from PokeAPI
   9.   seed_type_effectiveness  — 18×18 type chart with FR names from table_type.csv
   9b.  load_encounters          — load locations + pokemon_location from encounters_if.json
@@ -106,6 +107,8 @@ STEPS: list[Step] = [
          _py("fix_stats_and_fr_names.py")),
     Step("8e-bis", "Step 8e-bis — Re-sync types after national_id correction",
          _py("fix_pokemon_types.py")),
+    Step("8e-ter", "Step 8e-ter — Re-fetch evolution chains after national_id correction",
+         _py("fix_evolutions.py")),
     Step("8f",     "Step 8f — Fill TM learners from PokeAPI (idempotent)",
          _py("fix_tms_from_pokeapi.py")),
     Step("9",      "Step 9/10 — Seed types FR + type effectiveness chart (Gen 7 / IF)",
