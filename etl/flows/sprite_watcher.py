@@ -22,6 +22,7 @@ Scheduled Prefect run (every 24h):
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
@@ -33,10 +34,14 @@ from prefect import flow, task
 from prefect.logging import get_run_logger
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-DATA_DIR    = Path(__file__).resolve().parents[2] / "data"
-SHA_FILE    = DATA_DIR / "sprites_last_sha.txt"
-VER_FILE    = DATA_DIR / "game_version.txt"
-SPRITES_DIR = DATA_DIR / "sprites"
+DATA_DIR     = Path(__file__).resolve().parents[2] / "data"
+SHA_FILE     = DATA_DIR / "sprites_last_sha.txt"
+VER_FILE     = DATA_DIR / "game_version.txt"
+SPRITES_DIR  = DATA_DIR / "sprites"
+POKEDEX_FILE = DATA_DIR / "pokedex_last_ids.json"
+
+# Custom sprite filenames: '{head_id}.{body_id}[alt].png' (alt = a/b/c/…)
+_CUSTOM_SPRITE_RE = re.compile(r"^(\d+)\.(\d+)([a-z]?)\.png$")
 
 # ── GitHub API ────────────────────────────────────────────────────────────────
 REPO     = "infinitefusion/pif-downloadables"
@@ -155,6 +160,60 @@ def extract_new_sprites() -> None:
         logger.info("Extraction complete.")
 
 
+@task(name="load-pokemon-names")
+def load_pokemon_names() -> dict[int, str]:
+    """Load Pokédex ID → name from the local snapshot, for sprite label enrichment."""
+    if not POKEDEX_FILE.exists():
+        return {}
+    raw = json.loads(POKEDEX_FILE.read_text())
+    return {int(k): v for k, v in raw.items()}
+
+
+def _label_sprite(filename: str, names: dict[int, str]) -> str:
+    """Turn '25.6a.png' into 'Pikachu × Charmander (alt a)'."""
+    m = _CUSTOM_SPRITE_RE.match(filename)
+    if not m:
+        return filename
+    head_id = int(m.group(1))
+    body_id = int(m.group(2))
+    alt     = m.group(3)
+    head    = names.get(head_id, f"#{head_id}")
+    body    = names.get(body_id, f"#{body_id}")
+    suffix  = f" (alt {alt})" if alt else ""
+    return f"{head} × {body}{suffix}"
+
+
+@task(name="notify-new-custom-sprites")
+def notify_new_custom_sprites(added: list[str], names: dict[int, str]) -> None:
+    """Send a single Discord summary listing new custom sprite fusions."""
+    logger = get_run_logger()
+    if not added:
+        return
+
+    labels = [_label_sprite(f, names) for f in added]
+    sample = labels[:5]
+    more   = len(labels) - len(sample)
+    lines  = "\n".join(f"• {l}" for l in sample)
+    suffix = f"\n_… et {more} autres_" if more > 0 else ""
+    msg    = f"🎨 **{len(added)} nouveaux sprites custom**\n\n{lines}{suffix}"
+
+    if not _DISCORD_WEBHOOK:
+        logger.info("DISCORD_WEBHOOK_URL not set — sprite notification skipped.")
+        return
+
+    try:
+        resp = requests.post(
+            _DISCORD_WEBHOOK,
+            json={"content": msg},
+            headers={"User-Agent": _DISCORD_UA},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        logger.info("Discord custom-sprite notification sent (%d items).", len(added))
+    except Exception as exc:
+        logger.warning("Discord custom-sprite notification failed: %s", exc)
+
+
 @task(name="notify-version-change")
 def notify_version_change(old_version: str | None, new_version: str) -> None:
     """Send a Discord alert when the game version changes."""
@@ -209,9 +268,10 @@ def sprite_watcher_flow() -> None:
     """
     logger = get_run_logger()
 
-    latest_sha = fetch_latest_sha()
-    local_sha  = read_local_sha()
-    local_ver  = read_local_version()
+    latest_sha    = fetch_latest_sha()
+    local_sha     = read_local_sha()
+    local_ver     = read_local_version()
+    pokemon_names = load_pokemon_names()
 
     if local_sha == latest_sha:
         logger.info("No update detected (SHA=%s). Nothing to do.", latest_sha[:8])
@@ -249,6 +309,7 @@ def sprite_watcher_flow() -> None:
                 f"\n  … and {len(custom_diff['added']) - 20} more"
                 if len(custom_diff["added"]) > 20 else "",
             )
+            notify_new_custom_sprites(custom_diff["added"], pokemon_names)
             need_extraction = True
 
         # BASE_SPRITES
