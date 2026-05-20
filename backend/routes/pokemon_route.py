@@ -14,12 +14,12 @@ from backend.schemas.move import PokemonMoveOut
 from backend.schemas.pokemon import AbilityOut, PokemonDetail, PokemonListItem, PokemonTypeOut
 from backend.schemas.type_ import TypeOut
 from backend.schemas.weakness import WeaknessOut
+from backend.services.move_service import list_pokemon_moves
 from backend.services.pokemon_service import (
     compute_pokemon_weaknesses,
     count_pokemon,
     get_pokemon_evolutions,
     get_pokemon_locations,
-    get_pokemon_moves,
     list_pokemon,
     search_pokemon,
 )
@@ -164,7 +164,7 @@ def get_moves_for_pokemon(
     db: Session = Depends(get_db),
 ):
     """Full moveset (level_up, tm, breeding, tutor, before_evolution)."""
-    rows = get_pokemon_moves(db, p.id)
+    rows = list_pokemon_moves(db, p.id)
     return [
         PokemonMoveOut(
             move_id=r.move_id,
@@ -174,12 +174,7 @@ def get_moves_for_pokemon(
             power=r.move.power,
             accuracy=r.move.accuracy,
             pp=r.move.pp,
-            type=TypeOut(
-                id=r.move.type.id,
-                name_en=r.move.type.name_en,
-                name_fr=r.move.type.name_fr,
-                is_triple_fusion_type=r.move.type.is_triple_fusion_type,
-            ),
+            type=TypeOut.from_model(r.move.type),
             method=r.method,
             level=r.level,
             source=r.source,

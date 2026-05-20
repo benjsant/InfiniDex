@@ -21,17 +21,12 @@ from __future__ import annotations
 import re
 import time
 
-import requests
-
 from etl.utils.db import pg_connection
 from etl.utils.logging import setup_logging
+from etl.utils.wikitext import fetch_wikitext
 
 LOGGER = setup_logging(__name__)
 
-WIKI_API = (
-    "https://infinitefusion.fandom.com/api.php"
-    "?action=parse&page=List_of_Items&prop=wikitext&format=json"
-)
 REQUEST_DELAY = 0.5
 
 # Map bold-header text (lowercased) → method value
@@ -127,13 +122,6 @@ def parse_location_cell(cell: str) -> list[tuple[str, str, str | None]]:
     return results
 
 
-def fetch_wikitext() -> str:
-    resp = requests.get(WIKI_API, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
-    return data["parse"]["wikitext"]["*"]
-
-
 def parse_item_rows(wikitext: str) -> list[dict]:
     """Extract list of {name, location_entries} from the wiki table wikitext."""
     items: list[dict] = []
@@ -218,7 +206,7 @@ def load_item_locations(conn, items: list[dict]) -> None:
 
 def main() -> None:
     LOGGER.info("Fetching wikitext from IF wiki…")
-    wikitext = fetch_wikitext()
+    wikitext = fetch_wikitext("List_of_Items")
     time.sleep(REQUEST_DELAY)
 
     LOGGER.info("Parsing item rows…")

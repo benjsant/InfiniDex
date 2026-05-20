@@ -5,7 +5,7 @@ from __future__ import annotations
 from sqlalchemy.orm import Session, joinedload
 
 from backend.db.models import Location, Move, MoveExpertMove, MoveTutor, Pokemon, PokemonMove, TM, TMLocation, Type
-from backend.utils.text import ilike_escape, normalize
+from backend.utils.search import bilingual_ilike_search
 
 
 def list_moves(
@@ -43,27 +43,8 @@ def get_move_by_id(db: Session, move_id: int) -> Move | None:
 
 
 def search_moves(db: Session, name: str) -> list[Move]:
-    """Accent-insensitive partial match on name_en OR name_fr.
-
-    Uses ilike as a DB-side pre-filter (case-insensitive, reduces candidates
-    from all moves to a small subset), then applies normalize() for the
-    accent-insensitive pass on that smaller set only.
-    """
-    needle = normalize(name)
-    candidates = (
-        db.query(Move)
-        .options(joinedload(Move.type))
-        .filter(Move.name_en.ilike(f"%{ilike_escape(name)}%", escape="\\") | Move.name_fr.ilike(f"%{ilike_escape(name)}%", escape="\\"))
-        .all()
-    )
-    # If ilike caught everything (no accents in query), return directly.
-    # Otherwise apply normalize() to catch accent variants missed by ilike.
-    exact = [
-        m for m in candidates
-        if needle in normalize(m.name_en or "")
-        or needle in normalize(m.name_fr or "")
-    ]
-    return exact if exact else candidates
+    """Accent-insensitive partial match on name_en OR name_fr."""
+    return bilingual_ilike_search(db, Move, name, with_options=(joinedload(Move.type),))
 
 
 def list_moves_by_type(db: Session, type_name: str) -> list[Move]:

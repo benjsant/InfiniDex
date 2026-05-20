@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import math
 from collections import defaultdict
-from decimal import Decimal
 from typing import NamedTuple
 
 from sqlalchemy import func, or_
@@ -31,9 +30,8 @@ from backend.db.models import (
     PokemonAbility,
     PokemonMove,
     PokemonType,
-    Type,
-    TypeEffectiveness,
 )
+from backend.services.type_effectiveness import compute_weaknesses_for
 
 # ── In-process static caches ─────────────────────────────────────────────────
 # Pokémon data never changes between deploys — cleared automatically on restart.
@@ -224,31 +222,7 @@ def compute_fusion_types(head: Pokemon, body: Pokemon) -> tuple[TypeRef | None, 
 def compute_fusion_weaknesses(db: Session, head: Pokemon, body: Pokemon) -> list[dict]:
     """Damage multipliers against the fusion's type combination."""
     type1, type2 = compute_fusion_types(head, body)
-    defending_ids = [t.id for t in (type1, type2) if t]
-    if not defending_ids:
-        return []
-
-    multipliers: dict[int, Decimal] = defaultdict(lambda: Decimal("1.0"))
-    rows = (
-        db.query(TypeEffectiveness)
-        .filter(TypeEffectiveness.defending_type_id.in_(defending_ids))
-        .all()
-    )
-    for eff in rows:
-        multipliers[eff.attacking_type_id] *= eff.multiplier
-
-    # Only fetch the attacking types that actually appear — never all 18.
-    type_map = {t.id: t for t in db.query(Type).filter(Type.id.in_(multipliers.keys())).all()}
-    return [
-        {
-            "attacking_type_id":      tid,
-            "attacking_type_name_en": type_map[tid].name_en,
-            "attacking_type_name_fr": type_map[tid].name_fr,
-            "multiplier":             float(mult),
-        }
-        for tid, mult in sorted(multipliers.items())
-        if mult != Decimal("1.0") and tid in type_map
-    ]
+    return compute_weaknesses_for(db, [t.id for t in (type1, type2) if t])
 
 
 def compute_fusion_moves(db: Session, head_id: int, body_id: int) -> list[dict]:
