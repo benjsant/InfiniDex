@@ -23,7 +23,6 @@ Scheduled Prefect run (every 24h):
 from __future__ import annotations
 
 import json
-import os
 import re
 import subprocess
 import sys
@@ -32,6 +31,8 @@ from pathlib import Path
 import requests
 from prefect import flow, task
 from prefect.logging import get_run_logger
+
+from etl.utils.discord import post_message as post_discord
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 DATA_DIR     = Path(__file__).resolve().parents[2] / "data"
@@ -47,14 +48,6 @@ _CUSTOM_SPRITE_RE = re.compile(r"^(\d+)\.(\d+)([a-z]?)\.png$")
 REPO     = "infinitefusion/pif-downloadables"
 BRANCH   = "master"
 API_BASE = f"https://api.github.com/repos/{REPO}"
-
-_DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK_URL", "")
-# Discord webhooks sit behind Cloudflare, which 403s requests with a default
-# python User-Agent (CF error 1010) — set a browser UA to get through.
-_DISCORD_UA = (
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/120.0 Safari/537.36"
-)
 
 # ── Tasks ─────────────────────────────────────────────────────────────────────
 
@@ -196,22 +189,7 @@ def notify_new_custom_sprites(added: list[str], names: dict[int, str]) -> None:
     lines  = "\n".join(f"• {l}" for l in sample)
     suffix = f"\n_… et {more} autres_" if more > 0 else ""
     msg    = f"🎨 **{len(added)} nouveaux sprites custom**\n\n{lines}{suffix}"
-
-    if not _DISCORD_WEBHOOK:
-        logger.info("DISCORD_WEBHOOK_URL not set — sprite notification skipped.")
-        return
-
-    try:
-        resp = requests.post(
-            _DISCORD_WEBHOOK,
-            json={"content": msg},
-            headers={"User-Agent": _DISCORD_UA},
-            timeout=10,
-        )
-        resp.raise_for_status()
-        logger.info("Discord custom-sprite notification sent (%d items).", len(added))
-    except Exception as exc:
-        logger.warning("Discord custom-sprite notification failed: %s", exc)
+    post_discord(msg, logger=logger, label=f"custom-sprites ({len(added)} items)")
 
 
 @task(name="notify-version-change")
@@ -224,22 +202,7 @@ def notify_version_change(old_version: str | None, new_version: str) -> None:
         "A full ETL re-run may be needed to integrate the data changes."
     )
     logger.warning("Game version changed: %s → %s", old_version, new_version)
-
-    if not _DISCORD_WEBHOOK:
-        logger.info("DISCORD_WEBHOOK_URL not set — notification skipped.")
-        return
-
-    try:
-        resp = requests.post(
-            _DISCORD_WEBHOOK,
-            json={"content": msg},
-            headers={"User-Agent": _DISCORD_UA},
-            timeout=10,
-        )
-        resp.raise_for_status()
-        logger.info("Discord notification sent.")
-    except Exception as exc:
-        logger.warning("Discord notification failed: %s", exc)
+    post_discord(msg, logger=logger, label="game-version-change")
 
 
 @task(name="save-state")

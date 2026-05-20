@@ -21,6 +21,7 @@ import httpx
 import psycopg2
 
 from etl.utils.db import pg_connection
+from etl.utils.http import USER_AGENT
 from etl.utils.logging import setup_logging
 
 LOGGER = setup_logging(__name__)
@@ -129,7 +130,7 @@ def fetch_pokedex_content() -> str:
         },
         follow_redirects=True,
         timeout=30,
-        headers={"User-Agent": "InfiniDex-ETL/1.0"},
+        headers={"User-Agent": USER_AGENT},
     )
     r.raise_for_status()
     pages = r.json()["query"]["pages"]

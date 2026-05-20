@@ -29,12 +29,12 @@ from dataclasses import dataclass, field
 import requests
 
 from etl.utils.db import pg_connection
+from etl.utils.http import USER_AGENT
 from etl.utils.logging import setup_logging
 
 LOGGER = setup_logging(__name__)
 
 WIKI_API = "https://infinitefusion.fandom.com/api.php"
-WIKI_UA  = "InfiniDexETL/1.0 (github.com/benjsant/InfiniDex-IA)"
 WIKI_PAGE = "List_of_Move_Expert_Moves"
 
 
@@ -90,7 +90,7 @@ def fetch_wikitext() -> str:
             "prop":   "wikitext",
             "format": "json",
         },
-        headers={"User-Agent": WIKI_UA},
+        headers={"User-Agent": USER_AGENT},
         timeout=20,
     )
     resp.raise_for_status()

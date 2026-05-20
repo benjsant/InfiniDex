@@ -12,9 +12,8 @@ from __future__ import annotations
 
 import time
 
-import requests
-
 from etl.utils.db import pg_connection
+from etl.utils.http import get_json
 from etl.utils.logging import setup_logging
 
 LOGGER = setup_logging(__name__)
@@ -27,35 +26,18 @@ REQUEST_DELAY = 0.15  # seconds between requests
 SKIP_NATIONAL_IDS: set[int] = set()
 
 
-def fetch_types(national_id: int, retries: int = 3) -> list[tuple[int, str]]:
+def fetch_types(national_id: int) -> list[tuple[int, str]]:
     """Return [(slot, type_name_en)] from PokeAPI for a national_id.
 
-    Retries up to `retries` times on 429 or network error, with
-    exponential backoff (2s, 4s, 8s).
+    Retries with exponential backoff on 429/503 (handled by `get_json`).
     """
-    for attempt in range(retries):
-        try:
-            resp = requests.get(POKEAPI.format(national_id), timeout=15)
-            if resp.status_code == 429:
-                wait = 2 ** (attempt + 1)
-                LOGGER.warning("PokeAPI 429 for #%d — waiting %ds", national_id, wait)
-                time.sleep(wait)
-                continue
-            if resp.status_code != 200:
-                LOGGER.warning("PokeAPI HTTP %d for #%d", resp.status_code, national_id)
-                return []
-            data = resp.json()
-            return [
-                (t["slot"], t["type"]["name"].capitalize())
-                for t in data["types"]
-            ]
-        except Exception as e:
-            wait = 2 ** (attempt + 1)
-            LOGGER.warning("PokeAPI error for #%d (attempt %d/%d): %s — waiting %ds",
-                           national_id, attempt + 1, retries, e, wait)
-            if attempt < retries - 1:
-                time.sleep(wait)
-    return []
+    data = get_json(POKEAPI.format(national_id))
+    if data is None:
+        return []
+    return [
+        (t["slot"], t["type"]["name"].capitalize())
+        for t in data["types"]
+    ]
 
 
 def fix_pokemon_types(conn) -> None:
