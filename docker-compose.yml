@@ -252,6 +252,8 @@ services:
       - ./etl:/app/etl
       - ./data:/app/data
       - ./docker:/app/docker:ro
+      # Needed by `prefect deploy --all` to find the deployment definitions.
+      - ./prefect.yaml:/app/prefect.yaml:ro
       - prefect_data:/prefect
     networks:
       - backend
