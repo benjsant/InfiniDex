@@ -9,7 +9,7 @@ Sources:
 Output: data/encounters_if.json
 Format per entry:
   {
-    "national_id": int,
+    "if_id": int | null,           # IF Pokédex id (= pokemon.id), null if resolved by name
     "pokemon_name": str,
     "location_name": str,          # e.g. "Route 1"
     "location_if_id": int | null,  # internal IF map ID
@@ -20,8 +20,11 @@ Format per entry:
     "notes": str | null,
   }
 
-Excludes: Pokémon marked is_hoenn_only (national_id in 502–572 range, but
-Wild_Encounters doesn't reference them anyway).
+The wiki's EncounterTable/Data templates carry the *IF id* (the column in the
+IF Pokédex), not the official national id. Previous versions of this script
+labelled the field `national_id` which caused `load_encounters.py` to map
+encounters to the wrong Pokémon for every Pokémon whose if_id ≠ national_id
+(e.g. Mime Jr if_id=258 was mapped to Mudkip national=258).
 """
 
 from __future__ import annotations
@@ -62,7 +65,7 @@ clean_wikilinks = clean_wikitext
 LOCATION_RE = re.compile(r"'''(.+?) \(ID (\d+)\)'''")
 ENCOUNTER_RE = re.compile(
     r"\{\{EncounterTable/Data\|"
-    r"(\d+)\|"           # national_id
+    r"(\d+)\|"           # if_id (IF Pokédex column 1)
     r"([^|]+)\|"         # name_en
     r"([^|]+)\|"         # type1
     r"([^|]*)\|"         # type2
@@ -115,12 +118,12 @@ def parse_wild_encounters(wikitext: str) -> list[dict]:
         # Rock Smash (separate template)
         rs_m = ROCK_SMASH_RE.search(line)
         if rs_m and current_location:
-            nat_id = int(rs_m.group(1))
+            if_id  = int(rs_m.group(1))
             name   = clean_wikilinks(rs_m.group(2))
             levels = rs_m.group(5).strip()
             lmin, lmax = parse_level_range(levels.split("|")[0])
             entries.append({
-                "national_id":     nat_id,
+                "if_id":           if_id,
                 "pokemon_name":    name,
                 "location_name":   current_location,
                 "location_if_id":  current_if_id,
@@ -135,7 +138,7 @@ def parse_wild_encounters(wikitext: str) -> list[dict]:
         # Encounter data
         enc_m = ENCOUNTER_RE.search(line)
         if enc_m and current_location:
-            nat_id    = int(enc_m.group(1))
+            if_id     = int(enc_m.group(1))
             name      = clean_wikilinks(enc_m.group(2))
             levels    = enc_m.group(5).strip()
             rate_cols = enc_m.group(7) or ""
@@ -151,7 +154,7 @@ def parse_wild_encounters(wikitext: str) -> list[dict]:
                 enc_rate = re.sub(r"<small>[^<]*</small>", "", enc_rate).strip()
 
             entries.append({
-                "national_id":    nat_id,
+                "if_id":          if_id,
                 "pokemon_name":   name,
                 "location_name":  current_location,
                 "location_if_id": current_if_id,
@@ -200,7 +203,7 @@ def parse_static_encounters(wikitext: str) -> list[dict]:
         seen.add(key)
 
         entries.append({
-            "national_id":    None,   # resolved later by name
+            "if_id":          None,   # resolved later by name
             "pokemon_name":   name,
             "location_name":  location,
             "location_if_id": None,
@@ -251,7 +254,7 @@ def parse_legendary_encounters(wikitext: str) -> list[dict]:
         seen.add(key)
 
         entries.append({
-            "national_id":    None,
+            "if_id":          None,
             "pokemon_name":   name,
             "location_name":  location,
             "location_if_id": None,
