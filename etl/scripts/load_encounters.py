@@ -4,9 +4,11 @@ ETL — Load encounters into location + pokemon_location tables.
 Reads : data/encounters_if.json
 Writes: location + pokemon_location in PostgreSQL
 
-Name→ID resolution:
-  - Wild entries have national_id directly
-  - Static/Legendary entries have pokemon_name (EN) → match against pokemon.name_en
+ID resolution:
+  - Wild entries carry `if_id` (= pokemon.id) from the EncounterTable wiki
+    template — used directly as the FK.
+  - Static / Legendary entries leave `if_id = null` and resolve via
+    `pokemon_name` (EN) → pokemon.name_en (lowercased).
 """
 
 from __future__ import annotations
@@ -34,13 +36,14 @@ def load_encounters(conn) -> None:
     LOGGER.info("Loaded %d encounter entries", len(entries))
 
     with conn.cursor() as cur:
-        # Build lookup maps
-        cur.execute("SELECT id, national_id, name_en FROM pokemon WHERE is_hoenn_only = false")
-        by_national: dict[int, int]  = {}
-        by_name:     dict[str, int]  = {}
-        for db_id, nat_id, name_en in cur.fetchall():
-            if nat_id:
-                by_national[nat_id] = db_id
+        # Build lookup maps. The encounters JSON carries `if_id` (= pokemon.id);
+        # the by_name fallback is used for static/legendary entries that have
+        # `if_id == null`.
+        cur.execute("SELECT id, name_en FROM pokemon WHERE is_hoenn_only = false")
+        valid_ids:   set[int]       = set()
+        by_name:     dict[str, int] = {}
+        for db_id, name_en in cur.fetchall():
+            valid_ids.add(db_id)
             by_name[name_en.lower()] = db_id
 
         # ── Insert locations ──────────────────────────────────────────────────
@@ -90,8 +93,9 @@ def load_encounters(conn) -> None:
             resolved_any = False
             for candidate in candidate_names:
                 pid: int | None = None
-                if e.get("national_id") and len(candidate_names) == 1:
-                    pid = by_national.get(e["national_id"])
+                if e.get("if_id") and len(candidate_names) == 1:
+                    if e["if_id"] in valid_ids:
+                        pid = e["if_id"]
                 if pid is None:
                     pid = by_name.get(candidate.lower())
                 if pid is None:
