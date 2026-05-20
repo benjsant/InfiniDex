@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getFusion, getFusionFull, getFusionMoves, getFusionExpertMoves, getFusionAbilities, getSprites, getFeaturedFusions, getTopFusionsForPokemon } from "@/lib/api";
-
-const STATIC = { staleTime: Infinity } as const;
+import { STATIC } from "@/hooks/_queryOptions";
 
 const enabled = (headId: number | null, bodyId: number | null) =>
   headId != null && bodyId != null && headId > 0 && bodyId > 0;

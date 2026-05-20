@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useCallback } from "react";
+import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 
 const STORAGE_KEY = "fusiondex_favorites";
 
@@ -12,27 +13,8 @@ export interface FusionFavorite {
   savedAt: number;
 }
 
-function readStorage(): FusionFavorite[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as FusionFavorite[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeStorage(entries: FusionFavorite[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-  } catch {}
-}
-
 export function useFavorites() {
-  const [favorites, setFavorites] = useState<FusionFavorite[]>([]);
-
-  useEffect(() => {
-    setFavorites(readStorage());
-  }, []);
+  const [favorites, setFavorites] = useLocalStorageState<FusionFavorite[]>(STORAGE_KEY, []);
 
   const isFavorite = useCallback(
     (headId: number, bodyId: number) =>
@@ -46,20 +28,15 @@ export function useFavorites() {
         const exists = prev.some(
           (f) => f.headId === entry.headId && f.bodyId === entry.bodyId,
         );
-        const next = exists
+        return exists
           ? prev.filter((f) => !(f.headId === entry.headId && f.bodyId === entry.bodyId))
           : [{ ...entry, savedAt: Date.now() }, ...prev];
-        writeStorage(next);
-        return next;
       });
     },
-    [],
+    [setFavorites],
   );
 
-  const clearFavorites = useCallback(() => {
-    writeStorage([]);
-    setFavorites([]);
-  }, []);
+  const clearFavorites = useCallback(() => setFavorites([]), [setFavorites]);
 
   return { favorites, isFavorite, toggleFavorite, clearFavorites };
 }

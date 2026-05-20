@@ -65,7 +65,7 @@ export type PokemonSortBy =
   | "sp_defense_asc" | "sp_defense_desc"
   | "speed_asc"      | "speed_desc";
 
-export function getPokemonCount(params?: {
+interface PokemonFilterParams {
   type_id?: number;
   type2_id?: number;
   gen?: number;
@@ -73,8 +73,9 @@ export function getPokemonCount(params?: {
   min_bst?: number;
   max_bst?: number;
   ability_id?: number;
-}): Promise<number> {
-  const sp = new URLSearchParams();
+}
+
+function appendPokemonFilters(sp: URLSearchParams, params?: PokemonFilterParams): void {
   if (params?.type_id)    sp.set("type_id",  String(params.type_id));
   if (params?.type2_id)   sp.set("type2_id", String(params.type2_id));
   if (params?.gen)        sp.set("generation_id", String(params.gen));
@@ -82,31 +83,23 @@ export function getPokemonCount(params?: {
   if (params?.min_bst !== undefined) sp.set("min_bst", String(params.min_bst));
   if (params?.max_bst !== undefined) sp.set("max_bst", String(params.max_bst));
   if (params?.ability_id !== undefined) sp.set("ability_id", String(params.ability_id));
+}
+
+export function getPokemonCount(params?: PokemonFilterParams): Promise<number> {
+  const sp = new URLSearchParams();
+  appendPokemonFilters(sp, params);
   const qs = sp.toString() ? `?${sp}` : "";
   return apiFetch<number>(`/pokemon/count${qs}`);
 }
 
-export function getPokemonList(params?: {
-  type_id?: number;
-  type2_id?: number;
-  gen?: number;
+export function getPokemonList(params?: PokemonFilterParams & {
   page?: number;
   page_size?: number;
-  include_hoenn?: boolean;
-  min_bst?: number;
-  max_bst?: number;
   sort_by?: PokemonSortBy;
-  ability_id?: number;
 }): Promise<PokemonListItem[]> {
   const sp = new URLSearchParams();
-  if (params?.type_id)    sp.set("type_id",  String(params.type_id));
-  if (params?.type2_id)   sp.set("type2_id", String(params.type2_id));
-  if (params?.gen)        sp.set("generation_id", String(params.gen));
-  if (params?.include_hoenn === false) sp.set("include_hoenn", "false");
-  if (params?.min_bst !== undefined) sp.set("min_bst", String(params.min_bst));
-  if (params?.max_bst !== undefined) sp.set("max_bst", String(params.max_bst));
+  appendPokemonFilters(sp, params);
   if (params?.sort_by && params.sort_by !== "id") sp.set("sort_by", params.sort_by);
-  if (params?.ability_id !== undefined) sp.set("ability_id", String(params.ability_id));
   const pageSize = params?.page_size ?? 40;
   sp.set("limit", String(pageSize));
   if (params?.page && params.page > 1) {

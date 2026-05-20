@@ -2,42 +2,10 @@
 
 import { useState } from "react";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
+import { ALL_TYPES, TYPE_FR, effectiveness } from "@/lib/typeChart";
 
-const TYPES_EN = [
-  "Normal","Fire","Water","Electric","Grass","Ice",
-  "Fighting","Poison","Ground","Flying","Psychic","Bug",
-  "Rock","Ghost","Dragon","Dark","Steel","Fairy",
-];
-const TYPES_FR = [
-  "Normal","Feu","Eau","Électrik","Plante","Glace",
-  "Combat","Poison","Sol","Vol","Psy","Insecte",
-  "Roche","Spectre","Dragon","Ténèbres","Acier","Fée",
-];
-
-const CHART: Record<string, Record<string, number>> = {
-  Normal:   { Rock: 0.5, Ghost: 0, Steel: 0.5 },
-  Fire:     { Fire: 0.5, Water: 0.5, Grass: 2, Ice: 2, Bug: 2, Rock: 0.5, Dragon: 0.5, Steel: 2 },
-  Water:    { Fire: 2, Water: 0.5, Grass: 0.5, Ground: 2, Rock: 2, Dragon: 0.5 },
-  Electric: { Water: 2, Electric: 0.5, Grass: 0.5, Ground: 0, Flying: 2, Dragon: 0.5 },
-  Grass:    { Fire: 0.5, Water: 2, Grass: 0.5, Poison: 0.5, Ground: 2, Flying: 0.5, Bug: 0.5, Rock: 2, Dragon: 0.5, Steel: 0.5 },
-  Ice:      { Water: 0.5, Grass: 2, Ice: 0.5, Ground: 2, Flying: 2, Dragon: 2, Steel: 0.5 },
-  Fighting: { Normal: 2, Ice: 2, Poison: 0.5, Flying: 0.5, Psychic: 0.5, Bug: 0.5, Rock: 2, Ghost: 0, Dark: 2, Steel: 2, Fairy: 0.5 },
-  Poison:   { Grass: 2, Poison: 0.5, Ground: 0.5, Rock: 0.5, Ghost: 0.5, Steel: 0, Fairy: 2 },
-  Ground:   { Fire: 2, Electric: 2, Grass: 0.5, Poison: 2, Flying: 0, Bug: 0.5, Rock: 2, Steel: 2 },
-  Flying:   { Electric: 0.5, Grass: 2, Fighting: 2, Bug: 2, Rock: 0.5, Steel: 0.5 },
-  Psychic:  { Fighting: 2, Poison: 2, Psychic: 0.5, Dark: 0, Steel: 0.5 },
-  Bug:      { Fire: 0.5, Grass: 2, Fighting: 0.5, Flying: 0.5, Ghost: 0.5, Steel: 0.5, Fairy: 0.5 },
-  Rock:     { Fire: 2, Ice: 2, Fighting: 0.5, Ground: 0.5, Flying: 2, Bug: 2, Steel: 0.5 },
-  Ghost:    { Normal: 0, Psychic: 2, Ghost: 2, Dark: 0.5 },
-  Dragon:   { Dragon: 2, Steel: 0.5, Fairy: 0 },
-  Dark:     { Fighting: 0.5, Psychic: 2, Ghost: 2, Dark: 0.5, Fairy: 0.5 },
-  Steel:    { Fire: 0.5, Water: 0.5, Electric: 0.5, Ice: 2, Rock: 2, Steel: 0.5, Fairy: 2 },
-  Fairy:    { Fire: 0.5, Fighting: 2, Poison: 0.5, Dragon: 2, Dark: 2, Steel: 0.5 },
-};
-
-function getMultiplier(atk: string, def: string): number {
-  return CHART[atk]?.[def] ?? 1;
-}
+const TYPES_EN = ALL_TYPES;
+const TYPES_FR = ALL_TYPES.map((t) => TYPE_FR[t]);
 
 function multiplierBg(m: number): string {
   if (m === 0)    return "bg-gray-800 text-gray-500";
@@ -100,7 +68,7 @@ function FullTable() {
                 <TypeBadge typeName={TYPES_FR[ri]} size="sm" />
               </td>
               {TYPES_EN.map((defEn, ci) => {
-                const m = getMultiplier(atkEn, defEn);
+                const m = effectiveness(atkEn, defEn);
                 const label = m === 1 ? "" : multiplierText(m);
                 return (
                   <td
@@ -131,8 +99,8 @@ function MobileLookup() {
   const results: { fr: string; en: string; m: number }[] = selectedIdx === null ? [] :
     TYPES_EN.map((typeEn, i) => {
       const m = tab === "atk"
-        ? getMultiplier(TYPES_EN[selectedIdx], typeEn)   // attacking: row = selected
-        : getMultiplier(typeEn, TYPES_EN[selectedIdx]);   // defending: col = selected
+        ? effectiveness(TYPES_EN[selectedIdx], typeEn)   // attacking: row = selected
+        : effectiveness(typeEn, TYPES_EN[selectedIdx]);   // defending: col = selected
       return { en: typeEn, fr: TYPES_FR[i], m };
     }).filter((r) => r.m !== 1);
 
