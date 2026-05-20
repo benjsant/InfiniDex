@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getItems, searchItems } from "@/lib/api";
-
-const STATIC = { staleTime: Infinity };
+import { STATIC } from "@/hooks/_queryOptions";
 
 export function useItems(category?: string) {
   return useQuery({

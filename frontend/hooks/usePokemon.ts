@@ -13,9 +13,7 @@ import {
   searchPokemon,
 } from "@/lib/api";
 import type { PokemonSortBy } from "@/lib/api";
-
-// Pokémon data is static between deploys — never refetch in background.
-const STATIC: { staleTime: number } = { staleTime: Infinity };
+import { STATIC } from "@/hooks/_queryOptions";
 
 export function usePokemonList(
   params?: {

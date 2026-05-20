@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getMoves, getMove, searchMoves, getMovesByType } from "@/lib/api";
-
-// Move data is static between deploys — never refetch in background.
-const STATIC: { staleTime: number } = { staleTime: Infinity };
+import { STATIC } from "@/hooks/_queryOptions";
 
 export function useMoves() {
   return useQuery({

@@ -8,12 +8,9 @@ import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { normalize, formatPower, formatAccuracy, formatCategory } from "@/lib/utils";
 import { TYPE_FR_NAMES } from "@/lib/constants";
+import { ALL_TYPES } from "@/lib/typeChart";
 
-const TYPES_LIST = [
-  "Normal","Fire","Water","Electric","Grass","Ice",
-  "Fighting","Poison","Ground","Flying","Psychic","Bug",
-  "Rock","Ghost","Dragon","Dark","Steel","Fairy",
-];
+const TYPES_LIST = ALL_TYPES;
 
 export default function MovesPage() {
   const { data: moves = [], isLoading, isError } = useMoves();

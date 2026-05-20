@@ -1,50 +1,22 @@
 import { ImageResponse } from "next/og";
+import { BACKEND_URL, fetchJson, fetchSpriteDataUrl } from "@/lib/og";
 
 export const runtime = "edge";
 export const alt = "Fusion Pokémon Infinite Fusion";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const BACKEND_URL =
-  process.env.BACKEND_INTERNAL_URL ||
-  `http://localhost:${process.env.FUSIONDEX_BACKEND_PORT ?? "58000"}`;
-const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY ?? "";
+type FusionMeta = {
+  head_name_en: string;
+  body_name_en: string;
+  type1: { name_en: string } | null;
+  type2: { name_en: string } | null;
+  hp: number; attack: number; defense: number;
+  sp_attack: number; sp_defense: number; speed: number;
+};
 
-async function fetchMeta(headId: number, bodyId: number) {
-  try {
-    const headers: Record<string, string> = {};
-    if (INTERNAL_API_KEY) headers["X-Internal-Key"] = INTERNAL_API_KEY;
-    const res = await fetch(`${BACKEND_URL}/fusion/${headId}/${bodyId}`, { headers });
-    if (!res.ok) return null;
-    return res.json() as Promise<{
-      head_name_en: string;
-      body_name_en: string;
-      type1: { name_en: string } | null;
-      type2: { name_en: string } | null;
-      hp: number; attack: number; defense: number;
-      sp_attack: number; sp_defense: number; speed: number;
-    }>;
-  } catch {
-    return null;
-  }
-}
-
-// Satori fetches <img src> without our headers, so the key-protected sprite
-// endpoint 403s. Pre-fetch it server-side with the key and inline as a data URL.
-async function fetchSpriteDataUrl(url: string): Promise<string | null> {
-  try {
-    const headers: Record<string, string> = {};
-    if (INTERNAL_API_KEY) headers["X-Internal-Key"] = INTERNAL_API_KEY;
-    const res = await fetch(url, { headers });
-    if (!res.ok) return null;
-    const bytes = new Uint8Array(await res.arrayBuffer());
-    let binary = "";
-    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-    return `data:image/png;base64,${btoa(binary)}`;
-  } catch {
-    return null;
-  }
-}
+const fetchMeta = (headId: number, bodyId: number) =>
+  fetchJson<FusionMeta>(`/fusion/${headId}/${bodyId}`);
 
 export default async function Image({
   params,
