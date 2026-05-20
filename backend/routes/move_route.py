@@ -44,12 +44,7 @@ def _tm_to_schema(tm) -> TMListItem:
         move_id=tm.move_id,
         name_en=tm.move.name_en,
         name_fr=tm.move.name_fr,
-        type=TypeOut(
-            id=tm.move.type.id,
-            name_en=tm.move.type.name_en,
-            name_fr=tm.move.type.name_fr,
-            is_triple_fusion_type=tm.move.type.is_triple_fusion_type,
-        ),
+        type=TypeOut.from_model(tm.move.type),
         category=tm.move.category,
         power=tm.move.power,
         accuracy=tm.move.accuracy,
@@ -74,6 +69,21 @@ def get_tm(number: int = Path(..., ge=1, le=200), db: Session = Depends(get_db))
     return _tm_to_schema(tm)
 
 
+def _tutor_to_schema(t) -> MoveTutorOut:
+    return MoveTutorOut(
+        id=t.id,
+        move_id=t.move_id,
+        move_name_en=t.move.name_en,
+        move_name_fr=t.move.name_fr,
+        location_id=t.location_id,
+        location_name_en=t.location.name_en,
+        location_name_fr=t.location.name_fr,
+        price=t.price,
+        currency=t.currency,
+        npc_description=t.npc_description,
+    )
+
+
 def _move_to_list_item(m) -> MoveListItem:
     return MoveListItem(
         id=m.id,
@@ -83,12 +93,7 @@ def _move_to_list_item(m) -> MoveListItem:
         power=m.power,
         accuracy=m.accuracy,
         pp=m.pp,
-        type=TypeOut(
-            id=m.type.id,
-            name_en=m.type.name_en,
-            name_fr=m.type.name_fr,
-            is_triple_fusion_type=m.type.is_triple_fusion_type,
-        ),
+        type=TypeOut.from_model(m.type),
     )
 
 
@@ -136,22 +141,7 @@ def get_moves_by_type(type_name: str = Path(..., min_length=1, max_length=50), d
 @router.get("/tutors/all", response_model=list[MoveTutorOut])
 def get_all_tutors(db: Session = Depends(get_db)):
     """All classic move tutors grouped by location, ordered by price."""
-    rows = list_all_tutors(db)
-    return [
-        MoveTutorOut(
-            id=t.id,
-            move_id=t.move_id,
-            move_name_en=t.move.name_en,
-            move_name_fr=t.move.name_fr,
-            location_id=t.location_id,
-            location_name_en=t.location.name_en,
-            location_name_fr=t.location.name_fr,
-            price=t.price,
-            currency=t.currency,
-            npc_description=t.npc_description,
-        )
-        for t in rows
-    ]
+    return [_tutor_to_schema(t) for t in list_all_tutors(db)]
 
 
 @router.get("/experts/all", response_model=list[MoveExpertOut])
@@ -168,22 +158,7 @@ def get_move_tutors(move_id: int = Path(..., ge=1), db: Session = Depends(get_db
     only (one NPC = one move). Out of scope: Move Experts (fusion-only),
     Move Relearner, Move Deleter, Egg Move Tutor.
     """
-    tutors = list_tutors_for_move(db, move_id)
-    return [
-        MoveTutorOut(
-            id=t.id,
-            move_id=t.move_id,
-            move_name_en=t.move.name_en,
-            move_name_fr=t.move.name_fr,
-            location_id=t.location_id,
-            location_name_en=t.location.name_en,
-            location_name_fr=t.location.name_fr,
-            price=t.price,
-            currency=t.currency,
-            npc_description=t.npc_description,
-        )
-        for t in tutors
-    ]
+    return [_tutor_to_schema(t) for t in list_tutors_for_move(db, move_id)]
 
 
 @router.get("/{move_id}", response_model=MoveDetail)
@@ -227,11 +202,6 @@ def get_move(move_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
         description_en=move.description_en,
         description_fr=move.description_fr,
         source=move.source,
-        type=TypeOut(
-            id=move.type.id,
-            name_en=move.type.name_en,
-            name_fr=move.type.name_fr,
-            is_triple_fusion_type=move.type.is_triple_fusion_type,
-        ),
+        type=TypeOut.from_model(move.type),
         tm=tm_info,
     )

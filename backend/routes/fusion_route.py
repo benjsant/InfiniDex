@@ -52,8 +52,8 @@ def get_featured_fusions(
             head_name_fr=r["head_name_fr"],
             body_name_en=r["body_name_en"],
             body_name_fr=r["body_name_fr"],
-            type1=_to_type_out(r["type1"]),
-            type2=_to_type_out(r["type2"]),
+            type1=TypeOut.from_model(r["type1"]),
+            type2=TypeOut.from_model(r["type2"]),
             sprite_path=r["sprite_path"],
         )
         for r in rows
@@ -84,8 +84,8 @@ def get_top_fusions_for_pokemon(
             sp_defense=r["sp_defense"],
             speed=r["speed"],
             bst=r["bst"],
-            type1=_to_type_out(r["type1"]),
-            type2=_to_type_out(r["type2"]),
+            type1=TypeOut.from_model(r["type1"]),
+            type2=TypeOut.from_model(r["type2"]),
             sprite_path=r["sprite_path"],
             role=r["role"],
         )
@@ -105,14 +105,55 @@ def get_fusions_involving(
     return [FusionInvolvingOut(**r) for r in rows]
 
 
-def _to_type_out(t) -> TypeOut | None:
-    if t is None:
-        return None
-    return TypeOut(
-        id=t.id,
-        name_en=t.name_en,
-        name_fr=t.name_fr,
-        is_triple_fusion_type=t.is_triple_fusion_type,
+def _to_fusion_result(r: dict) -> FusionResult:
+    return FusionResult(
+        head_id=r["head_id"],
+        body_id=r["body_id"],
+        head_name_en=r["head_name_en"],
+        head_name_fr=r["head_name_fr"],
+        body_name_en=r["body_name_en"],
+        body_name_fr=r["body_name_fr"],
+        hp=r["hp"],
+        attack=r["attack"],
+        defense=r["defense"],
+        sp_attack=r["sp_attack"],
+        sp_defense=r["sp_defense"],
+        speed=r["speed"],
+        type1=TypeOut.from_model(r["type1"]),
+        type2=TypeOut.from_model(r["type2"]),
+        sprite_path=r["sprite_path"],
+    )
+
+
+def _to_fusion_move(r: dict) -> FusionMoveOut:
+    return FusionMoveOut(
+        move_id=r["move_id"],
+        name_en=r["name_en"],
+        name_fr=r["name_fr"],
+        category=r["category"],
+        power=r["power"],
+        accuracy=r["accuracy"],
+        pp=r["pp"],
+        type=TypeOut.from_model(r["type"]),
+        method=r["method"],
+        level=r["level"],
+        source=r["source"],
+        origin=r["origin"],
+    )
+
+
+def _to_fusion_expert_move(r: dict) -> FusionExpertMoveOut:
+    return FusionExpertMoveOut(
+        move_id=r["move_id"],
+        name_en=r["name_en"],
+        name_fr=r["name_fr"],
+        category=r["category"],
+        power=r["power"],
+        accuracy=r["accuracy"],
+        pp=r["pp"],
+        type=TypeOut.from_model(r["type"]),
+        locations=r["locations"],
+        prices_heart_scales=r["prices_heart_scales"],
     )
 
 
@@ -164,23 +205,7 @@ def get_fusion(head_id: int = _id_path(), body_id: int = _id_path(), db: Session
             status_code=404,
             detail=f"Pokémon #{head_id} or #{body_id} not found",
         )
-    return FusionResult(
-        head_id=result["head_id"],
-        body_id=result["body_id"],
-        head_name_en=result["head_name_en"],
-        head_name_fr=result["head_name_fr"],
-        body_name_en=result["body_name_en"],
-        body_name_fr=result["body_name_fr"],
-        hp=result["hp"],
-        attack=result["attack"],
-        defense=result["defense"],
-        sp_attack=result["sp_attack"],
-        sp_defense=result["sp_defense"],
-        speed=result["speed"],
-        type1=_to_type_out(result["type1"]),
-        type2=_to_type_out(result["type2"]),
-        sprite_path=result["sprite_path"],
-    )
+    return _to_fusion_result(result)
 
 
 @router.get("/{head_id}/{body_id}/full", response_model=FusionFullOut)
@@ -198,55 +223,9 @@ def get_fusion_full(head_id: int = _id_path(), body_id: int = _id_path(), db: Se
         )
     head, body = _load_pair_or_404(db, head_id, body_id)
 
-    fusion = FusionResult(
-        head_id=result["head_id"],
-        body_id=result["body_id"],
-        head_name_en=result["head_name_en"],
-        head_name_fr=result["head_name_fr"],
-        body_name_en=result["body_name_en"],
-        body_name_fr=result["body_name_fr"],
-        hp=result["hp"],
-        attack=result["attack"],
-        defense=result["defense"],
-        sp_attack=result["sp_attack"],
-        sp_defense=result["sp_defense"],
-        speed=result["speed"],
-        type1=_to_type_out(result["type1"]),
-        type2=_to_type_out(result["type2"]),
-        sprite_path=result["sprite_path"],
-    )
-    moves = [
-        FusionMoveOut(
-            move_id=r["move_id"],
-            name_en=r["name_en"],
-            name_fr=r["name_fr"],
-            category=r["category"],
-            power=r["power"],
-            accuracy=r["accuracy"],
-            pp=r["pp"],
-            type=_to_type_out(r["type"]),
-            method=r["method"],
-            level=r["level"],
-            source=r["source"],
-            origin=r["origin"],
-        )
-        for r in compute_fusion_moves(db, head.id, body.id)
-    ]
-    expert_moves = [
-        FusionExpertMoveOut(
-            move_id=r["move_id"],
-            name_en=r["name_en"],
-            name_fr=r["name_fr"],
-            category=r["category"],
-            power=r["power"],
-            accuracy=r["accuracy"],
-            pp=r["pp"],
-            type=_to_type_out(r["type"]),
-            locations=r["locations"],
-            prices_heart_scales=r["prices_heart_scales"],
-        )
-        for r in compute_fusion_expert_moves(db, head, body)
-    ]
+    fusion = _to_fusion_result(result)
+    moves = [_to_fusion_move(r) for r in compute_fusion_moves(db, head.id, body.id)]
+    expert_moves = [_to_fusion_expert_move(r) for r in compute_fusion_expert_moves(db, head, body)]
     return FusionFullOut(fusion=fusion, moves=moves, expert_moves=expert_moves)
 
 
@@ -254,24 +233,7 @@ def get_fusion_full(head_id: int = _id_path(), body_id: int = _id_path(), db: Se
 def get_fusion_moves(head_id: int = _id_path(), body_id: int = _id_path(), db: Session = Depends(get_db)):
     """Combined head + body moveset, deduplicated per move (origin='head'|'body'|'both')."""
     head, body = _load_pair_or_404(db, head_id, body_id)
-    rows = compute_fusion_moves(db, head.id, body.id)
-    return [
-        FusionMoveOut(
-            move_id=r["move_id"],
-            name_en=r["name_en"],
-            name_fr=r["name_fr"],
-            category=r["category"],
-            power=r["power"],
-            accuracy=r["accuracy"],
-            pp=r["pp"],
-            type=_to_type_out(r["type"]),
-            method=r["method"],
-            level=r["level"],
-            source=r["source"],
-            origin=r["origin"],
-        )
-        for r in rows
-    ]
+    return [_to_fusion_move(r) for r in compute_fusion_moves(db, head.id, body.id)]
 
 
 @router.get("/{head_id}/{body_id}/abilities", response_model=list[FusionAbilityOut])
@@ -295,19 +257,4 @@ def get_fusion_weaknesses(head_id: int = _id_path(), body_id: int = _id_path(), 
 def get_fusion_expert_moves(head_id: int = _id_path(), body_id: int = _id_path(), db: Session = Depends(get_db)):
     """Moves teachable to this fusion by a Move Expert (Knot / Boon Island)."""
     head, body = _load_pair_or_404(db, head_id, body_id)
-    rows = compute_fusion_expert_moves(db, head, body)
-    return [
-        FusionExpertMoveOut(
-            move_id=r["move_id"],
-            name_en=r["name_en"],
-            name_fr=r["name_fr"],
-            category=r["category"],
-            power=r["power"],
-            accuracy=r["accuracy"],
-            pp=r["pp"],
-            type=_to_type_out(r["type"]),
-            locations=r["locations"],
-            prices_heart_scales=r["prices_heart_scales"],
-        )
-        for r in rows
-    ]
+    return [_to_fusion_expert_move(r) for r in compute_fusion_expert_moves(db, head, body)]

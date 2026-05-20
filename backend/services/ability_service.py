@@ -5,7 +5,7 @@ from __future__ import annotations
 from sqlalchemy.orm import Session
 
 from backend.db.models import Ability
-from backend.utils.text import ilike_escape, normalize
+from backend.utils.search import bilingual_ilike_search
 
 
 def list_abilities(db: Session) -> list[Ability]:
@@ -18,19 +18,4 @@ def get_ability_by_id(db: Session, ability_id: int) -> Ability | None:
 
 def search_abilities(db: Session, name: str) -> list[Ability]:
     """Accent-insensitive partial match on name_en OR name_fr."""
-    needle = normalize(name)
-    escaped = ilike_escape(name)
-    candidates = (
-        db.query(Ability)
-        .filter(
-            Ability.name_en.ilike(f"%{escaped}%", escape="\\")
-            | Ability.name_fr.ilike(f"%{escaped}%", escape="\\")
-        )
-        .all()
-    )
-    exact = [
-        a for a in candidates
-        if needle in normalize(a.name_en or "")
-        or needle in normalize(a.name_fr or "")
-    ]
-    return exact if exact else candidates
+    return bilingual_ilike_search(db, Ability, name)
