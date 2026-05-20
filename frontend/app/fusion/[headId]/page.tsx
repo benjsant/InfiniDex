@@ -7,17 +7,8 @@ import { ChevronLeft } from "lucide-react";
 import { usePokemon, usePokemonList, useTypes } from "@/hooks/usePokemon";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import { normalize, primaryType, secondaryType } from "@/lib/utils";
-import type { PokemonListItem } from "@/types/api";
 
 const PAGE_SIZE = 40;
-
-function fusionBst(head: { hp: number; attack: number; defense: number; sp_attack: number; sp_defense: number; speed: number }, body: PokemonListItem & { hp?: number; attack?: number; defense?: number; sp_attack?: number; sp_defense?: number; speed?: number }): number {
-  // PokemonListItem only has bst, not individual stats — we use bst approximation:
-  // BST(fusion) ≈ floor(body.bst * 2/3 + head.bst * 1/3) is NOT correct per-stat,
-  // but we don't have per-stat data in list items.
-  // Use the body's bst directly to rank (head stats are constant, so relative order is preserved).
-  return body.bst;
-}
 
 type SortMode = "bst_desc" | "bst_asc" | "id";
 

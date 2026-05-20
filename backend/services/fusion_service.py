@@ -126,26 +126,52 @@ def fusion_bst_expr(head, body):
     )
 
 
-def compute_fusion_from_objects(head: Pokemon, body: Pokemon) -> dict:
-    """Same as compute_fusion but takes already-loaded Pokemon objects.
+def _build_fusion_dict(
+    head: Pokemon,
+    body: Pokemon,
+    *,
+    with_stats: bool = True,
+    type1=None,
+    type2=None,
+    **extra,
+) -> dict:
+    """Common dict shape returned by every fusion endpoint.
 
-    Avoids two extra load_pokemon_with_types queries when the caller
-    already has the objects (e.g. the AI agent tool).
+    `type1`/`type2` default to `compute_fusion_types(head, body)`; pass them
+    explicitly when the caller has already computed types from a different
+    pair (e.g. list_top_fusions loads `h_full`/`b_full` separately to access
+    `.types`). `with_stats=False` skips the stat block (used by
+    `list_featured_fusions` which only needs identity + sprite + types).
+    Extra kwargs (`rank`, `bst`, `role`) are merged in for listings.
     """
-    type1_obj, type2_obj = compute_fusion_types(head, body)
-
-    return {
+    if type1 is None and type2 is None:
+        type1, type2 = compute_fusion_types(head, body)
+    d: dict = {
         "head_id":      head.id,
         "body_id":      body.id,
         "head_name_en": head.name_en,
         "head_name_fr": head.name_fr,
         "body_name_en": body.name_en,
         "body_name_fr": body.name_fr,
-        **fusion_stats(head, body),
-        "type1":        type1_obj,
-        "type2":        type2_obj,
-        "sprite_path":  f"{head.id}.{body.id}.png",
     }
+    if with_stats:
+        d.update(fusion_stats(head, body))
+    d.update({
+        "type1":       type1,
+        "type2":       type2,
+        "sprite_path": f"{head.id}.{body.id}.png",
+    })
+    d.update(extra)
+    return d
+
+
+def compute_fusion_from_objects(head: Pokemon, body: Pokemon) -> dict:
+    """Same as compute_fusion but takes already-loaded Pokemon objects.
+
+    Avoids two extra load_pokemon_with_types queries when the caller
+    already has the objects (e.g. the AI agent tool).
+    """
+    return _build_fusion_dict(head, body)
 
 
 NORMAL_TYPE_EN = "Normal"
@@ -470,18 +496,7 @@ def list_featured_fusions(db: Session, limit: int = 50) -> list[dict]:
         body = load_pokemon_with_types(db, body_id)
         if not head or not body:
             continue
-        type1, type2 = compute_fusion_types(head, body)
-        result.append({
-            "head_id":      head_id,
-            "body_id":      body_id,
-            "head_name_en": head.name_en,
-            "head_name_fr": head.name_fr,
-            "body_name_en": body.name_en,
-            "body_name_fr": body.name_fr,
-            "type1":        type1,
-            "type2":        type2,
-            "sprite_path":  f"{head_id}.{body_id}.png",
-        })
+        result.append(_build_fusion_dict(head, body, with_stats=False))
     return result
 
 
@@ -511,20 +526,11 @@ def list_top_fusions(db: Session, limit: int = 50) -> list[dict]:
         h_full = load_pokemon_with_types(db, head.id)
         b_full = load_pokemon_with_types(db, body.id)
         type1, type2 = compute_fusion_types(h_full, b_full)
-        result.append({
-            "rank":         rank,
-            "head_id":      head.id,
-            "body_id":      body.id,
-            "head_name_en": head.name_en,
-            "head_name_fr": head.name_fr,
-            "body_name_en": body.name_en,
-            "body_name_fr": body.name_fr,
-            **fusion_stats(head, body),
-            "bst":          int(bst),
-            "type1":        type1,
-            "type2":        type2,
-            "sprite_path":  f"{head.id}.{body.id}.png",
-        })
+        result.append(_build_fusion_dict(
+            head, body,
+            type1=type1, type2=type2,
+            rank=rank, bst=int(bst),
+        ))
     return result
 
 
@@ -575,21 +581,11 @@ def list_top_fusions_for_pokemon(db: Session, pokemon_id: int, limit: int = 5) -
         h_full = load_pokemon_with_types(db, head.id)
         b_full = load_pokemon_with_types(db, body.id)
         type1, type2 = compute_fusion_types(h_full, b_full)
-        result.append({
-            "rank":         rank,
-            "head_id":      head.id,
-            "body_id":      body.id,
-            "head_name_en": head.name_en,
-            "head_name_fr": head.name_fr,
-            "body_name_en": body.name_en,
-            "body_name_fr": body.name_fr,
-            **fusion_stats(head, body),
-            "bst":          bst,
-            "type1":        type1,
-            "type2":        type2,
-            "sprite_path":  f"{head.id}.{body.id}.png",
-            "role":         role,
-        })
+        result.append(_build_fusion_dict(
+            head, body,
+            type1=type1, type2=type2,
+            rank=rank, bst=bst, role=role,
+        ))
     return result
 
 
@@ -626,20 +622,7 @@ def compute_fusion(
     if not head or not body:
         return None
 
-    type1_obj, type2_obj = compute_fusion_types(head, body)
-
-    result = {
-        "head_id":      head_id,
-        "body_id":      body_id,
-        "head_name_en": head.name_en,
-        "head_name_fr": head.name_fr,
-        "body_name_en": body.name_en,
-        "body_name_fr": body.name_fr,
-        **fusion_stats(head, body),
-        "type1":        type1_obj,
-        "type2":        type2_obj,
-        "sprite_path":  f"{head_id}.{body_id}.png",
-    }
+    result = _build_fusion_dict(head, body)
     if len(_fusion_cache) >= _FUSION_CACHE_MAX:
         _fusion_cache.clear()
     _fusion_cache[key] = result
