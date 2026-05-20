@@ -26,9 +26,8 @@ from typing import Callable, Iterable, Sequence
 
 import requests
 
-# Identifying User-Agent — PokeAPI fair-use asks consumers to identify
-# themselves; matches etl/utils/http.py and the fix_*_from_pokeapi scripts.
-USER_AGENT = "InfiniDexETL/1.0 (+https://github.com/benjsant/InfiniDex-IA; educational)"
+from etl.utils.http import USER_AGENT
+
 _HEADERS = {"User-Agent": USER_AGENT}
 
 

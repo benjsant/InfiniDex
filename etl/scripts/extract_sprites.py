@@ -30,6 +30,7 @@ from pathlib import Path
 import requests
 from PIL import Image
 
+from etl.utils.http import USER_AGENT
 from etl.utils.io import load_json
 from etl.utils.logging import setup_logging
 
@@ -53,10 +54,7 @@ DOWNLOAD_DELAY = 2.0    # seconds between two spritesheets (respectful)
 
 SPRITE_RE = re.compile(r"^(\d+)\.(\d+)([a-z]*)\.png$")
 
-# Identifying User-Agent so infinitefusion.net / GitHub can identify this client
-HEADERS = {
-    "User-Agent": "InfiniDexETL/1.0 (+https://github.com/benjsant/InfiniDex-IA; educational)"
-}
+HEADERS = {"User-Agent": USER_AGENT}
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

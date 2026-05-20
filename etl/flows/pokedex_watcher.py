@@ -21,13 +21,14 @@ Scheduled Prefect run (every 24h):
 from __future__ import annotations
 
 import json
-import os
 import re
 from pathlib import Path
 
 import requests
 from prefect import flow, task
 from prefect.logging import get_run_logger
+
+from etl.utils.discord import post_message as post_discord
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 DATA_DIR       = Path(__file__).resolve().parents[2] / "data"
@@ -42,14 +43,6 @@ GAME_REPO    = "infinitefusion/infinitefusion-e18"
 GAME_BRANCH  = "main"
 GAME_DEX_FILE = "Data/pokedex/all_entries.json"
 GAME_SHA_FILE = DATA_DIR / "game_dex_last_sha.txt"
-
-_DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK_URL", "")
-# Discord webhooks sit behind Cloudflare, which 403s requests with a default
-# python User-Agent (CF error 1010) — set a browser UA to get through.
-_DISCORD_UA = (
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/120.0 Safari/537.36"
-)
 
 # PokedexTable/Data template:  {{PokedexTable/Data|index|id|name|...}}
 _ENTRY_RE = re.compile(
@@ -177,23 +170,7 @@ def notify_new_pokemon(new_entries: list[tuple[int, str]], source: str) -> None:
         f"{lines}{suffix}\n\n"
         "An ETL re-run (`extract_pokedex_if.py` → `load_db.py`) is needed to integrate them."
     )
-
-    if not _DISCORD_WEBHOOK:
-        logger.info("DISCORD_WEBHOOK_URL not set — notification skipped.")
-        logger.info("Message would have been:\n%s", msg)
-        return
-
-    try:
-        resp = requests.post(
-            _DISCORD_WEBHOOK,
-            json={"content": msg},
-            headers={"User-Agent": _DISCORD_UA},
-            timeout=10,
-        )
-        resp.raise_for_status()
-        logger.info("Discord notification sent.")
-    except Exception as exc:
-        logger.warning("Discord notification failed: %s", exc)
+    post_discord(msg, logger=logger, label=f"new-pokemon ({source})")
 
 
 @task(name="save-pokedex-snapshot")
