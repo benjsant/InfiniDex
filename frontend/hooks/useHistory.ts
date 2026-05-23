@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 
-const STORAGE_KEY = "fusiondex_history";
+const STORAGE_KEY = "infinidex_history";
 const MAX_ENTRIES = 20;
 
 export interface FusionHistoryEntry {

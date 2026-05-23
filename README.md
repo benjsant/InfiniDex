@@ -2,7 +2,7 @@
 
 Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.com/) — 572 Pokémon (501 Kanto + 71 Hoenn), 168 000+ fusions calculées, movepools, types, triple-fusions, Move Experts, maîtres des capacités, galerie des créateurs de sprites, et un **assistant IA agentique** à 9 outils.
 
-📖 **[Documentation complète →](https://benjsant.github.io/InfiniDex-IA/)**
+📖 **[Documentation complète →](https://benjsant.github.io/InfiniDex/)**
 
 ---
 
@@ -38,8 +38,8 @@ Choix d'archi que je voulais documenter pour les recruteurs IA / data eng qui ou
 Pré-requis : **Docker + Docker Compose**.
 
 ```bash
-git clone https://github.com/benjsant/FusionDex-IA.git
-cd FusionDex-IA
+git clone https://github.com/benjsant/InfiniDex.git
+cd InfiniDex
 
 cp .env.example .env
 # Optionnel : renseigner DEEPSEEK_API_KEY ou OPENROUTER_API_KEY pour l'IA
@@ -75,7 +75,7 @@ Deux flows quotidiens qui détectent les ajouts upstream et postent sur Discord 
 ```bash
 docker compose --profile prefect up -d
 docker compose --profile prefect exec prefect-worker \
-  prefect work-pool create fusiondex-pool --type process --skip-if-exists
+  prefect work-pool create infinidex-pool --type process --skip-if-exists
 docker compose --profile prefect exec prefect-worker \
   prefect --no-prompt deploy --all
 ```
@@ -160,7 +160,7 @@ ETL (Python/uv + Prefect)
                     └── /ai/ask  →  agent tool-calling (DeepSeek / OpenRouter / Ollama)
 ```
 
-Voir la [documentation complète](https://benjsant.github.io/InfiniDex-IA/) pour les diagrammes détaillés, la référence API et le guide de développement.
+Voir la [documentation complète](https://benjsant.github.io/InfiniDex/) pour les diagrammes détaillés, la référence API et le guide de développement.
 
 ---
 

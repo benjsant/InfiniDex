@@ -149,7 +149,7 @@ Les événements `tool_call` permettent à l'UI d'afficher les outils invoqués 
 
 **Provider sélectionné à runtime** : `DEEPSEEK_API_KEY` → DeepSeek · `OPENROUTER_API_KEY` → OpenRouter · `OLLAMA_URL` → Ollama · Aucun → `503` avec instructions de setup.
 
-Implémentation : [`backend/services/ai_service.py`](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/services/ai_service.py) (boucle), [`backend/services/tools/`](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/services/tools/) (handlers).
+Implémentation : [`backend/services/ai_service.py`](https://github.com/benjsant/InfiniDex/blob/main/backend/services/ai_service.py) (boucle), [`backend/services/tools/`](https://github.com/benjsant/InfiniDex/blob/main/backend/services/tools/) (handlers).
 
 ## CORS
 

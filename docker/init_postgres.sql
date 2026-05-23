@@ -1,5 +1,5 @@
 -- ============================================================
--- InfiniDex-IA — Schéma PostgreSQL complet v2
+-- InfiniDex — Schéma PostgreSQL complet v2
 -- Bilingue EN/FR — Pokémon Infinite Fusion
 -- ============================================================
 --

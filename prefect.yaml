@@ -1,4 +1,4 @@
-name: fusiondex-etl
+name: infinidex-etl
 prefect-version: "3.*"
 
 # Pas de build/push — le code est monté via volume dans le worker.
@@ -17,7 +17,7 @@ deployments:
   - name: pokedex-watcher-daily
     entrypoint: etl/flows/pokedex_watcher.py:pokedex_watcher_flow
     work_pool:
-      name: fusiondex-pool
+      name: infinidex-pool
     schedules:
       - cron: "0 6 * * *"
         timezone: "Europe/Paris"
@@ -30,7 +30,7 @@ deployments:
   - name: sprite-watcher-daily
     entrypoint: etl/flows/sprite_watcher.py:sprite_watcher_flow
     work_pool:
-      name: fusiondex-pool
+      name: infinidex-pool
     schedules:
       - cron: "0 7 * * *"
         timezone: "Europe/Paris"
@@ -42,7 +42,7 @@ deployments:
   - name: etl-pipeline-manual
     entrypoint: etl/flows/etl_pipeline.py:etl_pipeline_flow
     work_pool:
-      name: fusiondex-pool
+      name: infinidex-pool
     parameters:
       force: false
     schedules: []

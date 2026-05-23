@@ -1,4 +1,4 @@
-# Contributing to InfiniDex-IA
+# Contributing to InfiniDex
 
 Thanks for your interest in contributing. This guide covers local setup, conventions, and the PR process.
 
@@ -14,8 +14,8 @@ Thanks for your interest in contributing. This guide covers local setup, convent
 ## Local setup
 
 ```bash
-git clone https://github.com/benjsant/InfiniDex-IA.git
-cd InfiniDex-IA
+git clone https://github.com/benjsant/InfiniDex.git
+cd InfiniDex
 
 cp .env.example .env
 # Optional: add DEEPSEEK_API_KEY or OPENROUTER_API_KEY for AI features
@@ -160,4 +160,4 @@ Adding a tool:
 
 ## Getting help
 
-Open a [GitHub issue](https://github.com/benjsant/InfiniDex-IA/issues) for bugs or questions. The [docs](https://benjsant.github.io/InfiniDex-IA/) cover architecture, API reference, and the full development guide.
+Open a [GitHub issue](https://github.com/benjsant/InfiniDex/issues) for bugs or questions. The [docs](https://benjsant.github.io/InfiniDex/) cover architecture, API reference, and the full development guide.

@@ -198,7 +198,7 @@ L'assistant IA est un **agent tool-calling** — il ne génère pas de réponse 
 
 ### System prompt
 
-Stocké dans [`backend/prompts/system.md`](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/prompts/system.md) — fichier Markdown chargé au démarrage via `pathlib`. Écrit en anglais (meilleure instruction-following), avec règle explicite de répondre en français. Mis à jour sans redéploiement (hot-reload au prochain démarrage du conteneur).
+Stocké dans [`backend/prompts/system.md`](https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md) — fichier Markdown chargé au démarrage via `pathlib`. Écrit en anglais (meilleure instruction-following), avec règle explicite de répondre en français. Mis à jour sans redéploiement (hot-reload au prochain démarrage du conteneur).
 
 ### Boucle agent (`ai_service.py`)
 
@@ -291,11 +291,11 @@ Interface `LLMProvider` abstraite — sélection runtime :
 
 ## Références
 
-- [backend/main.py](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/main.py) — wiring FastAPI + CORS + StaticCacheMiddleware
-- [backend/services/ai_service.py](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/services/ai_service.py) — boucle agent + SSE
-- [backend/services/tools/](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/services/tools/) — db_tools, wiki_tool, dispatch
-- [backend/prompts/system.md](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/prompts/system.md) — system prompt
-- [docker-compose.yml](https://github.com/benjsant/InfiniDex-IA/blob/main/docker-compose.yml) — services dev
-- [docker-compose.prod.yml](https://github.com/benjsant/InfiniDex-IA/blob/main/docker-compose.prod.yml) — override prod
-- [frontend/app/api/[...path]/route.ts](https://github.com/benjsant/InfiniDex-IA/blob/main/frontend/app/api/%5B...path%5D/route.ts) — proxy catch-all
+- [backend/main.py](https://github.com/benjsant/InfiniDex/blob/main/backend/main.py) — wiring FastAPI + CORS + StaticCacheMiddleware
+- [backend/services/ai_service.py](https://github.com/benjsant/InfiniDex/blob/main/backend/services/ai_service.py) — boucle agent + SSE
+- [backend/services/tools/](https://github.com/benjsant/InfiniDex/blob/main/backend/services/tools/) — db_tools, wiki_tool, dispatch
+- [backend/prompts/system.md](https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md) — system prompt
+- [docker-compose.yml](https://github.com/benjsant/InfiniDex/blob/main/docker-compose.yml) — services dev
+- [docker-compose.prod.yml](https://github.com/benjsant/InfiniDex/blob/main/docker-compose.prod.yml) — override prod
+- [frontend/app/api/[...path]/route.ts](https://github.com/benjsant/InfiniDex/blob/main/frontend/app/api/%5B...path%5D/route.ts) — proxy catch-all
 - [Référence routes](reference/routes.md) — endpoints FastAPI auto-documentés.

@@ -76,8 +76,8 @@ class OpenRouterProvider(LLMProvider):
             api_key=api_key,
             base_url=self.BASE_URL,
             default_headers={
-                "HTTP-Referer": "https://github.com/benjsant/InfiniDex-IA",
-                "X-Title":      "InfiniDex-IA",
+                "HTTP-Referer": "https://github.com/benjsant/InfiniDex",
+                "X-Title":      "InfiniDex",
             },
         )
 

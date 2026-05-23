@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 
-const STORAGE_KEY = "fusiondex_pokemon_favorites";
+const STORAGE_KEY = "infinidex_pokemon_favorites";
 
 export interface PokemonFavorite {
   id: number;

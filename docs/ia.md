@@ -173,7 +173,7 @@ Ajouter un nouveau provider = implémenter deux méthodes : `complete()` et `str
 
 ## System prompt
 
-Stocké dans [`backend/prompts/system.md`](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/prompts/system.md) — chargé au démarrage via `pathlib`. Écrit en anglais (meilleure instruction-following), avec règle explicite de répondre en français. Mis à jour sans redéploiement (rechargé au prochain démarrage du conteneur).
+Stocké dans [`backend/prompts/system.md`](https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md) — chargé au démarrage via `pathlib`. Écrit en anglais (meilleure instruction-following), avec règle explicite de répondre en français. Mis à jour sans redéploiement (rechargé au prochain démarrage du conteneur).
 
 ## Use-cases cibles
 
@@ -183,8 +183,8 @@ Stocké dans [`backend/prompts/system.md`](https://github.com/benjsant/InfiniDex
 
 ## Références code
 
-- [`backend/services/ai_service.py`](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/services/ai_service.py) — boucle agent + SSE
-- [`backend/services/llm_providers.py`](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/services/llm_providers.py) — interface `LLMProvider` + implémentations
-- [`backend/services/tools/`](https://github.com/benjsant/InfiniDex-IA/tree/main/backend/services/tools/) — db_tools, wiki_tool, web_tool, dispatch
-- [`backend/prompts/system.md`](https://github.com/benjsant/InfiniDex-IA/blob/main/backend/prompts/system.md) — system prompt
-- [`frontend/app/ai/page.tsx`](https://github.com/benjsant/InfiniDex-IA/blob/main/frontend/app/ai/page.tsx) — AiChat.tsx avec SSE reader
+- [`backend/services/ai_service.py`](https://github.com/benjsant/InfiniDex/blob/main/backend/services/ai_service.py) — boucle agent + SSE
+- [`backend/services/llm_providers.py`](https://github.com/benjsant/InfiniDex/blob/main/backend/services/llm_providers.py) — interface `LLMProvider` + implémentations
+- [`backend/services/tools/`](https://github.com/benjsant/InfiniDex/tree/main/backend/services/tools/) — db_tools, wiki_tool, web_tool, dispatch
+- [`backend/prompts/system.md`](https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md) — system prompt
+- [`frontend/app/ai/page.tsx`](https://github.com/benjsant/InfiniDex/blob/main/frontend/app/ai/page.tsx) — AiChat.tsx avec SSE reader

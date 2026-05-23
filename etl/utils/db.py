@@ -27,8 +27,8 @@ def get_pg_connection():
     return psycopg2.connect(
         host=os.getenv("POSTGRES_HOST", "db"),
         port=int(os.getenv("POSTGRES_PORT", "5432")),
-        dbname=os.getenv("POSTGRES_DB", "fusiondex_db"),
-        user=os.getenv("POSTGRES_USER", "fusiondex_user"),
+        dbname=os.getenv("POSTGRES_DB", "infinidex_db"),
+        user=os.getenv("POSTGRES_USER", "infinidex_user"),
         password=_require_password(),
     )
 
@@ -56,11 +56,11 @@ def pg_connection() -> Iterator[psycopg2.extensions.connection]:
 
 def get_engine():
     url = (
-        f"postgresql://{os.getenv('POSTGRES_USER', 'fusiondex_user')}"
+        f"postgresql://{os.getenv('POSTGRES_USER', 'infinidex_user')}"
         f":{_require_password()}"
         f"@{os.getenv('POSTGRES_HOST', 'db')}"
         f":{os.getenv('POSTGRES_PORT', '5432')}"
-        f"/{os.getenv('POSTGRES_DB', 'fusiondex_db')}"
+        f"/{os.getenv('POSTGRES_DB', 'infinidex_db')}"
     )
     return create_engine(url)
 

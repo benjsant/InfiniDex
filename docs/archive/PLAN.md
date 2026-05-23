@@ -1,4 +1,4 @@
-# InfiniDex-IA — Plan d'action complet
+# InfiniDex — Plan d'action complet
 
 ## Sources de données
 

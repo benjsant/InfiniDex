@@ -12,7 +12,7 @@ Guide pour installer, lancer et contribuer au projet.
 
 ```bash
 git clone <repo-url>
-cd InfiniDex-IA
+cd InfiniDex
 cp .env.example .env               # ajuste POSTGRES_PASSWORD si besoin
 docker compose up -d               # db + backend + sprites + frontend
 ```
@@ -87,10 +87,10 @@ uv run mkdocs serve     # http://127.0.0.1:58100
 Les ports hôte sont tous configurables via `.env` pour éviter les collisions avec d'autres projets locaux.
 
 ```dotenv
-FUSIONDEX_FRONTEND_PORT=53000
-FUSIONDEX_BACKEND_PORT=58000
-FUSIONDEX_SPRITES_PORT=58080
-FUSIONDEX_DB_PORT=55432
+INFINIDEX_FRONTEND_PORT=53000
+INFINIDEX_BACKEND_PORT=58000
+INFINIDEX_SPRITES_PORT=58080
+INFINIDEX_DB_PORT=55432
 ```
 
 Le serveur MkDocs (dev-tooling) est fixé à `58100` dans `mkdocs.yml`.
@@ -186,7 +186,7 @@ Ces variables sont lues **à runtime** par les route handlers — pas besoin de 
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
-En prod, seul `frontend` est exposé publiquement. Prérequis : `.env.prod` avec `POSTGRES_PASSWORD`, `CORS_ALLOWED_ORIGINS=https://<domaine>`, `FUSIONDEX_FRONTEND_PORT=<public>`.
+En prod, seul `frontend` est exposé publiquement. Prérequis : `.env.prod` avec `POSTGRES_PASSWORD`, `CORS_ALLOWED_ORIGINS=https://<domaine>`, `INFINIDEX_FRONTEND_PORT=<public>`.
 
 ## Tests
 

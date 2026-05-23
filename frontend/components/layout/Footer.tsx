@@ -65,7 +65,7 @@ export function Footer() {
           <p className="text-xs" style={{ color: "var(--color-if-text-xs)" }}>
             Projet open source —{" "}
             <a
-              href="https://github.com/benjsant/InfiniDex-IA"
+              href="https://github.com/benjsant/InfiniDex"
               target="_blank"
               rel="noopener noreferrer"
               className="underline underline-offset-2 hover:opacity-80"

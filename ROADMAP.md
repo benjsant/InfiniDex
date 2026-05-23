@@ -1,4 +1,4 @@
-# InfiniDex-IA — Roadmap
+# InfiniDex — Roadmap
 
 État d'avancement et prochaines étapes par couche.
 
@@ -110,7 +110,7 @@ L'assistant cible 3 usages (par ordre de priorité) :
 - [x] Dump SQL fixture → full pytest en CI
 - [ ] Choix de l'hébergement (Fly.io, Railway, VPS ?)
 - [ ] TLS + domaine pour la démo publique
-- [x] Déployer la doc MkDocs (GitHub Pages) — workflow `docs.yml`, URL `benjsant.github.io/InfiniDex-IA`
+- [x] Déployer la doc MkDocs (GitHub Pages) — workflow `docs.yml`, URL `benjsant.github.io/InfiniDex`
 
 ## Documentation — ✅ complète
 

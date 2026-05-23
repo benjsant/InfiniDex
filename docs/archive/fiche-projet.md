@@ -1,8 +1,8 @@
 ---
-title: Fiche projet — InfiniDex-IA
+title: Fiche projet — InfiniDex
 ---
 
-# Fiche projet — InfiniDex-IA
+# Fiche projet — InfiniDex
 
 One-pager pour portfolio, pitch recruteur, ou base de README enrichi. Mis à jour au 2026-04-18.
 
@@ -14,7 +14,7 @@ Pokédex intelligent pour **Pokémon Infinite Fusion** : pipeline ETL + API REST
 
 Pokémon Infinite Fusion est un fan-game qui permet de fusionner n'importe quel Pokémon avec n'importe quel autre (~176 000 combinaisons). Aucune API officielle ; les données (stats, movepools, fusions, sprites, règles spéciales type Move Experts) sont réparties sur le **Wiki IF**, **PokeAPI** et **Poképédia**.
 
-**InfiniDex-IA** centralise tout ça dans une base PostgreSQL interrogeable, l'expose via une API REST propre et le rend explorable via un frontend Next.js.
+**InfiniDex** centralise tout ça dans une base PostgreSQL interrogeable, l'expose via une API REST propre et le rend explorable via un frontend Next.js.
 
 ## Stack technique
 
@@ -81,6 +81,6 @@ Pokémon Infinite Fusion est un fan-game qui permet de fusionner n'importe quel 
 
 ## Liens
 
-- **Repo** : [github.com/benjsant/InfiniDex-IA](https://github.com/benjsant/InfiniDex-IA)
+- **Repo** : [github.com/benjsant/InfiniDex](https://github.com/benjsant/InfiniDex)
 - **Doc technique** : `docs/` (lancée via `docker compose --profile docs up docs` → `localhost:58100`)
 - **Roadmap live** : [`ROADMAP.md`](../roadmap.md)

@@ -12,10 +12,10 @@ Via Docker Compose (uses dev DB):
     docker compose --profile test run --rm test-backend
 
 POSTGRES_HOST  defaults to 'localhost'.
-POSTGRES_PORT  defaults to FUSIONDEX_DB_PORT env var, fallback 55432.
+POSTGRES_PORT  defaults to INFINIDEX_DB_PORT env var, fallback 55432.
 SPRITES_DIR    defaults to 'data/sprites'; set to 'tests/fixtures/sprites'
                in CI to serve the minimal test PNG without the full dataset.
-FUSIONDEX_TEST_DOCKER=1  set by the test-backend Compose service to allow
+INFINIDEX_TEST_DOCKER=1  set by the test-backend Compose service to allow
                connecting to the internal 'db' hostname.
 """
 
@@ -27,14 +27,14 @@ import pytest
 from fastapi.testclient import TestClient
 
 os.environ.setdefault("POSTGRES_HOST", "localhost")
-os.environ.setdefault("POSTGRES_PORT", os.environ.get("FUSIONDEX_DB_PORT", "55432"))
+os.environ.setdefault("POSTGRES_PORT", os.environ.get("INFINIDEX_DB_PORT", "55432"))
 # session.py now requires POSTGRES_PASSWORD at import (no insecure default).
 # The DB-free smoke job never connects, so a dummy lets import/collection
 # succeed; CI full job and local runs inject the real value (no-op here).
 os.environ.setdefault("POSTGRES_PASSWORD", "changeme")
 
 _host = os.environ["POSTGRES_HOST"]
-_docker_mode = os.environ.get("FUSIONDEX_TEST_DOCKER") == "1"
+_docker_mode = os.environ.get("INFINIDEX_TEST_DOCKER") == "1"
 if not _docker_mode and _host not in ("localhost", "127.0.0.1"):
     raise RuntimeError(
         f"Tests must run against a local DB (got POSTGRES_HOST={_host!r}). "

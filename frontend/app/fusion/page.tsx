@@ -52,7 +52,7 @@ function exportFavoritesJson(favorites: FusionFavorite[]) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "fusiondex-favoris.json";
+  a.download = "infinidex-favoris.json";
   a.click();
   URL.revokeObjectURL(url);
 }

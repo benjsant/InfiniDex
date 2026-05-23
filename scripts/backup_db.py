@@ -14,11 +14,11 @@ Usage :
 
 Variables d'environnement (mêmes que le reste du projet) :
     POSTGRES_HOST       défaut : localhost
-    POSTGRES_PORT       défaut : FUSIONDEX_DB_PORT ou 55432
-    POSTGRES_DB         défaut : fusiondex_db
-    POSTGRES_USER       défaut : fusiondex_user
+    POSTGRES_PORT       défaut : INFINIDEX_DB_PORT ou 55432
+    POSTGRES_DB         défaut : infinidex_db
+    POSTGRES_USER       défaut : infinidex_user
     POSTGRES_PASSWORD   requis pour pg_dump direct
-    POSTGRES_CONTAINER  défaut : fusiondex_postgres (fallback docker exec)
+    POSTGRES_CONTAINER  défaut : infinidex_postgres (fallback docker exec)
     BACKUP_DIR          défaut : <repo>/backups
     BACKUP_KEEP         défaut : 10
 """
@@ -39,11 +39,11 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 PG_HOST      = os.getenv("POSTGRES_HOST", "localhost")
-PG_PORT      = os.getenv("POSTGRES_PORT", os.getenv("FUSIONDEX_DB_PORT", "55432"))
-PG_DB        = os.getenv("POSTGRES_DB", "fusiondex_db")
-PG_USER      = os.getenv("POSTGRES_USER", "fusiondex_user")
+PG_PORT      = os.getenv("POSTGRES_PORT", os.getenv("INFINIDEX_DB_PORT", "55432"))
+PG_DB        = os.getenv("POSTGRES_DB", "infinidex_db")
+PG_USER      = os.getenv("POSTGRES_USER", "infinidex_user")
 PG_PASSWORD  = os.getenv("POSTGRES_PASSWORD", "")
-PG_CONTAINER = os.getenv("POSTGRES_CONTAINER", "fusiondex_postgres")
+PG_CONTAINER = os.getenv("POSTGRES_CONTAINER", "infinidex_postgres")
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -89,7 +89,7 @@ def create_dump() -> bytes:
 
 
 def prune(backup_dir: Path, keep: int) -> None:
-    backups = sorted(backup_dir.glob("fusiondex_*.sql.gz"), reverse=True)
+    backups = sorted(backup_dir.glob("infinidex_*.sql.gz"), reverse=True)
     for old in backups[keep:]:
         old.unlink()
         print(f"  Supprimé : {old.name}")
@@ -117,7 +117,7 @@ def main() -> None:
     backup_dir.mkdir(parents=True, exist_ok=True)
 
     ts      = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    outfile = backup_dir / f"fusiondex_{ts}.sql.gz"
+    outfile = backup_dir / f"infinidex_{ts}.sql.gz"
 
     print(f"InfiniDex backup — {ts}")
     print(f"  Destination : {outfile}")

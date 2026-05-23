@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 const SITE_URL  = process.env.NEXT_PUBLIC_SITE_URL   ?? "https://fusiondex.app";
-const BACKEND   = process.env.BACKEND_INTERNAL_URL   ?? `http://localhost:${process.env.FUSIONDEX_BACKEND_PORT ?? "58000"}`;
+const BACKEND   = process.env.BACKEND_INTERNAL_URL   ?? `http://localhost:${process.env.INFINIDEX_BACKEND_PORT ?? "58000"}`;
 const IKEY      = process.env.INTERNAL_API_KEY       ?? "";
 
 const STATIC_ROUTES = [
