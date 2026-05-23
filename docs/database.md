@@ -1,6 +1,6 @@
 # Base de données
 
-PostgreSQL 16. Schéma défini dans [docker/init_postgres.sql](https://github.com/benjsant/InfiniDex-IA/blob/main/docker/init_postgres.sql), modèles SQLAlchemy dans [backend/db/models/](https://github.com/benjsant/InfiniDex-IA/tree/main/backend/db/models). Pour la ref des classes ORM, voir [Modèles DB](reference/models.md).
+PostgreSQL 16. Schéma défini dans [docker/init_postgres.sql](https://github.com/benjsant/InfiniDex/blob/main/docker/init_postgres.sql), modèles SQLAlchemy dans [backend/db/models/](https://github.com/benjsant/InfiniDex/tree/main/backend/db/models). Pour la ref des classes ORM, voir [Modèles DB](reference/models.md).
 
 ## Tables principales
 
@@ -281,5 +281,5 @@ erDiagram
 ## Voir aussi
 
 - [ETL](etl.md) — comment la base est peuplée.
-- [docker/init_postgres.sql](https://github.com/benjsant/InfiniDex-IA/blob/main/docker/init_postgres.sql) — source de vérité du schéma.
+- [docker/init_postgres.sql](https://github.com/benjsant/InfiniDex/blob/main/docker/init_postgres.sql) — source de vérité du schéma.
 - [Modèles DB](reference/models.md) — classes SQLAlchemy auto-documentées.

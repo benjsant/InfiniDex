@@ -8,7 +8,7 @@ Manual usage:
     python -m etl.flows.etl_pipeline
 
 Scheduled Prefect deployment:
-    prefect deployment run fusiondex-etl-pipeline/etl-pipeline-manual
+    prefect deployment run infinidex-etl-pipeline/etl-pipeline-manual
 """
 
 from __future__ import annotations
@@ -90,7 +90,7 @@ def run_audit() -> None:
     _audit()
 
 
-@flow(name="fusiondex-etl-pipeline", log_prints=True)
+@flow(name="infinidex-etl-pipeline", log_prints=True)
 def etl_pipeline_flow(force: bool = False) -> None:
     """Full ETL pipeline — 14 steps + final audit.
 

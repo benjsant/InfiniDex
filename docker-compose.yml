@@ -1,23 +1,25 @@
+name: infinidex
+
 services:
   db:
     image: postgres:16
-    container_name: fusiondex_postgres
+    container_name: infinidex_postgres
     env_file:
       - .env
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-fusiondex_db}
-      POSTGRES_USER: ${POSTGRES_USER:-fusiondex_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fusiondex_password}
+      POSTGRES_DB: ${POSTGRES_DB:-infinidex_db}
+      POSTGRES_USER: ${POSTGRES_USER:-infinidex_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-infinidex_password}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/init_postgres.sql:/docker-entrypoint-initdb.d/init_postgres.sql
     ports:
-      - "${FUSIONDEX_DB_PORT:-55432}:5432"
+      - "${INFINIDEX_DB_PORT:-55432}:5432"
     networks:
       - backend
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fusiondex_user} -d ${POSTGRES_DB:-fusiondex_db}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-infinidex_user} -d ${POSTGRES_DB:-infinidex_db}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -27,7 +29,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.etl
-    container_name: fusiondex_etl
+    container_name: infinidex_etl
     depends_on:
       db:
         condition: service_healthy
@@ -35,9 +37,9 @@ services:
       PYTHONPATH: /app
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-fusiondex_db}
-      POSTGRES_USER: ${POSTGRES_USER:-fusiondex_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fusiondex_password}
+      POSTGRES_DB: ${POSTGRES_DB:-infinidex_db}
+      POSTGRES_USER: ${POSTGRES_USER:-infinidex_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-infinidex_password}
       # Required by the Prefect watcher flows to post to Discord (no fallback
       # — if absent, watchers log "DISCORD_WEBHOOK_URL not set" and skip).
       DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
@@ -53,7 +55,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.backend
-    container_name: fusiondex_backend
+    container_name: infinidex_backend
     depends_on:
       db:
         condition: service_healthy
@@ -65,9 +67,9 @@ services:
       PYTHONPATH: /app
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-fusiondex_db}
-      POSTGRES_USER: ${POSTGRES_USER:-fusiondex_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fusiondex_password}
+      POSTGRES_DB: ${POSTGRES_DB:-infinidex_db}
+      POSTGRES_USER: ${POSTGRES_USER:-infinidex_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-infinidex_password}
       SPRITES_DIR: /app/data/sprites
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:53000,http://localhost:58000}
       # AI providers (au moins un doit être actif sinon /ai/ask renvoie 503).
@@ -86,7 +88,7 @@ services:
       - ./data/sprites:/app/data/sprites:ro
       - ${SPECIAL_SPRITES_PATH:-./data/special_sprites}:/app/data/special_sprites:ro
     ports:
-      - "${FUSIONDEX_BACKEND_PORT:-58000}:8000"
+      - "${INFINIDEX_BACKEND_PORT:-58000}:8000"
     networks:
       - backend
     healthcheck:
@@ -99,11 +101,11 @@ services:
 
   sprites:
     image: nginx:1.27-alpine
-    container_name: fusiondex_sprites
+    container_name: infinidex_sprites
     volumes:
       - ./data/sprites:/usr/share/nginx/html/sprites:ro
     ports:
-      - "${FUSIONDEX_SPRITES_PORT:-58080}:80"
+      - "${INFINIDEX_SPRITES_PORT:-58080}:80"
     networks:
       - backend
     restart: unless-stopped
@@ -121,7 +123,7 @@ services:
     build:
       context: ./frontend
       dockerfile: ../docker/Dockerfile.frontend
-    container_name: fusiondex_frontend
+    container_name: infinidex_frontend
     depends_on:
       backend:
         condition: service_healthy
@@ -132,7 +134,7 @@ services:
       SPRITES_INTERNAL_URL: http://sprites:80
       INTERNAL_API_KEY: ${INTERNAL_API_KEY:-}
     ports:
-      - "${FUSIONDEX_FRONTEND_PORT:-53000}:3000"
+      - "${INFINIDEX_FRONTEND_PORT:-53000}:3000"
     networks:
       - backend
     restart: unless-stopped
@@ -154,11 +156,11 @@ services:
       PYTHONPATH: /app
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-fusiondex_db}
-      POSTGRES_USER: ${POSTGRES_USER:-fusiondex_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fusiondex_password}
+      POSTGRES_DB: ${POSTGRES_DB:-infinidex_db}
+      POSTGRES_USER: ${POSTGRES_USER:-infinidex_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-infinidex_password}
       SPRITES_DIR: tests/fixtures/sprites
-      FUSIONDEX_TEST_DOCKER: "1"
+      INFINIDEX_TEST_DOCKER: "1"
     volumes:
       - ./backend:/app/backend
     networks:
@@ -193,18 +195,18 @@ services:
   # Premier démarrage :
   #   docker compose --profile prefect up -d
   #   docker compose --profile prefect exec prefect-worker \
-  #     prefect work-pool create fusiondex-pool --type process --skip-if-exists
+  #     prefect work-pool create infinidex-pool --type process --skip-if-exists
   #   docker compose --profile prefect exec prefect-worker \
   #     prefect --no-prompt deploy --all
   #
   # UI : http://localhost:54200
   # Déclencher un flow manuellement :
   #   docker compose --profile prefect exec prefect-worker \
-  #     prefect deployment run 'fusiondex-etl-pipeline/etl-pipeline-manual'
+  #     prefect deployment run 'infinidex-etl-pipeline/etl-pipeline-manual'
 
   prefect-server:
     image: prefecthq/prefect:3-latest
-    container_name: fusiondex_prefect_server
+    container_name: infinidex_prefect_server
     profiles: ["prefect"]
     command: prefect server start --host 0.0.0.0 --port 4200
     environment:
@@ -215,7 +217,7 @@ services:
     volumes:
       - prefect_data:/prefect
     ports:
-      - "${FUSIONDEX_PREFECT_PORT:-54200}:4200"
+      - "${INFINIDEX_PREFECT_PORT:-54200}:4200"
     networks:
       - backend
     restart: unless-stopped
@@ -230,9 +232,9 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.etl
-    container_name: fusiondex_prefect_worker
+    container_name: infinidex_prefect_worker
     profiles: ["prefect"]
-    command: prefect worker start --pool fusiondex-pool --type process
+    command: prefect worker start --pool infinidex-pool --type process
     depends_on:
       prefect-server:
         condition: service_healthy
@@ -244,9 +246,9 @@ services:
       PREFECT_HOME: /prefect
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-fusiondex_db}
-      POSTGRES_USER: ${POSTGRES_USER:-fusiondex_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fusiondex_password}
+      POSTGRES_DB: ${POSTGRES_DB:-infinidex_db}
+      POSTGRES_USER: ${POSTGRES_USER:-infinidex_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-infinidex_password}
       DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
     volumes:
       - ./etl:/app/etl
@@ -267,14 +269,14 @@ services:
   # `ollama pull` lancé en parallèle de `ollama serve`.
   ollama:
     image: ollama/ollama:latest
-    container_name: fusiondex_ollama
+    container_name: infinidex_ollama
     profiles: ["ollama"]
     environment:
       OLLAMA_HOST: 0.0.0.0
     volumes:
       - ollama_data:/root/.ollama
     ports:
-      - "${FUSIONDEX_OLLAMA_PORT:-58200}:11434"
+      - "${INFINIDEX_OLLAMA_PORT:-58200}:11434"
     networks:
       - backend
     restart: unless-stopped
@@ -311,12 +313,12 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.screenshots
-    container_name: fusiondex_screenshots
+    container_name: infinidex_screenshots
     profiles: ["screenshots"]
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      FUSIONDEX_URL: "http://host.docker.internal:${FUSIONDEX_FRONTEND_PORT:-53000}"
+      INFINIDEX_URL: "http://host.docker.internal:${INFINIDEX_FRONTEND_PORT:-53000}"
     volumes:
       - ./screenshots:/app/screenshots
       - ./scripts/screenshots.mjs:/app/scripts/screenshots.mjs:ro
@@ -328,7 +330,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.docs
-    container_name: fusiondex_docs
+    container_name: infinidex_docs
     profiles: ["docs"]
     volumes:
       # Montage live pour le hot-reload. Le .venv reste dans l'image.
@@ -339,7 +341,7 @@ services:
       # Source Python pour l'auto-doc (mkdocstrings en mode static via griffe).
       - ./backend:/app/backend:ro
     ports:
-      - "${FUSIONDEX_DOCS_PORT:-58100}:58100"
+      - "${INFINIDEX_DOCS_PORT:-58100}:58100"
     networks:
       - backend
     restart: unless-stopped

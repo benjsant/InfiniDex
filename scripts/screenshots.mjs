@@ -1,5 +1,5 @@
 /**
- * FusionDex — automatic documentation screenshots.
+ * InfiniDex — automatic documentation screenshots.
  *
  * Prerequisite : npx playwright install chromium
  * Run          : node scripts/screenshots.mjs
@@ -16,7 +16,7 @@ import sharp from "sharp";
 import { mkdir } from "fs/promises";
 import { existsSync } from "fs";
 
-const BASE_URL = process.env.FUSIONDEX_URL ?? "http://localhost:53000";
+const BASE_URL = process.env.INFINIDEX_URL ?? "http://localhost:53000";
 const OUT_DIR  = new URL("../screenshots/", import.meta.url).pathname;
 
 const DESKTOP = { width: 1280, height: 800 };

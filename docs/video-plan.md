@@ -1,4 +1,4 @@
-# Plan vidéo — InfiniDex-IA
+# Plan vidéo — InfiniDex
 
 Durée cible : **2 min 30** · Format : screen recording 1440×900 · Pas de voix-off obligatoire
 
@@ -124,12 +124,12 @@ Elle force l'agent à enchaîner `get_pokemon` → `get_fusion` → `search_move
 Afficher une slide simple (fond sombre `#090c1a`) avec :
 
 ```
-InfiniDex-IA
+InfiniDex
 
 FastAPI · PostgreSQL · Next.js 15 · DeepSeek
 
 572 Pokémon · 176 000 fusions · 9 outils IA
-Code open-source → github.com/benjsant/InfiniDex-IA
+Code open-source → github.com/benjsant/InfiniDex
 ```
 
 ---
@@ -193,7 +193,7 @@ Voilà ce que ça donne :
 
 Stack : FastAPI · PostgreSQL · Next.js 15 · DeepSeek
 
-Code open-source : github.com/benjsant/InfiniDex-IA
+Code open-source : github.com/benjsant/InfiniDex
 ```
 
 **Hashtags (en commentaire, pas dans le post) :**

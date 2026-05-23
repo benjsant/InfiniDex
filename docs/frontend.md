@@ -76,7 +76,7 @@ Deux bénéfices :
 1. **Zéro fuite d'URL backend** dans le bundle client. Le navigateur ne voit que `/api/*`.
 2. **Config runtime** : `BACKEND_INTERNAL_URL` est lu à chaque requête (pas d'env bakée au build), on peut changer la cible sans rebuild.
 
-Implémentation : [frontend/app/api/[...path]/route.ts](https://github.com/benjsant/InfiniDex-IA/blob/main/frontend/app/api/%5B...path%5D/route.ts) et [frontend/app/sprites-cdn/[...path]/route.ts](https://github.com/benjsant/InfiniDex-IA/blob/main/frontend/app/sprites-cdn/%5B...path%5D/route.ts).
+Implémentation : [frontend/app/api/[...path]/route.ts](https://github.com/benjsant/InfiniDex/blob/main/frontend/app/api/%5B...path%5D/route.ts) et [frontend/app/sprites-cdn/[...path]/route.ts](https://github.com/benjsant/InfiniDex/blob/main/frontend/app/sprites-cdn/%5B...path%5D/route.ts).
 
 !!! note "Pourquoi pas `next.config.ts` rewrites ?"
     Next.js standalone fige les destinations de rewrite dans `.next/required-server-files.json` au build. Les route handlers, eux, évaluent `process.env` à chaque requête — c'est ce qu'on veut.

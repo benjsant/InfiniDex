@@ -1,8 +1,8 @@
-site_name: InfiniDex-IA
+site_name: InfiniDex
 site_description: Pokédex intelligent pour Pokémon Infinite Fusion — documentation complète
-site_url: https://benjsant.github.io/InfiniDex-IA/
-repo_name: benjsant/InfiniDex-IA
-repo_url: https://github.com/benjsant/InfiniDex-IA
+site_url: https://benjsant.github.io/InfiniDex/
+repo_name: benjsant/InfiniDex
+repo_url: https://github.com/benjsant/InfiniDex
 edit_uri: edit/main/docs/
 docs_dir: docs
 

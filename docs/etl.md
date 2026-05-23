@@ -21,7 +21,7 @@ Le pipeline ETL extrait les données depuis plusieurs sources externes, les tran
 
 ## Séquence d'exécution
 
-L'orchestrateur [etl/pipeline.py](https://github.com/benjsant/InfiniDex-IA/blob/main/etl/pipeline.py) enchaîne 14 étapes numérotées :
+L'orchestrateur [etl/pipeline.py](https://github.com/benjsant/InfiniDex/blob/main/etl/pipeline.py) enchaîne 14 étapes numérotées :
 
 | Étape | Script | Rôle |
 |-------|--------|------|

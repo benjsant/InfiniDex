@@ -5,7 +5,7 @@
 
 export const BACKEND_URL =
   process.env.BACKEND_INTERNAL_URL ||
-  `http://localhost:${process.env.FUSIONDEX_BACKEND_PORT ?? "58000"}`;
+  `http://localhost:${process.env.INFINIDEX_BACKEND_PORT ?? "58000"}`;
 
 export const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY ?? "";
 

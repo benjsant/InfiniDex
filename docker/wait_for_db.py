@@ -9,9 +9,9 @@ from psycopg2 import OperationalError
 
 DB_HOST = os.getenv("POSTGRES_HOST", "db")
 DB_PORT = int(os.getenv("POSTGRES_PORT", "5432"))
-DB_NAME = os.getenv("POSTGRES_DB", "fusiondex_db")
-DB_USER = os.getenv("POSTGRES_USER", "fusiondex_user")
-DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "fusiondex_password")
+DB_NAME = os.getenv("POSTGRES_DB", "infinidex_db")
+DB_USER = os.getenv("POSTGRES_USER", "infinidex_user")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "infinidex_password")
 
 MAX_RETRIES = 30
 RETRY_INTERVAL = 2

@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 
-const STORAGE_KEY = "fusiondex_comparison";
+const STORAGE_KEY = "infinidex_comparison";
 
 export interface ComparisonSlot {
   headId: number;

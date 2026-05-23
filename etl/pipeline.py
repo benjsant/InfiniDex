@@ -188,8 +188,8 @@ def check_already_loaded() -> bool:
         conn = psycopg2.connect(
             host=os.getenv("POSTGRES_HOST", "db"),
             port=int(os.getenv("POSTGRES_PORT", "5432")),
-            dbname=os.getenv("POSTGRES_DB", "fusiondex_db"),
-            user=os.getenv("POSTGRES_USER", "fusiondex_user"),
+            dbname=os.getenv("POSTGRES_DB", "infinidex_db"),
+            user=os.getenv("POSTGRES_USER", "infinidex_user"),
             password=pwd,
             connect_timeout=5,
         )

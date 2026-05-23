@@ -1,4 +1,4 @@
-# InfiniDex-IA
+# InfiniDex
 
 **Pokédex intelligent pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.com/)** — une application complète qui extrait, structure, expose et affiche les données du jeu (572 Pokémon, ~176k fusions, movepools, types, fusions triples, maîtres des capacités, Move Experts…) avec une interface bilingue EN/FR et un assistant IA agentique à 9 outils.
 
@@ -33,7 +33,7 @@
 | Sprites `PokeAPI/sprites` (GitHub) | 572 sprites base |
 | Fichiers du jeu (ROM extract) | 166 090 fusion_sprites, 41 move_tutors, 1 634 pokemon_location |
 
-!!! info "Pourquoi InfiniDex-IA ?"
+!!! info "Pourquoi InfiniDex ?"
     Pokémon Infinite Fusion a une richesse de données éparpillées sur plusieurs wikis, sans API officielle. Ce projet centralise tout dans une base PostgreSQL interrogeable, avec une API REST propre et un frontend pour explorer les ~176k combinaisons de fusion.
 
 ## Aperçu visuel

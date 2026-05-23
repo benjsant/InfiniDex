@@ -32,7 +32,7 @@ from backend.routes import (
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
-_is_prod = os.getenv("FUSIONDEX_ENV") == "production"
+_is_prod = os.getenv("INFINIDEX_ENV") == "production"
 
 
 class RequestLogMiddleware(BaseHTTPMiddleware):
@@ -186,7 +186,7 @@ cors_origins = [o.strip() for o in _cors_raw.split(",") if o.strip()]
 if not cors_origins:
     raise RuntimeError(
         "CORS_ALLOWED_ORIGINS is empty — set it to one or more comma-separated origins "
-        "(e.g. 'https://fusiondex.example.com') or '*' to allow all."
+        "(e.g. 'https://infinidex.example.com') or '*' to allow all."
     )
 
 _ai_rpm     = int(os.getenv("RATE_LIMIT_AI_RPM",     "0"))

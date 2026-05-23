@@ -4,10 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 // via le réseau Docker interne. Le browser ne voit JAMAIS l'URL réelle du
 // backend. Env lue à runtime (pas de rebuild nécessaire pour changer la cible).
 // In Docker: BACKEND_INTERNAL_URL=http://backend:8000 (set by docker-compose).
-// In host dev mode: falls back to localhost:FUSIONDEX_BACKEND_PORT (from .env).
+// In host dev mode: falls back to localhost:INFINIDEX_BACKEND_PORT (from .env).
 const BACKEND_URL =
   process.env.BACKEND_INTERNAL_URL ||
-  `http://localhost:${process.env.FUSIONDEX_BACKEND_PORT ?? "58000"}`;
+  `http://localhost:${process.env.INFINIDEX_BACKEND_PORT ?? "58000"}`;
 
 // Shared secret between Next.js and FastAPI — never sent to the browser.
 // If not set, the backend runs without key enforcement (dev mode).

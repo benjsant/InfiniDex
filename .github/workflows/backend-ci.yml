@@ -48,8 +48,8 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_DB: fusiondex_test
-          POSTGRES_USER: fusiondex_user
+          POSTGRES_DB: infinidex_test
+          POSTGRES_USER: infinidex_user
           POSTGRES_PASSWORD: testpassword
         ports:
           - 5432:5432
@@ -62,8 +62,8 @@ jobs:
     env:
       POSTGRES_HOST: localhost
       POSTGRES_PORT: 5432
-      POSTGRES_DB: fusiondex_test
-      POSTGRES_USER: fusiondex_user
+      POSTGRES_DB: infinidex_test
+      POSTGRES_USER: infinidex_user
       POSTGRES_PASSWORD: testpassword
       SPRITES_DIR: tests/fixtures/sprites
 
@@ -88,11 +88,11 @@ jobs:
         env:
           PGPASSWORD: testpassword
         run: |
-          psql -h localhost -U fusiondex_user -d fusiondex_test \
+          psql -h localhost -U infinidex_user -d infinidex_test \
             --set ON_ERROR_STOP=1 -f backend/tests/fixtures/schema.sql
-          psql -h localhost -U fusiondex_user -d fusiondex_test \
+          psql -h localhost -U infinidex_user -d infinidex_test \
             --set ON_ERROR_STOP=1 -f backend/tests/fixtures/data.sql
-          psql -h localhost -U fusiondex_user -d fusiondex_test \
+          psql -h localhost -U infinidex_user -d infinidex_test \
             --set ON_ERROR_STOP=1 -f backend/tests/fixtures/sprites_sample.sql
 
       - name: Run full test suite

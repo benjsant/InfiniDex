@@ -1,6 +1,6 @@
 # Roadmap
 
-Version live du suivi : [ROADMAP.md](https://github.com/benjsant/InfiniDex-IA/blob/main/ROADMAP.md) à la racine du repo. Cette page reprend l'état au moment de la dernière mise à jour de la doc et liste les pistes ouvertes.
+Version live du suivi : [ROADMAP.md](https://github.com/benjsant/InfiniDex/blob/main/ROADMAP.md) à la racine du repo. Cette page reprend l'état au moment de la dernière mise à jour de la doc et liste les pistes ouvertes.
 
 ## État par couche
 

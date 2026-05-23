@@ -15,7 +15,7 @@ REQUEST_TIMEOUT = 10
 
 # Identifying User-Agent — be a good web citizen so the wiki/API operators can
 # identify and contact this client (matches the fix_*_from_pokeapi scripts).
-USER_AGENT = "InfiniDexETL/1.0 (+https://github.com/benjsant/InfiniDex-IA; educational)"
+USER_AGENT = "InfiniDexETL/1.0 (+https://github.com/benjsant/InfiniDex; educational)"
 HEADERS = {"User-Agent": USER_AGENT}
 
 
