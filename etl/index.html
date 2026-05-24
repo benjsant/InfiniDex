@@ -1654,7 +1654,7 @@
 <li>Scrapy pour les learnsets Pokepédia (projet <code>etl/pokepedia_scraper/</code>)</li>
 </ul>
 <h2 id="sequence-dexecution">Séquence d'exécution<a class="headerlink" href="#sequence-dexecution" title="Permanent link">&para;</a></h2>
-<p>L'orchestrateur <a href="https://github.com/benjsant/InfiniDex/blob/main/etl/pipeline.py">etl/pipeline.py</a> enchaîne 14 étapes numérotées :</p>
+<p>L'orchestrateur <a href="https://github.com/benjsant/InfiniDex/blob/main/etl/pipeline.py">etl/pipeline.py</a> enchaîne 38 étapes numérotées (résumées par groupes ci-dessous) :</p>
 <table>
 <thead>
 <tr>
@@ -1721,8 +1721,8 @@
 </tr>
 <tr>
 <td>8b–8f</td>
-<td><code>fix_pokemon_types.py</code> <code>fix_national_ids.py</code> <code>fix_stats_and_fr_names.py</code> <code>fix_tms_from_pokeapi.py</code> <code>enrich_evolution_movesets.py</code></td>
-<td>Correctifs canoniques post-import</td>
+<td><code>fix_pokemon_types.py</code> <code>fix_national_ids.py</code> <code>fix_stats_and_fr_names.py</code> <code>fix_evolutions.py</code> <code>fix_tms_from_pokeapi.py</code> <code>enrich_evolution_movesets.py</code></td>
+<td>Correctifs canoniques post-import (re-sync stats/types/évolutions une fois les <code>national_id</code> corrigés)</td>
 </tr>
 <tr>
 <td>9–9g</td>
@@ -1744,6 +1744,10 @@
 <div class="admonition note">
 <p class="admonition-title">Étape 9b-ter — <code>load_pokedex_locations.py</code></p>
 <p>Parse la page Pokédex du wiki IF (<code>{{PokedexTable/Data|...}}</code>) pour extraire les localisations sauvages et quêtes manquantes. Utilise <code>ON CONFLICT DO NOTHING</code> — ne réécrit jamais les données prioritaires de <code>fix_pokemon_locations.py</code>. Gère le <code>|</code> dans les liens wiki (<code>[[Page|Display]]</code>) en reconstruisant le champ depuis <code>parts[6:]</code>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Étape 8e-ter — <code>fix_evolutions.py</code></p>
+<p>Re-fetch les chaînes d'évolution PokeAPI une fois les <code>national_id</code> corrigés par <code>fix_national_ids.py</code>. Nécessaire parce que <code>extract_stats_pokeapi.py</code> interroge PokeAPI par <code>if_id</code> (qui ne correspond au <code>national_id</code> que pour les 151 Kanto purs) — pour les 320 Pokémon post-Kanto, la chaîne récupérée appartient à la mauvaise espèce et n'est jamais ré-extraite sans ce script. Résolution slug-aware (<code>pokeapi_move_slug</code>) pour matcher correctement les noms à caractères spéciaux (<code>Mime Jr.</code> ↔ <code>mime-jr</code>, <code>Nidoran♀</code> ↔ <code>nidoran-f</code>, <code>Flabébé</code> ↔ <code>flabebe</code>). Idempotent.</p>
 </div>
 <h2 id="diagramme-de-pipeline">Diagramme de pipeline<a class="headerlink" href="#diagramme-de-pipeline" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart TD

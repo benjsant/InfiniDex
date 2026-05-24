@@ -1599,7 +1599,7 @@
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>TM location</strong> — <code>tm.location</code> (texte libre) supprimée, <code>location_summary</code> dérivé des FK <code>tm_location</code></li>
 </ul>
 <h3 id="backend-base-solide">Backend — ✅ base solide<a class="headerlink" href="#backend-base-solide" title="Permanent link">&para;</a></h3>
-<p>49 endpoints + <code>/health</code> + 160 tests. Couvre pokémon, moves, abilities, types, fusions, sprites, triple-fusions, générations, créateurs, stats, IA.</p>
+<p>54 endpoints + <code>/health</code> + 136 tests pytest. Couvre pokémon, moves, abilities, types, fusions, sprites, triple-fusions, générations, créateurs, stats, IA.</p>
 <p><strong>Optimisations livées (PRs #9 → #31)</strong> :</p>
 <ul>
 <li>Index <code>idx_fusion_sprite_body</code> (seq scan 7.8ms → BitmapOr 2.76ms), contrainte partielle <code>uq_fusion_sprite_default</code></li>
@@ -1688,7 +1688,7 @@
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Déployer la doc MkDocs (GitHub Pages ?)</li>
 </ul>
 <h3 id="documentation-mise-a-jour">Documentation — ✅ mise à jour<a class="headerlink" href="#documentation-mise-a-jour" title="Permanent link">&para;</a></h3>
-<p>Pages MkDocs Material à jour : README, ROADMAP, architecture (9 outils IA, flux SSE, cascade DB→wiki→web), API, frontend (toutes les pages + hooks), ETL (pipeline.py 14 étapes + load_pokedex_locations), database, roadmap.</p>
+<p>Pages MkDocs Material à jour : README, ROADMAP, architecture (9 outils IA, flux SSE, cascade DB→wiki→web), API, frontend (toutes les pages + hooks), ETL (pipeline.py 38 étapes), database, roadmap.</p>
 <p><strong>Pistes ouvertes :</strong></p>
 <ul class="task-list">
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> ERD complet de la base de données</li>
