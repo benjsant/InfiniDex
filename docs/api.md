@@ -1,6 +1,6 @@
 # API backend
 
-FastAPI exposant 49 endpoints + `/health`. Swagger interactif en dev : [http://localhost:58000/docs](http://localhost:58000/docs). Référence auto-générée : [Routes](reference/routes.md).
+FastAPI exposant 54 endpoints + `/health`. Swagger interactif en dev : [http://localhost:58000/docs](http://localhost:58000/docs). Référence auto-générée : [Routes](reference/routes.md).
 
 En prod le backend n'est **pas** exposé publiquement — les requêtes passent par le proxy Next.js (`/api/*` sur le domaine public).
 

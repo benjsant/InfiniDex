@@ -45,7 +45,7 @@ export default function Image() {
             color: "#2d3260",
           }}
         >
-          fusiondex.app
+          infinidex.app
         </div>
       </div>
     ),
