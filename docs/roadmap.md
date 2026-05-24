@@ -33,7 +33,7 @@ Pipeline en 14 étapes (orchestrateur `etl/pipeline.py`). Données actuelles :
 
 ### Backend — ✅ base solide
 
-49 endpoints + `/health` + 160 tests. Couvre pokémon, moves, abilities, types, fusions, sprites, triple-fusions, générations, créateurs, stats, IA.
+54 endpoints + `/health` + 136 tests pytest. Couvre pokémon, moves, abilities, types, fusions, sprites, triple-fusions, générations, créateurs, stats, IA.
 
 **Optimisations livées (PRs #9 → #31)** :
 
@@ -127,7 +127,7 @@ Pages : `/pokedex`, `/pokedex/[id]`, `/pokedex/favorites`, `/fusion`, `/fusion/[
 
 ### Documentation — ✅ mise à jour
 
-Pages MkDocs Material à jour : README, ROADMAP, architecture (9 outils IA, flux SSE, cascade DB→wiki→web), API, frontend (toutes les pages + hooks), ETL (pipeline.py 14 étapes + load_pokedex_locations), database, roadmap.
+Pages MkDocs Material à jour : README, ROADMAP, architecture (9 outils IA, flux SSE, cascade DB→wiki→web), API, frontend (toutes les pages + hooks), ETL (pipeline.py 38 étapes), database, roadmap.
 
 **Pistes ouvertes :**
 

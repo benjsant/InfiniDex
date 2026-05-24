@@ -5,7 +5,7 @@ const BACKEND_URL =
   process.env.BACKEND_INTERNAL_URL ||
   `http://localhost:${process.env.INFINIDEX_BACKEND_PORT ?? "58000"}`;
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY ?? "";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fusiondex.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://infinidex.app";
 
 interface FusionMeta {
   head_id: number;

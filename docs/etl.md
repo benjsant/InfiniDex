@@ -21,7 +21,7 @@ Le pipeline ETL extrait les données depuis plusieurs sources externes, les tran
 
 ## Séquence d'exécution
 
-L'orchestrateur [etl/pipeline.py](https://github.com/benjsant/InfiniDex/blob/main/etl/pipeline.py) enchaîne 14 étapes numérotées :
+L'orchestrateur [etl/pipeline.py](https://github.com/benjsant/InfiniDex/blob/main/etl/pipeline.py) enchaîne 38 étapes numérotées (résumées par groupes ci-dessous) :
 
 | Étape | Script | Rôle |
 |-------|--------|------|
@@ -36,13 +36,16 @@ L'orchestrateur [etl/pipeline.py](https://github.com/benjsant/InfiniDex/blob/mai
 | 6 | `scrapy if_movesets` | Learnsets Gen 7 depuis Pokepédia (USUL) |
 | 7 | `transform_merge_movesets.py` | Fusion learnsets de base + overrides IF |
 | 8 | `load_db.py` | Chargement de tout dans PostgreSQL |
-| 8b–8f | `fix_pokemon_types.py` `fix_national_ids.py` `fix_stats_and_fr_names.py` `fix_tms_from_pokeapi.py` `enrich_evolution_movesets.py` | Correctifs canoniques post-import |
+| 8b–8f | `fix_pokemon_types.py` `fix_national_ids.py` `fix_stats_and_fr_names.py` `fix_evolutions.py` `fix_tms_from_pokeapi.py` `enrich_evolution_movesets.py` | Correctifs canoniques post-import (re-sync stats/types/évolutions une fois les `national_id` corrigés) |
 | 9–9g | `seed_type_effectiveness.py` `load_encounters.py` `fix_pokemon_locations.py` `load_pokedex_locations.py` `load_items.py` `load_move_tutors.py` `fix_tutors_from_pokeapi.py` `load_tm_locations.py` `fix_move_experts.py` | Enrichissements et localisations |
 | 10–12 | `extract_sprites.py` `extract_triple_fusions.py` `load_triple_fusions.py` `load_sprite_credits.py` | Sprites, triple fusions, crédits |
 | 13–14 | `clean_orphan_moves.py` `enrich_missing_abilities.py` | Nettoyage et complétion |
 
 !!! note "Étape 9b-ter — `load_pokedex_locations.py`"
     Parse la page Pokédex du wiki IF (`{{PokedexTable/Data|...}}`) pour extraire les localisations sauvages et quêtes manquantes. Utilise `ON CONFLICT DO NOTHING` — ne réécrit jamais les données prioritaires de `fix_pokemon_locations.py`. Gère le `|` dans les liens wiki (`[[Page|Display]]`) en reconstruisant le champ depuis `parts[6:]`.
+
+!!! note "Étape 8e-ter — `fix_evolutions.py`"
+    Re-fetch les chaînes d'évolution PokeAPI une fois les `national_id` corrigés par `fix_national_ids.py`. Nécessaire parce que `extract_stats_pokeapi.py` interroge PokeAPI par `if_id` (qui ne correspond au `national_id` que pour les 151 Kanto purs) — pour les 320 Pokémon post-Kanto, la chaîne récupérée appartient à la mauvaise espèce et n'est jamais ré-extraite sans ce script. Résolution slug-aware (`pokeapi_move_slug`) pour matcher correctement les noms à caractères spéciaux (`Mime Jr.` ↔ `mime-jr`, `Nidoran♀` ↔ `nidoran-f`, `Flabébé` ↔ `flabebe`). Idempotent.
 
 ## Diagramme de pipeline
 
