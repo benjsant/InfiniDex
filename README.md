@@ -164,6 +164,12 @@ Voir la [documentation complète](https://benjsant.github.io/InfiniDex/) pour le
 
 ---
 
+## Companion repos
+
+- **[`infinidex_mcp`](https://github.com/benjsant/infinidex_mcp)** — Serveur Model Context Protocol qui expose les outils structurés d'InfiniDex à n'importe quel client compatible MCP (Claude Desktop, Claude Code, Cursor, Windsurf…). 100 % local, aucun service externe.
+
+---
+
 ## CI
 
 | Workflow | Déclencheur | Contenu |
