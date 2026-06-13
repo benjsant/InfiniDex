@@ -1703,20 +1703,20 @@
 
 <h1 id="api-backend">API backend<a class="headerlink" href="#api-backend" title="Permanent link">&para;</a></h1>
 <p>FastAPI exposant 54 endpoints + <code>/health</code>. Swagger interactif en dev : <a href="http://localhost:58000/docs">http://localhost:58000/docs</a>. Référence auto-générée : <a href="../reference/routes/">Routes</a>.</p>
-<p>En prod le backend n'est <strong>pas</strong> exposé publiquement — les requêtes passent par le proxy Next.js (<code>/api/*</code> sur le domaine public).</p>
+<p>En prod le backend n'est <strong>pas</strong> exposé publiquement - les requêtes passent par le proxy Next.js (<code>/api/*</code> sur le domaine public).</p>
 <h2 id="organisation">Organisation<a class="headerlink" href="#organisation" title="Permanent link">&para;</a></h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>backend/
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  main.py                 # wiring FastAPI + CORS + StaticCacheMiddleware
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  routes/                 # endpoints HTTP (un fichier par domaine)
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  services/               # logique métier + accès DB
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    tools/                # outils de l&#39;agent IA (db_tools.py, wiki_tool.py)
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  schemas/                # Pydantic — contrat I/O
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  schemas/                # Pydantic - contrat I/O
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>  prompts/
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    system.md             # system prompt LLM (anglais, réponse forcée en français)
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>  db/
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    models/               # SQLAlchemy
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    base.py               # engine + session
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>  tests/                  # pytest + TestClient (160 tests)
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>  tests/                  # pytest + TestClient (136 tests)
 </span></code></pre></div>
 <p>Chaque <code>route</code> importe son <code>service</code>, qui importe ses <code>models</code> et <code>schemas</code>. Les routes ne touchent jamais directement SQLAlchemy.</p>
 <h2 id="cache-http">Cache HTTP<a class="headerlink" href="#cache-http" title="Permanent link">&para;</a></h2>
@@ -1834,7 +1834,7 @@
 <tr>
 <td>GET</td>
 <td><code>/abilities/</code></td>
-<td>Liste des ~178 talents</td>
+<td>Liste des ~183 talents</td>
 </tr>
 <tr>
 <td>GET</td>
@@ -1888,7 +1888,7 @@
 <tr>
 <td>GET</td>
 <td><code>/items/</code></td>
-<td>70 items (fusion/evolution/valuable) — filtre <code>?category=</code></td>
+<td>70 items (fusion/evolution/valuable) - filtre <code>?category=</code></td>
 </tr>
 <tr>
 <td>GET</td>
@@ -1925,7 +1925,7 @@
 <tr>
 <td>GET</td>
 <td><code>/fusion/{head_id}/{body_id}/moves</code></td>
-<td>Moveset combiné head+body, dédupliqué — chaque move inclut <code>origin: "head"\|"body"\|"both"</code></td>
+<td>Moveset combiné head+body, dédupliqué - chaque move inclut <code>origin: "head"\|"body"\|"both"</code></td>
 </tr>
 <tr>
 <td>GET</td>
@@ -1977,7 +1977,7 @@
 <tr>
 <td>GET</td>
 <td><code>/sprites/{head_id}/{body_id}/image</code></td>
-<td>PNG — default ou <code>?variant_id=N</code></td>
+<td>PNG - default ou <code>?variant_id=N</code></td>
 </tr>
 </tbody>
 </table>
@@ -2066,12 +2066,12 @@
 <tr>
 <td>POST</td>
 <td><code>/ai/ask</code></td>
-<td>Agent tool-calling — réponse en streaming SSE</td>
+<td>Agent tool-calling - réponse en streaming SSE</td>
 </tr>
 <tr>
 <td>POST</td>
 <td><code>/ai/feedback</code></td>
-<td>Envoie un retour utilisateur (webhook Discord) — toujours 200, best-effort</td>
+<td>Envoie un retour utilisateur (webhook Discord) - toujours 200, best-effort</td>
 </tr>
 <tr>
 <td>GET</td>
@@ -2087,10 +2087,10 @@
 </table>
 <p><strong>Payload <code>/ai/ask</code></strong> : <code>{ "message": "...", "context": "...", "history": [...] }</code></p>
 <ul>
-<li><code>context</code> (optionnel) : texte injecté avant la question — utilisé par le bouton "Demander à l'IA" pour passer la sélection courante (ex. <em>"Fusion de Dracaufeu (tête) et Mewtwo (corps). Types: Fire/Psychic. Total: 600."</em>)</li>
-<li><code>history</code> (optionnel) : tableau <code>[{role, content}]</code> des échanges précédents — tronqué à 10 messages</li>
+<li><code>context</code> (optionnel) : texte injecté avant la question - utilisé par le bouton "Demander à l'IA" pour passer la sélection courante (ex. <em>"Fusion de Dracaufeu (tête) et Mewtwo (corps). Types: Fire/Psychic. Total: 600."</em>)</li>
+<li><code>history</code> (optionnel) : tableau <code>[{role, content}]</code> des échanges précédents - tronqué à 10 messages</li>
 </ul>
-<p><strong>Format SSE</strong> — chaque ligne <code>data: {...}\n\n</code> contient un événement typé :</p>
+<p><strong>Format SSE</strong> - chaque ligne <code>data: {...}\n\n</code> contient un événement typé :</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tool_call&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;get_pokemon&quot;</span><span class="p">}</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;token&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;chunk&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Dracaufeu est un Pokémon de type Feu...&quot;</span><span class="p">}</span>
 </span></code></pre></div>
@@ -2106,7 +2106,7 @@
 <p><strong>Provider sélectionné à runtime</strong> : <code>DEEPSEEK_API_KEY</code> → DeepSeek · <code>OPENROUTER_API_KEY</code> → OpenRouter · <code>OLLAMA_URL</code> → Ollama · Aucun → <code>503</code> avec instructions de setup.</p>
 <p>Implémentation : <a href="https://github.com/benjsant/InfiniDex/blob/main/backend/services/ai_service.py"><code>backend/services/ai_service.py</code></a> (boucle), <a href="https://github.com/benjsant/InfiniDex/blob/main/backend/services/tools/"><code>backend/services/tools/</code></a> (handlers).</p>
 <h2 id="cors">CORS<a class="headerlink" href="#cors" title="Permanent link">&para;</a></h2>
-<p>Défense en profondeur uniquement — le flux principal passe par le proxy Next.js (même origine).</p>
+<p>Défense en profondeur uniquement - le flux principal passe par le proxy Next.js (même origine).</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># backend/main.py</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">cors_origins</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="s2">&quot;CORS_ALLOWED_ORIGINS&quot;</span><span class="p">,</span>
@@ -2123,15 +2123,15 @@
 </span></code></pre></div>
 <p>En prod, <code>CORS_ALLOWED_ORIGINS</code> doit lister uniquement le domaine public.</p>
 <h2 id="tests">Tests<a class="headerlink" href="#tests" title="Permanent link">&para;</a></h2>
-<p>160 tests. Ils nécessitent le dump SQL sous <code>backend/tests/fixtures/</code> (committé). Lance via Docker :</p>
+<p>136 tests. Ils nécessitent le dump SQL sous <code>backend/tests/fixtures/</code> (committé). Lance via Docker :</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>--profile<span class="w"> </span><span class="nb">test</span><span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>test-backend
 </span></code></pre></div>
 <h2 id="voir-aussi">Voir aussi<a class="headerlink" href="#voir-aussi" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../fusion-rules/">Règles de fusion</a> — sémantique des endpoints <code>/fusion/*</code>.</li>
-<li><a href="../architecture/">Architecture</a> — flux de requêtes + boucle agent IA.</li>
-<li><a href="../reference/routes/">Référence routes</a> — signatures + docstrings auto-générées.</li>
-<li><a href="../reference/schemas/">Référence schemas</a> — modèles Pydantic (I/O).</li>
+<li><a href="../fusion-rules/">Règles de fusion</a> - sémantique des endpoints <code>/fusion/*</code>.</li>
+<li><a href="../architecture/">Architecture</a> - flux de requêtes + boucle agent IA.</li>
+<li><a href="../reference/routes/">Référence routes</a> - signatures + docstrings auto-générées.</li>
+<li><a href="../reference/schemas/">Référence schemas</a> - modèles Pydantic (I/O).</li>
 </ul>
 
 

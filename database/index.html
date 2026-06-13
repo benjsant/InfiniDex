@@ -1590,12 +1590,12 @@
 <tr>
 <td><code>ability</code></td>
 <td>Talents (EN + FR + description)</td>
-<td>178</td>
+<td>183</td>
 </tr>
 <tr>
 <td><code>move</code></td>
 <td>Capacités (nom, type, puissance, PP, …)</td>
-<td>659</td>
+<td>658</td>
 </tr>
 <tr>
 <td><code>generation</code></td>
@@ -1605,7 +1605,7 @@
 <tr>
 <td><code>creator</code></td>
 <td>Créateurs de sprites (attribution)</td>
-<td>7 081</td>
+<td>7 126</td>
 </tr>
 </tbody>
 </table>
@@ -1632,7 +1632,7 @@
 </tr>
 <tr>
 <td><code>pokemon_move</code></td>
-<td>Learnset : 40 067 lignes (level-up, TM, tutor, egg)</td>
+<td>Learnset : 45 073 lignes (level-up, TM, tutor, egg)</td>
 </tr>
 <tr>
 <td><code>pokemon_evolution</code></td>
@@ -1659,7 +1659,7 @@
 <tbody>
 <tr>
 <td><code>fusion_sprite</code></td>
-<td>166 090 sprites custom (head_id, body_id, variant, path, crédit)</td>
+<td>168 154 sprites custom (head_id, body_id, variant, path, crédit)</td>
 </tr>
 <tr>
 <td><code>triple_fusion</code></td>
@@ -1698,11 +1698,11 @@
 <p><strong>Sémantique</strong> (cf. <a href="../fusion-rules/#move-experts">Règles de fusion</a>) :</p>
 <ul>
 <li><strong>Au sein d'une ligne</strong> : AND entre axes (pokémon requis × types requis × moves requis).</li>
-<li><strong>Axe <code>required_pokemon_ids</code></strong> : OR — head OU body doit être dans la liste.</li>
-<li><strong>Axe <code>required_type_ids</code></strong> : superset — la fusion doit avoir <strong>tous</strong> les types listés.</li>
-<li><strong>Axe <code>required_move_ids</code></strong> : intersection — au moins un move en commun.</li>
+<li><strong>Axe <code>required_pokemon_ids</code></strong> : OR - head OU body doit être dans la liste.</li>
+<li><strong>Axe <code>required_type_ids</code></strong> : superset - la fusion doit avoir <strong>tous</strong> les types listés.</li>
+<li><strong>Axe <code>required_move_ids</code></strong> : intersection - au moins un move en commun.</li>
 <li><strong>Tableau vide</strong> sur un axe = aucune contrainte sur cet axe.</li>
-<li><strong>Entre lignes</strong> : OR — une ligne suffit pour débloquer le move à cet emplacement.</li>
+<li><strong>Entre lignes</strong> : OR - une ligne suffit pour débloquer le move à cet emplacement.</li>
 </ul>
 <h2 id="index-utiles">Index utiles<a class="headerlink" href="#index-utiles" title="Permanent link">&para;</a></h2>
 <div class="language-sql highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_pokemon_move_pokemon</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">pokemon_move</span><span class="p">(</span><span class="n">pokemon_id</span><span class="p">);</span>
@@ -1913,9 +1913,9 @@
     item               ||--o{  item_location         : "trouvable à"</code></pre>
 <h2 id="voir-aussi">Voir aussi<a class="headerlink" href="#voir-aussi" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../etl/">ETL</a> — comment la base est peuplée.</li>
-<li><a href="https://github.com/benjsant/InfiniDex/blob/main/docker/init_postgres.sql">docker/init_postgres.sql</a> — source de vérité du schéma.</li>
-<li><a href="../reference/models/">Modèles DB</a> — classes SQLAlchemy auto-documentées.</li>
+<li><a href="../etl/">ETL</a> - comment la base est peuplée.</li>
+<li><a href="https://github.com/benjsant/InfiniDex/blob/main/docker/init_postgres.sql">docker/init_postgres.sql</a> - source de vérité du schéma.</li>
+<li><a href="../reference/models/">Modèles DB</a> - classes SQLAlchemy auto-documentées.</li>
 </ul>
 
 

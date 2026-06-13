@@ -1609,7 +1609,7 @@
         UI[AiChat.tsx\nSSE reader]
     end
 
-    subgraph Backend["FastAPI — /ai/ask"]
+    subgraph Backend["FastAPI - /ai/ask"]
         PII[PII Redactor\navant envoi au LLM]
         AGENT[Agent loop\nmax 5 itérations]
         PROV[LLMProvider\nDeepSeek · Ollama · OpenRouter]
@@ -1663,20 +1663,20 @@
         end
     end
 
-    note over A,U : Circuit breaker — si max atteint\nSSE TokenEvent("Je n'ai pas trouvé...")</code></pre>
-<p><strong>Fail-closed</strong> : si les 5 itérations s'épuisent sans réponse, ou si le LLM renvoie un contenu vide → message explicite <code>"Je n'ai pas trouvé cette information."</code> — jamais d'invention.</p>
+    note over A,U : Circuit breaker - si max atteint\nSSE TokenEvent("Je n'ai pas trouvé...")</code></pre>
+<p><strong>Fail-closed</strong> : si les 5 itérations s'épuisent sans réponse, ou si le LLM renvoie un contenu vide → message explicite <code>"Je n'ai pas trouvé cette information."</code> - jamais d'invention.</p>
 <h2 id="cascade-de-retrieval">Cascade de retrieval<a class="headerlink" href="#cascade-de-retrieval" title="Permanent link">&para;</a></h2>
 <p>Le LLM choisit lui-même quels outils appeler. Le system prompt le guide vers cet ordre de priorité :</p>
 <pre class="mermaid"><code>flowchart TD
-    Q([Question utilisateur]) --&gt; LLM1[LLM — itération 1]
+    Q([Question utilisateur]) --&gt; LLM1[LLM - itération 1]
 
     LLM1 --&gt;|tool_call DB| DB["Outils DB\nget_pokemon · get_fusion\nsearch_move · get_item\nget_move_tutors\nsearch_pokemon_locations"]
     DB --&gt;|found: true| RESP([Réponse synthétisée])
-    DB --&gt;|found: false| LLM2[LLM — itération 2]
+    DB --&gt;|found: false| LLM2[LLM - itération 2]
 
     LLM2 --&gt;|tool_call wiki| WIKI["search_wiki\n(MediaWiki API IF)\ncache TTL 10 min"]
     WIKI --&gt;|found: true| RESP
-    WIKI --&gt;|found: false| LLM3[LLM — itération 3]
+    WIKI --&gt;|found: false| LLM3[LLM - itération 3]
 
     LLM3 --&gt;|tool_call web| WEB["search_web\n(DuckDuckGo)\ncache TTL 5 min\nmax 1 500 chars"]
     WEB --&gt;|found: true| RESP
@@ -1708,7 +1708,7 @@
 <td><code>get_pokemon</code></td>
 <td>DB</td>
 <td><code>name</code> ou <code>id</code></td>
-<td>Fiche complète — stats, types, talents, évolutions</td>
+<td>Fiche complète - stats, types, talents, évolutions</td>
 </tr>
 <tr>
 <td><code>get_fusion</code></td>
@@ -1720,13 +1720,13 @@
 <td><code>search_move</code></td>
 <td>DB</td>
 <td><code>name</code> (EN ou FR)</td>
-<td>Capacité par nom — type, puissance, PP, tuteurs</td>
+<td>Capacité par nom - type, puissance, PP, tuteurs</td>
 </tr>
 <tr>
 <td><code>get_item</code></td>
 <td>DB</td>
 <td><code>name</code></td>
-<td>Item — effet, prix, lieux d'obtention</td>
+<td>Item - effet, prix, lieux d'obtention</td>
 </tr>
 <tr>
 <td><code>get_move_tutors</code></td>
@@ -1744,13 +1744,13 @@
 <td><code>search_wiki</code></td>
 <td>Wiki IF</td>
 <td><code>query</code></td>
-<td>Page wiki MediaWiki IF — intro + fetch complet si &lt; 300 chars. Cache TTL 10 min</td>
+<td>Page wiki MediaWiki IF - intro + fetch complet si &lt; 300 chars. Cache TTL 10 min</td>
 </tr>
 <tr>
 <td><code>search_web</code></td>
 <td>DuckDuckGo</td>
 <td><code>query</code></td>
-<td>Recherche web généraliste — max 1 500 chars, cache 5 min</td>
+<td>Recherche web généraliste - max 1 500 chars, cache 5 min</td>
 </tr>
 </tbody>
 </table>
@@ -1762,14 +1762,14 @@
     RED --&gt;|@ Discord/forum| RM2["[USERNAME]"]
     RED --&gt;|pattern regex PII| RM3["[REDACTED]"]
     RM1 &amp; RM2 &amp; RM3 --&gt; LLM[LLM]</code></pre>
-<p>La redaction opère en profondeur sur les structures JSON imbriquées (résultats d'outils) — pas seulement sur le message brut.</p>
+<p>La redaction opère en profondeur sur les structures JSON imbriquées (résultats d'outils) - pas seulement sur le message brut.</p>
 <h2 id="provider-pluggable">Provider pluggable<a class="headerlink" href="#provider-pluggable" title="Permanent link">&para;</a></h2>
-<p>L'interface <code>LLMProvider</code> est abstraite — le provider est sélectionné à l'exécution selon les variables d'environnement :</p>
+<p>L'interface <code>LLMProvider</code> est abstraite - le provider est sélectionné à l'exécution selon les variables d'environnement :</p>
 <pre class="mermaid"><code>flowchart TD
     ENV{Variables d'env} --&gt;|DEEPSEEK_API_KEY défini| DS[DeepSeekProvider\nAPI OpenAI-compatible\nchat context 64k]
     ENV --&gt;|OPENROUTER_API_KEY défini| OR[OpenRouterProvider\nmulti-modèles]
     ENV --&gt;|OLLAMA_URL défini| OL[OllamaProvider\nlocal · aucun coût]
-    ENV --&gt;|aucune clé| ERR[503 — instructions\nde configuration]
+    ENV --&gt;|aucune clé| ERR[503 - instructions\nde configuration]
 
     DS &amp; OR &amp; OL --&gt; AGENT[Agent loop]</code></pre>
 <p>Ajouter un nouveau provider = implémenter deux méthodes : <code>complete()</code> et <code>stream()</code>.</p>
@@ -1796,7 +1796,7 @@
 <tr>
 <td><code>source</code></td>
 <td><code>{sources, web_urls}</code></td>
-<td>Badges <code>db</code> / <code>wiki</code> / <code>web</code> sous la bulle — web cliquable</td>
+<td>Badges <code>db</code> / <code>wiki</code> / <code>web</code> sous la bulle - web cliquable</td>
 </tr>
 <tr>
 <td><code>usage</code></td>
@@ -1843,7 +1843,7 @@
 <tr>
 <td>Context window LLM</td>
 <td>64k tokens</td>
-<td>DeepSeek chat — suffisant pour history + tools</td>
+<td>DeepSeek chat - suffisant pour history + tools</td>
 </tr>
 <tr>
 <td>SLA cible</td>
@@ -1853,20 +1853,20 @@
 </tbody>
 </table>
 <h2 id="system-prompt">System prompt<a class="headerlink" href="#system-prompt" title="Permanent link">&para;</a></h2>
-<p>Stocké dans <a href="https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md"><code>backend/prompts/system.md</code></a> — chargé au démarrage via <code>pathlib</code>. Écrit en anglais (meilleure instruction-following), avec règle explicite de répondre en français. Mis à jour sans redéploiement (rechargé au prochain démarrage du conteneur).</p>
+<p>Stocké dans <a href="https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md"><code>backend/prompts/system.md</code></a> - chargé au démarrage via <code>pathlib</code>. Écrit en anglais (meilleure instruction-following), avec règle explicite de répondre en français. Mis à jour sans redéploiement (rechargé au prochain démarrage du conteneur).</p>
 <h2 id="use-cases-cibles">Use-cases cibles<a class="headerlink" href="#use-cases-cibles" title="Permanent link">&para;</a></h2>
 <ol>
-<li><strong>Expliquer une fusion</strong> — "Pourquoi cette fusion a type Feu/Eau ?", "Quels moves synergiques ?"</li>
-<li><strong>Recommandations stratégiques</strong> — "Donne une fusion anti-Psy avec Pikachu en head"</li>
-<li><strong>Q&amp;A mécaniques IF</strong> — "Comment fonctionnent les Move Experts ?", "Où trouver le Mystic Water ?"</li>
+<li><strong>Expliquer une fusion</strong> - "Pourquoi cette fusion a type Feu/Eau ?", "Quels moves synergiques ?"</li>
+<li><strong>Recommandations stratégiques</strong> - "Donne une fusion anti-Psy avec Pikachu en head"</li>
+<li><strong>Q&amp;A mécaniques IF</strong> - "Comment fonctionnent les Move Experts ?", "Où trouver le Mystic Water ?"</li>
 </ol>
 <h2 id="references-code">Références code<a class="headerlink" href="#references-code" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/services/ai_service.py"><code>backend/services/ai_service.py</code></a> — boucle agent + SSE</li>
-<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/services/llm_providers.py"><code>backend/services/llm_providers.py</code></a> — interface <code>LLMProvider</code> + implémentations</li>
-<li><a href="https://github.com/benjsant/InfiniDex/tree/main/backend/services/tools/"><code>backend/services/tools/</code></a> — db_tools, wiki_tool, web_tool, dispatch</li>
-<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md"><code>backend/prompts/system.md</code></a> — system prompt</li>
-<li><a href="https://github.com/benjsant/InfiniDex/blob/main/frontend/app/ai/page.tsx"><code>frontend/app/ai/page.tsx</code></a> — AiChat.tsx avec SSE reader</li>
+<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/services/ai_service.py"><code>backend/services/ai_service.py</code></a> - boucle agent + SSE</li>
+<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/services/llm_providers.py"><code>backend/services/llm_providers.py</code></a> - interface <code>LLMProvider</code> + implémentations</li>
+<li><a href="https://github.com/benjsant/InfiniDex/tree/main/backend/services/tools/"><code>backend/services/tools/</code></a> - db_tools, wiki_tool, web_tool, dispatch</li>
+<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md"><code>backend/prompts/system.md</code></a> - system prompt</li>
+<li><a href="https://github.com/benjsant/InfiniDex/blob/main/frontend/app/ai/page.tsx"><code>frontend/app/ai/page.tsx</code></a> - AiChat.tsx avec SSE reader</li>
 </ul>
 
 

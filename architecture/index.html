@@ -1861,13 +1861,13 @@
 </tr>
 </tbody>
 </table>
-<p>Le service <code>docs</code> ne démarre <strong>pas</strong> avec <code>docker compose up</code> — il faut le profil explicite :</p>
+<p>Le service <code>docs</code> ne démarre <strong>pas</strong> avec <code>docker compose up</code> - il faut le profil explicite :</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>--profile<span class="w"> </span>docs<span class="w"> </span>up<span class="w"> </span>docs
 </span></code></pre></div>
 <p>Les ports hôte suivent une convention <strong>préfixe 5</strong> pour éviter les collisions avec d'autres projets locaux.</p>
 <div class="admonition tip">
 <p class="admonition-title">Override prod</p>
-<p><code>docker-compose.prod.yml</code> remet <code>ports: !reset []</code> sur db/backend/sprites — plus rien n'est exposé sauf le frontend. Le navigateur passe toujours par le proxy Next.js.</p>
+<p><code>docker-compose.prod.yml</code> remet <code>ports: !reset []</code> sur db/backend/sprites - plus rien n'est exposé sauf le frontend. Le navigateur passe toujours par le proxy Next.js.</p>
 </div>
 <h2 id="flux-de-requetes">Flux de requêtes<a class="headerlink" href="#flux-de-requetes" title="Permanent link">&para;</a></h2>
 <h3 id="en-dev">En dev<a class="headerlink" href="#en-dev" title="Permanent link">&para;</a></h3>
@@ -1904,7 +1904,7 @@
     REQ([Fusion head_id · body_id])
 
     REQ --&gt; CHK{Sprite custom\ndans nginx ?}
-    CHK --&gt;|Oui| PNG["/sprites/{head}.{body}.png\nnginx sidecar — direct"]
+    CHK --&gt;|Oui| PNG["/sprites/{head}.{body}.png\nnginx sidecar - direct"]
     CHK --&gt;|Non| FB[FusionSprite fallback]
 
     FB --&gt; MAP[usePokemonIdMap\nIF id → national_id]
@@ -1916,7 +1916,7 @@
     style COMP fill:#3b2f1e,color:#fcd34d</code></pre>
 <div class="admonition note">
 <p class="admonition-title">IF id ≠ national dex id</p>
-<p>Pour Gen 1–2 les deux IDs coïncident (1–251). Au-delà, IF utilise sa propre numérotation — ex. Arceus est <code>#315</code> en IF mais <code>#493</code> au national dex. <code>usePokemonIdMap</code> charge une fois la liste complète des 572 Pokémon et construit la map en mémoire (React Query <code>staleTime: Infinity</code>).</p>
+<p>Pour Gen 1–2 les deux IDs coïncident (1–251). Au-delà, IF utilise sa propre numérotation - ex. Arceus est <code>#315</code> en IF mais <code>#493</code> au national dex. <code>usePokemonIdMap</code> charge une fois la liste complète des 572 Pokémon et construit la map en mémoire (React Query <code>staleTime: Infinity</code>).</p>
 </div>
 <h3 id="flux-ia-sse">Flux IA (SSE)<a class="headerlink" href="#flux-ia-sse" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>sequenceDiagram
@@ -1931,7 +1931,7 @@
     N  -&gt;&gt;  F : POST /ai/ask (réseau Docker interne)
     F  --&gt;&gt; B : HTTP 200 + headers SSE&lt;br/&gt;Content-Type: text/event-stream
 
-    note over F,L: Itération 1 — l'agent appelle un outil
+    note over F,L: Itération 1 - l'agent appelle un outil
     F  -&gt;&gt;  L : chat.completions.create(stream=True)&lt;br/&gt;[system, history, user]
     L  --&gt;&gt; F : delta tool_call {name, arguments}
     F  --&gt;&gt; B : data: {"type":"tool_call","name":"get_pokemon"}
@@ -1939,7 +1939,7 @@
     T  --&gt;&gt; F : {found: true, ...résultat JSON}
     F  -&gt;&gt;  L : messages += [tool_result]
 
-    note over F,L: Itération 2 — l'agent génère la réponse
+    note over F,L: Itération 2 - l'agent génère la réponse
     F  -&gt;&gt;  L : chat.completions.create(stream=True)&lt;br/&gt;[system, history, user, tool_result]
     loop streaming tokens
         L  --&gt;&gt; F : delta content chunk
@@ -1947,7 +1947,7 @@
     end
     L  --&gt;&gt; F : usage {total_tokens: N}
 
-    note over F,B: Fin de stream — attribution des sources
+    note over F,B: Fin de stream - attribution des sources
     F  --&gt;&gt; B : data: {"type":"source","sources":["db"],"web_urls":[]}
     F  --&gt;&gt; B : data: {"type":"usage","total_tokens":412}
 
@@ -1976,7 +1976,7 @@
 <tr>
 <td><code>source</code></td>
 <td><code>{sources, web_urls}</code></td>
-<td>Badges db / wiki / web sous la bulle — web cliquable</td>
+<td>Badges db / wiki / web sous la bulle - web cliquable</td>
 </tr>
 <tr>
 <td><code>usage</code></td>
@@ -1991,9 +1991,9 @@
 </tbody>
 </table>
 <h2 id="architecture-ia-agentique">Architecture IA agentique<a class="headerlink" href="#architecture-ia-agentique" title="Permanent link">&para;</a></h2>
-<p>L'assistant IA est un <strong>agent tool-calling</strong> — il ne génère pas de réponse directement mais invoque des outils structurés pour chercher l'information, puis synthétise.</p>
+<p>L'assistant IA est un <strong>agent tool-calling</strong> - il ne génère pas de réponse directement mais invoque des outils structurés pour chercher l'information, puis synthétise.</p>
 <h3 id="system-prompt">System prompt<a class="headerlink" href="#system-prompt" title="Permanent link">&para;</a></h3>
-<p>Stocké dans <a href="https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md"><code>backend/prompts/system.md</code></a> — fichier Markdown chargé au démarrage via <code>pathlib</code>. Écrit en anglais (meilleure instruction-following), avec règle explicite de répondre en français. Mis à jour sans redéploiement (hot-reload au prochain démarrage du conteneur).</p>
+<p>Stocké dans <a href="https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md"><code>backend/prompts/system.md</code></a> - fichier Markdown chargé au démarrage via <code>pathlib</code>. Écrit en anglais (meilleure instruction-following), avec règle explicite de répondre en français. Mis à jour sans redéploiement (hot-reload au prochain démarrage du conteneur).</p>
 <h3 id="boucle-agent-ai_servicepy">Boucle agent (<code>ai_service.py</code>)<a class="headerlink" href="#boucle-agent-ai_servicepy" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>messages = [system, ...history, user]
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>for iteration in range(MAX_ITERATIONS=5):
@@ -2007,7 +2007,7 @@
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        return
 </span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>yield TokenEvent(FAILURE_MESSAGE)  # circuit breaker
 </span></code></pre></div>
-<p><strong>Fail-closed</strong> : si MAX_ITERATIONS est atteint sans réponse, ou si la réponse est vide → <code>"Je n'ai pas trouvé cette information."</code> — jamais d'invention.</p>
+<p><strong>Fail-closed</strong> : si MAX_ITERATIONS est atteint sans réponse, ou si la réponse est vide → <code>"Je n'ai pas trouvé cette information."</code> - jamais d'invention.</p>
 <h3 id="outils-disponibles">Outils disponibles<a class="headerlink" href="#outils-disponibles" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -2056,7 +2056,7 @@
 <tr>
 <td><code>search_wiki</code></td>
 <td>Wiki IF (HTTP)</td>
-<td>Résumé de page wiki avec cache TTL 10 min — fetch page complète si intro &lt; 300 caractères</td>
+<td>Résumé de page wiki avec cache TTL 10 min - fetch page complète si intro &lt; 300 caractères</td>
 </tr>
 <tr>
 <td><code>search_web</code></td>
@@ -2066,17 +2066,17 @@
 </tbody>
 </table>
 <h3 id="cascade-de-retrieval">Cascade de retrieval<a class="headerlink" href="#cascade-de-retrieval" title="Permanent link">&para;</a></h3>
-<p>L'agent ne suit pas un script fixe — c'est le LLM qui décide quels outils appeler. Le system prompt le guide vers cette priorité :</p>
+<p>L'agent ne suit pas un script fixe - c'est le LLM qui décide quels outils appeler. Le system prompt le guide vers cette priorité :</p>
 <pre class="mermaid"><code>flowchart TD
-    Q([Question utilisateur]) --&gt; LLM1[LLM — itération 1]
+    Q([Question utilisateur]) --&gt; LLM1[LLM - itération 1]
 
     LLM1 --&gt;|tool_call DB| DB["Outils DB\nget_pokemon · get_fusion\nsearch_move · get_item\nget_move_tutors\nsearch_pokemon_locations"]
     DB --&gt;|found: true| RESP([Réponse synthétisée])
-    DB --&gt;|found: false| LLM2[LLM — itération 2]
+    DB --&gt;|found: false| LLM2[LLM - itération 2]
 
     LLM2 --&gt;|tool_call wiki| WIKI["search_wiki\n(MediaWiki API IF)\ncache TTL 10 min"]
     WIKI --&gt;|found: true| RESP
-    WIKI --&gt;|found: false| LLM3[LLM — itération 3]
+    WIKI --&gt;|found: false| LLM3[LLM - itération 3]
 
     LLM3 --&gt;|tool_call web| WEB["search_web\n(DuckDuckGo)\ncache TTL 5 min\nmax 1 500 chars"]
     WEB --&gt;|found: true| RESP
@@ -2096,12 +2096,12 @@
 <p>Chaque résultat d'outil est injecté dans le contexte avant l'itération suivante. Le LLM peut enchaîner plusieurs outils DB dans une même itération (ex. <code>get_pokemon</code> + <code>get_fusion</code>).</p>
 <h3 id="cache-et-performances">Cache et performances<a class="headerlink" href="#cache-et-performances" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong><code>StaticCacheMiddleware</code></strong> : ajoute <code>Cache-Control: public, max-age=3600</code> sur tous les <code>GET 200</code> sauf <code>/ai/*</code> et <code>/health</code> — les clients et CDN peuvent mettre en cache les données statiques.</li>
+<li><strong><code>StaticCacheMiddleware</code></strong> : ajoute <code>Cache-Control: public, max-age=3600</code> sur tous les <code>GET 200</code> sauf <code>/ai/*</code> et <code>/health</code> - les clients et CDN peuvent mettre en cache les données statiques.</li>
 <li><strong>Wiki TTL cache</strong> : dict in-process <code>{query → (timestamp, result)}</code>, TTL 600s, clé normalisée. Évite de re-fetcher le wiki sur des questions similaires.</li>
-<li><strong><code>staleTime: Infinity</code></strong> côté React Query : les données Pokémon ne changent pas entre deux déploiements — aucun refetch en arrière-plan.</li>
+<li><strong><code>staleTime: Infinity</code></strong> côté React Query : les données Pokémon ne changent pas entre deux déploiements - aucun refetch en arrière-plan.</li>
 </ul>
 <h3 id="provider-pluggable">Provider pluggable<a class="headerlink" href="#provider-pluggable" title="Permanent link">&para;</a></h3>
-<p>Interface <code>LLMProvider</code> abstraite — sélection runtime :</p>
+<p>Interface <code>LLMProvider</code> abstraite - sélection runtime :</p>
 <ol>
 <li><code>DEEPSEEK_API_KEY</code> défini → DeepSeek (API compatible OpenAI)</li>
 <li><code>OLLAMA_URL</code> défini → Ollama local</li>
@@ -2117,14 +2117,14 @@
 </ul>
 <h2 id="references">Références<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/main.py">backend/main.py</a> — wiring FastAPI + CORS + StaticCacheMiddleware</li>
-<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/services/ai_service.py">backend/services/ai_service.py</a> — boucle agent + SSE</li>
-<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/services/tools/">backend/services/tools/</a> — db_tools, wiki_tool, dispatch</li>
-<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md">backend/prompts/system.md</a> — system prompt</li>
-<li><a href="https://github.com/benjsant/InfiniDex/blob/main/docker-compose.yml">docker-compose.yml</a> — services dev</li>
-<li><a href="https://github.com/benjsant/InfiniDex/blob/main/docker-compose.prod.yml">docker-compose.prod.yml</a> — override prod</li>
-<li><a href="https://github.com/benjsant/InfiniDex/blob/main/frontend/app/api/%5B...path%5D/route.ts">frontend/app/api/[...path]/route.ts</a> — proxy catch-all</li>
-<li><a href="../reference/routes/">Référence routes</a> — endpoints FastAPI auto-documentés.</li>
+<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/main.py">backend/main.py</a> - wiring FastAPI + CORS + StaticCacheMiddleware</li>
+<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/services/ai_service.py">backend/services/ai_service.py</a> - boucle agent + SSE</li>
+<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/services/tools/">backend/services/tools/</a> - db_tools, wiki_tool, dispatch</li>
+<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md">backend/prompts/system.md</a> - system prompt</li>
+<li><a href="https://github.com/benjsant/InfiniDex/blob/main/docker-compose.yml">docker-compose.yml</a> - services dev</li>
+<li><a href="https://github.com/benjsant/InfiniDex/blob/main/docker-compose.prod.yml">docker-compose.prod.yml</a> - override prod</li>
+<li><a href="https://github.com/benjsant/InfiniDex/blob/main/frontend/app/api/%5B...path%5D/route.ts">frontend/app/api/[...path]/route.ts</a> - proxy catch-all</li>
+<li><a href="../reference/routes/">Référence routes</a> - endpoints FastAPI auto-documentés.</li>
 </ul>
 
 

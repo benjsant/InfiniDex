@@ -1629,11 +1629,11 @@
 <td>Stats de base, national dex IDs, learnsets TM/tutor</td>
 </tr>
 <tr>
-<td><strong>Wiki IF — pages spécifiques</strong></td>
+<td><strong>Wiki IF - pages spécifiques</strong></td>
 <td>Fusions, Move Experts, légendaires, tuteurs, mécaniques IF</td>
 </tr>
 <tr>
-<td><strong>Wiki IF — page Pokédex</strong></td>
+<td><strong>Wiki IF - page Pokédex</strong></td>
 <td>Localisations sauvages et quêtes (572 entrées <code>PokedexTable</code>)</td>
 </tr>
 <tr>
@@ -1682,7 +1682,7 @@
 <tr>
 <td>3</td>
 <td><code>extract_moves_if.py</code></td>
-<td>676 moves + 121 TMs + 40 tuteurs + 57 Move Experts</td>
+<td>658 moves + 121 TMs + 40 tuteurs + 57 Move Experts</td>
 </tr>
 <tr>
 <td>3b</td>
@@ -1692,7 +1692,7 @@
 <tr>
 <td>4</td>
 <td><code>extract_abilities_if.py</code></td>
-<td>178 talents depuis le wiki IF</td>
+<td>183 talents depuis le wiki IF</td>
 </tr>
 <tr>
 <td>4b</td>
@@ -1742,12 +1742,12 @@
 </tbody>
 </table>
 <div class="admonition note">
-<p class="admonition-title">Étape 9b-ter — <code>load_pokedex_locations.py</code></p>
-<p>Parse la page Pokédex du wiki IF (<code>{{PokedexTable/Data|...}}</code>) pour extraire les localisations sauvages et quêtes manquantes. Utilise <code>ON CONFLICT DO NOTHING</code> — ne réécrit jamais les données prioritaires de <code>fix_pokemon_locations.py</code>. Gère le <code>|</code> dans les liens wiki (<code>[[Page|Display]]</code>) en reconstruisant le champ depuis <code>parts[6:]</code>.</p>
+<p class="admonition-title">Étape 9b-ter - <code>load_pokedex_locations.py</code></p>
+<p>Parse la page Pokédex du wiki IF (<code>{{PokedexTable/Data|...}}</code>) pour extraire les localisations sauvages et quêtes manquantes. Utilise <code>ON CONFLICT DO NOTHING</code> - ne réécrit jamais les données prioritaires de <code>fix_pokemon_locations.py</code>. Gère le <code>|</code> dans les liens wiki (<code>[[Page|Display]]</code>) en reconstruisant le champ depuis <code>parts[6:]</code>.</p>
 </div>
 <div class="admonition note">
-<p class="admonition-title">Étape 8e-ter — <code>fix_evolutions.py</code></p>
-<p>Re-fetch les chaînes d'évolution PokeAPI une fois les <code>national_id</code> corrigés par <code>fix_national_ids.py</code>. Nécessaire parce que <code>extract_stats_pokeapi.py</code> interroge PokeAPI par <code>if_id</code> (qui ne correspond au <code>national_id</code> que pour les 151 Kanto purs) — pour les 320 Pokémon post-Kanto, la chaîne récupérée appartient à la mauvaise espèce et n'est jamais ré-extraite sans ce script. Résolution slug-aware (<code>pokeapi_move_slug</code>) pour matcher correctement les noms à caractères spéciaux (<code>Mime Jr.</code> ↔ <code>mime-jr</code>, <code>Nidoran♀</code> ↔ <code>nidoran-f</code>, <code>Flabébé</code> ↔ <code>flabebe</code>). Idempotent.</p>
+<p class="admonition-title">Étape 8e-ter - <code>fix_evolutions.py</code></p>
+<p>Re-fetch les chaînes d'évolution PokeAPI une fois les <code>national_id</code> corrigés par <code>fix_national_ids.py</code>. Nécessaire parce que <code>extract_stats_pokeapi.py</code> interroge PokeAPI par <code>if_id</code> (qui ne correspond au <code>national_id</code> que pour les 151 Kanto purs) - pour les 320 Pokémon post-Kanto, la chaîne récupérée appartient à la mauvaise espèce et n'est jamais ré-extraite sans ce script. Résolution slug-aware (<code>pokeapi_move_slug</code>) pour matcher correctement les noms à caractères spéciaux (<code>Mime Jr.</code> ↔ <code>mime-jr</code>, <code>Nidoran♀</code> ↔ <code>nidoran-f</code>, <code>Flabébé</code> ↔ <code>flabebe</code>). Idempotent.</p>
 </div>
 <h2 id="diagramme-de-pipeline">Diagramme de pipeline<a class="headerlink" href="#diagramme-de-pipeline" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart TD
@@ -1758,7 +1758,7 @@
         GH[PokeAPI/sprites\nGitHub]
     end
 
-    subgraph ETL["ETL — etl/scripts/"]
+    subgraph ETL["ETL - etl/scripts/"]
         direction TB
         S1[1. init_postgres.sql\ncréation des tables]
         S2[2. types + générations]
@@ -1812,7 +1812,7 @@
 <p class="admonition-title">Recrée le backend après un rebuild</p>
 <p>Le backend warm <code>_pokemon_cache</code> / <code>_fusion_cache</code> <strong>au démarrage</strong>.
 Après un re-run ETL (surtout <code>--force</code>), recrée-le pour qu'il recharge
-depuis la base reconstruite — sinon il sert des données périmées
+depuis la base reconstruite - sinon il sert des données périmées
 silencieusement :
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>backend<span class="w"> </span>-d<span class="w"> </span>--force-recreate
 </span></code></pre></div></p>
@@ -1834,8 +1834,8 @@ silencieusement :
 <p>Les scripts <code>fix_*.py</code> sont réexécutables : ils font du <code>UPSERT</code> (SQL <code>ON CONFLICT DO UPDATE</code>) ou un <code>DELETE</code> + <code>INSERT</code> pour les tables dont ils sont seuls responsables (<code>move_expert_move</code>).</p>
 <h2 id="voir-aussi">Voir aussi<a class="headerlink" href="#voir-aussi" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../database/">Base de données</a> — schéma cible.</li>
-<li><a href="../roadmap/">Roadmap</a> — audit DB et mega-évolutions restent à traiter.</li>
+<li><a href="../database/">Base de données</a> - schéma cible.</li>
+<li><a href="../roadmap/">Roadmap</a> - audit DB et mega-évolutions restent à traiter.</li>
 </ul>
 
 

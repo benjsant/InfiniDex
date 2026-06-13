@@ -1648,7 +1648,7 @@
 
 
 <h1 id="regles-de-fusion">Règles de fusion<a class="headerlink" href="#regles-de-fusion" title="Permanent link">&para;</a></h1>
-<p>Pokémon Infinite Fusion combine deux Pokémon en un. Les règles suivantes sont <strong>canoniques</strong> dans le jeu et reproduites par le backend (<a href="https://github.com/benjsant/InfiniDex/blob/main/backend/services/fusion_service.py">backend/services/fusion_service.py</a> — voir aussi <a href="../reference/services/#fusion">Référence service</a>).</p>
+<p>Pokémon Infinite Fusion combine deux Pokémon en un. Les règles suivantes sont <strong>canoniques</strong> dans le jeu et reproduites par le backend (<a href="https://github.com/benjsant/InfiniDex/blob/main/backend/services/fusion_service.py">backend/services/fusion_service.py</a> - voir aussi <a href="../reference/services/#fusion">Référence service</a>).</p>
 <p>Dans tout ce document : <code>head</code> = Pokémon dont on prend la tête, <code>body</code> = Pokémon dont on prend le corps.</p>
 <h2 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h2>
 <p>La fusion hérite de <strong>deux types</strong> (ou un seul si les deux retombent sur le même) :</p>
@@ -1719,7 +1719,7 @@
 <li>Si <code>required_move_ids</code> n'est pas vide ET aucun move commun avec le movepool de la fusion → ❌.</li>
 <li>Sinon → ✅ ligne acceptée : le move est débloqué à <code>expert_location</code>.</li>
 </ol>
-<p>Entre lignes : <strong>OR</strong> — une seule ligne validée suffit pour débloquer le move à cet emplacement.</p>
+<p>Entre lignes : <strong>OR</strong> - une seule ligne validée suffit pour débloquer le move à cet emplacement.</p>
 <h3 id="exemples">Exemples<a class="headerlink" href="#exemples" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Umbreon × Bulbasaur</strong> → moves Knot Island de type Dark (Umbreon pur Dark) + moves exigeant le Pokémon Umbreon.</li>
@@ -1735,20 +1735,20 @@
 <li><strong>Knot Island</strong> : 2 Heart Scales par move</li>
 <li><strong>Boon Island</strong> : 10 Heart Scales par move</li>
 </ul>
-<p>Ces constantes sont définies dans <code>fusion_service.MOVE_EXPERT_PRICES_HEART_SCALES</code> — pas stockées en DB (dénormalisation inutile, règle métier dérivable de <code>expert_location</code>).</p>
+<p>Ces constantes sont définies dans <code>fusion_service.MOVE_EXPERT_PRICES_HEART_SCALES</code> - pas stockées en DB (dénormalisation inutile, règle métier dérivable de <code>expert_location</code>).</p>
 <h2 id="sprites">Sprites<a class="headerlink" href="#sprites" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Sprite par défaut</strong> : <code>CustomBattlers/{head_id}.{body_id}.png</code> sur le sidecar.</li>
-<li><strong>Variantes</strong> : <code>CustomBattlers/{head_id}.{body_id}{a,b,c,…}.png</code> — plusieurs artistes peuvent avoir produit leur version.</li>
+<li><strong>Variantes</strong> : <code>CustomBattlers/{head_id}.{body_id}{a,b,c,…}.png</code> - plusieurs artistes peuvent avoir produit leur version.</li>
 <li><strong>Autogen</strong> : si aucun custom n'existe, on peut tomber sur un sprite autogénéré (fallback visible dans le composant <code>FusionSprite</code>).</li>
 <li><strong>Crédits</strong> : table <code>creator</code> + <code>fusion_sprite.creator_id</code>. À afficher systématiquement quand on montre une fusion.</li>
 </ul>
 <h2 id="references">Références<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="https://infinitefusion.fandom.com/">Pokémon Infinite Fusion Wiki — Fusion mechanics</a></li>
-<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/services/fusion_service.py">backend/services/fusion_service.py</a> — implémentation.</li>
-<li><a href="../reference/services/#fusion">Référence service fusion</a> — API auto-documentée.</li>
-<li><a href="../database/#focus-move_expert_move">docs/database.md#focus-move_expert_move</a> — modèle de données.</li>
+<li><a href="https://infinitefusion.fandom.com/">Pokémon Infinite Fusion Wiki - Fusion mechanics</a></li>
+<li><a href="https://github.com/benjsant/InfiniDex/blob/main/backend/services/fusion_service.py">backend/services/fusion_service.py</a> - implémentation.</li>
+<li><a href="../reference/services/#fusion">Référence service fusion</a> - API auto-documentée.</li>
+<li><a href="../database/#focus-move_expert_move">docs/database.md#focus-move_expert_move</a> - modèle de données.</li>
 </ul>
 
 
