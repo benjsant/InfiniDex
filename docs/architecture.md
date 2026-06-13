@@ -70,7 +70,7 @@ Quatre services de run (`db`, `backend`, `sprites`, `frontend`) sur le réseau i
 | `frontend` | 3000         | 53000           | Next.js (standalone)                | défaut   |
 | `docs`     | 58100        | 58100           | MkDocs Material (cette doc)         | `docs`   |
 
-Le service `docs` ne démarre **pas** avec `docker compose up` — il faut le profil explicite :
+Le service `docs` ne démarre **pas** avec `docker compose up` - il faut le profil explicite :
 
 ```bash
 docker compose --profile docs up docs
@@ -79,7 +79,7 @@ docker compose --profile docs up docs
 Les ports hôte suivent une convention **préfixe 5** pour éviter les collisions avec d'autres projets locaux.
 
 !!! tip "Override prod"
-    `docker-compose.prod.yml` remet `ports: !reset []` sur db/backend/sprites — plus rien n'est exposé sauf le frontend. Le navigateur passe toujours par le proxy Next.js.
+    `docker-compose.prod.yml` remet `ports: !reset []` sur db/backend/sprites - plus rien n'est exposé sauf le frontend. Le navigateur passe toujours par le proxy Next.js.
 
 ## Flux de requêtes
 
@@ -128,7 +128,7 @@ flowchart TD
     REQ([Fusion head_id · body_id])
 
     REQ --> CHK{Sprite custom\ndans nginx ?}
-    CHK -->|Oui| PNG["/sprites/{head}.{body}.png\nnginx sidecar — direct"]
+    CHK -->|Oui| PNG["/sprites/{head}.{body}.png\nnginx sidecar - direct"]
     CHK -->|Non| FB[FusionSprite fallback]
 
     FB --> MAP[usePokemonIdMap\nIF id → national_id]
@@ -141,7 +141,7 @@ flowchart TD
 ```
 
 !!! note "IF id ≠ national dex id"
-    Pour Gen 1–2 les deux IDs coïncident (1–251). Au-delà, IF utilise sa propre numérotation — ex. Arceus est `#315` en IF mais `#493` au national dex. `usePokemonIdMap` charge une fois la liste complète des 572 Pokémon et construit la map en mémoire (React Query `staleTime: Infinity`).
+    Pour Gen 1–2 les deux IDs coïncident (1–251). Au-delà, IF utilise sa propre numérotation - ex. Arceus est `#315` en IF mais `#493` au national dex. `usePokemonIdMap` charge une fois la liste complète des 572 Pokémon et construit la map en mémoire (React Query `staleTime: Infinity`).
 
 ### Flux IA (SSE)
 
@@ -158,7 +158,7 @@ sequenceDiagram
     N  ->>  F : POST /ai/ask (réseau Docker interne)
     F  -->> B : HTTP 200 + headers SSE<br/>Content-Type: text/event-stream
 
-    note over F,L: Itération 1 — l'agent appelle un outil
+    note over F,L: Itération 1 - l'agent appelle un outil
     F  ->>  L : chat.completions.create(stream=True)<br/>[system, history, user]
     L  -->> F : delta tool_call {name, arguments}
     F  -->> B : data: {"type":"tool_call","name":"get_pokemon"}
@@ -166,7 +166,7 @@ sequenceDiagram
     T  -->> F : {found: true, ...résultat JSON}
     F  ->>  L : messages += [tool_result]
 
-    note over F,L: Itération 2 — l'agent génère la réponse
+    note over F,L: Itération 2 - l'agent génère la réponse
     F  ->>  L : chat.completions.create(stream=True)<br/>[system, history, user, tool_result]
     loop streaming tokens
         L  -->> F : delta content chunk
@@ -174,7 +174,7 @@ sequenceDiagram
     end
     L  -->> F : usage {total_tokens: N}
 
-    note over F,B: Fin de stream — attribution des sources
+    note over F,B: Fin de stream - attribution des sources
     F  -->> B : data: {"type":"source","sources":["db"],"web_urls":[]}
     F  -->> B : data: {"type":"usage","total_tokens":412}
 
@@ -188,17 +188,17 @@ sequenceDiagram
 |------|---------|---------------|
 | `tool_call` | `{name}` | Pastille ⚙ avant la réponse |
 | `token` | `{chunk}` | Texte accumulé dans la bulle (streaming) |
-| `source` | `{sources, web_urls}` | Badges db / wiki / web sous la bulle — web cliquable |
+| `source` | `{sources, web_urls}` | Badges db / wiki / web sous la bulle - web cliquable |
 | `usage` | `{total_tokens}` | Compteur tokens sous la bulle |
 | `error` | `{message}` | Message d'erreur inline, bulle supprimée |
 
 ## Architecture IA agentique
 
-L'assistant IA est un **agent tool-calling** — il ne génère pas de réponse directement mais invoque des outils structurés pour chercher l'information, puis synthétise.
+L'assistant IA est un **agent tool-calling** - il ne génère pas de réponse directement mais invoque des outils structurés pour chercher l'information, puis synthétise.
 
 ### System prompt
 
-Stocké dans [`backend/prompts/system.md`](https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md) — fichier Markdown chargé au démarrage via `pathlib`. Écrit en anglais (meilleure instruction-following), avec règle explicite de répondre en français. Mis à jour sans redéploiement (hot-reload au prochain démarrage du conteneur).
+Stocké dans [`backend/prompts/system.md`](https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md) - fichier Markdown chargé au démarrage via `pathlib`. Écrit en anglais (meilleure instruction-following), avec règle explicite de répondre en français. Mis à jour sans redéploiement (hot-reload au prochain démarrage du conteneur).
 
 ### Boucle agent (`ai_service.py`)
 
@@ -216,7 +216,7 @@ for iteration in range(MAX_ITERATIONS=5):
 yield TokenEvent(FAILURE_MESSAGE)  # circuit breaker
 ```
 
-**Fail-closed** : si MAX_ITERATIONS est atteint sans réponse, ou si la réponse est vide → `"Je n'ai pas trouvé cette information."` — jamais d'invention.
+**Fail-closed** : si MAX_ITERATIONS est atteint sans réponse, ou si la réponse est vide → `"Je n'ai pas trouvé cette information."` - jamais d'invention.
 
 ### Outils disponibles
 
@@ -229,24 +229,24 @@ yield TokenEvent(FAILURE_MESSAGE)  # circuit breaker
 | `get_item` | DB | Fiche item par nom |
 | `get_move_tutors` | DB | NPCs enseignant une capacité + prix |
 | `search_pokemon_locations` | DB | Cherche les Pokémon par condition/méthode dans `pokemon_location` |
-| `search_wiki` | Wiki IF (HTTP) | Résumé de page wiki avec cache TTL 10 min — fetch page complète si intro < 300 caractères |
+| `search_wiki` | Wiki IF (HTTP) | Résumé de page wiki avec cache TTL 10 min - fetch page complète si intro < 300 caractères |
 | `search_web` | DuckDuckGo (HTTP) | Fallback web en dernier recours, cache TTL 5 min, max 1 appel par tour |
 
 ### Cascade de retrieval
 
-L'agent ne suit pas un script fixe — c'est le LLM qui décide quels outils appeler. Le system prompt le guide vers cette priorité :
+L'agent ne suit pas un script fixe - c'est le LLM qui décide quels outils appeler. Le system prompt le guide vers cette priorité :
 
 ```mermaid
 flowchart TD
-    Q([Question utilisateur]) --> LLM1[LLM — itération 1]
+    Q([Question utilisateur]) --> LLM1[LLM - itération 1]
 
     LLM1 -->|tool_call DB| DB["Outils DB\nget_pokemon · get_fusion\nsearch_move · get_item\nget_move_tutors\nsearch_pokemon_locations"]
     DB -->|found: true| RESP([Réponse synthétisée])
-    DB -->|found: false| LLM2[LLM — itération 2]
+    DB -->|found: false| LLM2[LLM - itération 2]
 
     LLM2 -->|tool_call wiki| WIKI["search_wiki\n(MediaWiki API IF)\ncache TTL 10 min"]
     WIKI -->|found: true| RESP
-    WIKI -->|found: false| LLM3[LLM — itération 3]
+    WIKI -->|found: false| LLM3[LLM - itération 3]
 
     LLM3 -->|tool_call web| WEB["search_web\n(DuckDuckGo)\ncache TTL 5 min\nmax 1 500 chars"]
     WEB -->|found: true| RESP
@@ -269,13 +269,13 @@ Chaque résultat d'outil est injecté dans le contexte avant l'itération suivan
 
 ### Cache et performances
 
-- **`StaticCacheMiddleware`** : ajoute `Cache-Control: public, max-age=3600` sur tous les `GET 200` sauf `/ai/*` et `/health` — les clients et CDN peuvent mettre en cache les données statiques.
+- **`StaticCacheMiddleware`** : ajoute `Cache-Control: public, max-age=3600` sur tous les `GET 200` sauf `/ai/*` et `/health` - les clients et CDN peuvent mettre en cache les données statiques.
 - **Wiki TTL cache** : dict in-process `{query → (timestamp, result)}`, TTL 600s, clé normalisée. Évite de re-fetcher le wiki sur des questions similaires.
-- **`staleTime: Infinity`** côté React Query : les données Pokémon ne changent pas entre deux déploiements — aucun refetch en arrière-plan.
+- **`staleTime: Infinity`** côté React Query : les données Pokémon ne changent pas entre deux déploiements - aucun refetch en arrière-plan.
 
 ### Provider pluggable
 
-Interface `LLMProvider` abstraite — sélection runtime :
+Interface `LLMProvider` abstraite - sélection runtime :
 
 1. `DEEPSEEK_API_KEY` défini → DeepSeek (API compatible OpenAI)
 2. `OLLAMA_URL` défini → Ollama local
@@ -291,11 +291,11 @@ Interface `LLMProvider` abstraite — sélection runtime :
 
 ## Références
 
-- [backend/main.py](https://github.com/benjsant/InfiniDex/blob/main/backend/main.py) — wiring FastAPI + CORS + StaticCacheMiddleware
-- [backend/services/ai_service.py](https://github.com/benjsant/InfiniDex/blob/main/backend/services/ai_service.py) — boucle agent + SSE
-- [backend/services/tools/](https://github.com/benjsant/InfiniDex/blob/main/backend/services/tools/) — db_tools, wiki_tool, dispatch
-- [backend/prompts/system.md](https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md) — system prompt
-- [docker-compose.yml](https://github.com/benjsant/InfiniDex/blob/main/docker-compose.yml) — services dev
-- [docker-compose.prod.yml](https://github.com/benjsant/InfiniDex/blob/main/docker-compose.prod.yml) — override prod
-- [frontend/app/api/[...path]/route.ts](https://github.com/benjsant/InfiniDex/blob/main/frontend/app/api/%5B...path%5D/route.ts) — proxy catch-all
-- [Référence routes](reference/routes.md) — endpoints FastAPI auto-documentés.
+- [backend/main.py](https://github.com/benjsant/InfiniDex/blob/main/backend/main.py) - wiring FastAPI + CORS + StaticCacheMiddleware
+- [backend/services/ai_service.py](https://github.com/benjsant/InfiniDex/blob/main/backend/services/ai_service.py) - boucle agent + SSE
+- [backend/services/tools/](https://github.com/benjsant/InfiniDex/blob/main/backend/services/tools/) - db_tools, wiki_tool, dispatch
+- [backend/prompts/system.md](https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md) - system prompt
+- [docker-compose.yml](https://github.com/benjsant/InfiniDex/blob/main/docker-compose.yml) - services dev
+- [docker-compose.prod.yml](https://github.com/benjsant/InfiniDex/blob/main/docker-compose.prod.yml) - override prod
+- [frontend/app/api/[...path]/route.ts](https://github.com/benjsant/InfiniDex/blob/main/frontend/app/api/%5B...path%5D/route.ts) - proxy catch-all
+- [Référence routes](reference/routes.md) - endpoints FastAPI auto-documentés.

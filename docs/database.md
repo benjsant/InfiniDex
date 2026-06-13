@@ -9,10 +9,10 @@ PostgreSQL 16. Schéma défini dans [docker/init_postgres.sql](https://github.co
 | Table          | Contenu                                      | Volume |
 | -------------- | -------------------------------------------- | ------ |
 | `type`         | 18 types standard + 9 types triple-fusion (`is_triple_fusion_type`) | 27 |
-| `ability`      | Talents (EN + FR + description)              | 178    |
-| `move`         | Capacités (nom, type, puissance, PP, …)      | 659    |
+| `ability`      | Talents (EN + FR + description)              | 183    |
+| `move`         | Capacités (nom, type, puissance, PP, …)      | 658    |
 | `generation`   | Générations (1–9)                            | 9      |
-| `creator`      | Créateurs de sprites (attribution)           | 7 081  |
+| `creator`      | Créateurs de sprites (attribution)           | 7 126  |
 
 ### Pokémon & évolutions
 
@@ -21,7 +21,7 @@ PostgreSQL 16. Schéma défini dans [docker/init_postgres.sql](https://github.co
 | `pokemon`               | 501 Pokémon IF + 71 formes = **572 entrées**          |
 | `pokemon_type`          | Types primaires/secondaires (FK vers `type`)          |
 | `pokemon_ability`       | Talents disponibles (normaux + cachés)                |
-| `pokemon_move`          | Learnset : 40 067 lignes (level-up, TM, tutor, egg)   |
+| `pokemon_move`          | Learnset : 45 073 lignes (level-up, TM, tutor, egg)   |
 | `pokemon_evolution`     | Arbres d'évolution (pre + post)                       |
 | `pokemon_location`      | Zones de capture IF                                   |
 | `tm` + `tm_location`    | 121 CTs + 115 liaisons CT ↔ lieu (jonction N-N)       |
@@ -30,7 +30,7 @@ PostgreSQL 16. Schéma défini dans [docker/init_postgres.sql](https://github.co
 
 | Table              | Contenu                                                       |
 | ------------------ | ------------------------------------------------------------- |
-| `fusion_sprite`    | 166 090 sprites custom (head_id, body_id, variant, path, crédit) |
+| `fusion_sprite`    | 168 154 sprites custom (head_id, body_id, variant, path, crédit) |
 | `triple_fusion`    | 23 fusions triples reconnues                                  |
 | `move_expert_move` | 65 règles Move Expert (Knot Island + Boon Island)             |
 | `move_tutor`       | 41 Move Tutors classiques (NPC, prix, localisation)           |
@@ -57,11 +57,11 @@ Chaque ligne = une règle. Une fusion peut satisfaire plusieurs règles pour le 
 **Sémantique** (cf. [Règles de fusion](fusion-rules.md#move-experts)) :
 
 - **Au sein d'une ligne** : AND entre axes (pokémon requis × types requis × moves requis).
-- **Axe `required_pokemon_ids`** : OR — head OU body doit être dans la liste.
-- **Axe `required_type_ids`** : superset — la fusion doit avoir **tous** les types listés.
-- **Axe `required_move_ids`** : intersection — au moins un move en commun.
+- **Axe `required_pokemon_ids`** : OR - head OU body doit être dans la liste.
+- **Axe `required_type_ids`** : superset - la fusion doit avoir **tous** les types listés.
+- **Axe `required_move_ids`** : intersection - au moins un move en commun.
 - **Tableau vide** sur un axe = aucune contrainte sur cet axe.
-- **Entre lignes** : OR — une ligne suffit pour débloquer le move à cet emplacement.
+- **Entre lignes** : OR - une ligne suffit pour débloquer le move à cet emplacement.
 
 ## Index utiles
 
@@ -280,6 +280,6 @@ erDiagram
 
 ## Voir aussi
 
-- [ETL](etl.md) — comment la base est peuplée.
-- [docker/init_postgres.sql](https://github.com/benjsant/InfiniDex/blob/main/docker/init_postgres.sql) — source de vérité du schéma.
-- [Modèles DB](reference/models.md) — classes SQLAlchemy auto-documentées.
+- [ETL](etl.md) - comment la base est peuplée.
+- [docker/init_postgres.sql](https://github.com/benjsant/InfiniDex/blob/main/docker/init_postgres.sql) - source de vérité du schéma.
+- [Modèles DB](reference/models.md) - classes SQLAlchemy auto-documentées.

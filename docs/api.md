@@ -2,7 +2,7 @@
 
 FastAPI exposant 54 endpoints + `/health`. Swagger interactif en dev : [http://localhost:58000/docs](http://localhost:58000/docs). Référence auto-générée : [Routes](reference/routes.md).
 
-En prod le backend n'est **pas** exposé publiquement — les requêtes passent par le proxy Next.js (`/api/*` sur le domaine public).
+En prod le backend n'est **pas** exposé publiquement - les requêtes passent par le proxy Next.js (`/api/*` sur le domaine public).
 
 ## Organisation
 
@@ -12,13 +12,13 @@ backend/
   routes/                 # endpoints HTTP (un fichier par domaine)
   services/               # logique métier + accès DB
     tools/                # outils de l'agent IA (db_tools.py, wiki_tool.py)
-  schemas/                # Pydantic — contrat I/O
+  schemas/                # Pydantic - contrat I/O
   prompts/
     system.md             # system prompt LLM (anglais, réponse forcée en français)
   db/
     models/               # SQLAlchemy
     base.py               # engine + session
-  tests/                  # pytest + TestClient (160 tests)
+  tests/                  # pytest + TestClient (136 tests)
 ```
 
 Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les routes ne touchent jamais directement SQLAlchemy.
@@ -58,7 +58,7 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 
 | Méthode | Chemin                           | Description                                |
 | ------- | -------------------------------- | ------------------------------------------ |
-| GET     | `/abilities/`                    | Liste des ~178 talents                     |
+| GET     | `/abilities/`                    | Liste des ~183 talents                     |
 | GET     | `/abilities/search?q={nom}`      | Recherche nom EN/FR                        |
 | GET     | `/abilities/{id}`                | Détail + descriptions EN/FR                |
 
@@ -74,7 +74,7 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 
 | Méthode | Chemin                     | Description                                         |
 | ------- | -------------------------- | --------------------------------------------------- |
-| GET     | `/items/`                  | 70 items (fusion/evolution/valuable) — filtre `?category=` |
+| GET     | `/items/`                  | 70 items (fusion/evolution/valuable) - filtre `?category=` |
 | GET     | `/items/search?q={nom}`    | Recherche nom EN/FR                                 |
 | GET     | `/items/{id}`              | Détail item (effect, price_buy, price_sell)         |
 
@@ -84,7 +84,7 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 | ------- | ------------------------------------------- | ---------------------------------------------- |
 | GET     | `/fusion/{head_id}/{body_id}`               | Stats, types et sprite d'une fusion            |
 | GET     | `/fusion/{head_id}/{body_id}/full`          | Stats + moves + expert_moves en une seule requête |
-| GET     | `/fusion/{head_id}/{body_id}/moves`         | Moveset combiné head+body, dédupliqué — chaque move inclut `origin: "head"\|"body"\|"both"` |
+| GET     | `/fusion/{head_id}/{body_id}/moves`         | Moveset combiné head+body, dédupliqué - chaque move inclut `origin: "head"\|"body"\|"both"` |
 | GET     | `/fusion/{head_id}/{body_id}/abilities`     | Talents combinés selon règles IF (head slot1 + body slot1 + hiddens) |
 | GET     | `/fusion/{head_id}/{body_id}/weaknesses`    | Matchups défensifs de la combinaison de types  |
 | GET     | `/fusion/{head_id}/{body_id}/expert-moves`  | Moves enseignables par Move Expert (Knot/Boon Island) + prix en Heart Scales |
@@ -97,7 +97,7 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 | ------- | ------------------------------------------ | --------------------------------------------- |
 | GET     | `/sprites/by_pokemon/{pokemon_id}`         | Toutes les variantes impliquant ce Pokémon (head ou body) |
 | GET     | `/sprites/{head_id}/{body_id}`             | Liste des variantes + crédits (`creators: list[str]`) |
-| GET     | `/sprites/{head_id}/{body_id}/image`       | PNG — default ou `?variant_id=N`              |
+| GET     | `/sprites/{head_id}/{body_id}/image`       | PNG - default ou `?variant_id=N`              |
 
 ### Méta
 
@@ -120,17 +120,17 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 
 | Méthode | Chemin           | Description                                                                 |
 | ------- | ---------------- | --------------------------------------------------------------------------- |
-| POST    | `/ai/ask`        | Agent tool-calling — réponse en streaming SSE                               |
-| POST    | `/ai/feedback`   | Envoie un retour utilisateur (webhook Discord) — toujours 200, best-effort  |
+| POST    | `/ai/ask`        | Agent tool-calling - réponse en streaming SSE                               |
+| POST    | `/ai/feedback`   | Envoie un retour utilisateur (webhook Discord) - toujours 200, best-effort  |
 | GET     | `/ai/provider`   | Provider actif (`{"name": "DeepSeek", "model": "deepseek-chat"}`)           |
 | GET     | `/ai/prompt`     | System prompt actif (contenu de `prompts/system.md`) + liste des outils     |
 
 **Payload `/ai/ask`** : `{ "message": "...", "context": "...", "history": [...] }`
 
-- `context` (optionnel) : texte injecté avant la question — utilisé par le bouton "Demander à l'IA" pour passer la sélection courante (ex. *"Fusion de Dracaufeu (tête) et Mewtwo (corps). Types: Fire/Psychic. Total: 600."*)
-- `history` (optionnel) : tableau `[{role, content}]` des échanges précédents — tronqué à 10 messages
+- `context` (optionnel) : texte injecté avant la question - utilisé par le bouton "Demander à l'IA" pour passer la sélection courante (ex. *"Fusion de Dracaufeu (tête) et Mewtwo (corps). Types: Fire/Psychic. Total: 600."*)
+- `history` (optionnel) : tableau `[{role, content}]` des échanges précédents - tronqué à 10 messages
 
-**Format SSE** — chaque ligne `data: {...}\n\n` contient un événement typé :
+**Format SSE** - chaque ligne `data: {...}\n\n` contient un événement typé :
 
 ```json
 {"type": "tool_call", "name": "get_pokemon"}
@@ -153,7 +153,7 @@ Implémentation : [`backend/services/ai_service.py`](https://github.com/benjsant
 
 ## CORS
 
-Défense en profondeur uniquement — le flux principal passe par le proxy Next.js (même origine).
+Défense en profondeur uniquement - le flux principal passe par le proxy Next.js (même origine).
 
 ```python
 # backend/main.py
@@ -175,7 +175,7 @@ En prod, `CORS_ALLOWED_ORIGINS` doit lister uniquement le domaine public.
 
 ## Tests
 
-160 tests. Ils nécessitent le dump SQL sous `backend/tests/fixtures/` (committé). Lance via Docker :
+136 tests. Ils nécessitent le dump SQL sous `backend/tests/fixtures/` (committé). Lance via Docker :
 
 ```bash
 docker compose --profile test run --rm test-backend
@@ -183,7 +183,7 @@ docker compose --profile test run --rm test-backend
 
 ## Voir aussi
 
-- [Règles de fusion](fusion-rules.md) — sémantique des endpoints `/fusion/*`.
-- [Architecture](architecture.md) — flux de requêtes + boucle agent IA.
-- [Référence routes](reference/routes.md) — signatures + docstrings auto-générées.
-- [Référence schemas](reference/schemas.md) — modèles Pydantic (I/O).
+- [Règles de fusion](fusion-rules.md) - sémantique des endpoints `/fusion/*`.
+- [Architecture](architecture.md) - flux de requêtes + boucle agent IA.
+- [Référence routes](reference/routes.md) - signatures + docstrings auto-générées.
+- [Référence schemas](reference/schemas.md) - modèles Pydantic (I/O).

@@ -4,34 +4,34 @@ Version live du suivi : [ROADMAP.md](https://github.com/benjsant/InfiniDex/blob/
 
 ## État par couche
 
-### ETL — ✅ stabilisé
+### ETL - ✅ stabilisé
 
-Pipeline en 14 étapes (orchestrateur `etl/pipeline.py`). Données actuelles :
+Pipeline en 38 étapes (orchestrateur `etl/pipeline.py`). Données actuelles :
 
 - **572 Pokémon** (501 IF + 71 formes)
-- **659 moves** · **183 abilities** · **45 105** pokemon_move
+- **658 moves** · **183 abilities** · **45 073** pokemon_move
 - **168 154** fusion_sprite · **23** triple_fusion
-- **7 126** créateurs · **2 560** pokemon_location · **188** locations
+- **7 126** créateurs · **2 448** pokemon_location · **188** locations
 - **121** TMs · **41** tuteurs de capacités
 
 **Pistes ouvertes :**
 
-- [x] Audit DB — moves orphelins nettoyés, Pokémon sans abilities enrichis
-- [x] Scheduler Prefect self-hosted — `etl/flows/etl_pipeline.py` (profil `prefect`)
-- [x] Localisations sauvages — `load_pokedex_locations.py` depuis la page Pokédex du wiki IF (541/572 Pokémon couverts)
+- [x] Audit DB - moves orphelins nettoyés, Pokémon sans abilities enrichis
+- [x] Scheduler Prefect self-hosted - `etl/flows/etl_pipeline.py` (profil `prefect`)
+- [x] Localisations sauvages - `load_pokedex_locations.py` depuis la page Pokédex du wiki IF (541/572 Pokémon couverts)
 
-### Base de données — ✅ enrichie
+### Base de données - ✅ enrichie
 
-- [x] **Move tutors** — table `move_tutor` (41 NPCs classiques, prix, localisation)
-- [x] **pokemon_location enrichie** — 55 entrées "gift", 25 entrées "trade", tags `respawn:elite4|gold|none` sur les légendaires
-- [x] **type_effectiveness triple-fusion** — 87 entrées pour les 8 types triple-fusion (id 37–44) ; ces types sont des types custom indépendants, pas calculés multiplicativement
-- [x] **Fix `compute_triple_fusion_weaknesses`** — utilise les IDs de types directement au lieu de décomposer les noms composés
+- [x] **Move tutors** - table `move_tutor` (41 NPCs classiques, prix, localisation)
+- [x] **pokemon_location enrichie** - 55 entrées "gift", 25 entrées "trade", tags `respawn:elite4|gold|none` sur les légendaires
+- [x] **type_effectiveness triple-fusion** - 87 entrées pour les 8 types triple-fusion (id 37–44) ; ces types sont des types custom indépendants, pas calculés multiplicativement
+- [x] **Fix `compute_triple_fusion_weaknesses`** - utilise les IDs de types directement au lieu de décomposer les noms composés
 
 **Piste ouverte :**
 
-- [x] **TM location** — `tm.location` (texte libre) supprimée, `location_summary` dérivé des FK `tm_location`
+- [x] **TM location** - `tm.location` (texte libre) supprimée, `location_summary` dérivé des FK `tm_location`
 
-### Backend — ✅ base solide
+### Backend - ✅ base solide
 
 54 endpoints + `/health` + 136 tests pytest. Couvre pokémon, moves, abilities, types, fusions, sprites, triple-fusions, générations, créateurs, stats, IA.
 
@@ -54,51 +54,51 @@ Pipeline en 14 étapes (orchestrateur `etl/pipeline.py`). Données actuelles :
 
 **Pistes ouvertes :**
 
-- [ ] **CI full pytest** — le reste des tests nécessite un dump SQL fixture à committer sous `backend/tests/fixtures/`
+- [ ] **CI full pytest** - le reste des tests nécessite un dump SQL fixture à committer sous `backend/tests/fixtures/`
 - [ ] Endpoint `/moves/{id}` enrichi avec TM number + location (après TM location cleanup)
 
-### Frontend — ✅ complet
+### Frontend - ✅ complet
 
 Pages : `/pokedex`, `/pokedex/[id]`, `/pokedex/favorites`, `/fusion`, `/fusion/[headId]/[bodyId]`, `/fusion/compare`, `/fusion/top`, `/fusion/history`, `/fusion/random`, `/moves`, `/moves/tutors`, `/types`, `/abilities`, `/items`, `/triple-fusions`, `/creators`, `/creators/[id]`, `/ai`. Composants : `EvolutionChain`, `MovesetTable`, `FusionMovesetTable`, `FusionSprite`, `AiChat`, `WeaknessGrid`, `PokemonCard`, `TypeBadge`, `StatBar`, `CreatorModal`.
 
 **Livraisons récentes :**
 
-- [x] Page `/fusion/compare` — comparateur côte à côte avec delta stats + bouton d'inversion head↔body
-- [x] Page `/fusion/history` — historique local (localStorage)
-- [x] Page `/creators` et `/creators/[id]` — galerie des 7 126 créateurs de sprites
+- [x] Page `/fusion/compare` - comparateur côte à côte avec delta stats + bouton d'inversion head↔body
+- [x] Page `/fusion/history` - historique local (localStorage)
+- [x] Page `/creators` et `/creators/[id]` - galerie des 7 126 créateurs de sprites
 - [x] Suggestions IA en popover (icône ampoule dans la toolbar)
 - [x] Footer masqué sur `/ai` pour maximiser l'espace chat
 - [x] Refonte OG images + JSON-LD + sitemap + PWA icons
-- [x] `cache: "no-store"` sur `apiFetch` — évite le cache HTTP navigateur après un re-run ETL
+- [x] `cache: "no-store"` sur `apiFetch` - évite le cache HTTP navigateur après un re-run ETL
 
 **Pistes ouvertes :**
 
 - [ ] Toggle EN/FR global persistent
-- [x] Tests Playwright — 10 tests E2E Chromium (`docker compose --profile e2e run --rm e2e`)
+- [x] Tests Playwright - 10 tests E2E Chromium (`docker compose --profile e2e run --rm e2e`)
 
-### IA — ✅ phases 1 à 5 livrées
+### IA - ✅ phases 1 à 5 livrées
 
-**Phase 1 ✅** — Tools DB + circuit breaker + fail-closed :
+**Phase 1 ✅** - Tools DB + circuit breaker + fail-closed :
 
 - 8 tools : `get_pokemon`, `get_fusion`, `get_triple_fusion`, `search_move`, `get_item`, `get_move_tutors`, `search_pokemon_locations`, `search_wiki`
 - Boucle agent MAX_ITERATIONS=5, fail-closed sur réponse vide ou dépassement
 - Provider pluggable : DeepSeek (prod) / Ollama (local)
-- System prompt externe (`prompts/system.md`) — règles anti-hallucination, anti-extrapolation jeux officiels, anti-emojis, fail-closed strict
+- System prompt externe (`prompts/system.md`) - règles anti-hallucination, anti-extrapolation jeux officiels, anti-emojis, fail-closed strict
 
-**Phase 2 ✅** — Tool wiki IF + cache :
+**Phase 2 ✅** - Tool wiki IF + cache :
 
 - `search_wiki` : MediaWiki API IF + cache TTL 10 min in-process
 
-**Phase 3 ✅** — Tool web DuckDuckGo :
+**Phase 3 ✅** - Tool web DuckDuckGo :
 
 - `search_web` : fallback web en dernier recours, cache TTL 5 min, max 1 appel par tour
 
-**Phase 4 ✅** — Transparence UI :
+**Phase 4 ✅** - Transparence UI :
 
 - Pastilles ⚙ tool-call + badges `db` / `wiki` / `web` avec URLs cliquables
 - Compteur de tokens sous chaque réponse
 
-**Phase 5 ✅** — Privacy + robustesse :
+**Phase 5 ✅** - Privacy + robustesse :
 
 - `pii_redact` sur tous les résultats d'outils avant envoi au LLM
 - Temperature abaissée à 0.1 (moins d'hallucinations)
@@ -110,13 +110,13 @@ Pages : `/pokedex`, `/pokedex/[id]`, `/pokedex/favorites`, `/fusion`, `/fusion/[
 - MAX_TOKENS=2048
 - Fail-closed strict : "Je n'ai pas trouvé cette information." si aucun tool ne remonte de données IF
 
-### Infra — ✅ v1 stable
+### Infra - ✅ v1 stable
 
 - Docker Compose dev + override `docker-compose.prod.yml`
 - Ports env-driven (préfixe 5)
 - Proxy Next.js `/api/*` et `/sprites-cdn/*` (masque les URLs backend)
 - CORS defense-in-depth côté FastAPI
-- CI GitHub Actions — smoke test sur PR backend
+- CI GitHub Actions - smoke test sur PR backend
 
 **Pistes ouvertes :**
 
@@ -125,7 +125,7 @@ Pages : `/pokedex`, `/pokedex/[id]`, `/pokedex/favorites`, `/fusion`, `/fusion/[
 - [ ] TLS + domaine pour la démo publique
 - [ ] Déployer la doc MkDocs (GitHub Pages ?)
 
-### Documentation — ✅ mise à jour
+### Documentation - ✅ mise à jour
 
 Pages MkDocs Material à jour : README, ROADMAP, architecture (9 outils IA, flux SSE, cascade DB→wiki→web), API, frontend (toutes les pages + hooks), ETL (pipeline.py 38 étapes), database, roadmap.
 

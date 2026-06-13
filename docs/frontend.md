@@ -45,7 +45,7 @@ frontend/
 
 | Route                                  | Contenu                                                                   | Capture |
 | -------------------------------------- | ------------------------------------------------------------------------- | ------- |
-| `/`                                    | Landing — stats globales + liens rapides vers toutes les sections         | [↗](screenshots.md#accueil) |
+| `/`                                    | Landing - stats globales + liens rapides vers toutes les sections         | [↗](screenshots.md#accueil) |
 | `/pokedex`                             | Liste paginée + recherche accent-insensitive + filtres type/génération/BST | [↗](screenshots.md#pokedex) |
 | `/pokedex/[id]`                        | Fiche avec onglets : Stats · Capacités · Évolutions · Faiblesses · Fusion | [↗](screenshots.md#fiche-pokemon) |
 | `/fusion`                              | Sélecteur head/body (pré-sélection via `?head=ID&body=ID`) + historique  | [↗](screenshots.md#calculateur-de-fusion) |
@@ -53,7 +53,7 @@ frontend/
 | `/fusion/compare`                      | Comparateur côte à côte de deux fusions avec delta de stats               | [↗](screenshots.md#comparateur-de-fusions) |
 | `/fusion/top`                          | Top fusions classées par BST avec filtre par type                         | [↗](screenshots.md#top-fusions) |
 | `/fusion/history`                      | Historique local des fusions consultées (localStorage)                    | [↗](screenshots.md#historique-des-fusions) |
-| `/fusion/random`                       | Redirection vers une fusion aléatoire via l'API                           | — |
+| `/fusion/random`                       | Redirection vers une fusion aléatoire via l'API                           | - |
 | `/ai`                                  | Chat IA plein écran avec streaming SSE et suggestions contextuelles       | [↗](screenshots.md#assistant-ia) |
 | `/moves`                               | Liste + recherche + filtre par type                                       | [↗](screenshots.md#capacites) |
 | `/moves/tutors`                        | Tuteurs classiques groupés par lieu + Move Experts groupés par île        | [↗](screenshots.md#tuteurs-de-capacites) |
@@ -79,11 +79,11 @@ Deux bénéfices :
 Implémentation : [frontend/app/api/[...path]/route.ts](https://github.com/benjsant/InfiniDex/blob/main/frontend/app/api/%5B...path%5D/route.ts) et [frontend/app/sprites-cdn/[...path]/route.ts](https://github.com/benjsant/InfiniDex/blob/main/frontend/app/sprites-cdn/%5B...path%5D/route.ts).
 
 !!! note "Pourquoi pas `next.config.ts` rewrites ?"
-    Next.js standalone fige les destinations de rewrite dans `.next/required-server-files.json` au build. Les route handlers, eux, évaluent `process.env` à chaque requête — c'est ce qu'on veut.
+    Next.js standalone fige les destinations de rewrite dans `.next/required-server-files.json` au build. Les route handlers, eux, évaluent `process.env` à chaque requête - c'est ce qu'on veut.
 
 ## Stratégie de cache React Query
 
-Toutes les données Pokémon sont statiques entre deux déploiements. Tous les hooks appliquent `staleTime: Infinity` — aucun refetch en arrière-plan après le premier chargement.
+Toutes les données Pokémon sont statiques entre deux déploiements. Tous les hooks appliquent `staleTime: Infinity` - aucun refetch en arrière-plan après le premier chargement.
 
 Les requêtes de détail sont **déclenchées à la demande** :
 
@@ -106,7 +106,7 @@ Les requêtes de détail sont **déclenchées à la demande** :
 | `useSprites(hId, bId)` | useFusion.ts | toujours (page fusion) |
 | `useAiChat()` | useAiChat.ts | message envoyé |
 
-Les hooks sont typés à partir de `types/api.d.ts` — tout changement de schéma backend casse la compilation (fail-fast).
+Les hooks sont typés à partir de `types/api.d.ts` - tout changement de schéma backend casse la compilation (fail-fast).
 
 ## Composants clés
 
@@ -120,9 +120,9 @@ Inclut un filtre de jeu (`GameFilter = "kanto" | "hoenn" | "all"`) qui restreint
 
 Tableau du moveset d'une fusion, groupé par méthode d'apprentissage (niveau, reproduction, donneur, CT, donneur expert). Chaque ligne affiche une pastille d'origine :
 
-- **H** (indigo) — capacité apprise par le Pokémon tête uniquement
-- **B** (violet) — capacité apprise par le Pokémon corps uniquement
-- **H+B** (dégradé) — apprise par les deux
+- **H** (indigo) - capacité apprise par le Pokémon tête uniquement
+- **B** (violet) - capacité apprise par le Pokémon corps uniquement
+- **H+B** (dégradé) - apprise par les deux
 
 ### AiChat
 
@@ -131,11 +131,11 @@ Chat IA avec streaming SSE. Gère deux types d'événements :
 - `tool_call` → pastille ⚙ affichée avant la réponse (transparence des outils invoqués)
 - `token` → chunk accumulé dans la bulle de réponse avec `scrollIntoView` progressif
 
-Le scroll distingue l'ajout d'un nouveau message (smooth) de l'arrivée d'un token (instant) via `prevMessageCountRef` — évite le jitter visuel pendant le streaming.
+Le scroll distingue l'ajout d'un nouveau message (smooth) de l'arrivée d'un token (instant) via `prevMessageCountRef` - évite le jitter visuel pendant le streaming.
 
 ### FusionSprite
 
-Sprite de fusion extrait d'un spritesheet 1920×2784 (20 colonnes × 29 lignes de 96×96px) hébergé par Infinite Fusion. Rendu par `background-position` CSS — aucun téléchargement d'image individuelle.
+Sprite de fusion extrait d'un spritesheet 1920×2784 (20 colonnes × 29 lignes de 96×96px) hébergé par Infinite Fusion. Rendu par `background-position` CSS - aucun téléchargement d'image individuelle.
 
 ## Design system IF
 
@@ -161,7 +161,7 @@ Stratégie mobile-first :
 
 - **Navbar** : hamburger `md:hidden` ouvre un drawer full-width sur mobile. Navigation horizontale classique sur `md:flex`.
 - **Tables** : colonnes secondaires masquées sur mobile via `hidden sm:table-cell` (ex. PP, priorité dans la liste des moves).
-- **Panels** : disposition `flex-col md:flex-row` — stats + sprite empilés sur mobile, côte à côte sur desktop.
+- **Panels** : disposition `flex-col md:flex-row` - stats + sprite empilés sur mobile, côte à côte sur desktop.
 - **Grilles** : `grid-cols-2 sm:grid-cols-3 md:grid-cols-4` pour les listes de cartes.
 
 ## i18n
@@ -193,5 +193,5 @@ Le Dockerfile multi-stage n'a **aucun** `ARG` pointant vers le backend : tout pa
 
 ## Voir aussi
 
-- [Architecture](architecture.md) — flux de requêtes proxy + flux SSE IA.
-- [API backend](api.md) — endpoints consommés.
+- [Architecture](architecture.md) - flux de requêtes proxy + flux SSE IA.
+- [API backend](api.md) - endpoints consommés.

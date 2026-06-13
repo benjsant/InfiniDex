@@ -9,7 +9,7 @@ Thanks for your interest in contributing. This guide covers local setup, convent
 | Docker + Docker Compose v2 | latest | All services |
 | Python | ≥ 3.12 | Backend / ETL (via `uv`) |
 | [`uv`](https://github.com/astral-sh/uv) | latest | Python dependency manager |
-| Node.js | ≥ 20 | Frontend (optional — Docker works too) |
+| Node.js | ≥ 20 | Frontend (optional - Docker works too) |
 
 ## Local setup
 
@@ -58,14 +58,14 @@ npm run dev   # http://localhost:3000
 
 ## Running tests
 
-All tests run via Docker — never install pytest or Playwright locally.
+All tests run via Docker - never install pytest or Playwright locally.
 
-**Backend (160 tests against a real Postgres):**
+**Backend (136 tests against a real Postgres):**
 ```bash
 docker compose --profile test run --rm test-backend
 ```
 
-**E2E Playwright (10 tests — requires the stack to be running):**
+**E2E Playwright (10 tests - requires the stack to be running):**
 ```bash
 docker compose up -d          # start frontend + backend + db
 docker compose --profile e2e run --rm e2e
@@ -78,8 +78,8 @@ docker compose run --rm --no-deps frontend sh -c "npm run build"
 
 The CI runs two workflows:
 
-- `ci.yml` — lint + mypy + build on every push
-- `full-pytest.yml` — 160 backend tests against a real Postgres, triggered on PRs
+- `ci.yml` - lint + mypy + build on every push
+- `full-pytest.yml` - 160 backend tests against a real Postgres, triggered on PRs
 
 ## Commit conventions
 
@@ -97,7 +97,7 @@ chore: update uv.lock with duckduckgo-search 8.1.1
 
 Scope hints: `backend`, `frontend`, `etl`, `ai`, `infra`, `db`.
 
-Breaking changes: append `!` after scope — `feat(api)!: rename endpoint`.
+Breaking changes: append `!` after scope - `feat(api)!: rename endpoint`.
 
 ## Branch naming
 
@@ -120,7 +120,7 @@ Work from `main`. Open PRs against `main`.
 ## Project structure
 
 ```
-backend/        FastAPI + SQLAlchemy 2 + Pydantic (49 endpoints, 160 tests)
+backend/        FastAPI + SQLAlchemy 2 + Pydantic (54 endpoints, 136 tests)
 ├── routes/     API route handlers
 ├── services/   Business logic, AI agent, tools
 │   └── tools/  Agent tools (db_tools, wiki_tool, web_tool)
@@ -145,7 +145,7 @@ The AI agent (`backend/services/ai_service.py`) calls tools in a cascade:
 **DB tools → search_wiki → search_web → fail-closed**.
 
 Adding a tool:
-1. Create `backend/services/tools/your_tool.py` — define a `Tool` instance
+1. Create `backend/services/tools/your_tool.py` - define a `Tool` instance
 2. Import and add it to `TOOLS` in `backend/services/tools/__init__.py`
 3. Add its label to `AI_TOOL_LABELS` in `frontend/lib/constants.ts`
 4. Add tests in `backend/tests/test_ai_tools.py`
@@ -156,7 +156,7 @@ Adding a tool:
 - **Python**: ruff (linting + formatting), mypy strict. Run `uv run ruff check . && uv run mypy backend/`.
 - **TypeScript**: ESLint + tsc. Run `npm run lint && npm run build` in `frontend/`.
 - **Comments**: only when the *why* is non-obvious. No docstring novels.
-- **No hallucination surface**: every factual claim in the AI prompt must be verifiable via a tool — no hardcoded game data in system.md that the DB already covers.
+- **No hallucination surface**: every factual claim in the AI prompt must be verifiable via a tool - no hardcoded game data in system.md that the DB already covers.
 
 ## Getting help
 
