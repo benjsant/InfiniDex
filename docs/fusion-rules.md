@@ -1,6 +1,6 @@
 # Règles de fusion
 
-Pokémon Infinite Fusion combine deux Pokémon en un. Les règles suivantes sont **canoniques** dans le jeu et reproduites par le backend ([backend/services/fusion_service.py](https://github.com/benjsant/InfiniDex/blob/main/backend/services/fusion_service.py) — voir aussi [Référence service](reference/services.md#fusion)).
+Pokémon Infinite Fusion combine deux Pokémon en un. Les règles suivantes sont **canoniques** dans le jeu et reproduites par le backend ([backend/services/fusion_service.py](https://github.com/benjsant/InfiniDex/blob/main/backend/services/fusion_service.py) - voir aussi [Référence service](reference/services.md#fusion)).
 
 Dans tout ce document : `head` = Pokémon dont on prend la tête, `body` = Pokémon dont on prend le corps.
 
@@ -76,7 +76,7 @@ Pour chaque règle :
 3. Si `required_move_ids` n'est pas vide ET aucun move commun avec le movepool de la fusion → ❌.
 4. Sinon → ✅ ligne acceptée : le move est débloqué à `expert_location`.
 
-Entre lignes : **OR** — une seule ligne validée suffit pour débloquer le move à cet emplacement.
+Entre lignes : **OR** - une seule ligne validée suffit pour débloquer le move à cet emplacement.
 
 ### Exemples
 
@@ -97,18 +97,18 @@ Réponse : liste de `FusionExpertMoveOut` avec, pour chaque move débloqué, la 
 - **Knot Island** : 2 Heart Scales par move
 - **Boon Island** : 10 Heart Scales par move
 
-Ces constantes sont définies dans `fusion_service.MOVE_EXPERT_PRICES_HEART_SCALES` — pas stockées en DB (dénormalisation inutile, règle métier dérivable de `expert_location`).
+Ces constantes sont définies dans `fusion_service.MOVE_EXPERT_PRICES_HEART_SCALES` - pas stockées en DB (dénormalisation inutile, règle métier dérivable de `expert_location`).
 
 ## Sprites
 
 - **Sprite par défaut** : `CustomBattlers/{head_id}.{body_id}.png` sur le sidecar.
-- **Variantes** : `CustomBattlers/{head_id}.{body_id}{a,b,c,…}.png` — plusieurs artistes peuvent avoir produit leur version.
+- **Variantes** : `CustomBattlers/{head_id}.{body_id}{a,b,c,…}.png` - plusieurs artistes peuvent avoir produit leur version.
 - **Autogen** : si aucun custom n'existe, on peut tomber sur un sprite autogénéré (fallback visible dans le composant `FusionSprite`).
 - **Crédits** : table `creator` + `fusion_sprite.creator_id`. À afficher systématiquement quand on montre une fusion.
 
 ## Références
 
-- [Pokémon Infinite Fusion Wiki — Fusion mechanics](https://infinitefusion.fandom.com/)
-- [backend/services/fusion_service.py](https://github.com/benjsant/InfiniDex/blob/main/backend/services/fusion_service.py) — implémentation.
-- [Référence service fusion](reference/services.md#fusion) — API auto-documentée.
-- [docs/database.md#focus-move_expert_move](database.md#focus-move_expert_move) — modèle de données.
+- [Pokémon Infinite Fusion Wiki - Fusion mechanics](https://infinitefusion.fandom.com/)
+- [backend/services/fusion_service.py](https://github.com/benjsant/InfiniDex/blob/main/backend/services/fusion_service.py) - implémentation.
+- [Référence service fusion](reference/services.md#fusion) - API auto-documentée.
+- [docs/database.md#focus-move_expert_move](database.md#focus-move_expert_move) - modèle de données.

@@ -1,6 +1,6 @@
 # InfiniDex
 
-Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.com/) — 572 Pokémon (501 Kanto + 71 Hoenn), 168 000+ fusions calculées, movepools, types, triple-fusions, Move Experts, maîtres des capacités, galerie des créateurs de sprites, et un **assistant IA agentique** à 9 outils.
+Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.com/) - 572 Pokémon (501 Kanto + 71 Hoenn), 168 000+ fusions calculées, movepools, types, triple-fusions, Move Experts, maîtres des capacités, galerie des créateurs de sprites, et un **assistant IA agentique** à 9 outils.
 
 📖 **[Documentation complète →](https://benjsant.github.io/InfiniDex/)**
 
@@ -12,9 +12,9 @@ Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.c
 | ---------- | ----------------------------------------------------------- | --------- |
 | ETL        | Python 3.12 + `uv` + MediaWiki API + PokeAPI + Prefect 3    | ✅ stable |
 | Base       | PostgreSQL 16 (relationnelle + `INTEGER[]`)                 | ✅ stable |
-| Backend    | FastAPI + SQLAlchemy 2 + Pydantic — 54 endpoints            | ✅ stable |
-| Frontend   | Next.js 15 App Router + TypeScript + PWA — 23 pages         | ✅ stable |
-| IA         | Agent tool-calling — DeepSeek / OpenRouter / Ollama         | ✅ stable |
+| Backend    | FastAPI + SQLAlchemy 2 + Pydantic - 54 endpoints            | ✅ stable |
+| Frontend   | Next.js 15 App Router + TypeScript + PWA - 23 pages         | ✅ stable |
+| IA         | Agent tool-calling - DeepSeek / OpenRouter / Ollama         | ✅ stable |
 | Infra      | Docker Compose (5 profils) + 4 lanes CI GitHub Actions      | ✅ stable |
 
 ---
@@ -23,7 +23,7 @@ Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.c
 
 Choix d'archi que je voulais documenter pour les recruteurs IA / data eng qui ouvrent ce repo :
 
-- **Agent LLM multi-provider, pas de LangChain.** Abstraction `select_provider()` qui choisit à runtime entre DeepSeek, OpenRouter et Ollama. Pas de vendor lock-in, et le code est inspectable de bout en bout — du system prompt jusqu'au parsing des `tool_calls`.
+- **Agent LLM multi-provider, pas de LangChain.** Abstraction `select_provider()` qui choisit à runtime entre DeepSeek, OpenRouter et Ollama. Pas de vendor lock-in, et le code est inspectable de bout en bout - du system prompt jusqu'au parsing des `tool_calls`.
 - **Cascade de sources fail-closed.** L'agent priorise toujours la DB structurée (9 outils SQL/HTTP), puis le wiki Infinite Fusion, puis le web en dernier recours. Si tout échoue → réponse explicite *"je n'ai pas trouvé"*, jamais d'hallucination silencieuse.
 - **PII redactor en pré-traitement.** Tous les messages partant vers le LLM passent par [`pii_redactor.py`](backend/services/pii_redactor.py) qui supprime emails, numéros, Discord tags, etc.
 - **SSE streaming + transparence agent.** Le frontend reçoit chaque `tool_call` en temps réel via Server-Sent Events. `GET /ai/prompt` expose le system prompt complet pour l'audit utilisateur.
@@ -54,7 +54,7 @@ docker compose up -d
 | API + Swagger | http://localhost:58000/docs |
 | Sprites (debug) | http://localhost:58080/sprites/ |
 
-> **Premier démarrage (~15 min).** Le conteneur `etl` se lance automatiquement et peuple la base : 572 Pokémon, 676 capacités, 168 000+ sprites. Le backend attend la fin de l'ETL avant de démarrer.
+> **Premier démarrage (~15 min).** Le conteneur `etl` se lance automatiquement et peuple la base : 572 Pokémon, 658 capacités, 168 000+ sprites. Le backend attend la fin de l'ETL avant de démarrer.
 
 ### Assistant IA
 
@@ -62,9 +62,9 @@ Trois providers supportés, sélectionnés automatiquement à runtime :
 
 | Provider | Variable | Notes |
 |----------|----------|-------|
-| **DeepSeek** | `DEEPSEEK_API_KEY` | Priorité 1 — qualité maximale |
-| **OpenRouter** | `OPENROUTER_API_KEY` | Priorité 2 — tier gratuit disponible |
-| **Ollama local** | `OLLAMA_URL` | Priorité 3 — sans clé, `docker compose --profile ollama up` |
+| **DeepSeek** | `DEEPSEEK_API_KEY` | Priorité 1 - qualité maximale |
+| **OpenRouter** | `OPENROUTER_API_KEY` | Priorité 2 - tier gratuit disponible |
+| **Ollama local** | `OLLAMA_URL` | Priorité 3 - sans clé, `docker compose --profile ollama up` |
 
 Sans provider → `POST /ai/ask` retourne `503` avec les instructions de configuration.
 
@@ -80,7 +80,7 @@ docker compose --profile prefect exec prefect-worker \
   prefect --no-prompt deploy --all
 ```
 
-UI Prefect : http://localhost:54200 — cron `06:00 Paris` (pokedex) + `07:00 Paris` (sprites).
+UI Prefect : http://localhost:54200 - cron `06:00 Paris` (pokedex) + `07:00 Paris` (sprites).
 
 ---
 
@@ -100,17 +100,17 @@ UI Prefect : http://localhost:54200 — cron `06:00 Paris` (pokedex) + `07:00 Pa
 | `/fusion/history` | Historique des fusions visitées |
 | `/fusion/random` | Fusion aléatoire |
 | `/fusion/top` | Top 50 fusions par BST |
-| `/moves` | Table des 676 capacités + recherche + filtre type + filtre catégorie |
+| `/moves` | Table des 658 capacités + recherche + filtre type + filtre catégorie |
 | `/moves/[id]` | Fiche capacité : type, puissance, précision, TM, tuteurs, description EN/FR |
 | `/moves/tutors` | 41 tuteurs classiques groupés par lieu + Move Experts par île |
 | `/types` | Grille des 27 types (18 standard + 9 triple-fusion) avec matchups complets |
-| `/abilities` | 178 talents + recherche |
+| `/abilities` | 183 talents + recherche |
 | `/abilities/[id]` | Fiche talent : description EN/FR |
 | `/items` | Objets du jeu (fusion / evolution / valuable) avec lieux d'obtention |
-| `/triple-fusions` | 23 fusions triples — sprites, composants, stats, faiblesses |
-| `/creators` | Galerie des 7 126 créateurs de sprites — recherche + modal sprites |
-| `/creators/[id]` | Fiche créateur — tous ses sprites |
-| `/ai` | Chat IA streaming — agent à 9 outils avec transparence des appels en temps réel |
+| `/triple-fusions` | 23 fusions triples - sprites, composants, stats, faiblesses |
+| `/creators` | Galerie des 7 126 créateurs de sprites - recherche + modal sprites |
+| `/creators/[id]` | Fiche créateur - tous ses sprites |
+| `/ai` | Chat IA streaming - agent à 9 outils avec transparence des appels en temps réel |
 | `/about` | À propos du projet |
 
 ---
@@ -118,15 +118,15 @@ UI Prefect : http://localhost:54200 — cron `06:00 Paris` (pokedex) + `07:00 Pa
 ## Données
 
 ```
-572 Pokémon · 676 capacités · 178 talents · 26 types · 70 objets
+572 Pokémon · 658 capacités · 183 talents · 26 types · 70 objets
 168 154 fusion_sprites · 7 126 créateurs · 23 triple_fusions
-45 063 pokemon_move · 1 634 pokemon_location (55 gift · 25 trade)
+45 073 pokemon_move · 2 448 pokemon_location (55 gift · 25 trade)
 121 TMs · 115 tm_locations · 65 move_expert_moves · 41 move_tutors
 ```
 
 ---
 
-## Agent IA — cascade à 9 outils
+## Agent IA - cascade à 9 outils
 
 ```
 Question utilisateur
@@ -166,7 +166,7 @@ Voir la [documentation complète](https://benjsant.github.io/InfiniDex/) pour le
 
 ## Companion repos
 
-- **[`infinidex_mcp`](https://github.com/benjsant/infinidex_mcp)** — Serveur Model Context Protocol qui expose les outils structurés d'InfiniDex à n'importe quel client compatible MCP (Claude Desktop, Claude Code, Cursor, Windsurf…). 100 % local, aucun service externe.
+- **[`infinidex_mcp`](https://github.com/benjsant/infinidex_mcp)** - Serveur Model Context Protocol qui expose les outils structurés d'InfiniDex à n'importe quel client compatible MCP (Claude Desktop, Claude Code, Cursor, Windsurf…). 100 % local, aucun service externe.
 
 ---
 
@@ -185,7 +185,7 @@ Les 4 lanes sont **path-filtered** : un PR qui ne touche que le backend ne décl
 
 ## Contribuer
 
-Voir [CONTRIBUTING.md](CONTRIBUTING.md) — setup local, conventions de commits, checklist PR.
+Voir [CONTRIBUTING.md](CONTRIBUTING.md) - setup local, conventions de commits, checklist PR.
 
 ## Licence
 

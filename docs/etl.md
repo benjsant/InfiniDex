@@ -7,8 +7,8 @@ Le pipeline ETL extrait les données depuis plusieurs sources externes, les tran
 | Source                            | Utilisée pour                                                   |
 | --------------------------------- | --------------------------------------------------------------- |
 | **PokeAPI** (REST)                | Stats de base, national dex IDs, learnsets TM/tutor             |
-| **Wiki IF — pages spécifiques**   | Fusions, Move Experts, légendaires, tuteurs, mécaniques IF      |
-| **Wiki IF — page Pokédex**        | Localisations sauvages et quêtes (572 entrées `PokedexTable`)   |
+| **Wiki IF - pages spécifiques**   | Fusions, Move Experts, légendaires, tuteurs, mécaniques IF      |
+| **Wiki IF - page Pokédex**        | Localisations sauvages et quêtes (572 entrées `PokedexTable`)   |
 | **Poképédia** (MediaWiki + Scrapy)| Noms FR, learnsets Gen 7 (USUL)                                 |
 | **GitHub PokeAPI/sprites**        | Sprites PNG statiques                                           |
 
@@ -28,9 +28,9 @@ L'orchestrateur [etl/pipeline.py](https://github.com/benjsant/InfiniDex/blob/mai
 | 1 | `extract_pokedex_if.py` | 572 Pokémon depuis le wiki IF |
 | 2a | `extract_stats_pokeapi.py` | Stats + name_fr + évolutions via PokeAPI |
 | 2b | `extract_pokepedia_names.py` | Mapping name_en → slug Pokepédia + URL Gen 7 |
-| 3 | `extract_moves_if.py` | 676 moves + 121 TMs + 40 tuteurs + 57 Move Experts |
+| 3 | `extract_moves_if.py` | 658 moves + 121 TMs + 40 tuteurs + 57 Move Experts |
 | 3b | `enrich_moves_fr.py` | name_fr + description_fr des moves via PokeAPI |
-| 4 | `extract_abilities_if.py` | 178 talents depuis le wiki IF |
+| 4 | `extract_abilities_if.py` | 183 talents depuis le wiki IF |
 | 4b | `enrich_abilities_fr.py` | name_fr + description_fr des talents via PokeAPI |
 | 5 | `extract_encounters_if.py` | Rencontres sauvages/statiques/légendaires |
 | 6 | `scrapy if_movesets` | Learnsets Gen 7 depuis Pokepédia (USUL) |
@@ -41,11 +41,11 @@ L'orchestrateur [etl/pipeline.py](https://github.com/benjsant/InfiniDex/blob/mai
 | 10–12 | `extract_sprites.py` `extract_triple_fusions.py` `load_triple_fusions.py` `load_sprite_credits.py` | Sprites, triple fusions, crédits |
 | 13–14 | `clean_orphan_moves.py` `enrich_missing_abilities.py` | Nettoyage et complétion |
 
-!!! note "Étape 9b-ter — `load_pokedex_locations.py`"
-    Parse la page Pokédex du wiki IF (`{{PokedexTable/Data|...}}`) pour extraire les localisations sauvages et quêtes manquantes. Utilise `ON CONFLICT DO NOTHING` — ne réécrit jamais les données prioritaires de `fix_pokemon_locations.py`. Gère le `|` dans les liens wiki (`[[Page|Display]]`) en reconstruisant le champ depuis `parts[6:]`.
+!!! note "Étape 9b-ter - `load_pokedex_locations.py`"
+    Parse la page Pokédex du wiki IF (`{{PokedexTable/Data|...}}`) pour extraire les localisations sauvages et quêtes manquantes. Utilise `ON CONFLICT DO NOTHING` - ne réécrit jamais les données prioritaires de `fix_pokemon_locations.py`. Gère le `|` dans les liens wiki (`[[Page|Display]]`) en reconstruisant le champ depuis `parts[6:]`.
 
-!!! note "Étape 8e-ter — `fix_evolutions.py`"
-    Re-fetch les chaînes d'évolution PokeAPI une fois les `national_id` corrigés par `fix_national_ids.py`. Nécessaire parce que `extract_stats_pokeapi.py` interroge PokeAPI par `if_id` (qui ne correspond au `national_id` que pour les 151 Kanto purs) — pour les 320 Pokémon post-Kanto, la chaîne récupérée appartient à la mauvaise espèce et n'est jamais ré-extraite sans ce script. Résolution slug-aware (`pokeapi_move_slug`) pour matcher correctement les noms à caractères spéciaux (`Mime Jr.` ↔ `mime-jr`, `Nidoran♀` ↔ `nidoran-f`, `Flabébé` ↔ `flabebe`). Idempotent.
+!!! note "Étape 8e-ter - `fix_evolutions.py`"
+    Re-fetch les chaînes d'évolution PokeAPI une fois les `national_id` corrigés par `fix_national_ids.py`. Nécessaire parce que `extract_stats_pokeapi.py` interroge PokeAPI par `if_id` (qui ne correspond au `national_id` que pour les 151 Kanto purs) - pour les 320 Pokémon post-Kanto, la chaîne récupérée appartient à la mauvaise espèce et n'est jamais ré-extraite sans ce script. Résolution slug-aware (`pokeapi_move_slug`) pour matcher correctement les noms à caractères spéciaux (`Mime Jr.` ↔ `mime-jr`, `Nidoran♀` ↔ `nidoran-f`, `Flabébé` ↔ `flabebe`). Idempotent.
 
 ## Diagramme de pipeline
 
@@ -58,7 +58,7 @@ flowchart TD
         GH[PokeAPI/sprites\nGitHub]
     end
 
-    subgraph ETL["ETL — etl/scripts/"]
+    subgraph ETL["ETL - etl/scripts/"]
         direction TB
         S1[1. init_postgres.sql\ncréation des tables]
         S2[2. types + générations]
@@ -118,7 +118,7 @@ docker compose run --rm etl python etl/pipeline.py --force
 !!! warning "Recrée le backend après un rebuild"
     Le backend warm `_pokemon_cache` / `_fusion_cache` **au démarrage**.
     Après un re-run ETL (surtout `--force`), recrée-le pour qu'il recharge
-    depuis la base reconstruite — sinon il sert des données périmées
+    depuis la base reconstruite - sinon il sert des données périmées
     silencieusement :
     ```bash
     docker compose up backend -d --force-recreate
@@ -152,5 +152,5 @@ Les scripts `fix_*.py` sont réexécutables : ils font du `UPSERT` (SQL `ON CONF
 
 ## Voir aussi
 
-- [Base de données](database.md) — schéma cible.
-- [Roadmap](roadmap.md) — audit DB et mega-évolutions restent à traiter.
+- [Base de données](database.md) - schéma cible.
+- [Roadmap](roadmap.md) - audit DB et mega-évolutions restent à traiter.

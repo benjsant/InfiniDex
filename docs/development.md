@@ -59,7 +59,7 @@ En dev hors Docker, le proxy `/api/*` cible `BACKEND_INTERNAL_URL=http://localho
 
 ### Documentation
 
-Voie principale — Docker, cohérent avec le reste du projet :
+Voie principale - Docker, cohérent avec le reste du projet :
 
 ```bash
 docker compose --profile docs up docs     # http://localhost:58100
@@ -112,7 +112,7 @@ L'endpoint `POST /ai/ask` est un agent tool-calling (cf. [API](api.md#ia-agentiq
 3. **Ollama local** si `OLLAMA_URL` est défini
 4. Sinon → `503` avec instructions de setup retournées en JSON
 
-#### Option 1 — DeepSeek (cloud)
+#### Option 1 - DeepSeek (cloud)
 
 ```dotenv
 DEEPSEEK_API_KEY=sk-...
@@ -123,7 +123,7 @@ DEEPSEEK_API_KEY=sk-...
 3. Décommenter et coller dans `.env`
 4. `docker compose restart backend` (clé lue à runtime, pas de rebuild)
 
-#### Option 2 — Ollama local (autonome, sans clé)
+#### Option 2 - Ollama local (autonome, sans clé)
 
 ```bash
 docker compose --profile ollama up -d ollama
@@ -146,7 +146,7 @@ OLLAMA_MODEL=qwen2.5:3b   # défaut, ~2 GB téléchargés au premier boot
 | `qwen2.5:7b` | ~4.5 GB | 6 GB | GPU 8 GB / Apple Silicon |
 
 !!! note "Qualité comparée"
-    Ollama local est moins fiable que DeepSeek sur le tool calling : 5-15 % d'arguments malformés contre <1 %, latence 5-30 s sur CPU contre ~2 s en cloud. Le fail-closed garantit qu'aucune hallucination ne passe — au pire l'agent répond *« Je n'ai pas trouvé cette information. »*.
+    Ollama local est moins fiable que DeepSeek sur le tool calling : 5-15 % d'arguments malformés contre <1 %, latence 5-30 s sur CPU contre ~2 s en cloud. Le fail-closed garantit qu'aucune hallucination ne passe - au pire l'agent répond *« Je n'ai pas trouvé cette information. »*.
 
 #### Test rapide
 
@@ -178,7 +178,7 @@ BACKEND_INTERNAL_URL=http://backend:8000     # Docker interne
 SPRITES_INTERNAL_URL=http://sprites:80       # Docker interne
 ```
 
-Ces variables sont lues **à runtime** par les route handlers — pas besoin de rebuild pour les changer.
+Ces variables sont lues **à runtime** par les route handlers - pas besoin de rebuild pour les changer.
 
 ## Mode prod / démo
 
@@ -196,7 +196,7 @@ En prod, seul `frontend` est exposé publiquement. Prérequis : `.env.prod` avec
 docker compose --profile test run --rm test-backend
 ```
 
-160 tests contre un vrai Postgres. Le dump SQL est sous `backend/tests/fixtures/` (committé).
+136 tests contre un vrai Postgres. Le dump SQL est sous `backend/tests/fixtures/` (committé).
 
 ### E2E Playwright
 
@@ -212,10 +212,10 @@ docker compose --profile e2e run --rm e2e      # 10 tests Chromium
 Le projet suit [Conventional Commits](https://www.conventionalcommits.org/) :
 
 - `feat(backend):` / `feat(frontend):` / `feat(etl):`
-- `fix(frontend):` — bugs UI
-- `refactor(infra):` — Docker, CI, proxy
-- `test(backend):` — pytest
-- `docs:` — cette doc
+- `fix(frontend):` - bugs UI
+- `refactor(infra):` - Docker, CI, proxy
+- `test(backend):` - pytest
+- `docs:` - cette doc
 
 Les commits générés par l'assistant incluent :
 
@@ -226,7 +226,7 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
 ## Structure du repo
 
 ```
-backend/        # FastAPI + SQLAlchemy + 160 tests
+backend/        # FastAPI + SQLAlchemy + 136 tests
 etl/            # pipeline Python + uv
 frontend/       # Next.js 15 App Router
 e2e/            # Playwright (10 tests E2E Chromium)
@@ -241,4 +241,4 @@ data/           # dumps + caches (gitignored)
 - [Architecture](architecture.md)
 - [ETL](etl.md)
 - [API backend](api.md)
-- [Référence code (auto-générée)](reference/index.md) — routes, services, schemas, models
+- [Référence code (auto-générée)](reference/index.md) - routes, services, schemas, models

@@ -1,4 +1,4 @@
-# Plan vidéo — InfiniDex
+# Plan vidéo - InfiniDex
 
 Durée cible : **2 min 30** · Format : screen recording 1440×900 · Pas de voix-off obligatoire
 
@@ -7,34 +7,34 @@ Durée cible : **2 min 30** · Format : screen recording 1440×900 · Pas de voi
 ## Avant de filmer
 
 ### Préparer l'environnement
-- [ ] `docker compose up -d` — vérifier que tous les services sont up
-- [ ] Ouvrir http://localhost:53000 dans Chrome (pas Firefox — rendu pixel plus net)
-- [ ] Zoom navigateur à **110%** (Ctrl + +) — les textes seront lisibles une fois compressés
+- [ ] `docker compose up -d` - vérifier que tous les services sont up
+- [ ] Ouvrir http://localhost:53000 dans Chrome (pas Firefox - rendu pixel plus net)
+- [ ] Zoom navigateur à **110%** (Ctrl + +) - les textes seront lisibles une fois compressés
 - [ ] Masquer la barre de favoris (Ctrl+Shift+B)
 - [ ] Mode "Ne pas déranger" activé (désactiver les notifications)
-- [ ] Fermer tous les onglets inutiles — seul onglet visible : InfiniDex
+- [ ] Fermer tous les onglets inutiles - seul onglet visible : InfiniDex
 
 ### Pré-charger les pages (évite les temps de chargement à l'écran)
 Ouvrir ces onglets **avant** de lancer l'enregistrement :
-- [ ] `/` — Homepage
-- [ ] `/pokedex` — liste, filtre Kanto par défaut
-- [ ] `/pokedex/6` — Charizard (fiche bien remplie : évolutions, stats, moves)
-- [ ] `/fusion/25/6` — Pikachu × Charizard (sprites customs chargés)
-- [ ] `/triple-fusions` — spoiler déjà accepté (cliquer "J'accepte" à l'avance)
-- [ ] `/creators` — galerie chargée page 1
-- [ ] `/ai` — chat vide, provider actif confirmé
+- [ ] `/` - Homepage
+- [ ] `/pokedex` - liste, filtre Kanto par défaut
+- [ ] `/pokedex/6` - Charizard (fiche bien remplie : évolutions, stats, moves)
+- [ ] `/fusion/25/6` - Pikachu × Charizard (sprites customs chargés)
+- [ ] `/triple-fusions` - spoiler déjà accepté (cliquer "J'accepte" à l'avance)
+- [ ] `/creators` - galerie chargée page 1
+- [ ] `/ai` - chat vide, provider actif confirmé
 
 ### Préparer la question IA
 Taper cette question dans le champ AI **sans envoyer** avant de filmer :
 > `Quelle est la meilleure fusion offensive impliquant Pikachu, et où apprendre ses meilleures capacités ?`
 
-Elle force l'agent à enchaîner `get_pokemon` → `get_fusion` → `search_move` → `get_move_tutors` — plusieurs tool calls visibles.
+Elle force l'agent à enchaîner `get_pokemon` → `get_fusion` → `search_move` → `get_move_tutors` - plusieurs tool calls visibles.
 
 ---
 
 ## Script de tournage
 
-### Bloc 1 — Hook (0:00 → 0:20)
+### Bloc 1 - Hook (0:00 → 0:20)
 **Objectif : accrocher immédiatement sans intro**
 
 | Action | Ce qu'on voit |
@@ -50,7 +50,7 @@ Elle force l'agent à enchaîner `get_pokemon` → `get_fusion` → `search_move
 
 ---
 
-### Bloc 2 — Pokédex (0:20 → 0:50)
+### Bloc 2 - Pokédex (0:20 → 0:50)
 **Objectif : montrer la richesse des données**
 
 | Action | Ce qu'on voit |
@@ -64,11 +64,11 @@ Elle force l'agent à enchaîner `get_pokemon` → `get_fusion` → `search_move
 | Cliquer onglet **Évolutions** | Chaîne Charmander → Charmeleon → Charizard |
 
 **Overlay texte :**
-> *"572 Pokémon · 676 capacités · 178 talents · données extraites du jeu"*
+> *"572 Pokémon · 658 capacités · 183 talents · données extraites du jeu"*
 
 ---
 
-### Bloc 3 — Fusion (0:50 → 1:20)
+### Bloc 3 - Fusion (0:50 → 1:20)
 **Objectif : montrer le calculateur et ce qui rend une fusion unique**
 
 | Action | Ce qu'on voit |
@@ -83,12 +83,12 @@ Elle force l'agent à enchaîner `get_pokemon` → `get_fusion` → `search_move
 | Cliquer bouton **swap** (↔) | Les sprites s'inversent, stats changent |
 
 **Overlay texte :**
-> *"Chaque combinaison head/body donne une fusion différente — types, stats et moveset distincts"*
+> *"Chaque combinaison head/body donne une fusion différente - types, stats et moveset distincts"*
 
 ---
 
-### Bloc 4 — Assistant IA (1:20 → 2:00)
-**Objectif : moment le plus impressionnant — à filmer en continu sans coupure**
+### Bloc 4 - Assistant IA (1:20 → 2:00)
+**Objectif : moment le plus impressionnant - à filmer en continu sans coupure**
 
 | Action | Ce qu'on voit |
 |--------|---------------|
@@ -96,29 +96,29 @@ Elle force l'agent à enchaîner `get_pokemon` → `get_fusion` → `search_move
 | Montrer les suggestions 2 secondes | Exemples de questions visibles |
 | Coller/taper la question préparée | Champ de saisie rempli |
 | Appuyer Entrée | Envoi |
-| **Ne pas couper** — laisser tourner | Tool calls apparaissent un à un : "Base de données" → "Base de données" → "Tuteurs" |
+| **Ne pas couper** - laisser tourner | Tool calls apparaissent un à un : "Base de données" → "Base de données" → "Tuteurs" |
 | Laisser la réponse se terminer | Réponse complète avec stats formatées, sources affichées |
 
 **Overlay texte (pendant les tool calls) :**
-> *"L'agent interroge la base en temps réel — aucune hallucination possible"*
+> *"L'agent interroge la base en temps réel - aucune hallucination possible"*
 
 **Overlay texte (sur la réponse finale) :**
 > *"Réponse sourcée · fail-closed · cascade DB → Wiki → Web"*
 
 ---
 
-### Bloc 5 — Survol rapide (2:00 → 2:20)
+### Bloc 5 - Survol rapide (2:00 → 2:20)
 **Objectif : montrer l'étendue sans s'attarder**
 
 | Action | Durée | Ce qu'on voit |
 |--------|-------|---------------|
 | `/triple-fusions` → déplier Zapmolcuno | 8s | Sprite + types IF exclusifs (gradient) |
-| `/creators` | 6s | Grille des 7081 créateurs |
+| `/creators` | 6s | Grille des 7 126 créateurs |
 | Cliquer un créateur populaire | 6s | Modal avec ses dizaines de sprites |
 
 ---
 
-### Bloc 6 — Slide de clôture (2:20 → 2:30)
+### Bloc 6 - Slide de clôture (2:20 → 2:30)
 **Objectif : laisser une trace mémorable**
 
 Afficher une slide simple (fond sombre `#090c1a`) avec :
@@ -137,8 +137,8 @@ Code open-source → github.com/benjsant/InfiniDex
 ## Montage
 
 ### Logiciel recommandé
-- **DaVinci Resolve** (gratuit, pro) — timeline, overlays texte, transitions
-- **CapCut Desktop** (gratuit, rapide) — si tu veux aller vite
+- **DaVinci Resolve** (gratuit, pro) - timeline, overlays texte, transitions
+- **CapCut Desktop** (gratuit, rapide) - si tu veux aller vite
 
 ### Overlays texte
 - Police : **Inter** ou **Geist** (cohérent avec l'UI)
@@ -147,12 +147,12 @@ Code open-source → github.com/benjsant/InfiniDex
 - Durée d'affichage : 2-3 secondes par overlay, fondu enchaîné
 
 ### Transitions
-- Coupes nettes entre les blocs (pas de fondu — trop lent pour LinkedIn)
+- Coupes nettes entre les blocs (pas de fondu - trop lent pour LinkedIn)
 - Éventuel zoom doux sur les zones clés (DevTools → zoom viewport ou zoom montage)
 
 ### Musique (optionnel)
-- [pixabay.com/music](https://pixabay.com/music/) — licence libre, chercher "lo-fi" ou "tech"
-- Volume à 15-20% — l'UI doit rester lisible visuellement
+- [pixabay.com/music](https://pixabay.com/music/) - licence libre, chercher "lo-fi" ou "tech"
+- Volume à 15-20% - l'UI doit rester lisible visuellement
 
 ---
 
@@ -173,10 +173,10 @@ Code open-source → github.com/benjsant/InfiniDex
 
 **Structure du texte :**
 ```
-Ligne 1 — accroche chiffrée (sans emoji ou 1 max)
-Ligne 2 — vide
-Lignes 3-6 — 4 bullets de ce que fait le projet
-Ligne 7 — vide
+Ligne 1 - accroche chiffrée (sans emoji ou 1 max)
+Ligne 2 - vide
+Lignes 3-6 - 4 bullets de ce que fait le projet
+Ligne 7 - vide
 Call to action + lien GitHub
 ```
 
@@ -189,7 +189,7 @@ Voilà ce que ça donne :
 → 572 Pokémon, 176 000 fusions, chacune avec stats et moveset calculés
 → Agent IA tool-calling : interroge la base en temps réel, jamais d'hallucination
 → 9 outils enchaînés : DB → Wiki IF → DuckDuckGo en dernier recours
-→ 7 081 créateurs de sprites référencés avec galerie dédiée
+→ 7 126 créateurs de sprites référencés avec galerie dédiée
 
 Stack : FastAPI · PostgreSQL · Next.js 15 · DeepSeek
 
