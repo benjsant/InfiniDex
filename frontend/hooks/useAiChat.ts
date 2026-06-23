@@ -49,7 +49,7 @@ export function useAiChat() {
       const history: HistoryMessage[] = messagesRef.current
         .filter((m) => m.content.trim() !== "")
         .map((m) => ({ role: m.role, content: m.content.slice(0, 7900) }))
-        .slice(-20);
+        .slice(-30);
 
       const safeContext = context ? context.slice(0, 1900) : undefined;
 

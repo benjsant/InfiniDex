@@ -12,7 +12,7 @@ flowchart LR
 
     subgraph Backend["FastAPI - /ai/ask"]
         PII[PII Redactor\navant envoi au LLM]
-        AGENT[Agent loop\nmax 5 itérations]
+        AGENT[Agent loop\nmax 8 itérations]
         PROV[LLMProvider\nDeepSeek · Ollama · OpenRouter]
     end
 
@@ -52,7 +52,7 @@ sequenceDiagram
     A  ->>  A : PII redaction
     A  ->>  L : [system, history, user]\ntools=TOOL_SPECS
 
-    loop max 5 itérations
+    loop max 8 itérations
         alt LLM appelle un outil
             L  -->> A : tool_call {name, args}
             A  -->> U : SSE ToolCallEvent {name}
@@ -97,7 +97,7 @@ flowchart TD
     LLM2 -->|no tool_call| RESP
     LLM3 -->|no tool_call| RESP
 
-    CIRC["⚡ Circuit breaker\nmax 5 itérations"] -.->|stop| FAIL
+    CIRC["⚡ Circuit breaker\nmax 8 itérations"] -.->|stop| FAIL
 
     style DB   fill:#1e3a5f,color:#93c5fd
     style WIKI fill:#3b2f1e,color:#fcd34d

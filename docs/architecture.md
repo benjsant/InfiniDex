@@ -204,7 +204,7 @@ Stocké dans [`backend/prompts/system.md`](https://github.com/benjsant/InfiniDex
 
 ```
 messages = [system, ...history, user]
-for iteration in range(MAX_ITERATIONS=5):
+for iteration in range(MAX_ITERATIONS=8):
     response = LLM(messages, tools=TOOL_SPECS)
     if response.tool_calls:
         yield ToolCallEvent pour chaque tool
@@ -256,7 +256,7 @@ flowchart TD
     LLM2 -->|no tool_call| RESP
     LLM3 -->|no tool_call| RESP
 
-    CIRC["⚡ Circuit breaker\nmax 5 itérations"] -.->|stop| FAIL
+    CIRC["⚡ Circuit breaker\nmax 8 itérations"] -.->|stop| FAIL
 
     style DB   fill:#1e3a5f,color:#93c5fd
     style WIKI fill:#3b2f1e,color:#fcd34d

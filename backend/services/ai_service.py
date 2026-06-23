@@ -26,11 +26,11 @@ from backend.services.tools import TOOL_SPECS, dispatch_tool
 
 LOGGER = logging.getLogger(__name__)
 
-MAX_ITERATIONS   = 5
-MAX_TOKENS       = 2048
+MAX_ITERATIONS   = 8
+MAX_TOKENS       = 4096
 TEMPERATURE      = 0.1
 FAILURE_MESSAGE  = "Je n'ai pas trouvé cette information."
-MAX_HISTORY_MSGS = 10
+MAX_HISTORY_MSGS = 20
 
 # Source classification for SourceEvent
 _DB_TOOLS = frozenset({
