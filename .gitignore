@@ -228,3 +228,9 @@ frontend/node_modules/
 frontend/.env.local
 frontend/out/
 backups/
+
+# Assets binaires déplacés vers ../infinidex-assets/ (hors repo)
+# Si une commande recrée ces dossiers par accident, ils ne seront pas committés.
+screenshots/
+videos/
+presentation-tablette/

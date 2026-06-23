@@ -165,15 +165,18 @@ Le mode clair est activé via le bouton ☀️ dans la navbar. Le thème est per
 docker compose --profile screenshots run --rm screenshots
 ```
 
-Les images sont produites dans `screenshots/` puis copiées dans `docs/imgs/` :
+Les images sont produites par défaut dans `../infinidex-assets/screenshots/` (dossier sibling du repo, hors versionning Git) puis copiées dans `docs/imgs/` :
 
 ```bash
 # Copie rapide après régénération
-for src in screenshots/*.webp; do
+for src in ../infinidex-assets/screenshots/*.webp; do
   name=$(basename "$src")
   # Voir scripts/screenshots.mjs pour la correspondance complète
 done
 ```
 
+!!! tip "Personnaliser le dossier de sortie"
+    Override possible via `SCREENSHOTS_OUT_DIR=/chemin/voulu node scripts/screenshots.mjs`.
+
 !!! tip "Script de copie"
-    Le mapping complet entre noms de fichiers `screenshots/` et `docs/imgs/` est défini dans `scripts/screenshots.mjs`.
+    Le mapping complet entre noms de fichiers et `docs/imgs/` est défini dans `scripts/screenshots.mjs`.
