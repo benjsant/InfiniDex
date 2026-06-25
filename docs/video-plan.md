@@ -46,7 +46,7 @@ Elle force l'agent à enchaîner `get_pokemon` → `get_fusion` → `search_move
 | Fermer la modal | |
 
 **Overlay texte à ajouter au montage :**
-> *"176 000 fusions possibles. Chacune avec ses propres sprites, stats et moveset."*
+> *"168 000 fusions possibles. Chacune avec ses propres sprites, stats et moveset."*
 
 ---
 
@@ -128,7 +128,7 @@ InfiniDex
 
 FastAPI · PostgreSQL · Next.js 15 · DeepSeek
 
-572 Pokémon · 176 000 fusions · 9 outils IA
+572 Pokémon · 168 000 fusions · 9 outils IA
 Code open-source → github.com/benjsant/InfiniDex
 ```
 
@@ -186,7 +186,7 @@ J'ai passé 3 mois à construire un Pokédex IA pour un jeu de fan.
 
 Voilà ce que ça donne :
 
-→ 572 Pokémon, 176 000 fusions, chacune avec stats et moveset calculés
+→ 572 Pokémon, 168 000 fusions, chacune avec stats et moveset calculés
 → Agent IA tool-calling : interroge la base en temps réel, jamais d'hallucination
 → 9 outils enchaînés : DB → Wiki IF → DuckDuckGo en dernier recours
 → 7 126 créateurs de sprites référencés avec galerie dédiée
