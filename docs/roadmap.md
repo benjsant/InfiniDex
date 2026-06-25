@@ -81,7 +81,7 @@ Pages : `/pokedex`, `/pokedex/[id]`, `/pokedex/favorites`, `/fusion`, `/fusion/[
 **Phase 1 ✅** - Tools DB + circuit breaker + fail-closed :
 
 - 8 tools : `get_pokemon`, `get_fusion`, `get_triple_fusion`, `search_move`, `get_item`, `get_move_tutors`, `search_pokemon_locations`, `search_wiki`
-- Boucle agent MAX_ITERATIONS=5, fail-closed sur réponse vide ou dépassement
+- Boucle agent MAX_ITERATIONS=8, fail-closed sur réponse vide ou dépassement
 - Provider pluggable : DeepSeek (prod) / Ollama (local)
 - System prompt externe (`prompts/system.md`) - règles anti-hallucination, anti-extrapolation jeux officiels, anti-emojis, fail-closed strict
 
@@ -102,12 +102,12 @@ Pages : `/pokedex`, `/pokedex/[id]`, `/pokedex/favorites`, `/fusion`, `/fusion/[
 
 - `pii_redact` sur tous les résultats d'outils avant envoi au LLM
 - Temperature abaissée à 0.1 (moins d'hallucinations)
-- Historique tronqué côté client à 20 messages (évite erreur 422 sur longues sessions)
+- Historique tronqué côté client à 30 messages (évite erreur 422 sur longues sessions)
 
 **Contraintes maintenues :**
 
-- Max 5 itérations agent (circuit breaker)
-- MAX_TOKENS=2048
+- Max 8 itérations agent (circuit breaker)
+- MAX_TOKENS=4096
 - Fail-closed strict : "Je n'ai pas trouvé cette information." si aucun tool ne remonte de données IF
 
 ### Infra - ✅ v1 stable
@@ -145,3 +145,24 @@ Les critères pour désarchiver les plans initiaux et considérer l'app complèt
 - ✅ Documentation à jour sur chaque page
 
 Avant cette étape, les docs historiques restent figées sous [Archive](archive/index.md).
+
+## Cap v1.1 - séparation InfiniDex / HoennDex
+
+Décision actée 2026-06-23 : le futur jeu Pokémon Infinite Fusion: Hoenn est un fan-game séparé, pas une DLC. Il aura son propre projet (HoennDex). En conséquence, les 71 Pokémon actuellement marqués `is_hoenn_only` dans la DB d'InfiniDex ne sont **pas** dans le jeu Kanto et seront retirés à terme.
+
+**Phase A - soft-remove** (à exécuter après livraison de la v0.1 du companion mobile Flutter `infinidex_mobile`) :
+
+- [ ] `include_hoenn=False` par défaut sur les endpoints `/pokemon/*`
+- [ ] Retirer le toggle Kanto/Hoenn du frontend (ou le mettre derrière un flag avancé)
+- [ ] Mettre à jour les comptes dans README + docs : `572 Pokémon` → `501`
+- [ ] CHANGELOG v1.1
+
+**Phase B - hard delete** (à exécuter après HoennDex v0.1) :
+
+- [ ] Migration SQL : DELETE en cascade sur `pokemon_move`, `pokemon_ability`, `pokemon_location`, `fusion_sprite`, `evolution`, puis `pokemon WHERE is_hoenn_only`
+- [ ] Retrait du param API `include_hoenn` + colonne `is_hoenn_only` (modèle + schemas)
+- [ ] Retrait des étapes ETL qui chargent ces Pokémon
+- [ ] Recompter et publier les nouveaux chiffres (fusion_sprite notamment)
+- [ ] Bump v1.2.0
+
+Les Pokémon Hoenn complets (Gen 3) seront servis par le futur HoennDex via son propre wiki source et son propre Pokédex. Cf. mémoire `project_hoenn_cleanup_deferred.md`.

@@ -1,11 +1,14 @@
 /**
- * InfiniDex — automatic documentation screenshots.
+ * InfiniDex - automatic documentation screenshots.
  *
  * Prerequisite : npx playwright install chromium
  * Run          : node scripts/screenshots.mjs
  *
- * Output       : screenshots/{name}.webp  (desktop 1280×800)
- *                screenshots/mobile_{name}.webp  (mobile 390×844)
+ * Output       : <SCREENSHOTS_OUT_DIR>/{name}.webp  (desktop 1280x800)
+ *                <SCREENSHOTS_OUT_DIR>/mobile_{name}.webp  (mobile 390x844)
+ *
+ * Default output dir : ../infinidex-assets/screenshots/ (sibling of repo)
+ * Override via env   : SCREENSHOTS_OUT_DIR=/path/to/dir node scripts/screenshots.mjs
  *
  * Playwright only emits PNG/JPEG, so each shot is captured as a PNG
  * buffer then re-encoded to WebP (q88) via sharp.
@@ -17,7 +20,8 @@ import { mkdir } from "fs/promises";
 import { existsSync } from "fs";
 
 const BASE_URL = process.env.INFINIDEX_URL ?? "http://localhost:53000";
-const OUT_DIR  = new URL("../screenshots/", import.meta.url).pathname;
+const OUT_DIR  = process.env.SCREENSHOTS_OUT_DIR
+  ?? new URL("../../infinidex-assets/screenshots/", import.meta.url).pathname;
 
 const DESKTOP = { width: 1280, height: 800 };
 const MOBILE  = { width: 390,  height: 844 };
