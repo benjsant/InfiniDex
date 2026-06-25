@@ -1996,7 +1996,7 @@
 <p>Stocké dans <a href="https://github.com/benjsant/InfiniDex/blob/main/backend/prompts/system.md"><code>backend/prompts/system.md</code></a> - fichier Markdown chargé au démarrage via <code>pathlib</code>. Écrit en anglais (meilleure instruction-following), avec règle explicite de répondre en français. Mis à jour sans redéploiement (hot-reload au prochain démarrage du conteneur).</p>
 <h3 id="boucle-agent-ai_servicepy">Boucle agent (<code>ai_service.py</code>)<a class="headerlink" href="#boucle-agent-ai_servicepy" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>messages = [system, ...history, user]
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>for iteration in range(MAX_ITERATIONS=5):
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>for iteration in range(MAX_ITERATIONS=8):
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    response = LLM(messages, tools=TOOL_SPECS)
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    if response.tool_calls:
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        yield ToolCallEvent pour chaque tool
@@ -2086,7 +2086,7 @@
     LLM2 --&gt;|no tool_call| RESP
     LLM3 --&gt;|no tool_call| RESP
 
-    CIRC["⚡ Circuit breaker\nmax 5 itérations"] -.-&gt;|stop| FAIL
+    CIRC["⚡ Circuit breaker\nmax 8 itérations"] -.-&gt;|stop| FAIL
 
     style DB   fill:#1e3a5f,color:#93c5fd
     style WIKI fill:#3b2f1e,color:#fcd34d

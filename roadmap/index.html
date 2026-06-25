@@ -1156,6 +1156,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#cap-v11-separation-infinidex-hoenndex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cap v1.1 - séparation InfiniDex / HoennDex
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1549,6 +1560,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#cap-v11-separation-infinidex-hoenndex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cap v1.1 - séparation InfiniDex / HoennDex
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1643,7 +1665,7 @@
 <p><strong>Phase 1 ✅</strong> - Tools DB + circuit breaker + fail-closed :</p>
 <ul>
 <li>8 tools : <code>get_pokemon</code>, <code>get_fusion</code>, <code>get_triple_fusion</code>, <code>search_move</code>, <code>get_item</code>, <code>get_move_tutors</code>, <code>search_pokemon_locations</code>, <code>search_wiki</code></li>
-<li>Boucle agent MAX_ITERATIONS=5, fail-closed sur réponse vide ou dépassement</li>
+<li>Boucle agent MAX_ITERATIONS=8, fail-closed sur réponse vide ou dépassement</li>
 <li>Provider pluggable : DeepSeek (prod) / Ollama (local)</li>
 <li>System prompt externe (<code>prompts/system.md</code>) - règles anti-hallucination, anti-extrapolation jeux officiels, anti-emojis, fail-closed strict</li>
 </ul>
@@ -1664,12 +1686,12 @@
 <ul>
 <li><code>pii_redact</code> sur tous les résultats d'outils avant envoi au LLM</li>
 <li>Temperature abaissée à 0.1 (moins d'hallucinations)</li>
-<li>Historique tronqué côté client à 20 messages (évite erreur 422 sur longues sessions)</li>
+<li>Historique tronqué côté client à 30 messages (évite erreur 422 sur longues sessions)</li>
 </ul>
 <p><strong>Contraintes maintenues :</strong></p>
 <ul>
-<li>Max 5 itérations agent (circuit breaker)</li>
-<li>MAX_TOKENS=2048</li>
+<li>Max 8 itérations agent (circuit breaker)</li>
+<li>MAX_TOKENS=4096</li>
 <li>Fail-closed strict : "Je n'ai pas trouvé cette information." si aucun tool ne remonte de données IF</li>
 </ul>
 <h3 id="infra-v1-stable">Infra - ✅ v1 stable<a class="headerlink" href="#infra-v1-stable" title="Permanent link">&para;</a></h3>
@@ -1704,6 +1726,24 @@
 <li>✅ Documentation à jour sur chaque page</li>
 </ul>
 <p>Avant cette étape, les docs historiques restent figées sous <a href="../archive/">Archive</a>.</p>
+<h2 id="cap-v11-separation-infinidex-hoenndex">Cap v1.1 - séparation InfiniDex / HoennDex<a class="headerlink" href="#cap-v11-separation-infinidex-hoenndex" title="Permanent link">&para;</a></h2>
+<p>Décision actée 2026-06-23 : le futur jeu Pokémon Infinite Fusion: Hoenn est un fan-game séparé, pas une DLC. Il aura son propre projet (HoennDex). En conséquence, les 71 Pokémon actuellement marqués <code>is_hoenn_only</code> dans la DB d'InfiniDex ne sont <strong>pas</strong> dans le jeu Kanto et seront retirés à terme.</p>
+<p><strong>Phase A - soft-remove</strong> (à exécuter après livraison de la v0.1 du companion mobile Flutter <code>infinidex_mobile</code>) :</p>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <code>include_hoenn=False</code> par défaut sur les endpoints <code>/pokemon/*</code></li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Retirer le toggle Kanto/Hoenn du frontend (ou le mettre derrière un flag avancé)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Mettre à jour les comptes dans README + docs : <code>572 Pokémon</code> → <code>501</code></li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> CHANGELOG v1.1</li>
+</ul>
+<p><strong>Phase B - hard delete</strong> (à exécuter après HoennDex v0.1) :</p>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Migration SQL : DELETE en cascade sur <code>pokemon_move</code>, <code>pokemon_ability</code>, <code>pokemon_location</code>, <code>fusion_sprite</code>, <code>evolution</code>, puis <code>pokemon WHERE is_hoenn_only</code></li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Retrait du param API <code>include_hoenn</code> + colonne <code>is_hoenn_only</code> (modèle + schemas)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Retrait des étapes ETL qui chargent ces Pokémon</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Recompter et publier les nouveaux chiffres (fusion_sprite notamment)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Bump v1.2.0</li>
+</ul>
+<p>Les Pokémon Hoenn complets (Gen 3) seront servis par le futur HoennDex via son propre wiki source et son propre Pokédex. Cf. mémoire <code>project_hoenn_cleanup_deferred.md</code>.</p>
 
 
 
