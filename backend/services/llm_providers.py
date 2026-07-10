@@ -1,12 +1,16 @@
-"""LLM provider abstraction — DeepSeek · OpenRouter · Ollama.
+"""LLM provider abstraction — DeepSeek · OpenRouter · Gemini · Ollama.
 
 Runtime selection via env (first match wins):
   1. DEEPSEEK_API_KEY   → DeepSeekProvider   (cloud, best quality)
   2. OPENROUTER_API_KEY → OpenRouterProvider  (cloud, free tier available)
-  3. OLLAMA_URL         → OllamaProvider      (local, no key required)
-  4. None               → 503 with setup instructions
+  3. GEMINI_API_KEY     → GeminiProvider      (cloud, free tier — DÉSACTIVÉ par défaut)
+  4. OLLAMA_URL         → OllamaProvider      (local, no key required)
+  5. None               → 503 with setup instructions
 
-All three expose the same OpenAI Chat Completions-compatible interface,
+Gemini est présent dans le code mais son entrée dans select_provider() est
+commentée : rien ne change tant qu'on ne l'active pas explicitement.
+
+All providers expose the same OpenAI Chat Completions-compatible interface,
 so the tool-calling loop in ai_service.py never needs to know which is active.
 """
 
@@ -94,6 +98,36 @@ class OpenRouterProvider(LLMProvider):
         return self._client
 
 
+class GeminiProvider(LLMProvider):
+    """Cloud — Google Gemini via son endpoint compatible OpenAI.
+
+    Free tier disponible avec une clé Google AI Studio (sans CB), mais quotas
+    par minute/jour selon le modèle — voir https://ai.google.dev/gemini-api/docs/rate-limits
+    Le modèle par défaut est un Flash (rapide, éligible free tier). Override via GEMINI_MODEL.
+
+    NOTE : désactivé par défaut. Voir la cascade dans select_provider() pour l'activer.
+    """
+
+    BASE_URL      = "https://generativelanguage.googleapis.com/v1beta/openai/"
+    DEFAULT_MODEL = "gemini-2.0-flash"
+
+    def __init__(self, api_key: str, model: str | None = None) -> None:
+        self._model = model or self.DEFAULT_MODEL
+        self._client = AsyncOpenAI(api_key=api_key, base_url=self.BASE_URL)
+
+    @property
+    def name(self) -> str:
+        return "gemini"
+
+    @property
+    def model(self) -> str:
+        return self._model
+
+    @property
+    def client(self) -> AsyncOpenAI:
+        return self._client
+
+
 class OllamaProvider(LLMProvider):
     """Local — Ollama server with OpenAI-compatible endpoint (`/v1`).
 
@@ -142,6 +176,12 @@ def select_provider() -> LLMProvider | None:
 
     if key := os.getenv("OPENROUTER_API_KEY"):
         return OpenRouterProvider(key, os.getenv("OPENROUTER_MODEL"))
+
+    # ── Gemini : ajouté mais DÉSACTIVÉ. Pour l'activer, décommente ces 2 lignes
+    #    et renseigne GEMINI_API_KEY dans .env (optionnel : GEMINI_MODEL).
+    #    Placé après DeepSeek/OpenRouter → ne s'active que si eux sont absents.
+    # if key := os.getenv("GEMINI_API_KEY"):
+    #     return GeminiProvider(key, os.getenv("GEMINI_MODEL"))
 
     if url := os.getenv("OLLAMA_URL"):
         return OllamaProvider(url, os.getenv("OLLAMA_MODEL"))
