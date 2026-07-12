@@ -26,13 +26,25 @@ LOGGER = setup_logging(__name__)
 
 OUTPUT = Path("data/pokedex_if.json")
 
+# The IF wiki restructured its Pokédex: the "Pokédex" page is now a hub linking
+# to four subpages, and holds no data at all. The full 572-entry table lives in
+# the page below (Kanto + Hoenn additions), which still uses PokedexTable/Data.
+PAGE = "Pokédex/Hoenn/Classic"
+
 # Template pattern inside wikitext:
-# {{PokedexTable/Data|index|id|name|type1|type2|location|notes}}
+# {{PokedexTable/Data|index|id|name|form|type1|type2|location|notes}}
+#
+# `form` was added by the same restructure and is empty for all but 14 entries
+# (Oricorio "Baile Style", Lycanroc "Midday Form", Castform "Sunny", ...). It is
+# NOT captured into the output: the DB has no column for it, and each form
+# already has its own IF id. But it MUST be matched — otherwise every field
+# shifts left and Bulbasaur comes out as Grass/(none) instead of Grass/Poison.
 ENTRY_RE = re.compile(
     r"\{\{PokedexTable/Data\s*\|"
     r"\s*(?P<index>\d+)\s*\|"
     r"\s*(?P<id>\d+)\s*\|"
     r"\s*(?P<name>[^|]+?)\s*\|"
+    r"\s*(?P<form>[^|]*?)\s*\|"
     r"\s*(?P<type1>[^|]*?)\s*\|"
     r"\s*(?P<type2>[^|]*?)\s*\|"
     r"\s*(?P<location>[^|]*?)\s*\|?"
@@ -123,9 +135,18 @@ def parse_entries(wikitext: str) -> list[dict]:
 
 
 def main() -> None:
-    LOGGER.info("Fetching Pokédex wikitext from Infinite Fusion wiki...")
-    wikitext = fetch_wikitext("Pokédex")
+    LOGGER.info("Fetching Pokédex wikitext from Infinite Fusion wiki (%s)...", PAGE)
+    wikitext = fetch_wikitext(PAGE)
     entries  = parse_entries(wikitext)
+
+    # Fail loudly instead of silently loading an empty Pokédex. Previously an
+    # upstream page restructure made this parse 0 entries, the pipeline still
+    # reported success, and the whole DB ended up empty (0 Pokémon, 0 sprites).
+    if not entries:
+        raise RuntimeError(
+            f"Parsed 0 Pokémon from '{PAGE}' — the wiki page or the "
+            f"PokedexTable/Data template has likely changed upstream again."
+        )
 
     save_json(OUTPUT, entries)
     LOGGER.info("Saved %d entries → %s", len(entries), OUTPUT)
