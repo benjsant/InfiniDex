@@ -20,24 +20,20 @@ Usage:
 
 from __future__ import annotations
 
-import time
-
-import requests
-
 from etl.utils.db import pg_connection
+from etl.utils.http import get_json
 from etl.utils.logging import setup_logging
 
 log = setup_logging("enrich_missing_abilities")
 
 POKEAPI = "https://pokeapi.co/api/v2"
-DELAY   = 0.15  # seconds between requests
 
 
 def _get(url: str) -> dict:
-    resp = requests.get(url, timeout=10)
-    resp.raise_for_status()
-    time.sleep(DELAY)
-    return resp.json()
+    data = get_json(url)
+    if data is None:
+        raise RuntimeError(f"PokeAPI fetch failed: {url}")
+    return data
 
 
 def _ability_name_en(slug: str) -> tuple[str, str | None]:

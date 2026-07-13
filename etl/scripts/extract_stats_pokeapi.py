@@ -18,7 +18,6 @@ Output: data/pokemon_stats.json, data/evolutions_base.json
 from __future__ import annotations
 
 import sys
-import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -34,7 +33,6 @@ OUTPUT_STATS    = Path("data/pokemon_stats.json")
 OUTPUT_EVOS     = Path("data/evolutions_base.json")
 
 MAX_WORKERS     = 2      # PokeAPI fair-use: keep concurrency low
-REQUEST_DELAY   = 0.2    # seconds between requests per thread (~10 req/s peak)
 
 STAT_MAP = {
     "hp":              "hp",
@@ -50,19 +48,16 @@ STAT_MAP = {
 
 def fetch_pokemon(national_id: int) -> dict | None:
     data = get_json(f"{POKEAPI_BASE}/pokemon/{national_id}")
-    time.sleep(REQUEST_DELAY)
     return data
 
 
 def fetch_species(national_id: int) -> dict | None:
     data = get_json(f"{POKEAPI_BASE}/pokemon-species/{national_id}")
-    time.sleep(REQUEST_DELAY)
     return data
 
 
 def fetch_evolution_chain(url: str) -> dict | None:
     data = get_json(url)
-    time.sleep(REQUEST_DELAY)
     return data
 
 

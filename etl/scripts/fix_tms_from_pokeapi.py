@@ -25,7 +25,6 @@ The `source` field distinguishes:
 from __future__ import annotations
 
 import re
-import time
 
 import requests
 
@@ -33,7 +32,6 @@ from etl.utils.db import pg_connection
 from etl.utils.http import USER_AGENT
 from etl.utils.logging import setup_logging
 from etl.utils.pokeapi_moves import (
-    DELAY,
     all_descendants,
     fetch_move_detail,
     load_evolution_forward,
@@ -94,7 +92,6 @@ def run(conn) -> None:
 
     for name_en, move_id in move_ids.items():
         detail = fetch_move_detail(name_en, logger=LOGGER)
-        time.sleep(DELAY)
         if detail is None:
             continue
         is_official_tm, learners = detail

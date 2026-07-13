@@ -18,11 +18,10 @@ Idempotent: ON CONFLICT DO NOTHING on every insert.
 
 from __future__ import annotations
 
-import time
 from pathlib import Path
 
 from etl.utils.db import pg_connection
-from etl.utils.http import USER_AGENT, get_json
+from etl.utils.http import get_json, prefetch_json
 from etl.utils.io import load_json
 from etl.utils.logging import setup_logging
 from etl.utils.pokeapi_moves import pokeapi_move_slug
@@ -30,7 +29,6 @@ from etl.utils.pokeapi_moves import pokeapi_move_slug
 LOGGER = setup_logging(__name__)
 
 POKEAPI_SPECIES = "https://pokeapi.co/api/v2/pokemon-species/{}"
-REQUEST_DELAY   = 0.1
 
 IF_OVERRIDES_FILE = Path(__file__).parent / "data" / "if_evolution_overrides.json"
 
@@ -98,9 +96,11 @@ def fix_evolutions(conn) -> None:
     seen_chain_urls: set[str] = set()
     pairs: list[dict] = []
 
+    # Warm the shared HTTP cache concurrently; the loop below reads from it.
+    prefetch_json(POKEAPI_SPECIES.format(nid) for _, _, nid in pokemon_rows)
+
     for i, (pk_id, name_en, national_id) in enumerate(pokemon_rows, start=1):
         species = get_json(POKEAPI_SPECIES.format(national_id))
-        time.sleep(REQUEST_DELAY)
         if not species:
             LOGGER.warning("species not found for %s (national=%d)", name_en, national_id)
             continue
@@ -109,7 +109,6 @@ def fix_evolutions(conn) -> None:
             continue
         seen_chain_urls.add(chain_url)
         chain_data = get_json(chain_url)
-        time.sleep(REQUEST_DELAY)
         if not chain_data:
             continue
         _parse_chain_node(chain_data["chain"], pairs)
