@@ -89,8 +89,16 @@ def parse_list(content: bytes) -> list[dict]:
             name_fr        = cells[2].text_content().strip()
             pokepedia_slug = name_fr.replace(" ", "_")
 
-        # Cell 3: English name (link goes to Bulbapedia externally, text is EN name)
-        name_en = cells[3].text_content().strip()
+        # Cell 3: English name. Species with forms append the form label in a
+        # <small> sibling ("Oricorio<br><small>Baile Style</small>"), so a raw
+        # text_content() gives "OricorioBaile Style" and the name never matches
+        # IF data (7 species used to fall out of the mapping this way). The
+        # clean name is the Bulbapedia link's own text.
+        en_links = cells[3].xpath(".//a")
+        if en_links:
+            name_en = en_links[0].text_content().strip()
+        else:
+            name_en = cells[3].text_content().strip()
 
         if not name_en or not name_fr:
             continue
