@@ -736,10 +736,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#cache-de-requetes-wiki" class="md-nav__link">
+  <a href="#cache-http-partage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cache de requêtes wiki
+        Cache HTTP partagé
       
     </span>
   </a>
@@ -1534,10 +1534,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#cache-de-requetes-wiki" class="md-nav__link">
+  <a href="#cache-http-partage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cache de requêtes wiki
+        Cache HTTP partagé
       
     </span>
   </a>
@@ -1720,9 +1720,9 @@
 <td>Chargement de tout dans PostgreSQL</td>
 </tr>
 <tr>
-<td>8b–8f</td>
-<td><code>fix_pokemon_types.py</code> <code>fix_national_ids.py</code> <code>fix_stats_and_fr_names.py</code> <code>fix_evolutions.py</code> <code>fix_tms_from_pokeapi.py</code> <code>enrich_evolution_movesets.py</code></td>
-<td>Correctifs canoniques post-import (re-sync stats/types/évolutions une fois les <code>national_id</code> corrigés)</td>
+<td>8c–8f</td>
+<td><code>enrich_evolution_movesets.py</code> <code>fix_national_ids.py</code> <code>fix_stats_and_fr_names.py</code> <code>fix_pokemon_types.py</code> <code>fix_evolutions.py</code> <code>fix_form_pokemon.py</code> <code>fix_tms_from_pokeapi.py</code></td>
+<td>Correctifs canoniques post-import (re-sync stats/types/évolutions une fois les <code>national_id</code> corrigés, formes via slugs PokeAPI)</td>
 </tr>
 <tr>
 <td>9–9g</td>
@@ -1822,8 +1822,9 @@ silencieusement :
 </span></code></pre></div></p>
 </div>
 <h2 id="patterns-recurrents">Patterns récurrents<a class="headerlink" href="#patterns-recurrents" title="Permanent link">&para;</a></h2>
-<h3 id="cache-de-requetes-wiki">Cache de requêtes wiki<a class="headerlink" href="#cache-de-requetes-wiki" title="Permanent link">&para;</a></h3>
-<p>Les pages MediaWiki sont longues à fetch. Chaque script met en cache le wikitext brut sous <code>etl/data/cache/</code> pour éviter de requêter à chaque relance.</p>
+<h3 id="cache-http-partage">Cache HTTP partagé<a class="headerlink" href="#cache-http-partage" title="Permanent link">&para;</a></h3>
+<p>Toutes les requêtes JSON (PokeAPI, MediaWiki) passent par <code>etl/utils/http.get_json</code>, qui met en cache les réponses sous <code>data/cache/http/</code> (TTL 24h, réglable via <code>ETL_HTTP_CACHE_TTL_HOURS</code>, <code>0</code> pour désactiver). Les mêmes ressources PokeAPI étant consommées par plusieurs étapes (2a, 8e, 8e-bis, 8e-quater, 14...), un rebuild ne les fetche plus qu'une fois - et un re-run dans les 24h ne touche quasiment plus le réseau. <code>prefetch_json(urls)</code> réchauffe le cache avec 6 workers avant les grosses boucles séquentielles. C'est aussi ce que demande la fair-use policy de PokeAPI : cacher localement.</p>
+<p>Le crawl Pokepédia garde son propre cache HTTP scrapy (24h) et une politesse de ~2 req/s max (robots.txt respecté, User-Agent identifiable).</p>
 <h3 id="normalisation-de-noms">Normalisation de noms<a class="headerlink" href="#normalisation-de-noms" title="Permanent link">&para;</a></h3>
 <p>Les sources divergent sur quelques noms (ex : wiki IF écrit <em>Flaafy</em> au lieu de <em>Flaaffy</em>). Chaque parseur expose un dictionnaire d'alias + une fonction <code>norm()</code> qui strip espaces, <code>-</code>, <code>'</code>, <code>.</code> et lowercase pour matcher contre la DB.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">WIKI_POKEMON_ALIASES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;flaafy&quot;</span><span class="p">:</span> <span class="s2">&quot;flaaffy&quot;</span><span class="p">}</span>
