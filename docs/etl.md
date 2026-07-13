@@ -36,7 +36,7 @@ L'orchestrateur [etl/pipeline.py](https://github.com/benjsant/InfiniDex/blob/mai
 | 6 | `scrapy if_movesets` | Learnsets Gen 7 depuis Pokepédia (USUL) |
 | 7 | `transform_merge_movesets.py` | Fusion learnsets de base + overrides IF |
 | 8 | `load_db.py` | Chargement de tout dans PostgreSQL |
-| 8b–8f | `fix_pokemon_types.py` `fix_national_ids.py` `fix_stats_and_fr_names.py` `fix_evolutions.py` `fix_tms_from_pokeapi.py` `enrich_evolution_movesets.py` | Correctifs canoniques post-import (re-sync stats/types/évolutions une fois les `national_id` corrigés) |
+| 8c–8f | `enrich_evolution_movesets.py` `fix_national_ids.py` `fix_stats_and_fr_names.py` `fix_pokemon_types.py` `fix_evolutions.py` `fix_form_pokemon.py` `fix_tms_from_pokeapi.py` | Correctifs canoniques post-import (re-sync stats/types/évolutions une fois les `national_id` corrigés, formes via slugs PokeAPI) |
 | 9–9g | `seed_type_effectiveness.py` `load_encounters.py` `fix_pokemon_locations.py` `load_pokedex_locations.py` `load_locations_snapshot.py` `load_items.py` `load_move_tutors.py` `fix_tutors_from_pokeapi.py` `load_tm_locations.py` `fix_move_experts.py` | Enrichissements et localisations |
 | 10–12 | `extract_sprites.py` `extract_triple_fusions.py` `load_triple_fusions.py` `load_sprite_credits.py` | Sprites, triple fusions, crédits |
 | 13–14 | `clean_orphan_moves.py` `enrich_missing_abilities.py` | Nettoyage et complétion |
@@ -129,9 +129,11 @@ docker compose run --rm etl python etl/pipeline.py --force
 
 ## Patterns récurrents
 
-### Cache de requêtes wiki
+### Cache HTTP partagé
 
-Les pages MediaWiki sont longues à fetch. Chaque script met en cache le wikitext brut sous `etl/data/cache/` pour éviter de requêter à chaque relance.
+Toutes les requêtes JSON (PokeAPI, MediaWiki) passent par `etl/utils/http.get_json`, qui met en cache les réponses sous `data/cache/http/` (TTL 24h, réglable via `ETL_HTTP_CACHE_TTL_HOURS`, `0` pour désactiver). Les mêmes ressources PokeAPI étant consommées par plusieurs étapes (2a, 8e, 8e-bis, 8e-quater, 14...), un rebuild ne les fetche plus qu'une fois - et un re-run dans les 24h ne touche quasiment plus le réseau. `prefetch_json(urls)` réchauffe le cache avec 6 workers avant les grosses boucles séquentielles. C'est aussi ce que demande la fair-use policy de PokeAPI : cacher localement.
+
+Le crawl Pokepédia garde son propre cache HTTP scrapy (24h) et une politesse de ~2 req/s max (robots.txt respecté, User-Agent identifiable).
 
 ### Normalisation de noms
 

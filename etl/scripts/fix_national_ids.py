@@ -21,12 +21,10 @@ from __future__ import annotations
 
 import json
 import re
-import time
 from pathlib import Path
 
-import requests
-
 from etl.utils.db import pg_connection
+from etl.utils.http import get_json
 from etl.utils.logging import setup_logging
 
 LOGGER = setup_logging(__name__)
@@ -92,12 +90,12 @@ def resolve_slug(name_en: str) -> str | int | None:
 
 def fetch_national_id(slug: str) -> int | None:
     """Query PokeAPI `/pokemon-species/{slug}` (returns the national ID)."""
+    data = get_json(POKEAPI_SPECIES.format(slug))
+    if data is None:
+        return None
     try:
-        resp = requests.get(POKEAPI_SPECIES.format(slug), timeout=10)
-        if resp.status_code != 200:
-            return None
-        return int(resp.json()["id"])
-    except Exception as e:
+        return int(data["id"])
+    except (KeyError, TypeError, ValueError) as e:
         LOGGER.warning("PokeAPI error for slug=%s: %s", slug, e)
         return None
 
@@ -145,7 +143,6 @@ def fix_national_ids(conn) -> None:
             target = slug_or_id
         else:
             target = fetch_national_id(slug_or_id)
-            time.sleep(REQUEST_DELAY)
             if target is None:
                 unresolved += 1
                 unresolved_names.append((pokemon_id, name_en))

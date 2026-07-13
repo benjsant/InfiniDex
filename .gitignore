@@ -208,6 +208,7 @@ __marimo__/
 
 # InfiniDex — generated data (sprites, JSON extracts)
 data/sprites/
+data/cache/
 data/*.json
 data/*.csv
 data/sprite_credits.csv

@@ -11,18 +11,14 @@ No intermediate file: reads/writes the DB directly.
 
 from __future__ import annotations
 
-import time
-
-import requests
-
 from etl.utils.db import pg_connection
+from etl.utils.http import get_json, prefetch_json
 from etl.utils.logging import setup_logging
 
 LOGGER = setup_logging(__name__)
 
 POKEAPI_POKEMON = "https://pokeapi.co/api/v2/pokemon/{}"
 POKEAPI_SPECIES = "https://pokeapi.co/api/v2/pokemon-species/{}"
-REQUEST_DELAY = 0.1
 
 STAT_MAP = {
     "hp":              "hp",
@@ -35,17 +31,11 @@ STAT_MAP = {
 
 
 def fetch_pokemon(national_id: int) -> dict | None:
-    resp = requests.get(POKEAPI_POKEMON.format(national_id), timeout=10)
-    if resp.status_code != 200:
-        return None
-    return resp.json()
+    return get_json(POKEAPI_POKEMON.format(national_id))
 
 
 def fetch_species(national_id: int) -> dict | None:
-    resp = requests.get(POKEAPI_SPECIES.format(national_id), timeout=10)
-    if resp.status_code != 200:
-        return None
-    return resp.json()
+    return get_json(POKEAPI_SPECIES.format(national_id))
 
 
 def extract_name_fr(species: dict) -> str | None:
@@ -72,10 +62,15 @@ def fix(conn) -> None:
     rows = cur.fetchall()
     LOGGER.info("%d Pokémon to update", len(rows))
 
+    # Warm the shared HTTP cache concurrently; the loop below reads from it.
+    prefetch_json(
+        [POKEAPI_POKEMON.format(nid) for _, nid, _ in rows]
+        + [POKEAPI_SPECIES.format(nid) for _, nid, _ in rows]
+    )
+
     updated = errors = 0
     for i, (pokemon_id, national_id, name_en) in enumerate(rows, start=1):
         poke = fetch_pokemon(national_id)
-        time.sleep(REQUEST_DELAY)
         if not poke:
             LOGGER.warning("PokeAPI /pokemon/%d failed for id=%d (%s)",
                            national_id, pokemon_id, name_en)
@@ -83,7 +78,6 @@ def fix(conn) -> None:
             continue
 
         species = fetch_species(national_id)
-        time.sleep(REQUEST_DELAY)
         name_fr = extract_name_fr(species) if species else None
 
         stats = extract_stats(poke)

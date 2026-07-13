@@ -26,7 +26,6 @@ Idempotent. Runs as step 8e-quater, after fix_national_ids and the re-syncs.
 
 from __future__ import annotations
 
-import time
 from pathlib import Path
 
 from etl.utils.db import pg_connection
@@ -37,7 +36,6 @@ from etl.utils.logging import setup_logging
 LOGGER = setup_logging(__name__)
 
 POKEAPI       = "https://pokeapi.co/api/v2"
-REQUEST_DELAY = 0.15
 POKEDEX_JSON  = Path("data/pokedex_if.json")
 
 # (name_en.lower(), form.lower()) → PokeAPI pokemon endpoint slug
@@ -182,7 +180,6 @@ def fix_form_pokemon(conn) -> None:
         conn.commit()
         LOGGER.info("Fixed #%d %s (%s) via %r — name_fr=%s", if_id, name_en, form, slug, name_fr)
         fixed += 1
-        time.sleep(REQUEST_DELAY)
 
     LOGGER.info(
         "Done — %d fixed | %d base-form skipped | %d unmapped | %d errors",

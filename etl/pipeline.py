@@ -14,7 +14,6 @@ Steps:
                                    level_up (USUL col) + tm + breeding + tutor
   7.   transform_merge_movesets — merge base movesets + IF overrides
   8.   load_db                  — load all data into PostgreSQL
-  8b.  fix_pokemon_types        — fix Pokémon types from PokeAPI (overrides wiki data)
   8c.  enrich_evolution_movesets — inherit moves from pre-evolutions
   8d.  fix_national_ids         — fix national_id (IF dex diverges from national after #251)
   8e.  fix_stats_and_fr_names   — re-sync stats + name_fr with corrected national_ids
@@ -99,8 +98,6 @@ STEPS: list[Step] = [
          _py("transform_merge_movesets.py")),
     Step("8",      "Step 8/10 — Load all data into PostgreSQL",
          _py("load_db.py")),
-    Step("8b",     "Step 8b/10 — Fix Pokémon types from PokeAPI",
-         _py("fix_pokemon_types.py")),
     Step("8c",     "Step 8c/10 — Inherit moves from pre-evolutions",
          _py("enrich_evolution_movesets.py")),
     Step("8d",     "Step 8d — Fix pokemon.national_id via PokeAPI name lookup",

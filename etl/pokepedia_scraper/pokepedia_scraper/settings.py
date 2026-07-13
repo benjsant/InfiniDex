@@ -16,10 +16,11 @@ USER_AGENT = (
 # Respect robots.txt
 ROBOTSTXT_OBEY = True
 
-# Rate limiting — be polite to Pokepedia
+# Rate limiting — be polite to Pokepedia (≤ ~2 req/s, robots.txt honoured,
+# transparent UA, 24h HTTP cache: cold crawl ~8 min instead of ~17)
 CONCURRENT_REQUESTS = 4
 CONCURRENT_REQUESTS_PER_DOMAIN = 2
-DOWNLOAD_DELAY = 1.5
+DOWNLOAD_DELAY = 0.75
 RANDOMIZE_DOWNLOAD_DELAY = True
 DOWNLOAD_TIMEOUT = 20
 
@@ -30,9 +31,9 @@ RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429]
 
 # AutoThrottle
 AUTOTHROTTLE_ENABLED = True
-AUTOTHROTTLE_START_DELAY = 1.5
+AUTOTHROTTLE_START_DELAY = 0.75
 AUTOTHROTTLE_MAX_DELAY = 8.0
-AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
+AUTOTHROTTLE_TARGET_CONCURRENCY = 2.0
 AUTOTHROTTLE_DEBUG = False
 
 # HTTP cache (avoid re-scraping during dev)

@@ -15,12 +15,9 @@ from __future__ import annotations
 from collections import defaultdict
 from logging import Logger
 
-import requests
-
-from etl.utils.http import USER_AGENT
+from etl.utils.http import get_json
 
 POKEAPI = "https://pokeapi.co/api/v2"
-DELAY   = 0.1  # seconds between PokeAPI requests (politeness)
 
 
 _ACCENT_MAP = str.maketrans({
@@ -80,19 +77,10 @@ def fetch_move_detail(
     decide what to do with that flag (see the two fix scripts).
     """
     slug = pokeapi_move_slug(name_en)
-    try:
-        r = requests.get(
-            f"{POKEAPI}/move/{slug}",
-            headers={"User-Agent": USER_AGENT},
-            timeout=15,
-        )
-    except requests.RequestException as e:
-        logger.warning("PokeAPI error (%s): %s", slug, e)
+    data = get_json(f"{POKEAPI}/move/{slug}")
+    if data is None:
+        logger.warning("PokeAPI fetch failed for move %s (slug=%s)", name_en, slug)
         return None
-    if r.status_code != 200:
-        logger.warning("PokeAPI %s for move %s (slug=%s)", r.status_code, name_en, slug)
-        return None
-    data = r.json()
     is_official_tm = bool(data.get("machines"))
     learners = [p["name"] for p in data.get("learned_by_pokemon", [])]
     return is_official_tm, learners

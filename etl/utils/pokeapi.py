@@ -24,18 +24,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from logging import Logger
 from typing import Callable, Iterable, Sequence
 
-import requests
-
-from etl.utils.http import USER_AGENT
-
-_HEADERS = {"User-Agent": USER_AGENT}
+from etl.utils.http import get_json
 
 
 def fetch_fr_translation(
     url: str,
     version_prio: Sequence[str],
     *,
-    timeout: int = 10,
     logger: Logger | None = None,
 ) -> tuple[str | None, str | None]:
     """Fetch French (name, description) from a PokeAPI resource URL.
@@ -44,29 +39,10 @@ def fetch_fr_translation(
     entry with a French flavor text wins. Newlines and non-breaking spaces
     in the description are normalized to regular spaces.
 
-    Retries with exponential backoff on 429/503 (honouring Retry-After).
+    Delegates fetching to `etl.utils.http.get_json` — retry/backoff plus the
+    shared on-disk cache (repeat runs skip the network entirely).
     """
-    data = None
-    for attempt in range(1, 4):
-        try:
-            resp = requests.get(url, headers=_HEADERS, timeout=timeout)
-            if resp.status_code == 200:
-                data = resp.json()
-                break
-            if resp.status_code in (429, 503):
-                ra = resp.headers.get("Retry-After")
-                wait = int(ra) if (ra and ra.isdigit()) else 2 ** attempt
-                if logger is not None:
-                    logger.warning(
-                        "PokeAPI %s %s — backing off %ss", resp.status_code, url, wait
-                    )
-                time.sleep(wait)
-                continue
-            return None, None
-        except Exception as exc:
-            if logger is not None:
-                logger.debug("PokeAPI error %s: %s", url, exc)
-            return None, None
+    data = get_json(url)
     if data is None:
         return None, None
 

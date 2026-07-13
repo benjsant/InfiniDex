@@ -10,11 +10,10 @@ Idempotent: ON CONFLICT (pokemon_id, slot) DO UPDATE.
 
 from __future__ import annotations
 
-import time
 from pathlib import Path
 
 from etl.utils.db import pg_connection
-from etl.utils.http import get_json
+from etl.utils.http import get_json, prefetch_json
 from etl.utils.io import load_json
 from etl.utils.logging import setup_logging
 
@@ -23,7 +22,6 @@ LOGGER = setup_logging(__name__)
 POKEDEX_JSON = Path("data/pokedex_if.json")
 
 POKEAPI = "https://pokeapi.co/api/v2/pokemon/{}"
-REQUEST_DELAY = 0.15  # seconds between requests
 
 # IF Pokémon with no PokeAPI equivalent (IF-custom forms, triple fusions, etc.)
 # Left with the IF wiki types
@@ -51,6 +49,9 @@ def fix_pokemon_types(conn) -> None:
     cur.execute("SELECT id, national_id FROM pokemon WHERE national_id IS NOT NULL ORDER BY id")
     rows = cur.fetchall()
     LOGGER.info("%d Pokémon with a national_id found", len(rows))
+
+    # Warm the shared HTTP cache concurrently; the loop below reads from it.
+    prefetch_json(POKEAPI.format(nid) for _, nid in rows if nid not in SKIP_NATIONAL_IDS)
 
     # Fetch the type_map name_en → id
     cur.execute("SELECT id, name_en FROM type WHERE is_triple_fusion_type = FALSE")
@@ -102,7 +103,6 @@ def fix_pokemon_types(conn) -> None:
             LOGGER.info("[%d/%d] %d updated, %d errors", i + 1, len(rows), updated + i + 1, errors)
 
         updated += 1
-        time.sleep(REQUEST_DELAY)
 
     conn.commit()
 
