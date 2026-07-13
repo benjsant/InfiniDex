@@ -73,6 +73,13 @@ class IFMovesetSpider(scrapy.Spider):
                 "run extract_pokepedia_names.py first for accurate URLs"
             )
 
+        # Group IF entries by target URL: alternate forms (Oricorio styles,
+        # Castform weathers, ...) share one Pokepedia page under one name.
+        # Scrapy dedupes identical requests, so a request per entry meant only
+        # the FIRST if_id of each name got a moveset — the others got nothing.
+        # One request per URL + fan-out of the parsed items to every if_id.
+        url_groups: dict[str, dict] = {}
+
         for entry in pokedex:
             if_id   = entry["if_id"]
             name_en = entry["name_en"]
@@ -90,14 +97,22 @@ class IFMovesetSpider(scrapy.Spider):
                     "[NO POKEPEDIA MATCH] #%d %s — using fallback URL", if_id, name_en
                 )
 
+            group = url_groups.setdefault(
+                gen7_url, {"pokepedia_slug": pokepedia_slug, "entries": []}
+            )
+            group["entries"].append((if_id, name_en))
+
+        for gen7_url, group in url_groups.items():
+            first_id, first_name = group["entries"][0]
             yield scrapy.Request(
                 url=gen7_url,
                 callback=self.parse_all,
                 errback=self.handle_error,
                 meta={
-                    "pokemon_if_id":    if_id,
-                    "pokemon_name_en":  name_en,
-                    "pokepedia_slug":   pokepedia_slug,
+                    "pokemon_if_id":    first_id,
+                    "pokemon_name_en":  first_name,
+                    "pokepedia_slug":   group["pokepedia_slug"],
+                    "pokemon_entries":  group["entries"],
                 },
             )
 
@@ -122,16 +137,28 @@ class IFMovesetSpider(scrapy.Spider):
             )
             return
 
+        entries = response.meta.get(
+            "pokemon_entries",
+            [(response.meta["pokemon_if_id"], response.meta["pokemon_name_en"])],
+        )
         self.logger.info(
-            "[PARSE] #%d %s",
-            response.meta["pokemon_if_id"],
+            "[PARSE] %s → %s",
             response.meta["pokemon_name_en"],
+            ", ".join(f"#{i}" for i, _ in entries),
         )
 
-        yield from self.parse_level_up(response)
-        yield from self.parse_ct(response)
-        yield from self.parse_breeding(response)
-        yield from self.parse_tutor(response)
+        # Parse the page once, then fan the items out to every IF id sharing
+        # it (alternate forms). Approximation: forms inherit the same moveset —
+        # per-form tables (e.g. Lycanroc Midday vs Midnight) are not split.
+        items = [
+            *self.parse_level_up(response),
+            *self.parse_ct(response),
+            *self.parse_breeding(response),
+            *self.parse_tutor(response),
+        ]
+        for if_id, _name in entries:
+            for item in items:
+                yield MovesetItem({**dict(item), "pokemon_if_id": if_id})
 
     # ── Level-up moves (USUL column) ─────────────────────────────────────────
 

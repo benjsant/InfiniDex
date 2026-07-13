@@ -44,12 +44,28 @@ def test_pokedex_mono_type_empty_type2():
     assert e["type2"] is None
 
 
-def test_pokedex_form_field_is_ignored():
-    """The form field (e.g. 'Baile Style') must not pollute name or types."""
+def test_pokedex_form_field_captured_not_polluting():
+    """The form field is captured as-is and must not pollute name or types."""
     e = _by_id(_entry(430, 430, "Oricorio", "Fire", "Flying", form="Baile Style"))[430]
     assert e["name_en"] == "Oricorio"
+    assert e["form"] == "Baile Style"
     assert e["type1"] == "fire"
     assert e["type2"] == "flying"
+
+
+def test_pokedex_no_form_is_none():
+    e = _by_id(_entry(1, 1, "Bulbasaur", "Grass", "Poison"))[1]
+    assert e["form"] is None
+
+
+def test_form_slug_mapping():
+    """Every known wiki form resolves to a PokeAPI slug (apostrophe variants included)."""
+    from etl.scripts.fix_form_pokemon import form_slug
+    assert form_slug("Oricorio", "Pom-Pom Style") == "oricorio-pom-pom"
+    assert form_slug("Oricorio", "Pa’u Style") == "oricorio-pau"   # curly apostrophe
+    assert form_slug("Lycanroc", "Midnight Form") == "lycanroc-midnight"
+    assert form_slug("Castform", "Snowy") == "castform-snowy"
+    assert form_slug("Oricorio", "Unknown New Style") is None
 
 
 def test_pokedex_form_label_in_type1_is_promoted():

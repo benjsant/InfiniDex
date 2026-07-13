@@ -42,9 +42,10 @@ KANTO_PAGE = "Pokédex/Kanto/Classic"
 #
 # `form` was added by the same restructure and is empty for all but 14 entries
 # (Oricorio "Baile Style", Lycanroc "Midday Form", Castform "Sunny", ...). It is
-# NOT captured into the output: the DB has no column for it, and each form
-# already has its own IF id. But it MUST be matched — otherwise every field
-# shifts left and Bulbasaur comes out as Grass/(none) instead of Grass/Poison.
+# carried into the output JSON: fix_form_pokemon.py uses it to resolve the
+# PokeAPI form slug (oricorio-pom-pom, ...) since these rows share a name and
+# can't get a national_id (UNIQUE constraint). It MUST be matched in any case —
+# otherwise every field shifts left and Bulbasaur comes out as Grass/(none).
 ENTRY_RE = re.compile(
     r"\{\{PokedexTable/Data\s*\|"
     r"\s*(?P<index>\d+)\s*\|"
@@ -131,6 +132,7 @@ def parse_entries(wikitext: str) -> list[dict]:
             "if_id":        if_id,
             "index":        index,
             "name_en":      name,
+            "form":         clean_wikitext(match.group("form")) or None,
             "type1":        type1,
             "type2":        type2 if type2 else None,
             "generation":   detect_generation(index),
