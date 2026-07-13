@@ -24,6 +24,15 @@ class MovesetPipeline:
         LOGGER.info("[PIPELINE] Moveset pipeline opened — output: %s", OUTPUT_FILE)
 
     def close_spider(self, spider) -> None:
+        # Never clobber a good file with an empty crawl: when every request
+        # fails (site down, URL scheme changed upstream), keeping the previous
+        # movesets_base.json lets the merge step run on stale-but-valid data.
+        if not self.records and OUTPUT_FILE.exists():
+            LOGGER.error(
+                "[PIPELINE] Crawl produced 0 records — keeping existing %s untouched",
+                OUTPUT_FILE,
+            )
+            return
         OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
         OUTPUT_FILE.write_text(json.dumps(self.records, ensure_ascii=False, indent=2))
         LOGGER.info("[PIPELINE] Saved %d moveset records → %s", len(self.records), OUTPUT_FILE)

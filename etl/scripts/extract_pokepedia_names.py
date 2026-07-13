@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse
 
 import requests
 from lxml import html
@@ -78,8 +78,13 @@ def parse_list(content: bytes) -> list[dict]:
         if fr_links:
             name_fr      = fr_links[0].text_content().strip()
             raw_href     = fr_links[0].get("href", "")
-            # href is like /Bulbizarre — decode percent-encoding
-            pokepedia_slug = unquote(raw_href.lstrip("/"))
+            # Pokepédia switched from relative hrefs (/Bulbizarre) to
+            # protocol-relative ones (//www.pokepedia.fr/Bulbizarre). A bare
+            # lstrip("/") kept the domain in the slug and every gen7_url
+            # 404'd (https://www.pokepedia.fr/www.pokepedia.fr/...). Parse the
+            # href and keep only the path component — handles relative,
+            # protocol-relative and absolute forms alike.
+            pokepedia_slug = unquote(urlparse(raw_href).path.lstrip("/"))
         else:
             name_fr        = cells[2].text_content().strip()
             pokepedia_slug = name_fr.replace(" ", "_")
@@ -105,6 +110,20 @@ def main() -> None:
     LOGGER.info("Fetching Pokepedia Pokémon list...")
     content = fetch_page()
     entries = parse_list(content)
+
+    # Fail loudly instead of silently saving a broken mapping: a bad slug here
+    # makes every downstream scrapy request 404 (the movesets crawl).
+    if not entries:
+        raise RuntimeError(
+            f"Parsed 0 Pokémon from {LIST_URL} — the page layout has likely "
+            f"changed upstream."
+        )
+    bad = [e for e in entries if "/" in e["pokepedia_slug"] or not e["pokepedia_slug"]]
+    if bad:
+        raise RuntimeError(
+            f"{len(bad)} malformed pokepedia_slug values (e.g. "
+            f"{bad[0]['pokepedia_slug']!r}) — href parsing is broken again."
+        )
 
     save_json(OUTPUT, entries)
     LOGGER.info("Saved %d entries → %s", len(entries), OUTPUT)
