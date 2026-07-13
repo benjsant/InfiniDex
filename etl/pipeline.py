@@ -24,6 +24,7 @@ Steps:
   9b.  load_encounters          — load locations + pokemon_location from encounters_if.json
   9b-bis. fix_pokemon_locations — correct legendary/gift/trade locations from IF wiki
   9b-ter. load_pokedex_locations — wild/quest locations from IF Pokédex wiki page
+  9b-quater. load_locations_snapshot — replay pre-restructure snapshot (gap-fill)
   9c.  enrich_pokemon_fr        — enrich pokemon.pokepedia_url from Pokepedia mapping
   9d.  load_items               — fusion + evolution + valuable items from IF wiki
   9e.  load_move_tutors         — move tutors (NPC teachers) from IF wiki
@@ -119,6 +120,8 @@ STEPS: list[Step] = [
          _py("fix_pokemon_locations.py")),
     Step("9b-ter", "Step 9b-ter — Load wild/quest encounter locations from IF Pokédex wiki",
          _py("load_pokedex_locations.py")),
+    Step("9b-quater", "Step 9b-quater — Replay pre-restructure pokemon_location snapshot (gap-fill)",
+         _py("load_locations_snapshot.py")),
     Step("9c",     "Step 9c/10 — Enrich pokemon.pokepedia_url from Pokepedia mapping",
          _py("enrich_pokemon_fr.py")),
     Step("9d",     "Step 9d — Load items (fusion/evolution/valuable) from IF wiki",
