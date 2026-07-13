@@ -1633,8 +1633,8 @@
 <td>Fusions, Move Experts, légendaires, tuteurs, mécaniques IF</td>
 </tr>
 <tr>
-<td><strong>Wiki IF - page Pokédex</strong></td>
-<td>Localisations sauvages et quêtes (572 entrées <code>PokedexTable</code>)</td>
+<td><strong>Wiki IF - sous-pages Pokédex</strong></td>
+<td>572 entrées <code>PokedexTable</code> + localisations (voir note ci-dessous)</td>
 </tr>
 <tr>
 <td><strong>Poképédia</strong> (MediaWiki + Scrapy)</td>
@@ -1667,7 +1667,7 @@
 <tr>
 <td>1</td>
 <td><code>extract_pokedex_if.py</code></td>
-<td>572 Pokémon depuis le wiki IF</td>
+<td>572 Pokémon depuis le wiki IF (sous-pages <code>Pokédex/Hoenn/Classic</code> + <code>Pokédex/Kanto/Classic</code>)</td>
 </tr>
 <tr>
 <td>2a</td>
@@ -1726,7 +1726,7 @@
 </tr>
 <tr>
 <td>9–9g</td>
-<td><code>seed_type_effectiveness.py</code> <code>load_encounters.py</code> <code>fix_pokemon_locations.py</code> <code>load_pokedex_locations.py</code> <code>load_items.py</code> <code>load_move_tutors.py</code> <code>fix_tutors_from_pokeapi.py</code> <code>load_tm_locations.py</code> <code>fix_move_experts.py</code></td>
+<td><code>seed_type_effectiveness.py</code> <code>load_encounters.py</code> <code>fix_pokemon_locations.py</code> <code>load_pokedex_locations.py</code> <code>load_locations_snapshot.py</code> <code>load_items.py</code> <code>load_move_tutors.py</code> <code>fix_tutors_from_pokeapi.py</code> <code>load_tm_locations.py</code> <code>fix_move_experts.py</code></td>
 <td>Enrichissements et localisations</td>
 </tr>
 <tr>
@@ -1743,7 +1743,11 @@
 </table>
 <div class="admonition note">
 <p class="admonition-title">Étape 9b-ter - <code>load_pokedex_locations.py</code></p>
-<p>Parse la page Pokédex du wiki IF (<code>{{PokedexTable/Data|...}}</code>) pour extraire les localisations sauvages et quêtes manquantes. Utilise <code>ON CONFLICT DO NOTHING</code> - ne réécrit jamais les données prioritaires de <code>fix_pokemon_locations.py</code>. Gère le <code>|</code> dans les liens wiki (<code>[[Page|Display]]</code>) en reconstruisant le champ depuis <code>parts[6:]</code>.</p>
+<p>Parse la sous-page <code>Pokédex/Hoenn/Classic</code> du wiki IF (<code>{{PokedexTable/Data|...}}</code>) pour extraire les localisations sauvages et quêtes manquantes. Utilise <code>ON CONFLICT DO NOTHING</code> - ne réécrit jamais les données prioritaires de <code>fix_pokemon_locations.py</code>. Gère le <code>|</code> dans les liens wiki (<code>[[Page|Display]]</code>) en reconstruisant le champ depuis <code>parts[6:]</code>.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Restructuration du wiki (2026-07)</p>
+<p>La page <code>Pokédex</code> du wiki IF est devenue un hub sans données : les 572 entrées vivent dans <code>Pokédex/Hoenn/Classic</code>, le template a gagné un champ <code>form</code> en 4e position, et les marqueurs "Not in game" ont disparu (le flag <code>is_hoenn_only</code> est désormais dérivé de la différence Kanto/Hoenn). La restructuration a aussi remis la plupart des champs Location à <code>TBA</code> (436/572) - <code>load_pokedex_locations.py</code> ne récupère plus que ~7 tuples contre ~2 448 avant. L'étape 9b-quater (<code>load_locations_snapshot.py</code>) rejoue un snapshot committé de la table pré-restructuration (<code>etl/data/snapshots/pokemon_location_snapshot.json</code>, dump du 2026-07-13) en <code>ON CONFLICT DO NOTHING</code> : les données wiki vivantes gagnent toujours, le snapshot ne fait que combler les trous. Les deux scripts qui lisent cette page échouent désormais bruyamment s'ils parsent 0 entrée.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Étape 8e-ter - <code>fix_evolutions.py</code></p>
