@@ -1,7 +1,9 @@
 """
 ETL — Load wild + quest encounter locations from the IF Pokédex wiki page.
 
-Source: https://infinitefusion.fandom.com/wiki/Pokédex
+Source: https://infinitefusion.fandom.com/wiki/Pokédex/Hoenn/Classic
+(the top-level "Pokédex" page became a data-less hub after the wiki
+restructure — the full 572-entry table lives in the Hoenn/Classic subpage).
 
 Parses the {{PokedexTable/Data|...}} template format and extracts:
   - Wild encounters  (plain [[Location]] links) → method='wild'
@@ -20,6 +22,7 @@ import time
 import httpx
 import psycopg2
 
+from etl.scripts.extract_pokedex_if import PAGE as POKEDEX_PAGE
 from etl.utils.db import pg_connection
 from etl.utils.http import USER_AGENT
 from etl.utils.logging import setup_logging
@@ -122,7 +125,7 @@ def fetch_pokedex_content() -> str:
         WIKI_API,
         params={
             "action": "query",
-            "titles": "Pokédex",
+            "titles": POKEDEX_PAGE,
             "prop": "revisions",
             "rvprop": "content",
             "format": "json",
@@ -146,11 +149,20 @@ def parse_pokedex(content: str) -> list[tuple[int, str, str, str | None]]:
     entries: list[tuple[int, str, str, str | None]] = []
     lines = [l for l in content.split("\n") if l.startswith("{{PokedexTable/Data")]
 
+    # Fail loudly instead of silently loading nothing: when the wiki moved the
+    # table off the top-level "Pokédex" page, this parsed 0 lines and the step
+    # still reported success.
+    if not lines:
+        raise RuntimeError(
+            f"Parsed 0 PokedexTable/Data lines from '{POKEDEX_PAGE}' — the "
+            f"wiki page has likely changed upstream again."
+        )
+
     for line in lines:
         # Strip template markers and split on |
         inner = line.removeprefix("{{PokedexTable/Data|").rstrip("}").rstrip("|")
         parts = inner.split("|")
-        # parts[0]=IF_ID, parts[1]=NAT_ID, parts[2]=Name, parts[3]=empty,
+        # parts[0]=IF_ID, parts[1]=NAT_ID, parts[2]=Name, parts[3]=Form (usually empty),
         # parts[4]=Type1, parts[5]=Type2(or empty), parts[6..]=Location field
         # NOTE: wiki links like [[Page|Display]] contain | which breaks the split.
         # Fix: rejoin from parts[6] and trim after the last ]] to recover the full field.

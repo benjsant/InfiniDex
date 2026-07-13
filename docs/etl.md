@@ -8,7 +8,7 @@ Le pipeline ETL extrait les données depuis plusieurs sources externes, les tran
 | --------------------------------- | --------------------------------------------------------------- |
 | **PokeAPI** (REST)                | Stats de base, national dex IDs, learnsets TM/tutor             |
 | **Wiki IF - pages spécifiques**   | Fusions, Move Experts, légendaires, tuteurs, mécaniques IF      |
-| **Wiki IF - page Pokédex**        | Localisations sauvages et quêtes (572 entrées `PokedexTable`)   |
+| **Wiki IF - sous-pages Pokédex**  | 572 entrées `PokedexTable` + localisations (voir note ci-dessous) |
 | **Poképédia** (MediaWiki + Scrapy)| Noms FR, learnsets Gen 7 (USUL)                                 |
 | **GitHub PokeAPI/sprites**        | Sprites PNG statiques                                           |
 
@@ -25,7 +25,7 @@ L'orchestrateur [etl/pipeline.py](https://github.com/benjsant/InfiniDex/blob/mai
 
 | Étape | Script | Rôle |
 |-------|--------|------|
-| 1 | `extract_pokedex_if.py` | 572 Pokémon depuis le wiki IF |
+| 1 | `extract_pokedex_if.py` | 572 Pokémon depuis le wiki IF (sous-pages `Pokédex/Hoenn/Classic` + `Pokédex/Kanto/Classic`) |
 | 2a | `extract_stats_pokeapi.py` | Stats + name_fr + évolutions via PokeAPI |
 | 2b | `extract_pokepedia_names.py` | Mapping name_en → slug Pokepédia + URL Gen 7 |
 | 3 | `extract_moves_if.py` | 658 moves + 121 TMs + 40 tuteurs + 57 Move Experts |
@@ -42,7 +42,10 @@ L'orchestrateur [etl/pipeline.py](https://github.com/benjsant/InfiniDex/blob/mai
 | 13–14 | `clean_orphan_moves.py` `enrich_missing_abilities.py` | Nettoyage et complétion |
 
 !!! note "Étape 9b-ter - `load_pokedex_locations.py`"
-    Parse la page Pokédex du wiki IF (`{{PokedexTable/Data|...}}`) pour extraire les localisations sauvages et quêtes manquantes. Utilise `ON CONFLICT DO NOTHING` - ne réécrit jamais les données prioritaires de `fix_pokemon_locations.py`. Gère le `|` dans les liens wiki (`[[Page|Display]]`) en reconstruisant le champ depuis `parts[6:]`.
+    Parse la sous-page `Pokédex/Hoenn/Classic` du wiki IF (`{{PokedexTable/Data|...}}`) pour extraire les localisations sauvages et quêtes manquantes. Utilise `ON CONFLICT DO NOTHING` - ne réécrit jamais les données prioritaires de `fix_pokemon_locations.py`. Gère le `|` dans les liens wiki (`[[Page|Display]]`) en reconstruisant le champ depuis `parts[6:]`.
+
+!!! warning "Restructuration du wiki (2026-07)"
+    La page `Pokédex` du wiki IF est devenue un hub sans données : les 572 entrées vivent dans `Pokédex/Hoenn/Classic`, le template a gagné un champ `form` en 4e position, et les marqueurs "Not in game" ont disparu (le flag `is_hoenn_only` est désormais dérivé de la différence Kanto/Hoenn). La restructuration a aussi remis la plupart des champs Location à `TBA` (436/572) - au re-run, la couverture de `load_pokedex_locations.py` chute fortement, les localisations reposent surtout sur `extract_encounters_if.py` et `fix_pokemon_locations.py`. Les deux scripts qui lisent cette page échouent désormais bruyamment s'ils parsent 0 entrée.
 
 !!! note "Étape 8e-ter - `fix_evolutions.py`"
     Re-fetch les chaînes d'évolution PokeAPI une fois les `national_id` corrigés par `fix_national_ids.py`. Nécessaire parce que `extract_stats_pokeapi.py` interroge PokeAPI par `if_id` (qui ne correspond au `national_id` que pour les 151 Kanto purs) - pour les 320 Pokémon post-Kanto, la chaîne récupérée appartient à la mauvaise espèce et n'est jamais ré-extraite sans ce script. Résolution slug-aware (`pokeapi_move_slug`) pour matcher correctement les noms à caractères spéciaux (`Mime Jr.` ↔ `mime-jr`, `Nidoran♀` ↔ `nidoran-f`, `Flabébé` ↔ `flabebe`). Idempotent.
