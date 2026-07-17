@@ -43,7 +43,7 @@ ABILITY_ALIASES = {
 
 
 # The 8 "unique types" defined by Infinite Fusion — each has its own defense
-# profile (see Unique_Type_Defense_Chart image on the wiki).  They are stored
+# profile (see docs/imgs/unique_type_defense_chart.webp, from the wiki).  They are stored
 # as single rows in the `type` table with is_triple_fusion_type=true.
 UNIQUE_IF_TYPES: list[tuple[str, str]] = [
     # (name_en,                name_fr)

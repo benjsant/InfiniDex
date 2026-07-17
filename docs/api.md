@@ -2,6 +2,8 @@
 
 FastAPI exposant 54 endpoints + `/health`. Swagger interactif en dev : [http://localhost:58000/docs](http://localhost:58000/docs). Référence auto-générée : [Routes](reference/routes.md).
 
+Le spec OpenAPI est versionné sous [`docs/reference/openapi.json`](https://github.com/benjsant/InfiniDex/blob/main/docs/reference/openapi.json) (55 routes) - il sert de contrat aux clients externes, notamment la génération du client Dart typé du companion mobile (`openapi-generator -g dart-dio`). À régénérer après tout changement de routes/schemas : `./scripts/export_openapi.sh`.
+
 En prod le backend n'est **pas** exposé publiquement - les requêtes passent par le proxy Next.js (`/api/*` sur le domaine public).
 
 ## Organisation
