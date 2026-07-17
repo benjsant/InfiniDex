@@ -1,0 +1,5482 @@
+{
+ "components": {
+  "schemas": {
+   "AbilityDetail": {
+    "properties": {
+     "description_en": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Description En"
+     },
+     "description_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Description Fr"
+     },
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     }
+    },
+    "required": [
+     "id",
+     "name_en",
+     "name_fr",
+     "description_en",
+     "description_fr"
+    ],
+    "title": "AbilityDetail",
+    "type": "object"
+   },
+   "AbilityListItem": {
+    "properties": {
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     }
+    },
+    "required": [
+     "id",
+     "name_en",
+     "name_fr"
+    ],
+    "title": "AbilityListItem",
+    "type": "object"
+   },
+   "AbilityOut": {
+    "properties": {
+     "is_hidden": {
+      "title": "Is Hidden",
+      "type": "boolean"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "slot": {
+      "title": "Slot",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "slot",
+     "is_hidden",
+     "name_en",
+     "name_fr"
+    ],
+    "title": "AbilityOut",
+    "type": "object"
+   },
+   "AiPromptInfo": {
+    "properties": {
+     "max_history_messages": {
+      "title": "Max History Messages",
+      "type": "integer"
+     },
+     "system_prompt": {
+      "title": "System Prompt",
+      "type": "string"
+     },
+     "tools": {
+      "items": {
+       "$ref": "#/components/schemas/AiToolInfo"
+      },
+      "title": "Tools",
+      "type": "array"
+     }
+    },
+    "required": [
+     "system_prompt",
+     "tools",
+     "max_history_messages"
+    ],
+    "title": "AiPromptInfo",
+    "type": "object"
+   },
+   "AiProviderInfo": {
+    "properties": {
+     "model": {
+      "title": "Model",
+      "type": "string"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     }
+    },
+    "required": [
+     "name",
+     "model"
+    ],
+    "title": "AiProviderInfo",
+    "type": "object"
+   },
+   "AiRequest": {
+    "properties": {
+     "context": {
+      "anyOf": [
+       {
+        "maxLength": 2000,
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Context"
+     },
+     "history": {
+      "items": {
+       "$ref": "#/components/schemas/HistoryMessage"
+      },
+      "maxItems": 30,
+      "title": "History",
+      "type": "array"
+     },
+     "message": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+     }
+    },
+    "required": [
+     "message"
+    ],
+    "title": "AiRequest",
+    "type": "object"
+   },
+   "AiToolInfo": {
+    "properties": {
+     "description": {
+      "title": "Description",
+      "type": "string"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     }
+    },
+    "required": [
+     "name",
+     "description"
+    ],
+    "title": "AiToolInfo",
+    "type": "object"
+   },
+   "CoverageOut": {
+    "properties": {
+     "abilities_total": {
+      "title": "Abilities Total",
+      "type": "integer"
+     },
+     "abilities_unused": {
+      "title": "Abilities Unused",
+      "type": "integer"
+     },
+     "creators_total": {
+      "title": "Creators Total",
+      "type": "integer"
+     },
+     "fusion_sprites_total": {
+      "title": "Fusion Sprites Total",
+      "type": "integer"
+     },
+     "moves_total": {
+      "title": "Moves Total",
+      "type": "integer"
+     },
+     "moves_unused": {
+      "title": "Moves Unused",
+      "type": "integer"
+     },
+     "pokemon_total": {
+      "title": "Pokemon Total",
+      "type": "integer"
+     },
+     "pokemon_without_abilities": {
+      "title": "Pokemon Without Abilities",
+      "type": "integer"
+     },
+     "pokemon_without_moves": {
+      "title": "Pokemon Without Moves",
+      "type": "integer"
+     },
+     "pokemon_without_sprite": {
+      "title": "Pokemon Without Sprite",
+      "type": "integer"
+     },
+     "pokemon_without_types": {
+      "title": "Pokemon Without Types",
+      "type": "integer"
+     },
+     "triple_fusions_total": {
+      "title": "Triple Fusions Total",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "pokemon_total",
+     "pokemon_without_sprite",
+     "pokemon_without_types",
+     "pokemon_without_abilities",
+     "pokemon_without_moves",
+     "moves_total",
+     "moves_unused",
+     "abilities_total",
+     "abilities_unused",
+     "fusion_sprites_total",
+     "triple_fusions_total",
+     "creators_total"
+    ],
+    "title": "CoverageOut",
+    "type": "object"
+   },
+   "CreatorOut": {
+    "properties": {
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "sprite_count": {
+      "title": "Sprite Count",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "id",
+     "name",
+     "sprite_count"
+    ],
+    "title": "CreatorOut",
+    "type": "object"
+   },
+   "EvolutionOut": {
+    "properties": {
+     "evolves_into_id": {
+      "title": "Evolves Into Id",
+      "type": "integer"
+     },
+     "evolves_into_name_en": {
+      "title": "Evolves Into Name En",
+      "type": "string"
+     },
+     "evolves_into_name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Evolves Into Name Fr"
+     },
+     "evolves_into_national_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Evolves Into National Id"
+     },
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "if_notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "If Notes"
+     },
+     "if_override": {
+      "title": "If Override",
+      "type": "boolean"
+     },
+     "item_name_en": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Item Name En"
+     },
+     "item_name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Item Name Fr"
+     },
+     "min_level": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Min Level"
+     },
+     "pokemon_id": {
+      "title": "Pokemon Id",
+      "type": "integer"
+     },
+     "pokemon_name_en": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pokemon Name En"
+     },
+     "pokemon_name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pokemon Name Fr"
+     },
+     "pokemon_national_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pokemon National Id"
+     },
+     "trigger_type": {
+      "title": "Trigger Type",
+      "type": "string"
+     }
+    },
+    "required": [
+     "id",
+     "pokemon_id",
+     "evolves_into_id",
+     "evolves_into_name_en",
+     "evolves_into_name_fr",
+     "trigger_type",
+     "min_level",
+     "item_name_en",
+     "item_name_fr",
+     "if_override",
+     "if_notes"
+    ],
+    "title": "EvolutionOut",
+    "type": "object"
+   },
+   "FeedbackRequest": {
+    "properties": {
+     "answer": {
+      "maxLength": 4000,
+      "title": "Answer",
+      "type": "string"
+     },
+     "question": {
+      "maxLength": 2000,
+      "title": "Question",
+      "type": "string"
+     },
+     "rating": {
+      "enum": [
+       "up",
+       "down"
+      ],
+      "title": "Rating",
+      "type": "string"
+     }
+    },
+    "required": [
+     "question",
+     "answer",
+     "rating"
+    ],
+    "title": "FeedbackRequest",
+    "type": "object"
+   },
+   "FeedbackResponse": {
+    "properties": {
+     "ok": {
+      "title": "Ok",
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "ok"
+    ],
+    "title": "FeedbackResponse",
+    "type": "object"
+   },
+   "FusionAbilityOut": {
+    "description": "Ability available to a fusion, labelled by origin.",
+    "properties": {
+     "ability_id": {
+      "title": "Ability Id",
+      "type": "integer"
+     },
+     "is_hidden": {
+      "title": "Is Hidden",
+      "type": "boolean"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "origin": {
+      "title": "Origin",
+      "type": "string"
+     }
+    },
+    "required": [
+     "ability_id",
+     "name_en",
+     "name_fr",
+     "is_hidden",
+     "origin"
+    ],
+    "title": "FusionAbilityOut",
+    "type": "object"
+   },
+   "FusionExpertMoveOut": {
+    "description": "Move teachable to a fusion by a Move Expert (Knot / Boon Island).",
+    "properties": {
+     "accuracy": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Accuracy"
+     },
+     "category": {
+      "title": "Category",
+      "type": "string"
+     },
+     "locations": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Locations",
+      "type": "array"
+     },
+     "move_id": {
+      "title": "Move Id",
+      "type": "integer"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "power": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Power"
+     },
+     "pp": {
+      "title": "Pp",
+      "type": "integer"
+     },
+     "prices_heart_scales": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "title": "Prices Heart Scales",
+      "type": "object"
+     },
+     "type": {
+      "$ref": "#/components/schemas/TypeOut"
+     }
+    },
+    "required": [
+     "move_id",
+     "name_en",
+     "name_fr",
+     "category",
+     "power",
+     "accuracy",
+     "pp",
+     "type",
+     "locations",
+     "prices_heart_scales"
+    ],
+    "title": "FusionExpertMoveOut",
+    "type": "object"
+   },
+   "FusionFeaturedItem": {
+    "description": "Fusion with a custom sprite — used by GET /fusions/featured.",
+    "properties": {
+     "body_id": {
+      "title": "Body Id",
+      "type": "integer"
+     },
+     "body_name_en": {
+      "title": "Body Name En",
+      "type": "string"
+     },
+     "body_name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Body Name Fr"
+     },
+     "head_id": {
+      "title": "Head Id",
+      "type": "integer"
+     },
+     "head_name_en": {
+      "title": "Head Name En",
+      "type": "string"
+     },
+     "head_name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Head Name Fr"
+     },
+     "sprite_path": {
+      "title": "Sprite Path",
+      "type": "string"
+     },
+     "type1": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/TypeOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "type2": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/TypeOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "required": [
+     "head_id",
+     "body_id",
+     "head_name_en",
+     "head_name_fr",
+     "body_name_en",
+     "body_name_fr",
+     "type1",
+     "type2",
+     "sprite_path"
+    ],
+    "title": "FusionFeaturedItem",
+    "type": "object"
+   },
+   "FusionFullOut": {
+    "description": "Combined response for the /fusion/{h}/{b}/full endpoint.\n\nBundles stats, moveset, and expert moves into a single round-trip,\nreplacing the three separate calls made by the fusion result page.",
+    "properties": {
+     "expert_moves": {
+      "items": {
+       "$ref": "#/components/schemas/FusionExpertMoveOut"
+      },
+      "title": "Expert Moves",
+      "type": "array"
+     },
+     "fusion": {
+      "$ref": "#/components/schemas/FusionResult"
+     },
+     "moves": {
+      "items": {
+       "$ref": "#/components/schemas/FusionMoveOut"
+      },
+      "title": "Moves",
+      "type": "array"
+     }
+    },
+    "required": [
+     "fusion",
+     "moves",
+     "expert_moves"
+    ],
+    "title": "FusionFullOut",
+    "type": "object"
+   },
+   "FusionInvolvingOut": {
+    "properties": {
+     "body_id": {
+      "title": "Body Id",
+      "type": "integer"
+     },
+     "head_id": {
+      "title": "Head Id",
+      "type": "integer"
+     },
+     "partner_id": {
+      "title": "Partner Id",
+      "type": "integer"
+     },
+     "partner_name_en": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Partner Name En"
+     },
+     "partner_name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Partner Name Fr"
+     },
+     "role": {
+      "title": "Role",
+      "type": "string"
+     }
+    },
+    "required": [
+     "head_id",
+     "body_id",
+     "role",
+     "partner_id",
+     "partner_name_en",
+     "partner_name_fr"
+    ],
+    "title": "FusionInvolvingOut",
+    "type": "object"
+   },
+   "FusionMoveOut": {
+    "description": "Move learnable by a fusion — includes which parent teaches it.",
+    "properties": {
+     "accuracy": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Accuracy"
+     },
+     "category": {
+      "title": "Category",
+      "type": "string"
+     },
+     "level": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Level"
+     },
+     "method": {
+      "title": "Method",
+      "type": "string"
+     },
+     "move_id": {
+      "title": "Move Id",
+      "type": "integer"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "origin": {
+      "title": "Origin",
+      "type": "string"
+     },
+     "power": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Power"
+     },
+     "pp": {
+      "title": "Pp",
+      "type": "integer"
+     },
+     "source": {
+      "title": "Source",
+      "type": "string"
+     },
+     "type": {
+      "$ref": "#/components/schemas/TypeOut"
+     }
+    },
+    "required": [
+     "move_id",
+     "name_en",
+     "name_fr",
+     "category",
+     "power",
+     "accuracy",
+     "pp",
+     "type",
+     "method",
+     "level",
+     "source",
+     "origin"
+    ],
+    "title": "FusionMoveOut",
+    "type": "object"
+   },
+   "FusionResult": {
+    "properties": {
+     "attack": {
+      "title": "Attack",
+      "type": "integer"
+     },
+     "body_id": {
+      "title": "Body Id",
+      "type": "integer"
+     },
+     "body_name_en": {
+      "title": "Body Name En",
+      "type": "string"
+     },
+     "body_name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Body Name Fr"
+     },
+     "defense": {
+      "title": "Defense",
+      "type": "integer"
+     },
+     "head_id": {
+      "title": "Head Id",
+      "type": "integer"
+     },
+     "head_name_en": {
+      "title": "Head Name En",
+      "type": "string"
+     },
+     "head_name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Head Name Fr"
+     },
+     "hp": {
+      "title": "Hp",
+      "type": "integer"
+     },
+     "sp_attack": {
+      "title": "Sp Attack",
+      "type": "integer"
+     },
+     "sp_defense": {
+      "title": "Sp Defense",
+      "type": "integer"
+     },
+     "speed": {
+      "title": "Speed",
+      "type": "integer"
+     },
+     "sprite_path": {
+      "title": "Sprite Path",
+      "type": "string"
+     },
+     "type1": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/TypeOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "type2": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/TypeOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "required": [
+     "head_id",
+     "body_id",
+     "head_name_en",
+     "head_name_fr",
+     "body_name_en",
+     "body_name_fr",
+     "hp",
+     "attack",
+     "defense",
+     "sp_attack",
+     "sp_defense",
+     "speed",
+     "type1",
+     "type2",
+     "sprite_path"
+    ],
+    "title": "FusionResult",
+    "type": "object"
+   },
+   "FusionTopItem": {
+    "description": "Top fusion by BST — kept for /fusions/top-by-pokemon only.",
+    "properties": {
+     "attack": {
+      "title": "Attack",
+      "type": "integer"
+     },
+     "body_id": {
+      "title": "Body Id",
+      "type": "integer"
+     },
+     "body_name_en": {
+      "title": "Body Name En",
+      "type": "string"
+     },
+     "body_name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Body Name Fr"
+     },
+     "bst": {
+      "title": "Bst",
+      "type": "integer"
+     },
+     "defense": {
+      "title": "Defense",
+      "type": "integer"
+     },
+     "head_id": {
+      "title": "Head Id",
+      "type": "integer"
+     },
+     "head_name_en": {
+      "title": "Head Name En",
+      "type": "string"
+     },
+     "head_name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Head Name Fr"
+     },
+     "hp": {
+      "title": "Hp",
+      "type": "integer"
+     },
+     "rank": {
+      "title": "Rank",
+      "type": "integer"
+     },
+     "role": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Role"
+     },
+     "sp_attack": {
+      "title": "Sp Attack",
+      "type": "integer"
+     },
+     "sp_defense": {
+      "title": "Sp Defense",
+      "type": "integer"
+     },
+     "speed": {
+      "title": "Speed",
+      "type": "integer"
+     },
+     "sprite_path": {
+      "title": "Sprite Path",
+      "type": "string"
+     },
+     "type1": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/TypeOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "type2": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/TypeOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "required": [
+     "rank",
+     "head_id",
+     "body_id",
+     "head_name_en",
+     "head_name_fr",
+     "body_name_en",
+     "body_name_fr",
+     "hp",
+     "attack",
+     "defense",
+     "sp_attack",
+     "sp_defense",
+     "speed",
+     "bst",
+     "type1",
+     "type2",
+     "sprite_path"
+    ],
+    "title": "FusionTopItem",
+    "type": "object"
+   },
+   "GenerationOut": {
+    "properties": {
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "title": "Name Fr",
+      "type": "string"
+     }
+    },
+    "required": [
+     "id",
+     "name_en",
+     "name_fr"
+    ],
+    "title": "GenerationOut",
+    "type": "object"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "title": "Detail",
+      "type": "array"
+     }
+    },
+    "title": "HTTPValidationError",
+    "type": "object"
+   },
+   "HistoryMessage": {
+    "properties": {
+     "content": {
+      "maxLength": 8000,
+      "minLength": 1,
+      "title": "Content",
+      "type": "string"
+     },
+     "role": {
+      "enum": [
+       "user",
+       "assistant"
+      ],
+      "title": "Role",
+      "type": "string"
+     }
+    },
+    "required": [
+     "role",
+     "content"
+    ],
+    "title": "HistoryMessage",
+    "type": "object"
+   },
+   "ItemLocationOut": {
+    "properties": {
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "location_name": {
+      "title": "Location Name",
+      "type": "string"
+     },
+     "method": {
+      "title": "Method",
+      "type": "string"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     }
+    },
+    "required": [
+     "id",
+     "location_name",
+     "method",
+     "notes"
+    ],
+    "title": "ItemLocationOut",
+    "type": "object"
+   },
+   "ItemOut": {
+    "description": "A game item (limited scope: fusion / evolution / valuable).",
+    "properties": {
+     "category": {
+      "title": "Category",
+      "type": "string"
+     },
+     "effect": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Effect"
+     },
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "locations": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/ItemLocationOut"
+      },
+      "title": "Locations",
+      "type": "array"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "price_buy": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Price Buy"
+     },
+     "price_sell": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Price Sell"
+     }
+    },
+    "required": [
+     "id",
+     "name_en",
+     "name_fr",
+     "category",
+     "effect",
+     "price_buy",
+     "price_sell"
+    ],
+    "title": "ItemOut",
+    "type": "object"
+   },
+   "LocationOut": {
+    "properties": {
+     "location_id": {
+      "title": "Location Id",
+      "type": "integer"
+     },
+     "location_name": {
+      "title": "Location Name",
+      "type": "string"
+     },
+     "method": {
+      "title": "Method",
+      "type": "string"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     }
+    },
+    "required": [
+     "location_id",
+     "location_name",
+     "method",
+     "notes"
+    ],
+    "title": "LocationOut",
+    "type": "object"
+   },
+   "MoveDetail": {
+    "properties": {
+     "accuracy": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Accuracy"
+     },
+     "category": {
+      "title": "Category",
+      "type": "string"
+     },
+     "description_en": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Description En"
+     },
+     "description_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Description Fr"
+     },
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "power": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Power"
+     },
+     "pp": {
+      "title": "Pp",
+      "type": "integer"
+     },
+     "source": {
+      "title": "Source",
+      "type": "string"
+     },
+     "tm": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/TMInfo"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "type": {
+      "$ref": "#/components/schemas/TypeOut"
+     }
+    },
+    "required": [
+     "id",
+     "name_en",
+     "name_fr",
+     "category",
+     "power",
+     "accuracy",
+     "pp",
+     "type",
+     "description_en",
+     "description_fr",
+     "source"
+    ],
+    "title": "MoveDetail",
+    "type": "object"
+   },
+   "MoveExpertOut": {
+    "description": "A Move Expert move (Knot / Boon Island) with unlock requirements.",
+    "properties": {
+     "location": {
+      "title": "Location",
+      "type": "string"
+     },
+     "move_id": {
+      "title": "Move Id",
+      "type": "integer"
+     },
+     "move_name_en": {
+      "title": "Move Name En",
+      "type": "string"
+     },
+     "move_name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Move Name Fr"
+     },
+     "required_pokemon": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Required Pokemon",
+      "type": "array"
+     },
+     "required_types": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Required Types",
+      "type": "array"
+     }
+    },
+    "required": [
+     "move_id",
+     "move_name_en",
+     "move_name_fr",
+     "location",
+     "required_pokemon",
+     "required_types"
+    ],
+    "title": "MoveExpertOut",
+    "type": "object"
+   },
+   "MoveListItem": {
+    "properties": {
+     "accuracy": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Accuracy"
+     },
+     "category": {
+      "title": "Category",
+      "type": "string"
+     },
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "power": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Power"
+     },
+     "pp": {
+      "title": "Pp",
+      "type": "integer"
+     },
+     "type": {
+      "$ref": "#/components/schemas/TypeOut"
+     }
+    },
+    "required": [
+     "id",
+     "name_en",
+     "name_fr",
+     "category",
+     "power",
+     "accuracy",
+     "pp",
+     "type"
+    ],
+    "title": "MoveListItem",
+    "type": "object"
+   },
+   "MoveTutorOut": {
+    "description": "A NPC that teaches a specific move, with location and price.\n\n`price` is NULL when `currency` is 'free' or 'quest'.",
+    "properties": {
+     "currency": {
+      "title": "Currency",
+      "type": "string"
+     },
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "location_id": {
+      "title": "Location Id",
+      "type": "integer"
+     },
+     "location_name_en": {
+      "title": "Location Name En",
+      "type": "string"
+     },
+     "location_name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Location Name Fr"
+     },
+     "move_id": {
+      "title": "Move Id",
+      "type": "integer"
+     },
+     "move_name_en": {
+      "title": "Move Name En",
+      "type": "string"
+     },
+     "move_name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Move Name Fr"
+     },
+     "npc_description": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Npc Description"
+     },
+     "price": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Price"
+     }
+    },
+    "required": [
+     "id",
+     "move_id",
+     "move_name_en",
+     "move_name_fr",
+     "location_id",
+     "location_name_en",
+     "location_name_fr",
+     "price",
+     "currency",
+     "npc_description"
+    ],
+    "title": "MoveTutorOut",
+    "type": "object"
+   },
+   "PokemonDetail": {
+    "properties": {
+     "abilities": {
+      "items": {
+       "$ref": "#/components/schemas/AbilityOut"
+      },
+      "title": "Abilities",
+      "type": "array"
+     },
+     "attack": {
+      "title": "Attack",
+      "type": "integer"
+     },
+     "base_experience": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Base Experience"
+     },
+     "bst": {
+      "title": "Bst",
+      "type": "integer"
+     },
+     "defense": {
+      "title": "Defense",
+      "type": "integer"
+     },
+     "generation_id": {
+      "title": "Generation Id",
+      "type": "integer"
+     },
+     "hp": {
+      "title": "Hp",
+      "type": "integer"
+     },
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "is_hoenn_only": {
+      "title": "Is Hoenn Only",
+      "type": "boolean"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "national_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "National Id"
+     },
+     "pokepedia_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pokepedia Url"
+     },
+     "sp_attack": {
+      "title": "Sp Attack",
+      "type": "integer"
+     },
+     "sp_defense": {
+      "title": "Sp Defense",
+      "type": "integer"
+     },
+     "speed": {
+      "title": "Speed",
+      "type": "integer"
+     },
+     "sprite_path": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sprite Path"
+     },
+     "types": {
+      "items": {
+       "$ref": "#/components/schemas/PokemonTypeOut"
+      },
+      "title": "Types",
+      "type": "array"
+     }
+    },
+    "required": [
+     "id",
+     "national_id",
+     "name_en",
+     "name_fr",
+     "generation_id",
+     "hp",
+     "attack",
+     "defense",
+     "sp_attack",
+     "sp_defense",
+     "speed",
+     "bst",
+     "base_experience",
+     "is_hoenn_only",
+     "sprite_path",
+     "pokepedia_url",
+     "types",
+     "abilities"
+    ],
+    "title": "PokemonDetail",
+    "type": "object"
+   },
+   "PokemonListItem": {
+    "properties": {
+     "bst": {
+      "title": "Bst",
+      "type": "integer"
+     },
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "is_hoenn_only": {
+      "title": "Is Hoenn Only",
+      "type": "boolean"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "national_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "National Id"
+     },
+     "pokepedia_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pokepedia Url"
+     },
+     "sprite_path": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sprite Path"
+     },
+     "types": {
+      "items": {
+       "$ref": "#/components/schemas/PokemonTypeOut"
+      },
+      "title": "Types",
+      "type": "array"
+     }
+    },
+    "required": [
+     "id",
+     "national_id",
+     "name_en",
+     "name_fr",
+     "types",
+     "sprite_path",
+     "is_hoenn_only",
+     "pokepedia_url",
+     "bst"
+    ],
+    "title": "PokemonListItem",
+    "type": "object"
+   },
+   "PokemonMoveOut": {
+    "description": "Move as learned by a specific Pokémon — includes learning context.",
+    "properties": {
+     "accuracy": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Accuracy"
+     },
+     "category": {
+      "title": "Category",
+      "type": "string"
+     },
+     "level": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Level"
+     },
+     "method": {
+      "title": "Method",
+      "type": "string"
+     },
+     "move_id": {
+      "title": "Move Id",
+      "type": "integer"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "power": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Power"
+     },
+     "pp": {
+      "title": "Pp",
+      "type": "integer"
+     },
+     "source": {
+      "title": "Source",
+      "type": "string"
+     },
+     "type": {
+      "$ref": "#/components/schemas/TypeOut"
+     }
+    },
+    "required": [
+     "move_id",
+     "name_en",
+     "name_fr",
+     "category",
+     "power",
+     "accuracy",
+     "pp",
+     "type",
+     "method",
+     "level",
+     "source"
+    ],
+    "title": "PokemonMoveOut",
+    "type": "object"
+   },
+   "PokemonTypeOut": {
+    "properties": {
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "slot": {
+      "title": "Slot",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "slot",
+     "name_en",
+     "name_fr"
+    ],
+    "title": "PokemonTypeOut",
+    "type": "object"
+   },
+   "SpriteOut": {
+    "properties": {
+     "body_id": {
+      "title": "Body Id",
+      "type": "integer"
+     },
+     "creators": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Creators",
+      "type": "array"
+     },
+     "head_id": {
+      "title": "Head Id",
+      "type": "integer"
+     },
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "is_custom": {
+      "title": "Is Custom",
+      "type": "boolean"
+     },
+     "is_default": {
+      "title": "Is Default",
+      "type": "boolean"
+     },
+     "source": {
+      "title": "Source",
+      "type": "string"
+     },
+     "sprite_path": {
+      "title": "Sprite Path",
+      "type": "string"
+     }
+    },
+    "required": [
+     "id",
+     "head_id",
+     "body_id",
+     "sprite_path",
+     "is_custom",
+     "is_default",
+     "source",
+     "creators"
+    ],
+    "title": "SpriteOut",
+    "type": "object"
+   },
+   "TMInfo": {
+    "description": "TM information for a move (if this move is a TM).",
+    "properties": {
+     "location_summary": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Location Summary"
+     },
+     "locations": {
+      "items": {
+       "$ref": "#/components/schemas/TMLocationOut"
+      },
+      "title": "Locations",
+      "type": "array"
+     },
+     "number": {
+      "title": "Number",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "number",
+     "location_summary",
+     "locations"
+    ],
+    "title": "TMInfo",
+    "type": "object"
+   },
+   "TMListItem": {
+    "description": "A TM with its move info and obtention locations.",
+    "properties": {
+     "accuracy": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Accuracy"
+     },
+     "category": {
+      "title": "Category",
+      "type": "string"
+     },
+     "location_summary": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Location Summary"
+     },
+     "locations": {
+      "items": {
+       "$ref": "#/components/schemas/TMLocationOut"
+      },
+      "title": "Locations",
+      "type": "array"
+     },
+     "move_id": {
+      "title": "Move Id",
+      "type": "integer"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "number": {
+      "title": "Number",
+      "type": "integer"
+     },
+     "power": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Power"
+     },
+     "pp": {
+      "title": "Pp",
+      "type": "integer"
+     },
+     "type": {
+      "$ref": "#/components/schemas/TypeOut"
+     }
+    },
+    "required": [
+     "number",
+     "move_id",
+     "name_en",
+     "name_fr",
+     "type",
+     "category",
+     "power",
+     "accuracy",
+     "pp",
+     "location_summary",
+     "locations"
+    ],
+    "title": "TMListItem",
+    "type": "object"
+   },
+   "TMLocationOut": {
+    "description": "A location where a TM can be found.",
+    "properties": {
+     "location_id": {
+      "title": "Location Id",
+      "type": "integer"
+     },
+     "location_name_en": {
+      "title": "Location Name En",
+      "type": "string"
+     },
+     "location_name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Location Name Fr"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     }
+    },
+    "required": [
+     "location_id",
+     "location_name_en",
+     "location_name_fr",
+     "notes"
+    ],
+    "title": "TMLocationOut",
+    "type": "object"
+   },
+   "TripleFusionAbilityOut": {
+    "properties": {
+     "is_hidden": {
+      "title": "Is Hidden",
+      "type": "boolean"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "slot": {
+      "title": "Slot",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "slot",
+     "is_hidden",
+     "name_en",
+     "name_fr"
+    ],
+    "title": "TripleFusionAbilityOut",
+    "type": "object"
+   },
+   "TripleFusionComponentOut": {
+    "properties": {
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "national_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "National Id"
+     },
+     "pokemon_id": {
+      "title": "Pokemon Id",
+      "type": "integer"
+     },
+     "position": {
+      "title": "Position",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "position",
+     "pokemon_id",
+     "national_id",
+     "name_en",
+     "name_fr"
+    ],
+    "title": "TripleFusionComponentOut",
+    "type": "object"
+   },
+   "TripleFusionDetail": {
+    "properties": {
+     "abilities": {
+      "items": {
+       "$ref": "#/components/schemas/TripleFusionAbilityOut"
+      },
+      "title": "Abilities",
+      "type": "array"
+     },
+     "attack": {
+      "title": "Attack",
+      "type": "integer"
+     },
+     "components": {
+      "items": {
+       "$ref": "#/components/schemas/TripleFusionComponentOut"
+      },
+      "title": "Components",
+      "type": "array"
+     },
+     "defense": {
+      "title": "Defense",
+      "type": "integer"
+     },
+     "evolution_level": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Evolution Level"
+     },
+     "evolves_from_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Evolves From Id"
+     },
+     "hp": {
+      "title": "Hp",
+      "type": "integer"
+     },
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "sp_attack": {
+      "title": "Sp Attack",
+      "type": "integer"
+     },
+     "sp_defense": {
+      "title": "Sp Defense",
+      "type": "integer"
+     },
+     "speed": {
+      "title": "Speed",
+      "type": "integer"
+     },
+     "sprite_path": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sprite Path"
+     },
+     "steps_to_hatch": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Steps To Hatch"
+     },
+     "types": {
+      "items": {
+       "$ref": "#/components/schemas/TripleFusionTypeOut"
+      },
+      "title": "Types",
+      "type": "array"
+     }
+    },
+    "required": [
+     "id",
+     "name_en",
+     "name_fr",
+     "sprite_path",
+     "types",
+     "hp",
+     "attack",
+     "defense",
+     "sp_attack",
+     "sp_defense",
+     "speed",
+     "evolves_from_id",
+     "evolution_level",
+     "steps_to_hatch",
+     "components",
+     "abilities"
+    ],
+    "title": "TripleFusionDetail",
+    "type": "object"
+   },
+   "TripleFusionListItem": {
+    "properties": {
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "sprite_path": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sprite Path"
+     },
+     "types": {
+      "items": {
+       "$ref": "#/components/schemas/TripleFusionTypeOut"
+      },
+      "title": "Types",
+      "type": "array"
+     }
+    },
+    "required": [
+     "id",
+     "name_en",
+     "name_fr",
+     "sprite_path",
+     "types"
+    ],
+    "title": "TripleFusionListItem",
+    "type": "object"
+   },
+   "TripleFusionTypeOut": {
+    "properties": {
+     "is_triple_fusion_type": {
+      "title": "Is Triple Fusion Type",
+      "type": "boolean"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     },
+     "slot": {
+      "title": "Slot",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "slot",
+     "name_en",
+     "name_fr",
+     "is_triple_fusion_type"
+    ],
+    "title": "TripleFusionTypeOut",
+    "type": "object"
+   },
+   "TypeOut": {
+    "properties": {
+     "id": {
+      "title": "Id",
+      "type": "integer"
+     },
+     "is_triple_fusion_type": {
+      "title": "Is Triple Fusion Type",
+      "type": "boolean"
+     },
+     "name_en": {
+      "title": "Name En",
+      "type": "string"
+     },
+     "name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name Fr"
+     }
+    },
+    "required": [
+     "id",
+     "name_en",
+     "name_fr",
+     "is_triple_fusion_type"
+    ],
+    "title": "TypeOut",
+    "type": "object"
+   },
+   "ValidationError": {
+    "properties": {
+     "ctx": {
+      "title": "Context",
+      "type": "object"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "title": "Location",
+      "type": "array"
+     },
+     "msg": {
+      "title": "Message",
+      "type": "string"
+     },
+     "type": {
+      "title": "Error Type",
+      "type": "string"
+     }
+    },
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError",
+    "type": "object"
+   },
+   "WeaknessOut": {
+    "description": "Damage multiplier for one attacking type against a Pokémon.",
+    "properties": {
+     "attacking_type_id": {
+      "title": "Attacking Type Id",
+      "type": "integer"
+     },
+     "attacking_type_name_en": {
+      "title": "Attacking Type Name En",
+      "type": "string"
+     },
+     "attacking_type_name_fr": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Attacking Type Name Fr"
+     },
+     "multiplier": {
+      "title": "Multiplier",
+      "type": "number"
+     }
+    },
+    "required": [
+     "attacking_type_id",
+     "attacking_type_name_en",
+     "attacking_type_name_fr",
+     "multiplier"
+    ],
+    "title": "WeaknessOut",
+    "type": "object"
+   }
+  }
+ },
+ "info": {
+  "description": "Pokédex API for Pokémon Infinite Fusion — EN/FR",
+  "title": "InfiniDex API",
+  "version": "0.3.0"
+ },
+ "openapi": "3.1.0",
+ "paths": {
+  "/abilities/": {
+   "get": {
+    "description": "List all abilities (~289 IF abilities).",
+    "operationId": "get_abilities_abilities__get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/AbilityListItem"
+         },
+         "title": "Response Get Abilities Abilities  Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Abilities",
+    "tags": [
+     "Abilities"
+    ]
+   }
+  },
+  "/abilities/search": {
+   "get": {
+    "description": "Accent-insensitive search on EN or FR ability name.",
+    "operationId": "search_abilities_route_abilities_search_get",
+    "parameters": [
+     {
+      "description": "Partial name EN or FR (accent-insensitive)",
+      "in": "query",
+      "name": "q",
+      "required": true,
+      "schema": {
+       "description": "Partial name EN or FR (accent-insensitive)",
+       "maxLength": 100,
+       "minLength": 1,
+       "title": "Q",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/AbilityListItem"
+         },
+         "title": "Response Search Abilities Route Abilities Search Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Search Abilities Route",
+    "tags": [
+     "Abilities"
+    ]
+   }
+  },
+  "/abilities/{ability_id}": {
+   "get": {
+    "description": "Detail of an ability with EN/FR descriptions.",
+    "operationId": "get_ability_abilities__ability_id__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "ability_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Ability Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AbilityDetail"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Ability",
+    "tags": [
+     "Abilities"
+    ]
+   }
+  },
+  "/ai/ask": {
+   "post": {
+    "description": "Agent tool-calling endpoint — SSE stream of AgentEvents.\n\nEach event is a JSON line: ``data: {\"type\": \"tool_call\"|\"token\", ...}\\n\\n``\n\n- ``tool_call`` events carry the tool name (emitted before execution).\n- ``token`` events carry response text chunks.\n\nReturns 503 with setup instructions if no LLM provider is configured.",
+    "operationId": "ask_ai_ai_ask_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AiRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Ask Ai",
+    "tags": [
+     "AI"
+    ]
+   }
+  },
+  "/ai/feedback": {
+   "post": {
+    "description": "Record a thumbs-up/down on an AI response.\n\nOn thumbs-down, forwards question + answer to the Discord webhook (if\nDISCORD_WEBHOOK_URL is set) so the developer can review bad responses.\nAlways returns 200 — feedback is best-effort, never blocks the UI.",
+    "operationId": "submit_feedback_ai_feedback_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FeedbackRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FeedbackResponse"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Submit Feedback",
+    "tags": [
+     "AI"
+    ]
+   }
+  },
+  "/ai/prompt": {
+   "get": {
+    "description": "Return the system prompt and tool descriptions for UI transparency.",
+    "operationId": "get_ai_prompt_ai_prompt_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AiPromptInfo"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Ai Prompt",
+    "tags": [
+     "AI"
+    ]
+   }
+  },
+  "/ai/provider": {
+   "get": {
+    "description": "Return the active LLM provider name and model, or 503 if none configured.",
+    "operationId": "get_ai_provider_ai_provider_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AiProviderInfo"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Ai Provider",
+    "tags": [
+     "AI"
+    ]
+   }
+  },
+  "/creators/": {
+   "get": {
+    "description": "List sprite artists, sorted by sprite count in descending order.",
+    "operationId": "get_creators_creators__get",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "limit",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 1000,
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Limit"
+      }
+     },
+     {
+      "in": "query",
+      "name": "offset",
+      "required": false,
+      "schema": {
+       "default": 0,
+       "maximum": 100000,
+       "minimum": 0,
+       "title": "Offset",
+       "type": "integer"
+      }
+     },
+     {
+      "description": "Filter by name (ilike)",
+      "in": "query",
+      "name": "q",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maxLength": 100,
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by name (ilike)",
+       "title": "Q"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/CreatorOut"
+         },
+         "title": "Response Get Creators Creators  Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Creators",
+    "tags": [
+     "Creators"
+    ]
+   }
+  },
+  "/creators/{creator_id}": {
+   "get": {
+    "description": "Detail of a sprite creator with their total sprite count.",
+    "operationId": "get_creator_creators__creator_id__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "creator_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Creator Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CreatorOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Creator",
+    "tags": [
+     "Creators"
+    ]
+   }
+  },
+  "/creators/{creator_id}/sprites": {
+   "get": {
+    "description": "All sprites created by this creator.",
+    "operationId": "get_sprites_by_creator_creators__creator_id__sprites_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "creator_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Creator Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/SpriteOut"
+         },
+         "title": "Response Get Sprites By Creator Creators  Creator Id  Sprites Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Sprites By Creator",
+    "tags": [
+     "Creators"
+    ]
+   }
+  },
+  "/fusion/random": {
+   "get": {
+    "description": "Return a random fusion (head + body drawn at random).",
+    "operationId": "get_random_fusion_fusion_random_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FusionResult"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Random Fusion",
+    "tags": [
+     "Fusion"
+    ]
+   }
+  },
+  "/fusion/{head_id}/{body_id}": {
+   "get": {
+    "description": "Stats, types, and sprite of a fusion.\n\n- Physical stats (HP/Atk/Def/Spe) = floor(Body×2/3 + Head×1/3)\n- Special stats (SpA/SpD)          = floor(Head×2/3 + Body×1/3)\n- Type 1 = primary type of Head\n- Type 2 = primary type of Body (if different)\n- Sprite: `{head_id}.{body_id}.png`",
+    "operationId": "get_fusion_fusion__head_id___body_id__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "head_id",
+      "required": true,
+      "schema": {
+       "maximum": 2000,
+       "minimum": 1,
+       "title": "Head Id",
+       "type": "integer"
+      }
+     },
+     {
+      "in": "path",
+      "name": "body_id",
+      "required": true,
+      "schema": {
+       "maximum": 2000,
+       "minimum": 1,
+       "title": "Body Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FusionResult"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Fusion",
+    "tags": [
+     "Fusion"
+    ]
+   }
+  },
+  "/fusion/{head_id}/{body_id}/abilities": {
+   "get": {
+    "description": "Abilities available for the fusion (IF rule: head slot 1 + body slot 1 + hidden abilities).",
+    "operationId": "get_fusion_abilities_fusion__head_id___body_id__abilities_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "head_id",
+      "required": true,
+      "schema": {
+       "maximum": 2000,
+       "minimum": 1,
+       "title": "Head Id",
+       "type": "integer"
+      }
+     },
+     {
+      "in": "path",
+      "name": "body_id",
+      "required": true,
+      "schema": {
+       "maximum": 2000,
+       "minimum": 1,
+       "title": "Body Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/FusionAbilityOut"
+         },
+         "title": "Response Get Fusion Abilities Fusion  Head Id   Body Id  Abilities Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Fusion Abilities",
+    "tags": [
+     "Fusion"
+    ]
+   }
+  },
+  "/fusion/{head_id}/{body_id}/expert-moves": {
+   "get": {
+    "description": "Moves teachable to this fusion by a Move Expert (Knot / Boon Island).",
+    "operationId": "get_fusion_expert_moves_fusion__head_id___body_id__expert_moves_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "head_id",
+      "required": true,
+      "schema": {
+       "maximum": 2000,
+       "minimum": 1,
+       "title": "Head Id",
+       "type": "integer"
+      }
+     },
+     {
+      "in": "path",
+      "name": "body_id",
+      "required": true,
+      "schema": {
+       "maximum": 2000,
+       "minimum": 1,
+       "title": "Body Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/FusionExpertMoveOut"
+         },
+         "title": "Response Get Fusion Expert Moves Fusion  Head Id   Body Id  Expert Moves Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Fusion Expert Moves",
+    "tags": [
+     "Fusion"
+    ]
+   }
+  },
+  "/fusion/{head_id}/{body_id}/full": {
+   "get": {
+    "description": "Stats + full moveset + expert moves in a single round-trip.\n\nReplaces the three separate calls (/{h}/{b}, /{h}/{b}/moves,\n/{h}/{b}/expert-moves) made by the fusion result page.",
+    "operationId": "get_fusion_full_fusion__head_id___body_id__full_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "head_id",
+      "required": true,
+      "schema": {
+       "maximum": 2000,
+       "minimum": 1,
+       "title": "Head Id",
+       "type": "integer"
+      }
+     },
+     {
+      "in": "path",
+      "name": "body_id",
+      "required": true,
+      "schema": {
+       "maximum": 2000,
+       "minimum": 1,
+       "title": "Body Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FusionFullOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Fusion Full",
+    "tags": [
+     "Fusion"
+    ]
+   }
+  },
+  "/fusion/{head_id}/{body_id}/moves": {
+   "get": {
+    "description": "Combined head + body moveset, deduplicated per move (origin='head'|'body'|'both').",
+    "operationId": "get_fusion_moves_fusion__head_id___body_id__moves_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "head_id",
+      "required": true,
+      "schema": {
+       "maximum": 2000,
+       "minimum": 1,
+       "title": "Head Id",
+       "type": "integer"
+      }
+     },
+     {
+      "in": "path",
+      "name": "body_id",
+      "required": true,
+      "schema": {
+       "maximum": 2000,
+       "minimum": 1,
+       "title": "Body Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/FusionMoveOut"
+         },
+         "title": "Response Get Fusion Moves Fusion  Head Id   Body Id  Moves Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Fusion Moves",
+    "tags": [
+     "Fusion"
+    ]
+   }
+  },
+  "/fusion/{head_id}/{body_id}/weaknesses": {
+   "get": {
+    "description": "Damage multipliers against the fusion's types (non-neutral only).",
+    "operationId": "get_fusion_weaknesses_fusion__head_id___body_id__weaknesses_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "head_id",
+      "required": true,
+      "schema": {
+       "maximum": 2000,
+       "minimum": 1,
+       "title": "Head Id",
+       "type": "integer"
+      }
+     },
+     {
+      "in": "path",
+      "name": "body_id",
+      "required": true,
+      "schema": {
+       "maximum": 2000,
+       "minimum": 1,
+       "title": "Body Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/WeaknessOut"
+         },
+         "title": "Response Get Fusion Weaknesses Fusion  Head Id   Body Id  Weaknesses Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Fusion Weaknesses",
+    "tags": [
+     "Fusion"
+    ]
+   }
+  },
+  "/fusions/featured": {
+   "get": {
+    "description": "Random sample of fusions that have a custom community sprite.",
+    "operationId": "get_featured_fusions_fusions_featured_get",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "limit",
+      "required": false,
+      "schema": {
+       "default": 50,
+       "maximum": 200,
+       "minimum": 1,
+       "title": "Limit",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/FusionFeaturedItem"
+         },
+         "title": "Response Get Featured Fusions Fusions Featured Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Featured Fusions",
+    "tags": [
+     "Fusion"
+    ]
+   }
+  },
+  "/fusions/involving/{pokemon_id}": {
+   "get": {
+    "description": "All fusion pairs (as head OR body) involving this Pokémon.",
+    "operationId": "get_fusions_involving_fusions_involving__pokemon_id__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "pokemon_id",
+      "required": true,
+      "schema": {
+       "maximum": 100000,
+       "minimum": 1,
+       "title": "Pokemon Id",
+       "type": "integer"
+      }
+     },
+     {
+      "in": "query",
+      "name": "limit",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 2000,
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Limit"
+      }
+     },
+     {
+      "in": "query",
+      "name": "offset",
+      "required": false,
+      "schema": {
+       "default": 0,
+       "maximum": 100000,
+       "minimum": 0,
+       "title": "Offset",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/FusionInvolvingOut"
+         },
+         "title": "Response Get Fusions Involving Fusions Involving  Pokemon Id  Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Fusions Involving",
+    "tags": [
+     "Fusion"
+    ]
+   }
+  },
+  "/fusions/top-by-pokemon/{pokemon_id}": {
+   "get": {
+    "description": "Best fusions for a given Pokémon (as head OR body), ranked by BST.",
+    "operationId": "get_top_fusions_for_pokemon_fusions_top_by_pokemon__pokemon_id__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "pokemon_id",
+      "required": true,
+      "schema": {
+       "maximum": 100000,
+       "minimum": 1,
+       "title": "Pokemon Id",
+       "type": "integer"
+      }
+     },
+     {
+      "in": "query",
+      "name": "limit",
+      "required": false,
+      "schema": {
+       "default": 5,
+       "maximum": 20,
+       "minimum": 1,
+       "title": "Limit",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/FusionTopItem"
+         },
+         "title": "Response Get Top Fusions For Pokemon Fusions Top By Pokemon  Pokemon Id  Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Top Fusions For Pokemon",
+    "tags": [
+     "Fusion"
+    ]
+   }
+  },
+  "/generations/": {
+   "get": {
+    "description": "List all generations (1–9).",
+    "operationId": "get_generations_generations__get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/GenerationOut"
+         },
+         "title": "Response Get Generations Generations  Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Generations",
+    "tags": [
+     "Generations"
+    ]
+   }
+  },
+  "/generations/{gen_id}": {
+   "get": {
+    "description": "Detail of a generation by ID (1–9).",
+    "operationId": "get_generation_generations__gen_id__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "gen_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Gen Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/GenerationOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Generation",
+    "tags": [
+     "Generations"
+    ]
+   }
+  },
+  "/generations/{gen_id}/pokemon": {
+   "get": {
+    "description": "All Pokémon belonging to a generation.",
+    "operationId": "get_pokemon_for_generation_generations__gen_id__pokemon_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "gen_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Gen Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/PokemonListItem"
+         },
+         "title": "Response Get Pokemon For Generation Generations  Gen Id  Pokemon Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Pokemon For Generation",
+    "tags": [
+     "Generations"
+    ]
+   }
+  },
+  "/health": {
+   "get": {
+    "description": "Liveness endpoint — used by Docker healthcheck and CI smoke tests.",
+    "operationId": "healthcheck_health_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": {
+          "type": "string"
+         },
+         "title": "Response Healthcheck Health Get",
+         "type": "object"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Healthcheck",
+    "tags": [
+     "health"
+    ]
+   }
+  },
+  "/items/": {
+   "get": {
+    "description": "List items, filterable by category (fusion / evolution / valuable).",
+    "operationId": "get_items_items__get",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "category",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "pattern": "^(fusion|evolution|valuable)$",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Category"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/ItemOut"
+         },
+         "title": "Response Get Items Items  Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Items",
+    "tags": [
+     "Items"
+    ]
+   }
+  },
+  "/items/search": {
+   "get": {
+    "description": "Accent-insensitive search on EN or FR name.",
+    "operationId": "search_items_route_items_search_get",
+    "parameters": [
+     {
+      "description": "Partial name EN or FR (accent-insensitive)",
+      "in": "query",
+      "name": "q",
+      "required": true,
+      "schema": {
+       "description": "Partial name EN or FR (accent-insensitive)",
+       "maxLength": 100,
+       "minLength": 1,
+       "title": "Q",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/ItemOut"
+         },
+         "title": "Response Search Items Route Items Search Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Search Items Route",
+    "tags": [
+     "Items"
+    ]
+   }
+  },
+  "/items/{item_id}": {
+   "get": {
+    "description": "Detail of a single item.",
+    "operationId": "get_item_items__item_id__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "item_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Item Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ItemOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Item",
+    "tags": [
+     "Items"
+    ]
+   }
+  },
+  "/moves/": {
+   "get": {
+    "description": "List moves with optional filters (category/type/power/pagination).",
+    "operationId": "get_moves_moves__get",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "category",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "pattern": "^(Physical|Special|Status)$",
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Category"
+      }
+     },
+     {
+      "in": "query",
+      "name": "type_id",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Type Id"
+      }
+     },
+     {
+      "in": "query",
+      "name": "power_min",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 0,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Power Min"
+      }
+     },
+     {
+      "in": "query",
+      "name": "power_max",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 0,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Power Max"
+      }
+     },
+     {
+      "in": "query",
+      "name": "limit",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 1000,
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Limit"
+      }
+     },
+     {
+      "in": "query",
+      "name": "offset",
+      "required": false,
+      "schema": {
+       "default": 0,
+       "maximum": 100000,
+       "minimum": 0,
+       "title": "Offset",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/MoveListItem"
+         },
+         "title": "Response Get Moves Moves  Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Moves",
+    "tags": [
+     "Moves"
+    ]
+   }
+  },
+  "/moves/by-type/{type_name}": {
+   "get": {
+    "description": "All moves of a given type (EN or FR name, case-insensitive prefix match).",
+    "operationId": "get_moves_by_type_moves_by_type__type_name__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "type_name",
+      "required": true,
+      "schema": {
+       "maxLength": 50,
+       "minLength": 1,
+       "title": "Type Name",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/MoveListItem"
+         },
+         "title": "Response Get Moves By Type Moves By Type  Type Name  Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Moves By Type",
+    "tags": [
+     "Moves"
+    ]
+   }
+  },
+  "/moves/experts/all": {
+   "get": {
+    "description": "All Move Expert moves (Knot Island / Boon Island) with unlock conditions.",
+    "operationId": "get_all_expert_moves_moves_experts_all_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/MoveExpertOut"
+         },
+         "title": "Response Get All Expert Moves Moves Experts All Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get All Expert Moves",
+    "tags": [
+     "Moves"
+    ]
+   }
+  },
+  "/moves/search": {
+   "get": {
+    "description": "Accent-insensitive search on EN or FR move name.",
+    "operationId": "search_moves_route_moves_search_get",
+    "parameters": [
+     {
+      "description": "Partial name EN or FR (accent-insensitive)",
+      "in": "query",
+      "name": "q",
+      "required": true,
+      "schema": {
+       "description": "Partial name EN or FR (accent-insensitive)",
+       "maxLength": 100,
+       "minLength": 1,
+       "title": "Q",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/MoveListItem"
+         },
+         "title": "Response Search Moves Route Moves Search Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Search Moves Route",
+    "tags": [
+     "Moves"
+    ]
+   }
+  },
+  "/moves/tutors/all": {
+   "get": {
+    "description": "All classic move tutors grouped by location, ordered by price.",
+    "operationId": "get_all_tutors_moves_tutors_all_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/MoveTutorOut"
+         },
+         "title": "Response Get All Tutors Moves Tutors All Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get All Tutors",
+    "tags": [
+     "Moves"
+    ]
+   }
+  },
+  "/moves/{move_id}": {
+   "get": {
+    "description": "Full detail of a move. Includes `tm` if the move is a TM.",
+    "operationId": "get_move_moves__move_id__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "move_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Move Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MoveDetail"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Move",
+    "tags": [
+     "Moves"
+    ]
+   }
+  },
+  "/moves/{move_id}/tutors": {
+   "get": {
+    "description": "Locations and prices where this move can be learned from a classic Move Tutor.\n\nReturns an empty list if no tutor teaches this move. Scope: classic tutors\nonly (one NPC = one move). Out of scope: Move Experts (fusion-only),\nMove Relearner, Move Deleter, Egg Move Tutor.",
+    "operationId": "get_move_tutors_moves__move_id__tutors_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "move_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Move Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/MoveTutorOut"
+         },
+         "title": "Response Get Move Tutors Moves  Move Id  Tutors Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Move Tutors",
+    "tags": [
+     "Moves"
+    ]
+   }
+  },
+  "/pokemon/": {
+   "get": {
+    "description": "List Pokémon in the Infinite Fusion game, with pagination and filters.",
+    "operationId": "get_pokemon_list_pokemon__get",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "limit",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "maximum": 1000,
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Limit"
+      }
+     },
+     {
+      "in": "query",
+      "name": "offset",
+      "required": false,
+      "schema": {
+       "default": 0,
+       "maximum": 100000,
+       "minimum": 0,
+       "title": "Offset",
+       "type": "integer"
+      }
+     },
+     {
+      "description": "Filter by primary type (id)",
+      "in": "query",
+      "name": "type_id",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by primary type (id)",
+       "title": "Type Id"
+      }
+     },
+     {
+      "description": "Filter by second type (AND)",
+      "in": "query",
+      "name": "type2_id",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by second type (AND)",
+       "title": "Type2 Id"
+      }
+     },
+     {
+      "description": "Filter by generation",
+      "in": "query",
+      "name": "generation_id",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by generation",
+       "title": "Generation Id"
+      }
+     },
+     {
+      "description": "Include Hoenn-only Pokémon",
+      "in": "query",
+      "name": "include_hoenn",
+      "required": false,
+      "schema": {
+       "default": true,
+       "description": "Include Hoenn-only Pokémon",
+       "title": "Include Hoenn",
+       "type": "boolean"
+      }
+     },
+     {
+      "description": "Minimum BST",
+      "in": "query",
+      "name": "min_bst",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 0,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Minimum BST",
+       "title": "Min Bst"
+      }
+     },
+     {
+      "description": "Maximum BST",
+      "in": "query",
+      "name": "max_bst",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 0,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Maximum BST",
+       "title": "Max Bst"
+      }
+     },
+     {
+      "description": "Sort order",
+      "in": "query",
+      "name": "sort_by",
+      "required": false,
+      "schema": {
+       "default": "id",
+       "description": "Sort order",
+       "pattern": "^(id|id_desc|name_asc|name_desc|bst_asc|bst_desc|hp_asc|hp_desc|attack_asc|attack_desc|defense_asc|defense_desc|sp_attack_asc|sp_attack_desc|sp_defense_asc|sp_defense_desc|speed_asc|speed_desc)$",
+       "title": "Sort By",
+       "type": "string"
+      }
+     },
+     {
+      "description": "Filter by ability (id)",
+      "in": "query",
+      "name": "ability_id",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Filter by ability (id)",
+       "title": "Ability Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/PokemonListItem"
+         },
+         "title": "Response Get Pokemon List Pokemon  Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Pokemon List",
+    "tags": [
+     "Pokemon"
+    ]
+   }
+  },
+  "/pokemon/count": {
+   "get": {
+    "description": "Count Pokémon matching the given filters.",
+    "operationId": "get_pokemon_count_pokemon_count_get",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "type_id",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Type Id"
+      }
+     },
+     {
+      "description": "Second type filter (AND)",
+      "in": "query",
+      "name": "type2_id",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Second type filter (AND)",
+       "title": "Type2 Id"
+      }
+     },
+     {
+      "in": "query",
+      "name": "generation_id",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Generation Id"
+      }
+     },
+     {
+      "in": "query",
+      "name": "include_hoenn",
+      "required": false,
+      "schema": {
+       "default": true,
+       "title": "Include Hoenn",
+       "type": "boolean"
+      }
+     },
+     {
+      "in": "query",
+      "name": "min_bst",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 0,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Min Bst"
+      }
+     },
+     {
+      "in": "query",
+      "name": "max_bst",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 0,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Max Bst"
+      }
+     },
+     {
+      "in": "query",
+      "name": "ability_id",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "minimum": 1,
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Ability Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "title": "Response Get Pokemon Count Pokemon Count Get",
+         "type": "integer"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Pokemon Count",
+    "tags": [
+     "Pokemon"
+    ]
+   }
+  },
+  "/pokemon/search": {
+   "get": {
+    "description": "Search by English or French name (accent-insensitive).",
+    "operationId": "search_pokemon_route_pokemon_search_get",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "q",
+      "required": true,
+      "schema": {
+       "maxLength": 100,
+       "minLength": 2,
+       "title": "Q",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/PokemonListItem"
+         },
+         "title": "Response Search Pokemon Route Pokemon Search Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Search Pokemon Route",
+    "tags": [
+     "Pokemon"
+    ]
+   }
+  },
+  "/pokemon/{pokemon_id}": {
+   "get": {
+    "description": "Detailed Pokédex entry for a Pokémon by its IF ID.",
+    "operationId": "get_pokemon_pokemon__pokemon_id__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "pokemon_id",
+      "required": true,
+      "schema": {
+       "maximum": 100000,
+       "minimum": 1,
+       "title": "Pokemon Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PokemonDetail"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Pokemon",
+    "tags": [
+     "Pokemon"
+    ]
+   }
+  },
+  "/pokemon/{pokemon_id}/evolutions": {
+   "get": {
+    "description": "Evolution chain for a Pokémon.",
+    "operationId": "get_evolutions_for_pokemon_pokemon__pokemon_id__evolutions_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "pokemon_id",
+      "required": true,
+      "schema": {
+       "maximum": 100000,
+       "minimum": 1,
+       "title": "Pokemon Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/EvolutionOut"
+         },
+         "title": "Response Get Evolutions For Pokemon Pokemon  Pokemon Id  Evolutions Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Evolutions For Pokemon",
+    "tags": [
+     "Pokemon"
+    ]
+   }
+  },
+  "/pokemon/{pokemon_id}/locations": {
+   "get": {
+    "description": "Encounter locations for a Pokémon (wild, static, legendary…).",
+    "operationId": "get_locations_for_pokemon_pokemon__pokemon_id__locations_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "pokemon_id",
+      "required": true,
+      "schema": {
+       "maximum": 100000,
+       "minimum": 1,
+       "title": "Pokemon Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/LocationOut"
+         },
+         "title": "Response Get Locations For Pokemon Pokemon  Pokemon Id  Locations Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Locations For Pokemon",
+    "tags": [
+     "Pokemon"
+    ]
+   }
+  },
+  "/pokemon/{pokemon_id}/moves": {
+   "get": {
+    "description": "Full moveset (level_up, tm, breeding, tutor, before_evolution).",
+    "operationId": "get_moves_for_pokemon_pokemon__pokemon_id__moves_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "pokemon_id",
+      "required": true,
+      "schema": {
+       "maximum": 100000,
+       "minimum": 1,
+       "title": "Pokemon Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/PokemonMoveOut"
+         },
+         "title": "Response Get Moves For Pokemon Pokemon  Pokemon Id  Moves Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Moves For Pokemon",
+    "tags": [
+     "Pokemon"
+    ]
+   }
+  },
+  "/pokemon/{pokemon_id}/weaknesses": {
+   "get": {
+    "description": "Damage multipliers by attacking type (non-neutral only).",
+    "operationId": "get_weaknesses_for_pokemon_pokemon__pokemon_id__weaknesses_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "pokemon_id",
+      "required": true,
+      "schema": {
+       "maximum": 100000,
+       "minimum": 1,
+       "title": "Pokemon Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/WeaknessOut"
+         },
+         "title": "Response Get Weaknesses For Pokemon Pokemon  Pokemon Id  Weaknesses Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Weaknesses For Pokemon",
+    "tags": [
+     "Pokemon"
+    ]
+   }
+  },
+  "/sprites/by_pokemon/{pokemon_id}": {
+   "get": {
+    "description": "List one custom sprite per fusion pair involving this Pokémon (head or body).\n\nReturns the default custom sprite for each pair, sorted by head_id then body_id.",
+    "operationId": "get_custom_sprites_for_pokemon_sprites_by_pokemon__pokemon_id__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "pokemon_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Pokemon Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/SpriteOut"
+         },
+         "title": "Response Get Custom Sprites For Pokemon Sprites By Pokemon  Pokemon Id  Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Custom Sprites For Pokemon",
+    "tags": [
+     "Sprites"
+    ]
+   }
+  },
+  "/sprites/{head_id}/{body_id}": {
+   "get": {
+    "description": "List all sprite variants for a head/body pair, including their credits (creators).\n\n- The default sprite is sorted first (is_default=true).\n- `source`: 'local' (auto-generated), 'community' (custom sprite), 'auto_generated'.",
+    "operationId": "get_sprites_for_pair_sprites__head_id___body_id__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "head_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Head Id",
+       "type": "integer"
+      }
+     },
+     {
+      "in": "path",
+      "name": "body_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Body Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/SpriteOut"
+         },
+         "title": "Response Get Sprites For Pair Sprites  Head Id   Body Id  Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Sprites For Pair",
+    "tags": [
+     "Sprites"
+    ]
+   }
+  },
+  "/sprites/{head_id}/{body_id}/image": {
+   "get": {
+    "description": "Serve the PNG image of a sprite (default or specific variant).",
+    "operationId": "get_sprite_image_sprites__head_id___body_id__image_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "head_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Head Id",
+       "type": "integer"
+      }
+     },
+     {
+      "in": "path",
+      "name": "body_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Body Id",
+       "type": "integer"
+      }
+     },
+     {
+      "description": "Specific sprite.id; default=variant marked is_default",
+      "in": "query",
+      "name": "variant_id",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "description": "Specific sprite.id; default=variant marked is_default",
+       "title": "Variant Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Sprite Image",
+    "tags": [
+     "Sprites"
+    ]
+   }
+  },
+  "/stats/coverage": {
+   "get": {
+    "description": "Audit: Pokémon without sprite/types/moves, orphaned moves/abilities, totals.",
+    "operationId": "get_coverage_stats_coverage_get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CoverageOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Coverage",
+    "tags": [
+     "Stats"
+    ]
+   }
+  },
+  "/tms/": {
+   "get": {
+    "description": "All 121 TMs ordered by number, with move info and obtention locations.",
+    "operationId": "get_all_tms_tms__get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/TMListItem"
+         },
+         "title": "Response Get All Tms Tms  Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get All Tms",
+    "tags": [
+     "TMs"
+    ]
+   }
+  },
+  "/tms/{number}": {
+   "get": {
+    "description": "Single TM by its number (e.g. 1 = TM01, 121 = TM121).",
+    "operationId": "get_tm_tms__number__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "number",
+      "required": true,
+      "schema": {
+       "maximum": 200,
+       "minimum": 1,
+       "title": "Number",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TMListItem"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Tm",
+    "tags": [
+     "TMs"
+    ]
+   }
+  },
+  "/triple-fusions/": {
+   "get": {
+    "description": "List all triple fusions in the game (23 entries).",
+    "operationId": "list_all_triple_fusions__get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/TripleFusionListItem"
+         },
+         "title": "Response List All Triple Fusions  Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "List All",
+    "tags": [
+     "TripleFusion"
+    ]
+   }
+  },
+  "/triple-fusions/{tf_id}": {
+   "get": {
+    "description": "Full detail of a triple fusion: stats, components, types, and abilities.",
+    "operationId": "get_detail_triple_fusions__tf_id__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "tf_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Tf Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TripleFusionDetail"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Detail",
+    "tags": [
+     "TripleFusion"
+    ]
+   }
+  },
+  "/triple-fusions/{tf_id}/sprite": {
+   "get": {
+    "description": "Serve the battle sprite PNG for a triple fusion.",
+    "operationId": "get_triple_fusion_sprite_triple_fusions__tf_id__sprite_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "tf_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Tf Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Triple Fusion Sprite",
+    "tags": [
+     "TripleFusion"
+    ]
+   }
+  },
+  "/triple-fusions/{tf_id}/weaknesses": {
+   "get": {
+    "description": "Damage multipliers against this triple fusion's type combination.",
+    "operationId": "get_triple_fusion_weaknesses_triple_fusions__tf_id__weaknesses_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "tf_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Tf Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/WeaknessOut"
+         },
+         "title": "Response Get Triple Fusion Weaknesses Triple Fusions  Tf Id  Weaknesses Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Triple Fusion Weaknesses",
+    "tags": [
+     "TripleFusion"
+    ]
+   }
+  },
+  "/types/": {
+   "get": {
+    "description": "List all 27 IF types (18 standard + 9 triple-fusion).",
+    "operationId": "get_types_types__get",
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/TypeOut"
+         },
+         "title": "Response Get Types Types  Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     }
+    },
+    "summary": "Get Types",
+    "tags": [
+     "Types"
+    ]
+   }
+  },
+  "/types/by-name/{name}": {
+   "get": {
+    "description": "Find a type by EN or FR name (accent-insensitive, prefix match).",
+    "operationId": "get_type_by_name_types_by_name__name__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "name",
+      "required": true,
+      "schema": {
+       "maxLength": 50,
+       "minLength": 1,
+       "title": "Name",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TypeOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Type By Name",
+    "tags": [
+     "Types"
+    ]
+   }
+  },
+  "/types/{type_id}": {
+   "get": {
+    "description": "Type by ID.",
+    "operationId": "get_type_types__type_id__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "type_id",
+      "required": true,
+      "schema": {
+       "minimum": 1,
+       "title": "Type Id",
+       "type": "integer"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TypeOut"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Type",
+    "tags": [
+     "Types"
+    ]
+   }
+  }
+ }
+}

@@ -1703,6 +1703,7 @@
 
 <h1 id="api-backend">API backend<a class="headerlink" href="#api-backend" title="Permanent link">&para;</a></h1>
 <p>FastAPI exposant 54 endpoints + <code>/health</code>. Swagger interactif en dev : <a href="http://localhost:58000/docs">http://localhost:58000/docs</a>. Référence auto-générée : <a href="../reference/routes/">Routes</a>.</p>
+<p>Le spec OpenAPI est versionné sous <a href="https://github.com/benjsant/InfiniDex/blob/main/docs/reference/openapi.json"><code>docs/reference/openapi.json</code></a> (55 routes) - il sert de contrat aux clients externes, notamment la génération du client Dart typé du companion mobile (<code>openapi-generator -g dart-dio</code>). À régénérer après tout changement de routes/schemas : <code>./scripts/export_openapi.sh</code>.</p>
 <p>En prod le backend n'est <strong>pas</strong> exposé publiquement - les requêtes passent par le proxy Next.js (<code>/api/*</code> sur le domaine public).</p>
 <h2 id="organisation">Organisation<a class="headerlink" href="#organisation" title="Permanent link">&para;</a></h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>backend/
