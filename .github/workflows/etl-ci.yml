@@ -38,5 +38,6 @@ jobs:
 
       # Pure-parser unit tests — lock the regression classes (alt-form type
       # promotion, triple-fusion type split, move-name alias/normalize).
+      # pytest vient du groupe dev du lockfile (même version qu'en local).
       - name: Parser unit tests
-        run: uv run --project etl --with pytest python -m pytest etl/tests -q
+        run: uv run --project etl python -m pytest etl/tests -q

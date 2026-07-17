@@ -16,6 +16,19 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY etl/ ./etl/
 RUN uv sync --frozen --no-dev
 
+# ── test stage ───────────────────────────────────────────────────────────────
+# Same venv + pytest (dev group). Used by the compose `test-etl` service so the
+# parser tests run in the same environment as the pipeline (CI parity).
+FROM builder AS test-builder
+RUN uv sync --frozen
+
+FROM python:3.12-slim AS test
+WORKDIR /app
+COPY --from=test-builder /app/.venv /app/.venv
+COPY --from=test-builder /app/etl /app/etl
+ENV PATH="/app/.venv/bin:$PATH"
+CMD ["python", "-m", "pytest", "etl/tests", "-v"]
+
 # ── runtime stage ────────────────────────────────────────────────────────────
 FROM python:3.12-slim AS runtime
 

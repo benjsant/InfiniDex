@@ -430,6 +430,39 @@ def run_audit() -> int:
             else:
                 ok("Types consistent with pokedex_if.json.")
 
+            # Type VALUES for the wiki-authoritative rows (no national_id).
+            # A count-only check let Lycanroc Midnight live with Tangrowth's
+            # types: same count, wrong values. For national_id'd rows PokeAPI
+            # overrides the wiki by design, so values are only compared where
+            # the wiki is the authority (fix_pokemon_types restores them).
+            expected_vals: dict[int, set[str]] = {}
+            for entry in json.loads(dex_path.read_text(encoding="utf-8")):
+                vals = {t.lower() for t in (entry.get("type1"), entry.get("type2")) if t}
+                if vals:
+                    expected_vals[entry["if_id"]] = vals
+            cur.execute(
+                """SELECT pt.pokemon_id, LOWER(t.name_en)
+                   FROM pokemon_type pt
+                   JOIN type t ON t.id = pt.type_id
+                   JOIN pokemon p ON p.id = pt.pokemon_id
+                   WHERE p.national_id IS NULL"""
+            )
+            actual_vals: dict[int, set[str]] = {}
+            for pid, tname in cur.fetchall():
+                actual_vals.setdefault(pid, set()).add(tname)
+            val_bad = [
+                (pid, expected_vals.get(pid, set()), got)
+                for pid, got in sorted(actual_vals.items())
+                if expected_vals.get(pid) and got != expected_vals[pid]
+            ]
+            if val_bad:
+                fail(f"{len(val_bad)} national_id-less Pokémon with types diverging from the wiki:")
+                for pid, exp, act in val_bad[:20]:
+                    print(f"       #{pid} {id_name.get(pid, '?')} : wiki={sorted(exp)}, db={sorted(act)}")
+                issues += len(val_bad)
+            else:
+                ok("Type values of national_id-less Pokémon match the wiki.")
+
         _snapshot_and_diff(cur, issues)
 
         # ── Summary ───────────────────────────────────────────────────────
