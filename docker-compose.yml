@@ -169,6 +169,19 @@ services:
     entrypoint: ["uv", "run", "pytest"]
     command: ["-v", "--tb=short"]
 
+  # Service optionnel : tests parseurs ETL dans l'image du pipeline.
+  # Usage : docker compose --profile test run --rm test-etl
+  test-etl:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.etl
+      target: test
+    profiles: ["test"]
+    volumes:
+      - ./etl:/app/etl
+    entrypoint: ["python", "-m", "pytest"]
+    command: ["etl/tests", "-v"]
+
   # Service optionnel : tests E2E Playwright contre le frontend en cours.
   # Usage :
   #   docker compose --profile e2e run --rm e2e
