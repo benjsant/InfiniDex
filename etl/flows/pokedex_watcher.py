@@ -36,7 +36,11 @@ SNAPSHOT_FILE  = DATA_DIR / "pokedex_last_ids.json"
 
 # ── Wiki API ──────────────────────────────────────────────────────────────────
 WIKI_API    = "https://infinitefusion.fandom.com/api.php"
-POKEDEX_PAGE = "Pokédex"
+# The 2026-07 wiki restructure turned "Pokédex" into a data-less hub page: this
+# watcher kept parsing 0 entries and reported "no new Pokémon" forever. The
+# table lives in the subpage below (same one extract_pokedex_if.py reads).
+# The id/name capture still works as-is — the new `form` field sits after them.
+POKEDEX_PAGE = "Pokédex/Hoenn/Classic"
 
 # ── GitHub game repo (infinitefusion-e18) ────────────────────────────────────
 GAME_REPO    = "infinitefusion/infinitefusion-e18"
@@ -85,6 +89,14 @@ def fetch_wiki_pokedex() -> dict[int, str]:
         if_id = int(m.group("id"))
         name  = m.group("name").strip()
         entries[if_id] = name
+
+    # Fail loudly rather than silently reporting "no new Pokémon" forever:
+    # an empty parse means the page or the template moved upstream again.
+    if not entries:
+        raise RuntimeError(
+            f"Parsed 0 entries from '{POKEDEX_PAGE}' — the wiki page or the "
+            f"PokedexTable/Data template has likely changed upstream again."
+        )
 
     logger.info("Wiki Pokédex: %d entries found", len(entries))
     return entries
