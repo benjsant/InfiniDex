@@ -16,6 +16,14 @@ Checks (network only, no DB):
   5. Pokepédia — national dex list maps ≥ 1000 species, 0 corrupt slugs
   6. Pokepédia — sample Génération_7 page reachable and carries USUL data
   7. PokeAPI  — /pokemon/25 answers with types
+  8. IF game  — LATEST_GAME_RELEASE in the game repo still matches the version
+                recorded in data/game_version.txt
+
+Check 8 is deliberately stateless: `data/game_version.txt` is committed, so a
+new game release makes this fail until someone bumps the file — which is the
+signal to review what the release changed. (The heavy `sprite_watcher` Prefect
+flow does the same check, but it only runs when the Prefect stack is up, which
+is why 6.8.0 went unnoticed for three weeks.)
 
 Run with the HTTP cache disabled so the probes hit the live sources:
     ETL_HTTP_CACHE_TTL_HOURS=0 python -m etl.scripts.check_sources
@@ -25,7 +33,9 @@ Exit code: 0 = all good, 1 = at least one source drifted.
 
 from __future__ import annotations
 
+import re
 import sys
+from pathlib import Path
 
 import requests
 
@@ -41,7 +51,18 @@ LOGGER = setup_logging(__name__)
 
 POKEPEDIA_SAMPLE = "https://www.pokepedia.fr/Bulbizarre/Génération_7"
 
+# Same source the sprite_watcher flow reads (pif-downloadables/Settings.rb).
+GAME_SETTINGS_URL = "https://raw.githubusercontent.com/infinitefusion/pif-downloadables/master/Settings.rb"
+GAME_VERSION_FILE = Path("data/game_version.txt")
+_GAME_VERSION_RE = re.compile(r'LATEST_GAME_RELEASE\s*=\s*"([^"]+)"')
+
 FAILURES: list[str] = []
+
+
+def parse_game_version(settings_rb: str) -> str | None:
+    """Extract LATEST_GAME_RELEASE from the game's Settings.rb contents."""
+    m = _GAME_VERSION_RE.search(settings_rb)
+    return m.group(1) if m else None
 
 
 def check(label: str, condition: bool, detail: str) -> None:
@@ -94,12 +115,30 @@ def main() -> None:
     check("pokeapi", bool(pika and pika.get("types")),
           "GET /pokemon/25 " + ("répond avec types" if pika else "en échec"))
 
+    # 8. Version du jeu vs version enregistrée (fichier committé)
+    try:
+        resp = requests.get(GAME_SETTINGS_URL, headers=HEADERS, timeout=20)
+        resp.raise_for_status()
+        live_version = parse_game_version(resp.text)
+    except requests.RequestException as exc:
+        live_version = None
+        LOGGER.warning("Settings.rb injoignable: %s", exc)
+
+    known_version = (
+        GAME_VERSION_FILE.read_text(encoding="utf-8").strip()
+        if GAME_VERSION_FILE.exists() else None
+    )
+    check("game-version", bool(live_version) and live_version == known_version,
+          f"jeu={live_version or '?'} / enregistré={known_version or 'absent'}"
+          + ("" if live_version == known_version
+             else " → nouvelle version : vérifier le contenu puis bumper data/game_version.txt"))
+
     if FAILURES:
         LOGGER.error("%d source(s) en dérive:", len(FAILURES))
         for f in FAILURES:
             LOGGER.error("  - %s", f)
         sys.exit(1)
-    LOGGER.info("Toutes les sources répondent aux invariants (%d checks).", 7)
+    LOGGER.info("Toutes les sources répondent aux invariants (%d checks).", 8)
 
 
 if __name__ == "__main__":
