@@ -40,6 +40,11 @@ LOGGER = setup_logging(__name__)
 DATA_DIR       = Path(__file__).resolve().parents[2] / "data"
 SPRITES_DIR    = DATA_DIR / "sprites"
 CREDITS_OUT    = DATA_DIR / "sprite_credits.csv"
+# Committed baseline: how many entries CUSTOM_SPRITES held at the last
+# successful extraction. check_sources.py compares it to the live list so the
+# weekly CI watch can say "a new spritepack landed — re-run the ETL" without
+# needing any persistent state of its own.
+SPRITES_BASELINE = DATA_DIR / "sprites_baseline.txt"
 POKEDEX_IF     = DATA_DIR / "pokedex_if.json"
 
 # ── URLs ──────────────────────────────────────────────────────────────────────
@@ -172,6 +177,11 @@ def download_credits() -> None:
     LOGGER.info("Credits → %s", CREDITS_OUT)
 
 
+def count_sprite_entries(raw_list: str) -> int:
+    """Number of .png entries in a CUSTOM_SPRITES listing (unfiltered)."""
+    return sum(1 for line in raw_list.splitlines() if line.strip().endswith(".png"))
+
+
 def extract_sprites(force: bool, include_alts: bool) -> None:
     SPRITES_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -231,6 +241,18 @@ def extract_sprites(force: bool, include_alts: bool) -> None:
         "Done — extracted=%d / skipped=%d / failed=%d",
         extracted, skipped, failed,
     )
+
+    # Record the size of the list we just consumed. Only on a clean run: a
+    # partial extraction must not claim we are in sync with upstream.
+    if failed == 0:
+        count = count_sprite_entries(raw_list)
+        SPRITES_BASELINE.write_text(f"{count}\n", encoding="utf-8")
+        LOGGER.info("Baseline CUSTOM_SPRITES → %d (%s)", count, SPRITES_BASELINE.name)
+    else:
+        LOGGER.warning(
+            "%d spritesheet(s) failed — baseline left untouched (still out of sync)",
+            failed,
+        )
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
