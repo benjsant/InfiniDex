@@ -724,6 +724,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#veille-des-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veille des sources
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#patterns-recurrents" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1522,6 +1533,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#veille-des-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veille des sources
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#patterns-recurrents" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1821,17 +1843,58 @@ silencieusement :
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>backend<span class="w"> </span>-d<span class="w"> </span>--force-recreate
 </span></code></pre></div></p>
 </div>
+<h2 id="veille-des-sources">Veille des sources<a class="headerlink" href="#veille-des-sources" title="Permanent link">&para;</a></h2>
+<p>Les sources externes bougent sans prévenir, et toutes les casses du pipeline ont été découvertes par accident lors d'un rebuild. Deux mécanismes complémentaires, avec un partage des rôles net :</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Détection (GitHub Actions)</th>
+<th>Orchestration (Prefect)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quoi</td>
+<td><code>etl/scripts/check_sources.py</code> - 9 invariants réseau, aucune DB</td>
+<td><code>etl/flows/</code> - watchers qui déclenchent extraction et notifient Discord</td>
+</tr>
+<tr>
+<td>Quand</td>
+<td>cron hebdo <code>wiki-watch.yml</code> (lundi 06:00 UTC) + lancement manuel</td>
+<td>planifié dans <code>prefect.yaml</code>, <strong>suppose la stack Prefect allumée</strong></td>
+</tr>
+<tr>
+<td>Coût</td>
+<td>aucun, tourne dans le cloud</td>
+<td>serveur + worker sous profil Compose <code>prefect</code></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Un planificateur éteint ne planifie rien</p>
+<p>Les flows Prefect étaient bien planifiés mais la stack n'a pas tourné entre mai et août 2026 : la sortie du jeu <strong>6.8.0</strong> (10 juillet) et le spritepack de juillet sont passés inaperçus. La détection vit donc désormais en CI, qui n'a rien besoin qu'on allume. Prefect reste pertinent pour ce qui doit agir (télécharger, écrire dans la base).</p>
+</div>
+<p>Les checks 8 et 9 comparent le live à des <strong>fichiers committés</strong>, ce qui les rend sans état et donc exécutables en CI :</p>
+<ul>
+<li><code>data/game_version.txt</code> - version du jeu (<code>LATEST_GAME_RELEASE</code> du dépôt <code>pif-downloadables</code>). Une nouvelle version garde la veille rouge tant qu'on n'a pas passé la release en revue et bumpé le fichier.</li>
+<li><code>data/sprites_baseline.txt</code> - nombre d'entrées de <code>CUSTOM_SPRITES</code> lors de la dernière extraction réussie, écrit automatiquement par <code>extract_sprites.py</code> (jamais si des téléchargements ont échoué : un état partiel ne doit pas prétendre être à jour). Un écart signifie « nouveau spritepack, relancer l'ETL ».</li>
+</ul>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Sonde manuelle (cache HTTP désactivé pour taper le live)</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--no-deps<span class="w"> </span>-e<span class="w"> </span><span class="nv">ETL_HTTP_CACHE_TTL_HOURS</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>etl<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>python<span class="w"> </span>-m<span class="w"> </span>etl.scripts.check_sources
+</span></code></pre></div>
 <h2 id="patterns-recurrents">Patterns récurrents<a class="headerlink" href="#patterns-recurrents" title="Permanent link">&para;</a></h2>
 <h3 id="cache-http-partage">Cache HTTP partagé<a class="headerlink" href="#cache-http-partage" title="Permanent link">&para;</a></h3>
 <p>Toutes les requêtes JSON (PokeAPI, MediaWiki) passent par <code>etl/utils/http.get_json</code>, qui met en cache les réponses sous <code>data/cache/http/</code> (TTL 24h, réglable via <code>ETL_HTTP_CACHE_TTL_HOURS</code>, <code>0</code> pour désactiver). Les mêmes ressources PokeAPI étant consommées par plusieurs étapes (2a, 8e, 8e-bis, 8e-quater, 14...), un rebuild ne les fetche plus qu'une fois - et un re-run dans les 24h ne touche quasiment plus le réseau. <code>prefetch_json(urls)</code> réchauffe le cache avec 6 workers avant les grosses boucles séquentielles. C'est aussi ce que demande la fair-use policy de PokeAPI : cacher localement.</p>
 <p>Le crawl Pokepédia garde son propre cache HTTP scrapy (24h) et une politesse de ~2 req/s max (robots.txt respecté, User-Agent identifiable).</p>
 <h3 id="normalisation-de-noms">Normalisation de noms<a class="headerlink" href="#normalisation-de-noms" title="Permanent link">&para;</a></h3>
 <p>Les sources divergent sur quelques noms (ex : wiki IF écrit <em>Flaafy</em> au lieu de <em>Flaaffy</em>). Chaque parseur expose un dictionnaire d'alias + une fonction <code>norm()</code> qui strip espaces, <code>-</code>, <code>'</code>, <code>.</code> et lowercase pour matcher contre la DB.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">WIKI_POKEMON_ALIASES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;flaafy&quot;</span><span class="p">:</span> <span class="s2">&quot;flaaffy&quot;</span><span class="p">}</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">norm_pokemon</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">n</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="k">return</span> <span class="n">WIKI_POKEMON_ALIASES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">WIKI_POKEMON_ALIASES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;flaafy&quot;</span><span class="p">:</span> <span class="s2">&quot;flaaffy&quot;</span><span class="p">}</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">norm_pokemon</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">n</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="k">return</span> <span class="n">WIKI_POKEMON_ALIASES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="parsing-de-tables-avec-rowspan">Parsing de tables avec rowspan<a class="headerlink" href="#parsing-de-tables-avec-rowspan" title="Permanent link">&para;</a></h3>
 <p>Les Move Experts et plusieurs autres pages wiki utilisent <code>rowspan</code> pour factoriser les cellules partagées entre plusieurs lignes. Le parseur maison reconstruit la matrice complète avant d'extraire les données.</p>
