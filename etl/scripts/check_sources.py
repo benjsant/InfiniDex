@@ -18,12 +18,15 @@ Checks (network only, no DB):
   7. PokeAPI  — /pokemon/25 answers with types
   8. IF game  — LATEST_GAME_RELEASE in the game repo still matches the version
                 recorded in data/game_version.txt
+  9. IF game  — the live CUSTOM_SPRITES listing still holds as many entries as
+                the last successful extraction (data/sprites_baseline.txt)
 
-Check 8 is deliberately stateless: `data/game_version.txt` is committed, so a
-new game release makes this fail until someone bumps the file — which is the
-signal to review what the release changed. (The heavy `sprite_watcher` Prefect
-flow does the same check, but it only runs when the Prefect stack is up, which
-is why 6.8.0 went unnoticed for three weeks.)
+Checks 8 and 9 are deliberately stateless: both baselines are committed files,
+so upstream movement keeps the watch red until someone reviews it and re-runs
+what needs re-running. (The `sprite_watcher` Prefect flow covers the same
+ground but also downloads sprites, so it needs the data volume and the Prefect
+stack up — which is exactly why game 6.8.0 and the July spritepack went
+unnoticed for weeks. Detection belongs here; extraction stays in Prefect.)
 
 Run with the HTTP cache disabled so the probes hit the live sources:
     ETL_HTTP_CACHE_TTL_HOURS=0 python -m etl.scripts.check_sources
@@ -43,6 +46,11 @@ from etl.scripts.extract_abilities_if import parse_abilities
 from etl.scripts.extract_moves_if import extract_moves
 from etl.scripts.extract_pokedex_if import KANTO_PAGE, PAGE, extract_ids, parse_entries
 from etl.scripts.extract_pokepedia_names import fetch_page, parse_list
+from etl.scripts.extract_sprites import (
+    CUSTOM_SPRITES_URL,
+    SPRITES_BASELINE,
+    count_sprite_entries,
+)
 from etl.utils.http import HEADERS, get_json
 from etl.utils.logging import setup_logging
 from etl.utils.wikitext import fetch_wikitext
@@ -133,12 +141,38 @@ def main() -> None:
           + ("" if live_version == known_version
              else " → nouvelle version : vérifier le contenu puis bumper data/game_version.txt"))
 
+    # 9. Liste de sprites vs dernière extraction (fichier committé)
+    try:
+        resp = requests.get(CUSTOM_SPRITES_URL, headers=HEADERS, timeout=30)
+        resp.raise_for_status()
+        live_sprites = count_sprite_entries(resp.text)
+    except requests.RequestException as exc:
+        live_sprites = None
+        LOGGER.warning("CUSTOM_SPRITES injoignable: %s", exc)
+
+    known_sprites = None
+    if SPRITES_BASELINE.exists():
+        raw = SPRITES_BASELINE.read_text(encoding="utf-8").strip()
+        known_sprites = int(raw) if raw.isdigit() else None
+
+    if known_sprites is None:
+        # Pas encore de référence : la prochaine extraction propre l'écrira.
+        LOGGER.info(
+            "SKIP sprites-baseline — aucune référence (%s absent) ; live=%s",
+            SPRITES_BASELINE.name, live_sprites,
+        )
+    else:
+        check("sprites-baseline", live_sprites == known_sprites,
+              f"CUSTOM_SPRITES live={live_sprites} / extrait={known_sprites}"
+              + ("" if live_sprites == known_sprites
+                 else " → nouveau spritepack : relancer l'ETL (étape 10)"))
+
     if FAILURES:
         LOGGER.error("%d source(s) en dérive:", len(FAILURES))
         for f in FAILURES:
             LOGGER.error("  - %s", f)
         sys.exit(1)
-    LOGGER.info("Toutes les sources répondent aux invariants (%d checks).", 8)
+    LOGGER.info("Toutes les sources répondent aux invariants (%d checks).", 9)
 
 
 if __name__ == "__main__":

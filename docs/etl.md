@@ -127,6 +127,30 @@ docker compose run --rm etl python etl/pipeline.py --force
     docker compose up backend -d --force-recreate
     ```
 
+## Veille des sources
+
+Les sources externes bougent sans prévenir, et toutes les casses du pipeline ont été découvertes par accident lors d'un rebuild. Deux mécanismes complémentaires, avec un partage des rôles net :
+
+| | Détection (GitHub Actions) | Orchestration (Prefect) |
+| --- | --- | --- |
+| Quoi | `etl/scripts/check_sources.py` - 9 invariants réseau, aucune DB | `etl/flows/` - watchers qui déclenchent extraction et notifient Discord |
+| Quand | cron hebdo `wiki-watch.yml` (lundi 06:00 UTC) + lancement manuel | planifié dans `prefect.yaml`, **suppose la stack Prefect allumée** |
+| Coût | aucun, tourne dans le cloud | serveur + worker sous profil Compose `prefect` |
+
+!!! warning "Un planificateur éteint ne planifie rien"
+    Les flows Prefect étaient bien planifiés mais la stack n'a pas tourné entre mai et août 2026 : la sortie du jeu **6.8.0** (10 juillet) et le spritepack de juillet sont passés inaperçus. La détection vit donc désormais en CI, qui n'a rien besoin qu'on allume. Prefect reste pertinent pour ce qui doit agir (télécharger, écrire dans la base).
+
+Les checks 8 et 9 comparent le live à des **fichiers committés**, ce qui les rend sans état et donc exécutables en CI :
+
+- `data/game_version.txt` - version du jeu (`LATEST_GAME_RELEASE` du dépôt `pif-downloadables`). Une nouvelle version garde la veille rouge tant qu'on n'a pas passé la release en revue et bumpé le fichier.
+- `data/sprites_baseline.txt` - nombre d'entrées de `CUSTOM_SPRITES` lors de la dernière extraction réussie, écrit automatiquement par `extract_sprites.py` (jamais si des téléchargements ont échoué : un état partiel ne doit pas prétendre être à jour). Un écart signifie « nouveau spritepack, relancer l'ETL ».
+
+```bash
+# Sonde manuelle (cache HTTP désactivé pour taper le live)
+docker compose run --rm --no-deps -e ETL_HTTP_CACHE_TTL_HOURS=0 etl \
+  python -m etl.scripts.check_sources
+```
+
 ## Patterns récurrents
 
 ### Cache HTTP partagé

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from etl.flows.pokedex_watcher import POKEDEX_PAGE, _ENTRY_RE
 from etl.scripts.check_sources import parse_game_version
+from etl.scripts.extract_sprites import count_sprite_entries
 
 
 def test_parse_game_version_reads_settings_rb():
@@ -41,3 +42,19 @@ def test_watcher_regex_handles_a_plain_row():
     assert m is not None
     assert int(m.group("id")) == 1
     assert m.group("name") == "Bulbasaur"
+
+
+def test_count_sprite_entries_counts_only_png_lines():
+    listing = """
+1.1.png
+25.6.png
+25.6a.png
+
+# commentaire ou entête
+README.md
+"""
+    assert count_sprite_entries(listing) == 3
+
+
+def test_count_sprite_entries_empty_listing():
+    assert count_sprite_entries("") == 0
