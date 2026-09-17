@@ -202,10 +202,20 @@ docker compose --profile test run --rm test-backend
 
 ```bash
 docker compose up -d                           # frontend + backend + db
-docker compose --profile e2e run --rm e2e      # 10 tests Chromium
+docker compose --profile e2e run --rm e2e      # 13 tests Chromium
 ```
 
-10 tests happy-path : homepage, pokédex (liste + recherche + fiche), fusion (sélecteur + résultat), types, items, moves.
+13 tests happy-path : homepage, pokédex (liste + recherche + fiche), fusion (sélecteur, résultat, stats, moveset, aléatoire), types, items, moves.
+
+**En CI** (`.github/workflows/e2e.yml`), les mêmes tests tournent sur chaque PR qui touche le frontend, le backend, les tests e2e ou les images Docker, contre une stack montée avec `docker-compose.ci.yml` : base remplie par les fixtures (`backend/tests/fixtures/`, les mêmes que la CI backend), sans ETL ni `.env`. Pour reproduire la CI en local sans toucher à la stack de dev (projet séparé, aucun port publié) :
+
+```bash
+C="docker compose -f docker-compose.yml -f docker-compose.ci.yml -p infinidex-ci"
+$C --profile e2e build backend frontend e2e
+$C up -d --wait db backend frontend
+$C --profile e2e run --rm -e CI=true e2e
+$C --profile e2e down -v
+```
 
 ## Commits
 
@@ -229,7 +239,7 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
 backend/        # FastAPI + SQLAlchemy + 136 tests
 etl/            # pipeline Python + uv
 frontend/       # Next.js 15 App Router
-e2e/            # Playwright (10 tests E2E Chromium)
+e2e/            # Playwright (13 tests E2E Chromium, en CI via e2e.yml)
 docker/         # Dockerfiles + init_postgres.sql
 docs/           # cette documentation (MkDocs)
 data/           # dumps + caches (gitignored)

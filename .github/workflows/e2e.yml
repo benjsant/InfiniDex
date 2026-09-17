@@ -1,0 +1,75 @@
+name: E2E
+
+# Tests Playwright contre la vraie stack Docker (db de fixtures, backend,
+# frontend) : ce que le typecheck frontend et le pytest backend ne voient pas
+# (build Next.js, proxy /api, hydratation, rendu réel). Sert aussi de filet aux
+# PR Dependabot, qui touchent images Docker et dépendances des trois couches.
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+      - 'e2e/**'
+      - 'docker/Dockerfile.backend'
+      - 'docker/Dockerfile.frontend'
+      - 'docker/Dockerfile.e2e'
+      - 'docker-compose.yml'
+      - 'docker-compose.ci.yml'
+      - '.github/workflows/e2e.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+      - 'e2e/**'
+      - 'docker/Dockerfile.backend'
+      - 'docker/Dockerfile.frontend'
+      - 'docker/Dockerfile.e2e'
+      - 'docker-compose.yml'
+      - 'docker-compose.ci.yml'
+      - '.github/workflows/e2e.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COMPOSE: docker compose -f docker-compose.yml -f docker-compose.ci.yml -p infinidex-ci
+
+jobs:
+  playwright:
+    name: Playwright (13 tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build images (backend, frontend, e2e)
+        run: $COMPOSE --profile e2e build backend frontend e2e
+
+      - name: Start stack on fixture DB
+        run: $COMPOSE up -d --wait --wait-timeout 300 db backend frontend
+
+      - name: Run Playwright
+        run: |
+          mkdir -p e2e-results
+          $COMPOSE --profile e2e run --rm -e CI=true \
+            -v "$PWD/e2e-results:/app/test-results" e2e
+
+      - name: Stack logs
+        if: failure()
+        run: $COMPOSE logs --no-color --tail=200 db backend frontend
+
+      - name: Upload traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: e2e-results
+          retention-days: 7
+
+      - name: Tear down
+        if: always()
+        run: $COMPOSE --profile e2e down -v

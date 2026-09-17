@@ -1,0 +1,46 @@
+# Override CI : stack de test e2e sur la base de fixtures, sans ETL ni .env.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.ci.yml -p infinidex-ci ...
+#
+# Utilisé par .github/workflows/e2e.yml. Lançable en local sans toucher à la
+# stack de dev : projet séparé (-p), noms de conteneurs et ports publiés retirés,
+# base éphémère (aucun volume nommé).
+services:
+  db:
+    container_name: !reset null
+    env_file: !reset []
+    ports: !reset []
+    # Fixtures chargées par l'entrypoint postgres à la création de la base,
+    # dans l'ordre alphabétique : même jeu de données que la CI backend.
+    volumes: !override
+      - ./backend/tests/fixtures/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./backend/tests/fixtures/data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+      - ./backend/tests/fixtures/sprites_sample.sql:/docker-entrypoint-initdb.d/03-sprites.sql:ro
+    healthcheck:
+      # -h 127.0.0.1 : pendant le chargement des fixtures, postgres tourne en
+      # mode init sur le seul socket unix. Un pg_isready sur socket répondrait
+      # « prêt » trop tôt et le backend chaufferait son cache sur une base
+      # à moitié remplie.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+      start_period: 10s
+
+  backend:
+    container_name: !reset null
+    env_file: !reset []
+    ports: !reset []
+    depends_on: !override      # pas d'ETL : la base arrive déjà remplie
+      db:
+        condition: service_healthy
+    volumes: !reset []         # code et sprites de l'image, pas du poste
+
+  sprites:
+    container_name: !reset null
+    ports: !reset []
+    depends_on: !reset []
+
+  frontend:
+    container_name: !reset null
+    ports: !reset []
