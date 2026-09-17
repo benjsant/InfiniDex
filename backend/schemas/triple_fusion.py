@@ -8,6 +8,7 @@ class TripleFusionComponentOut(BaseModel):
     position: int
     pokemon_id: int
     national_id: int | None
+    sprite_id: int | None = None
     name_en: str
     name_fr: str | None
 

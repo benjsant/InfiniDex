@@ -108,6 +108,10 @@ flowchart TD
     style DB  fill:#2d1e3b,color:#c4b5fd
 ```
 
+## Migrations de schéma
+
+Pas d'outil de migration : `docker/init_postgres.sql` ne s'exécute que sur un volume vierge. Les évolutions de schéma vivent dans `etl/utils/schema.py` (instructions idempotentes `IF NOT EXISTS`, à ajouter sans jamais modifier les précédentes). `pipeline.py` les applique **à chaque démarrage**, y compris quand les données sont déjà chargées ; comme le backend attend la fin du conteneur ETL, une base existante est migrée avant que le backend ne lise les nouvelles colonnes. Toute nouvelle colonne s'ajoute aux deux endroits : `init_postgres.sql` (bases neuves) et `schema.py` (bases existantes), plus `backend/tests/fixtures/schema.sql` pour la CI.
+
 ## Lancer le pipeline
 
 ```bash

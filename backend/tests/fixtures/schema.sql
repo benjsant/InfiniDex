@@ -346,6 +346,7 @@ ALTER SEQUENCE public.move_tutor_id_seq OWNED BY public.move_tutor.id;
 CREATE TABLE public.pokemon (
     id integer NOT NULL,
     national_id integer,
+    pokeapi_form_id integer,
     name_en character varying(100) NOT NULL,
     name_fr character varying(100),
     generation_id integer NOT NULL,

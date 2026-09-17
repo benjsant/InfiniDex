@@ -8,6 +8,7 @@ import { getTripleFusions, getTripleFusion, getTripleFusionWeaknesses } from "@/
 import { StatBar } from "@/components/pokemon/StatBar";
 import { WeaknessGrid } from "@/components/pokemon/WeaknessGrid";
 import type { TripleFusionListItem, TripleFusionDetail, TripleFusionTypeOut, WeaknessOut } from "@/types/api";
+import { basePokemonSprite } from "@/lib/constants";
 
 const GROUPS: { label: string; ids: number[] }[] = [
   { label: "Trios légendaires", ids: [1, 2, 3, 4, 5, 6, 7, 8] },
@@ -33,7 +34,7 @@ function TripleTypeBadge({ type }: { type: TripleFusionTypeOut }) {
   );
 }
 
-function TripleSpriteWithFallback({ id, name, components }: { id: number; name: string; components?: { pokemon_id: number; national_id?: number | null; name_en: string; name_fr?: string | null }[] }) {
+function TripleSpriteWithFallback({ id, name, components }: { id: number; name: string; components?: { pokemon_id: number; national_id?: number | null; sprite_id?: number | null; name_en: string; name_fr?: string | null }[] }) {
   const [failed, setFailed] = useState(false);
 
   if (!failed) {
@@ -55,7 +56,7 @@ function TripleSpriteWithFallback({ id, name, components }: { id: number; name: 
         {components?.map((c, i) => (
           <span key={c.pokemon_id}>
             <img
-              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${c.national_id ?? c.pokemon_id}.png`}
+              src={basePokemonSprite(c.sprite_id)}
               alt={c.name_fr ?? c.name_en}
               width={32}
               height={32}

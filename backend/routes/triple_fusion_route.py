@@ -106,6 +106,7 @@ def get_detail(tf_id: int = Path(..., ge=1), db: Session = Depends(get_db)):
                 position=c.position,
                 pokemon_id=c.pokemon_id,
                 national_id=c.pokemon.national_id,
+                sprite_id=c.pokemon.sprite_id,
                 name_en=c.pokemon.name_en,
                 name_fr=c.pokemon.name_fr,
             )

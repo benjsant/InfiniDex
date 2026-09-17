@@ -85,10 +85,11 @@ CREATE TABLE IF NOT EXISTS tm (
 -- BLOC 3 — Pokémon de base
 -- ============================================================
 
--- 6. pokemon  (501 Pokémon de base du jeu)
+-- 6. pokemon  (Pokémon du jeu : Kanto + ajouts Hoenn)
 CREATE TABLE IF NOT EXISTS pokemon (
     id              INTEGER      PRIMARY KEY,  -- IF internal ID
     national_id     INTEGER      UNIQUE,       -- National Pokédex (PokeAPI), NULL si pas d'équivalent
+    pokeapi_form_id INTEGER,                   -- Id PokeAPI /pokemon d'une forme alternative (sprite), NULL sinon
     name_en         VARCHAR(100) NOT NULL,
     name_fr         VARCHAR(100),
     generation_id   INTEGER      NOT NULL REFERENCES generation(id),

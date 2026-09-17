@@ -59,7 +59,7 @@ export default function PokemonFavoritesPage() {
             >
               <Link href={`/pokedex/${f.id}`} className="shrink-0">
                 <Image
-                  src={basePokemonSprite(f.nationalId ?? f.id)}
+                  src={basePokemonSprite(f.spriteId ?? f.nationalId)}
                   alt={f.nameEn}
                   width={48}
                   height={48}

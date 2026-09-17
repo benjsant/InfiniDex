@@ -49,6 +49,8 @@ export interface PokemonAbilitySlot {
 export interface PokemonListItem {
   id: number;
   national_id: number | null;
+  /** PokeAPI sprite id (form id or national id). Never substitute `id`. */
+  sprite_id: number | null;
   name_en: string;
   name_fr: string | null;
   types: PokemonTypeSlot[];
@@ -61,6 +63,8 @@ export interface PokemonListItem {
 export interface PokemonDetail {
   id: number;
   national_id: number | null;
+  /** PokeAPI sprite id (form id or national id). Never substitute `id`. */
+  sprite_id: number | null;
   name_en: string;
   name_fr: string | null;
   generation_id: number;
@@ -99,10 +103,12 @@ export interface EvolutionOut {
   pokemon_name_en: string | null;
   pokemon_name_fr: string | null;
   pokemon_national_id: number | null;
+  pokemon_sprite_id: number | null;
   evolves_into_id: number;
   evolves_into_name_en: string;
   evolves_into_name_fr: string | null;
   evolves_into_national_id: number | null;
+  evolves_into_sprite_id: number | null;
   trigger_type: string;
   min_level: number | null;
   item_name_en: string | null;
@@ -306,6 +312,7 @@ export interface TripleFusionComponentOut {
   position: number;
   pokemon_id: number;
   national_id: number | null;
+  sprite_id: number | null;
   name_en: string;
   name_fr: string | null;
 }

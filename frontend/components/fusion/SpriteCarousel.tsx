@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CreatorBadge } from "@/components/fusion/CreatorModal";
 import { usePokemonIdMap } from "@/hooks/usePokemon";
 import type { SpriteOut } from "@/types/api";
+import { basePokemonSprite } from "@/lib/constants";
 
 interface SpriteCarouselProps {
   headId: number;
@@ -65,7 +66,7 @@ export function SpriteCarousel({
             <div className="flex items-center justify-center gap-0.5" title="Aperçu de base — pas de sprite custom">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${idMap.get(headId) ?? headId}.png`}
+                src={basePokemonSprite(idMap.get(headId))}
                 alt={`Sprite Pokémon tête #${headId}`}
                 width={Math.round(size * 0.55)}
                 height={Math.round(size * 0.55)}
@@ -73,7 +74,7 @@ export function SpriteCarousel({
               />
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${idMap.get(bodyId) ?? bodyId}.png`}
+                src={basePokemonSprite(idMap.get(bodyId))}
                 alt={`Sprite Pokémon corps #${bodyId}`}
                 width={Math.round(size * 0.55)}
                 height={Math.round(size * 0.55)}

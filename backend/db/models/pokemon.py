@@ -9,6 +9,10 @@ class Pokemon(Base):
 
     id              = Column(Integer, primary_key=True)   # IF internal ID
     national_id     = Column(Integer, unique=True)        # National Pokédex (PokeAPI)
+    # PokeAPI /pokemon id of an alternate form (e.g. 10019 = tornadus-therian).
+    # Forms can't hold a national_id (UNIQUE, the base form owns it), so this
+    # is what points them to their own sprite. NULL for base forms.
+    pokeapi_form_id = Column(Integer)
     name_en         = Column(String(100), nullable=False)
     name_fr         = Column(String(100))
     generation_id   = Column(Integer, ForeignKey("generation.id"), nullable=False, index=True)
@@ -22,6 +26,15 @@ class Pokemon(Base):
     is_hoenn_only   = Column(Boolean, nullable=False, default=False)
     sprite_path     = Column(Text)
     pokepedia_url   = Column(Text)
+
+    @property
+    def sprite_id(self) -> int | None:
+        """PokeAPI sprite id: the alternate form's own id, else national_id.
+
+        Deliberately never falls back to the IF id — PokeAPI would return the
+        sprite of a different species (IF #431 is Glameow on PokeAPI).
+        """
+        return self.pokeapi_form_id or self.national_id
 
     generation               = relationship("Generation", back_populates="pokemon")
     types                    = relationship("PokemonType", back_populates="pokemon",

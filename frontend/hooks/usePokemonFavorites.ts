@@ -8,6 +8,8 @@ const STORAGE_KEY = "infinidex_pokemon_favorites";
 export interface PokemonFavorite {
   id: number;
   nationalId: number | null;
+  /** Absent on favorites saved before 2026-09 — falls back to nationalId. */
+  spriteId?: number | null;
   nameEn: string;
   nameFr: string | null;
   savedAt: number;

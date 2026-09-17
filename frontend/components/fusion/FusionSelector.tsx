@@ -101,7 +101,7 @@ function PokemonPicker({ label, selected, onSelect, game, loading = false }: Pok
           onClick={handleOpen}
         >
           <Image
-            src={basePokemonSprite(selected.national_id ?? selected.id)}
+            src={basePokemonSprite(selected.sprite_id)}
             alt={selected.name_en}
             width={48}
             height={48}

@@ -12,6 +12,7 @@ interface EvolutionChainProps {
 interface ChainNode {
   id: number;
   nationalId: number | null;
+  spriteId: number | null;
   nameFr: string | null;
   nameEn: string;
 }
@@ -57,7 +58,7 @@ function SpriteNode({ node, isCurrent }: { node: ChainNode; isCurrent: boolean }
         }}
       >
         <Image
-          src={basePokemonSprite(node.nationalId ?? node.id)}
+          src={basePokemonSprite(node.spriteId)}
           alt={node.nameFr ?? node.nameEn}
           width={48}
           height={48}
@@ -104,6 +105,7 @@ export function EvolutionChain({ pokemonId, evolutions }: EvolutionChainProps) {
       nodeMap.set(evo.pokemon_id, {
         id: evo.pokemon_id,
         nationalId: evo.pokemon_national_id,
+        spriteId: evo.pokemon_sprite_id,
         nameFr: evo.pokemon_name_fr,
         nameEn: evo.pokemon_name_en ?? `#${evo.pokemon_id}`,
       });
@@ -112,6 +114,7 @@ export function EvolutionChain({ pokemonId, evolutions }: EvolutionChainProps) {
       nodeMap.set(evo.evolves_into_id, {
         id: evo.evolves_into_id,
         nationalId: evo.evolves_into_national_id,
+        spriteId: evo.evolves_into_sprite_id,
         nameFr: evo.evolves_into_name_fr,
         nameEn: evo.evolves_into_name_en,
       });

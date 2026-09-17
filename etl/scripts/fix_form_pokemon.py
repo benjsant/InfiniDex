@@ -14,6 +14,9 @@ This script owns the national_id-less form rows:
   - name_fr                  ← PokeAPI /pokemon-species (FR species name)
   - abilities                ← PokeAPI /pokemon/{form-slug} (DELETE + INSERT,
                                this script is the sole owner of these rows)
+  - pokeapi_form_id          ← PokeAPI /pokemon/{form-slug} `id` (10xxx): the
+                               sprite to show. Without it the frontend fell back
+                               to the IF id and displayed ANOTHER species.
 
 Types are NOT touched here: fix_pokemon_types.py already restores them from
 the wiki, which stays the authority on typing.
@@ -176,11 +179,12 @@ def fix_form_pokemon(conn) -> None:
             """UPDATE pokemon
                SET hp=%s, attack=%s, defense=%s, sp_attack=%s, sp_defense=%s,
                    speed=%s, base_experience=%s,
-                   name_fr=COALESCE(%s, name_fr)
+                   name_fr=COALESCE(%s, name_fr),
+                   pokeapi_form_id=%s
                WHERE id=%s""",
             (stats["hp"], stats["attack"], stats["defense"], stats["sp_attack"],
              stats["sp_defense"], stats["speed"], data.get("base_experience"),
-             name_fr, if_id),
+             name_fr, data["id"], if_id),
         )
 
         # Abilities: this script is the sole owner for these rows
