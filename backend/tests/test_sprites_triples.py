@@ -38,7 +38,9 @@ def test_triple_fusions_list(client: TestClient) -> None:
     r = client.get("/triple-fusions/")
     assert r.status_code == 200
     data = r.json()
-    assert len(data) == 23
+    # Minimum, not exact: the wiki keeps adding triple fusions (23 → 25 in
+    # 2026-09) and this suite also runs against the live dev DB.
+    assert len(data) >= 23
     names = {tf["name_en"] for tf in data}
     assert "Zapmolcuno" in names
 

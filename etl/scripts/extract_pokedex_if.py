@@ -1,7 +1,7 @@
 """
 ETL Step 1 — Extract Pokédex from Infinite Fusion wiki (MediaWiki API).
 
-Fetches the Pokédex subpages and parses all 572 Pokémon entries:
+Fetches the Pokédex subpages and parses every Pokémon entry:
   - IF internal ID
   - Name (EN)
   - Type1, Type2
@@ -10,54 +10,45 @@ Fetches the Pokédex subpages and parses all 572 Pokémon entries:
   - Hoenn-only flag (present in Hoenn/Classic but absent from Kanto/Classic)
 
 Output: data/pokedex_if.json
+        data/pokedex_baseline.txt (committed entry count, read by check_sources)
 """
 
 from __future__ import annotations
 
 import re
-import time
 from pathlib import Path
 
 from etl.utils.io import save_json
 from etl.utils.logging import setup_logging
-from etl.utils.wikitext import clean_wikitext, fetch_wikitext
+from etl.utils.wikitext import clean_wikitext, fetch_wikitext, parse_template_calls
 
 LOGGER = setup_logging(__name__)
 
 OUTPUT = Path("data/pokedex_if.json")
+# Committed entry count of the last successful extraction. check_sources.py
+# compares the live wiki to it, so the weekly CI watch notices NEW Pokémon too
+# (a `>= 572` floor let 10 additions pass unnoticed in 2026-09).
+BASELINE = Path("data/pokedex_baseline.txt")
 
 # The IF wiki restructured its Pokédex: the "Pokédex" page is now a hub linking
-# to four subpages, and holds no data at all. The full 572-entry table lives in
-# the page below (Kanto + Hoenn additions), which still uses PokedexTable/Data.
+# to four subpages, and holds no data at all. The full table lives in the page
+# below (Kanto + Hoenn additions), which still uses PokedexTable/Data.
 PAGE = "Pokédex/Hoenn/Classic"
 
 # The restructure also dropped the "Not in game" / "Hoenn" markers that used to
 # flag Hoenn-only Pokémon. That information is now encoded structurally: the
-# Kanto page lists 501 entries, the Hoenn page 572 — the 71 extra ids are the
-# Hoenn-only set. We fetch the Kanto page too and take the set difference.
+# Kanto page lists the classic 501, the Hoenn page adds the rest — the extra ids
+# are the Hoenn-only set. We fetch the Kanto page too and take the set difference.
 KANTO_PAGE = "Pokédex/Kanto/Classic"
 
-# Template pattern inside wikitext:
+# Template inside wikitext, parsed with MediaWiki positional semantics:
 # {{PokedexTable/Data|index|id|name|form|type1|type2|location|notes}}
 #
-# `form` was added by the same restructure and is empty for all but 14 entries
-# (Oricorio "Baile Style", Lycanroc "Midday Form", Castform "Sunny", ...). It is
-# carried into the output JSON: fix_form_pokemon.py uses it to resolve the
-# PokeAPI form slug (oricorio-pom-pom, ...) since these rows share a name and
-# can't get a national_id (UNIQUE constraint). It MUST be matched in any case —
-# otherwise every field shifts left and Bulbasaur comes out as Grass/(none).
-ENTRY_RE = re.compile(
-    r"\{\{PokedexTable/Data\s*\|"
-    r"\s*(?P<index>\d+)\s*\|"
-    r"\s*(?P<id>\d+)\s*\|"
-    r"\s*(?P<name>[^|]+?)\s*\|"
-    r"\s*(?P<form>[^|]*?)\s*\|"
-    r"\s*(?P<type1>[^|]*?)\s*\|"
-    r"\s*(?P<type2>[^|]*?)\s*\|"
-    r"\s*(?P<location>[^|]*?)\s*\|?"
-    r"(?P<notes>[^}]*)?\}\}",
-    re.IGNORECASE,
-)
+# `form` was added by the 2026-07 restructure and is empty for most rows
+# (Oricorio "Baile Style", Castform "Sunny", Shellos "East", ...). It is carried
+# into the output JSON: fix_form_pokemon.py resolves the PokeAPI form slug from
+# it, since those rows share a name and can't get a national_id (UNIQUE).
+TEMPLATE = "PokedexTable/Data"
 
 # Legacy "Not in game" / "Hoenn only" markers. The restructured pages no longer
 # carry them (the Kanto/Hoenn set difference is authoritative now) but they are
@@ -88,23 +79,36 @@ def detect_generation(index: int) -> int:
 
 
 def parse_entries(wikitext: str) -> list[dict]:
+    """Parse every PokedexTable/Data row of a Pokédex subpage.
+
+    Template params (MediaWiki positions): 1=index 2=id 3=name 4=form
+    5=type1 6=type2 7=location 8=notes. Parsed with `parse_template_calls`
+    rather than a fixed-arity regex: since 2026-09 some rows skip empty
+    columns with a named param (`|Water|7=Route 119 (Egg, Team Aqua)}}`),
+    which made the old regex run past `}}` and swallow the following row
+    (Gastrodon East/West silently disappeared).
+    """
     entries = []
     seen_ids: set[int] = set()
 
-    for match in ENTRY_RE.finditer(wikitext):
-        index    = int(match.group("index"))
-        if_id    = int(match.group("id"))
-        name     = clean_wikitext(match.group("name"))
-        type1_raw = clean_wikitext(match.group("type1")).lower() or None
-        type2_raw = clean_wikitext(match.group("type2")).lower() or None
+    for params in parse_template_calls(wikitext, TEMPLATE):
+        try:
+            index = int(params.get(1, ""))
+            if_id = int(params.get(2, ""))
+        except ValueError:
+            LOGGER.warning("Unparseable PokedexTable/Data row skipped: %r", params)
+            continue
+
+        name      = clean_wikitext(params.get(3, ""))
+        type1_raw = clean_wikitext(params.get(5, "")).lower() or None
+        type2_raw = clean_wikitext(params.get(6, "")).lower() or None
 
         type1 = type1_raw if type1_raw in STANDARD_TYPES else None
         type2 = type2_raw if type2_raw in STANDARD_TYPES else None
 
-        # IF wiki convention: alternate-form rows put the form name in the
-        # type1 column (e.g. "pom-pom style", "midnight form", "sunny") and
-        # the form's single real type in type2. Promote type2 → type1 so
-        # these mono-type forms keep a primary type instead of none.
+        # Legacy IF wiki convention (pre-`form` column): alternate-form rows
+        # put the form name in the type1 column and the real type in type2.
+        # Promote type2 → type1 so these mono-type forms keep a primary type.
         if type1 is None and type1_raw and type2 is not None:
             LOGGER.info(
                 "Form label %r in type1 for #%d %s — promoting %r to primary type",
@@ -116,8 +120,8 @@ def parse_entries(wikitext: str) -> list[dict]:
                 LOGGER.warning("Invalid type1 %r for #%d %s — set to None", type1_raw, if_id, name)
             if type2_raw and not type2:
                 LOGGER.warning("Invalid type2 %r for #%d %s — set to None", type2_raw, if_id, name)
-        location = clean_wikitext(match.group("location"))
-        notes    = clean_wikitext(match.group("notes") or "")
+        location = clean_wikitext(params.get(7, ""))
+        notes    = clean_wikitext(params.get(8, ""))
 
         if if_id in seen_ids:
             continue
@@ -126,13 +130,16 @@ def parse_entries(wikitext: str) -> list[dict]:
         if not name or name.startswith("{{"):
             continue
 
-        is_hoenn_only = bool(HOENN_ONLY_RE.search(notes) or HOENN_ONLY_RE.search(location))
+        # Legacy marker only, and only in the notes column: free-text
+        # locations may legitimately mention Hoenn. The Kanto/Hoenn page
+        # diff (mark_hoenn_only) is the real authority.
+        is_hoenn_only = bool(HOENN_ONLY_RE.search(notes))
 
         entries.append({
             "if_id":        if_id,
             "index":        index,
             "name_en":      name,
-            "form":         clean_wikitext(match.group("form")) or None,
+            "form":         clean_wikitext(params.get(4, "")) or None,
             "type1":        type1,
             "type2":        type2 if type2 else None,
             "generation":   detect_generation(index),
@@ -146,7 +153,12 @@ def parse_entries(wikitext: str) -> list[dict]:
 
 def extract_ids(wikitext: str) -> set[int]:
     """IF ids present in a Pokédex subpage — used for the Kanto/Hoenn diff."""
-    return {int(m.group("id")) for m in ENTRY_RE.finditer(wikitext)}
+    ids: set[int] = set()
+    for params in parse_template_calls(wikitext, TEMPLATE):
+        raw = params.get(2, "")
+        if raw.isdigit():
+            ids.add(int(raw))
+    return ids
 
 
 def mark_hoenn_only(entries: list[dict], kanto_ids: set[int]) -> int:
@@ -184,6 +196,9 @@ def main() -> None:
 
     save_json(OUTPUT, entries)
     LOGGER.info("Saved %d entries → %s", len(entries), OUTPUT)
+
+    BASELINE.write_text(f"{len(entries)}\n", encoding="utf-8")
+    LOGGER.info("Baseline Pokédex → %d (%s)", len(entries), BASELINE.name)
 
 
 if __name__ == "__main__":

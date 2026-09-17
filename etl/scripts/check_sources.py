@@ -8,7 +8,8 @@ minimal invariants of each source WITHOUT touching the database, so a
 scheduled CI run can raise the alarm before anyone re-runs the pipeline.
 
 Checks (network only, no DB):
-  1. IF wiki  — Pokédex/Hoenn/Classic parses ≥ 572 entries
+  1. IF wiki  — Pokédex/Hoenn/Classic parses exactly as many entries as the
+                last successful extraction (data/pokedex_baseline.txt)
   2. IF wiki  — Pokédex/Kanto/Classic parses ≥ 501 ids, strictly fewer
                 than Hoenn (the diff is the Hoenn-only flag)
   3. IF wiki  — List_of_Moves parses ≥ 600 moves
@@ -21,7 +22,7 @@ Checks (network only, no DB):
   9. IF game  — the live CUSTOM_SPRITES listing still holds as many entries as
                 the last successful extraction (data/sprites_baseline.txt)
 
-Checks 8 and 9 are deliberately stateless: both baselines are committed files,
+Checks 1, 8 and 9 are deliberately stateless: their baselines are committed files,
 so upstream movement keeps the watch red until someone reviews it and re-runs
 what needs re-running. (The `sprite_watcher` Prefect flow covers the same
 ground but also downloads sprites, so it needs the data volume and the Prefect
@@ -44,6 +45,7 @@ import requests
 
 from etl.scripts.extract_abilities_if import parse_abilities
 from etl.scripts.extract_moves_if import extract_moves
+from etl.scripts.extract_pokedex_if import BASELINE as POKEDEX_BASELINE
 from etl.scripts.extract_pokedex_if import KANTO_PAGE, PAGE, extract_ids, parse_entries
 from etl.scripts.extract_pokepedia_names import fetch_page, parse_list
 from etl.scripts.extract_sprites import (
@@ -84,8 +86,25 @@ def check(label: str, condition: bool, detail: str) -> None:
 def main() -> None:
     # 1-2. IF wiki Pokédex subpages
     hoenn = parse_entries(fetch_wikitext(PAGE))
-    check("wiki-pokedex-hoenn", len(hoenn) >= 572,
-          f"{len(hoenn)} entrées parsées sur {PAGE} (attendu ≥ 572)")
+    known_dex = None
+    if POKEDEX_BASELINE.exists():
+        raw = POKEDEX_BASELINE.read_text(encoding="utf-8").strip()
+        known_dex = int(raw) if raw.isdigit() else None
+    if known_dex is None:
+        check("wiki-pokedex-hoenn", len(hoenn) > 0,
+              f"{len(hoenn)} entrées parsées sur {PAGE} (pas de baseline)")
+    else:
+        # Exact match, not a floor: a `>= 572` floor let 10 new Pokémon
+        # (Shellos/Gastrodon East-West, Forces of Nature + Therian) pass
+        # silently in 2026-09. Growth = new content, shrink = format drift.
+        if len(hoenn) > known_dex:
+            hint = " → nouveaux Pokémon : relancer l'ETL complet (--force)"
+        elif len(hoenn) < known_dex:
+            hint = " → entrées perdues : format du template changé ?"
+        else:
+            hint = ""
+        check("wiki-pokedex-hoenn", len(hoenn) == known_dex,
+              f"{len(hoenn)} entrées sur {PAGE} / extrait={known_dex}{hint}")
 
     kanto_ids = extract_ids(fetch_wikitext(KANTO_PAGE))
     check("wiki-pokedex-kanto", len(kanto_ids) >= 501,

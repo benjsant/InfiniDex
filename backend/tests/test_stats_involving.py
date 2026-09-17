@@ -11,7 +11,7 @@ def test_stats_coverage(client: TestClient) -> None:
     assert d["moves_total"] >= 600
     assert d["abilities_total"] >= 150
     assert d["fusion_sprites_total"] >= 4
-    assert d["triple_fusions_total"] == 23
+    assert d["triple_fusions_total"] >= 23
     assert d["creators_total"] > 1000
 
 

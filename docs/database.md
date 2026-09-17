@@ -12,13 +12,13 @@ PostgreSQL 16. Schéma défini dans [docker/init_postgres.sql](https://github.co
 | `ability`      | Talents (EN + FR + description)              | 183    |
 | `move`         | Capacités (nom, type, puissance, PP, …)      | 658    |
 | `generation`   | Générations (1–9)                            | 9      |
-| `creator`      | Créateurs de sprites (attribution)           | 7 126  |
+| `creator`      | Créateurs de sprites (attribution)           | 7 511  |
 
 ### Pokémon & évolutions
 
 | Table                   | Contenu                                               |
 | ----------------------- | ----------------------------------------------------- |
-| `pokemon`               | 501 Pokémon IF + 71 formes = **572 entrées**          |
+| `pokemon`               | 501 Pokémon Kanto + 81 ajouts Hoenn = **582 entrées**          |
 | `pokemon_type`          | Types primaires/secondaires (FK vers `type`)          |
 | `pokemon_ability`       | Talents disponibles (normaux + cachés)                |
 | `pokemon_move`          | Learnset : 45 073 lignes (level-up, TM, tutor, egg)   |
@@ -30,7 +30,7 @@ PostgreSQL 16. Schéma défini dans [docker/init_postgres.sql](https://github.co
 
 | Table              | Contenu                                                       |
 | ------------------ | ------------------------------------------------------------- |
-| `fusion_sprite`    | 168 154 sprites custom (head_id, body_id, variant, path, crédit) |
+| `fusion_sprite`    | 178 047 sprites custom (head_id, body_id, variant, path, crédit) |
 | `triple_fusion`    | 23 fusions triples reconnues                                  |
 | `move_expert_move` | 65 règles Move Expert (Knot Island + Boon Island)             |
 | `move_tutor`       | 41 Move Tutors classiques (NPC, prix, localisation)           |

@@ -18,8 +18,12 @@ This script owns the national_id-less form rows:
 Types are NOT touched here: fix_pokemon_types.py already restores them from
 the wiki, which stays the authority on typing.
 
-The (name, form) → PokeAPI slug mapping is explicit (14 known forms). A form
-missing from the mapping logs a warning so wiki drift stays visible.
+The (name, form) → PokeAPI slug mapping is explicit. Two wiki conventions
+coexist and both are covered:
+  - a `form` column value   (Oricorio "Pom-Pom Style", Shellos "West", ...)
+  - a form baked in the name (Tornadus "(Therian)" — form column left empty)
+Any national_id-less row carrying either marker MUST be mapped: an unmapped
+one raises, so wiki drift stays visible instead of shipping wrong stats.
 
 Idempotent. Runs as step 8e-quater, after fix_national_ids and the re-syncs.
 """
@@ -54,6 +58,16 @@ FORM_SLUGS: dict[tuple[str, str], str] = {
     ("castform", "sunny"):          "castform-sunny",
     ("castform", "rainy"):          "castform-rainy",
     ("castform", "snowy"):          "castform-snowy",
+    # Added to the wiki 2026-09. Shellos/Gastrodon East and West are cosmetic
+    # variants: PokeAPI has a single `pokemon` for each (same stats/abilities).
+    ("shellos", "east"):            "shellos",
+    ("shellos", "west"):            "shellos",
+    ("gastrodon", "east"):          "gastrodon",
+    ("gastrodon", "west"):          "gastrodon",
+    # Forces of Nature — the wiki puts the form in the name, not the column.
+    ("tornadus (therian)", ""):     "tornadus-therian",
+    ("thundurus (therian)", ""):    "thundurus-therian",
+    ("landorus (therian)", ""):     "landorus-therian",
 }
 
 # PokeAPI stat slug → pokemon table column
@@ -67,9 +81,14 @@ STAT_COLUMNS = {
 }
 
 
-def form_slug(name_en: str, form: str) -> str | None:
-    key = (name_en.lower().strip(), form.lower().strip().replace("’", "'"))
+def form_slug(name_en: str, form: str | None) -> str | None:
+    key = (name_en.lower().strip(), (form or "").lower().strip().replace("’", "'"))
     return FORM_SLUGS.get(key)
+
+
+def is_form_row(entry: dict) -> bool:
+    """A row describing an alternate form, via the column or the name."""
+    return bool(entry.get("form")) or "(" in entry["name_en"]
 
 
 def _species_name_fr(species_slug: str) -> str | None:
@@ -113,7 +132,7 @@ def fix_form_pokemon(conn) -> None:
     if not POKEDEX_JSON.exists():
         raise FileNotFoundError(f"{POKEDEX_JSON} not found — run extract_pokedex_if.py first")
 
-    forms = [e for e in load_json(POKEDEX_JSON) if e.get("form")]
+    forms = [e for e in load_json(POKEDEX_JSON) if is_form_row(e)]
     LOGGER.info("%d form rows in the Pokédex JSON", len(forms))
 
     cur = conn.cursor()
@@ -129,8 +148,8 @@ def fix_form_pokemon(conn) -> None:
         if_id, name_en, form = entry["if_id"], entry["name_en"], entry["form"]
 
         if if_id not in orphan_ids:
-            # Base-form row (e.g. Oricorio Baile owns national 741): the
-            # standard national_id pipeline already handles it.
+            # Base-form row (e.g. Oricorio Baile owns national 741, Shellos
+            # East owns 422): the standard national_id pipeline handles it.
             skipped += 1
             continue
 

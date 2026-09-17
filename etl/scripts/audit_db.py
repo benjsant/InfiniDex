@@ -62,6 +62,29 @@ def fail(msg: str) -> None:
     print(f"  ❌  {msg}")
 
 
+def _upstream_sprite_ids(credits_csv: Path) -> set[int] | None:
+    """Pokémon ids appearing as head or body of a FUSION sprite upstream.
+
+    Credits rows look like `577a,artist,main,` (base sprite) or
+    `25.6a,artist,alt,` (fusion). Base rows are ignored: fusion_sprite only
+    holds fusions, and a brand-new Pokémon ships with its base sprite long
+    before the community draws any fusion for it.
+    Returns None when the CSV is absent, so callers can stay conservative.
+    """
+    if not credits_csv.exists():
+        return None
+    ids: set[int] = set()
+    for line in credits_csv.read_text(encoding="utf-8", errors="replace").splitlines():
+        sprite_id = line.split(",", 1)[0]
+        if "." not in sprite_id:
+            continue
+        for part in sprite_id.split("."):
+            digits = "".join(ch for ch in part if ch.isdigit())
+            if digits:
+                ids.add(int(digits))
+    return ids
+
+
 def _scalar(cur, sql: str) -> int:
     cur.execute(sql)
     return cur.fetchone()[0]
@@ -175,12 +198,26 @@ def run_audit() -> int:
             ORDER BY p.id
         """)
         rows = cur.fetchall()
-        if rows:
-            fail(f"{len(rows)} Pokémon absent from fusion_sprite:")
-            for pid, name in rows:
-                print(f"       #{pid} {name}")
-            issues += len(rows)
+        # The gate must catch sprites WE lost, not content that doesn't exist
+        # upstream yet: newly added Pokémon (2026-09: Tornadus/Thundurus/
+        # Landorus + Therian) ship with zero community fusion sprites. Only
+        # block for Pokémon the credits CSV proves have sprites upstream.
+        upstream_ids = _upstream_sprite_ids(Path("data/sprite_credits.csv"))
+        if upstream_ids is None:
+            lost, not_drawn = rows, []      # no CSV → stay conservative
         else:
+            lost      = [(pid, n) for pid, n in rows if pid in upstream_ids]
+            not_drawn = [(pid, n) for pid, n in rows if pid not in upstream_ids]
+        if lost:
+            fail(f"{len(lost)} Pokémon absent from fusion_sprite despite upstream sprites:")
+            for pid, name in lost:
+                print(f"       #{pid} {name}")
+            issues += len(lost)
+        if not_drawn:
+            warn(f"{len(not_drawn)} Pokémon with no community fusion sprite upstream yet:")
+            for pid, name in not_drawn:
+                print(f"       #{pid} {name}")
+        if not rows:
             ok("All Pokémon have at least one sprite.")
 
         # ── 3. Pokémon with no national_id ────────────────────────────────

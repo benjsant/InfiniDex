@@ -8,7 +8,7 @@ Le pipeline ETL extrait les données depuis plusieurs sources externes, les tran
 | --------------------------------- | --------------------------------------------------------------- |
 | **PokeAPI** (REST)                | Stats de base, national dex IDs, learnsets TM/tutor             |
 | **Wiki IF - pages spécifiques**   | Fusions, Move Experts, légendaires, tuteurs, mécaniques IF      |
-| **Wiki IF - sous-pages Pokédex**  | 572 entrées `PokedexTable` + localisations (voir note ci-dessous) |
+| **Wiki IF - sous-pages Pokédex**  | 582 entrées `PokedexTable` + localisations (voir note ci-dessous) |
 | **Poképédia** (MediaWiki + Scrapy)| Noms FR, learnsets Gen 7 (USUL)                                 |
 | **GitHub PokeAPI/sprites**        | Sprites PNG statiques                                           |
 
@@ -25,10 +25,10 @@ L'orchestrateur [etl/pipeline.py](https://github.com/benjsant/InfiniDex/blob/mai
 
 | Étape | Script | Rôle |
 |-------|--------|------|
-| 1 | `extract_pokedex_if.py` | 572 Pokémon depuis le wiki IF (sous-pages `Pokédex/Hoenn/Classic` + `Pokédex/Kanto/Classic`) |
+| 1 | `extract_pokedex_if.py` | 582 Pokémon depuis le wiki IF (sous-pages `Pokédex/Hoenn/Classic` + `Pokédex/Kanto/Classic`) |
 | 2a | `extract_stats_pokeapi.py` | Stats + name_fr + évolutions via PokeAPI |
 | 2b | `extract_pokepedia_names.py` | Mapping name_en → slug Pokepédia + URL Gen 7 |
-| 3 | `extract_moves_if.py` | 658 moves + 121 TMs + 40 tuteurs + 57 Move Experts |
+| 3 | `extract_moves_if.py` | ~660 moves + 121 TMs + 40 tuteurs + 57 Move Experts |
 | 3b | `enrich_moves_fr.py` | name_fr + description_fr des moves via PokeAPI |
 | 4 | `extract_abilities_if.py` | 183 talents depuis le wiki IF |
 | 4b | `enrich_abilities_fr.py` | name_fr + description_fr des talents via PokeAPI |
@@ -42,10 +42,19 @@ L'orchestrateur [etl/pipeline.py](https://github.com/benjsant/InfiniDex/blob/mai
 | 13–14 | `clean_orphan_moves.py` `enrich_missing_abilities.py` | Nettoyage et complétion |
 
 !!! note "Étape 9b-ter - `load_pokedex_locations.py`"
-    Parse la sous-page `Pokédex/Hoenn/Classic` du wiki IF (`{{PokedexTable/Data|...}}`) pour extraire les localisations sauvages et quêtes manquantes. Utilise `ON CONFLICT DO NOTHING` - ne réécrit jamais les données prioritaires de `fix_pokemon_locations.py`. Gère le `|` dans les liens wiki (`[[Page|Display]]`) en reconstruisant le champ depuis `parts[6:]`.
+    Parse la sous-page `Pokédex/Hoenn/Classic` du wiki IF (`{{PokedexTable/Data|...}}`) pour extraire les localisations sauvages et quêtes manquantes. Utilise `ON CONFLICT DO NOTHING` - ne réécrit jamais les données prioritaires de `fix_pokemon_locations.py`. Lit le champ de localisation (paramètre 7) via `parse_template_calls`, qui gère nativement les `|` des liens wiki (`[[Page|Display]]`) et les paramètres nommés.
 
 !!! warning "Restructuration du wiki (2026-07)"
-    La page `Pokédex` du wiki IF est devenue un hub sans données : les 572 entrées vivent dans `Pokédex/Hoenn/Classic`, le template a gagné un champ `form` en 4e position, et les marqueurs "Not in game" ont disparu (le flag `is_hoenn_only` est désormais dérivé de la différence Kanto/Hoenn). La restructuration a aussi remis la plupart des champs Location à `TBA` (436/572) - `load_pokedex_locations.py` ne récupère plus que ~7 tuples contre ~2 448 avant. L'étape 9b-quater (`load_locations_snapshot.py`) rejoue un snapshot committé de la table pré-restructuration (`etl/data/snapshots/pokemon_location_snapshot.json`, dump du 2026-07-13) en `ON CONFLICT DO NOTHING` : les données wiki vivantes gagnent toujours, le snapshot ne fait que combler les trous. Les deux scripts qui lisent cette page échouent désormais bruyamment s'ils parsent 0 entrée.
+    La page `Pokédex` du wiki IF est devenue un hub sans données : les entrées vivent dans `Pokédex/Hoenn/Classic`, le template a gagné un champ `form` en 4e position, et les marqueurs "Not in game" ont disparu (le flag `is_hoenn_only` est désormais dérivé de la différence Kanto/Hoenn). La restructuration a aussi remis la plupart des champs Location à `TBA` (436/572) - `load_pokedex_locations.py` ne récupère plus que ~7 tuples contre ~2 448 avant. L'étape 9b-quater (`load_locations_snapshot.py`) rejoue un snapshot committé de la table pré-restructuration (`etl/data/snapshots/pokemon_location_snapshot.json`, dump du 2026-07-13) en `ON CONFLICT DO NOTHING` : les données wiki vivantes gagnent toujours, le snapshot ne fait que combler les trous. Les deux scripts qui lisent cette page échouent désormais bruyamment s'ils parsent 0 entrée.
+
+!!! warning "Ajouts du wiki (2026-09)"
+    Le wiki a ajouté 10 Pokémon (Sancoki et Tritosor Est/Ouest, Boréas, Fulguris, Démétéros et leurs formes Totémiques : 572 → 582). Trois conséquences corrigées :
+
+    - **Paramètres nommés** : certaines lignes sautent les colonnes vides avec `7=Route 119`. La regex à arité fixe débordait au-delà du `}}` et avalait la ligne suivante (les deux Tritosor disparaissaient). Les lignes sont désormais lues par `etl/utils/wikitext.parse_template_calls`, qui applique la sémantique MediaWiki (positionnels puis nommés, jamais au-delà de l'appel).
+    - **Collision de `national_id`** : `load_db.py` insère un numéro national provisoire égal à l'id IF. Sur une base existante, un nouveau Pokémon pouvait entrer en collision avec une ligne déjà corrigée (Boréas #577 contre Nucléos, vrai national 577). Le provisoire part à NULL s'il est déjà pris ; l'étape 8d attribue le bon.
+    - **Deux conventions de forme** : colonne `form` (Sancoki « West ») ou forme dans le nom (« Tornadus (Therian) »). `fix_form_pokemon.py` couvre les deux et échoue si une forme n'est pas mappée.
+
+    L'audit (check 2) ne bloque plus sur un Pokémon sans sprite de fusion quand **aucun** n'existe en amont (credits CSV) : les génies viennent d'arriver et n'ont pas encore été dessinés par la communauté. Il bloque toujours si des sprites existent en amont mais manquent en base.
 
 !!! note "Étape 8e-ter - `fix_evolutions.py`"
     Re-fetch les chaînes d'évolution PokeAPI une fois les `national_id` corrigés par `fix_national_ids.py`. Nécessaire parce que `extract_stats_pokeapi.py` interroge PokeAPI par `if_id` (qui ne correspond au `national_id` que pour les 151 Kanto purs) - pour les 320 Pokémon post-Kanto, la chaîne récupérée appartient à la mauvaise espèce et n'est jamais ré-extraite sans ce script. Résolution slug-aware (`pokeapi_move_slug`) pour matcher correctement les noms à caractères spéciaux (`Mime Jr.` ↔ `mime-jr`, `Nidoran♀` ↔ `nidoran-f`, `Flabébé` ↔ `flabebe`). Idempotent.
@@ -65,11 +74,11 @@ flowchart TD
         direction TB
         S1[1. init_postgres.sql\ncréation des tables]
         S2[2. types + générations]
-        S3[3. pokedex_if → 572 Pokémon]
+        S3[3. pokedex_if → 582 Pokémon]
         S4[4. abilities + pokemon_ability]
-        S5[5. moves + learnsets\n45 100 pokemon_move]
+        S5[5. moves + learnsets\n~47 k pokemon_move]
         S6[6. évolutions]
-        S7[7. fusion_sprite\n168 k lignes + créateurs]
+        S7[7. fusion_sprite\n178 k lignes + créateurs]
         S8[8. triple_fusions]
         S9[9. locations + pokemon_location]
         S10[10. TMs + tm_location]
@@ -83,7 +92,7 @@ flowchart TD
 
     subgraph DB[(PostgreSQL 16)]
         T1[pokemon · move\nability · type]
-        T2[fusion_sprite\n168 k sprites]
+        T2[fusion_sprite\n178 k sprites]
         T3[move_expert_move\npokemon_location]
     end
 

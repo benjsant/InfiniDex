@@ -10,7 +10,7 @@ Pipeline complet en 38 étapes (orchestrateur `etl/pipeline.py`), factorisé en 
 - `etl/utils/io.py` - `load_json` / `save_json`
 - Héritage des moves de pré-évolutions (`enrich_evolution_movesets.py`)
 
-**Données finales** : 572 Pokémon · 658 moves · 183 abilities · 45 073 pokemon_move · 168154 fusion_sprite · 7126 créateurs · 23 triple_fusion · 2 448 pokemon_location · 188 locations · 121 TMs · 41 tuteurs
+**Données finales** : 582 Pokémon · 663 moves · 183 abilities · 46 956 pokemon_move · 178 047 fusion_sprite · 7 511 créateurs · 25 triple_fusion · 2 454 pokemon_location · 190 locations · 121 TMs · 41 tuteurs
 
 **Pistes restantes**
 - [x] Audit DB - `audit_db.py` (11 checks) : 17 moves orphelins supprimés, 76 Pokémon enrichis (171 abilities ajoutées)
@@ -54,7 +54,7 @@ Pages en place : `/pokedex` + `/pokedex/[id]`, `/fusion` + `/fusion/[headId]/[bo
 - [x] `search_pokemon_locations` - outil IA pour chercher les Pokémon par condition/méthode
 
 **Pistes restantes**
-- [x] Galerie sprites + crédits (par créateur) - page `/creators` avec 7 126 créateurs, recherche, modal sprites
+- [x] Galerie sprites + crédits (par créateur) - page `/creators` avec 7 500+ créateurs, recherche, modal sprites
 - [ ] Toggle EN/FR global persistent
 - [x] Tests Playwright - 10 tests E2E (homepage, pokédex, fusion, types/items, moves) via `docker compose --profile e2e run --rm e2e`
 - [x] UI transparence IA - ToolPill, SourceBadge, token count, PromptModal

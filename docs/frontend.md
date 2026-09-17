@@ -114,7 +114,7 @@ Les hooks sont typés à partir de `types/api.d.ts` - tout changement de schéma
 
 Sélecteur head/body avec recherche intégrée. Lit `?head=ID` et `?body=ID` depuis les search params au montage pour pré-sélectionner un Pokémon (utilisé par les liens "Fusionner en tant que Tête" de la fiche Pokédex).
 
-Inclut un filtre de jeu (`GameFilter = "kanto" | "hoenn" | "all"`) qui restreint la liste aux Pokémon de la région concernée. Kanto = IDs 1–151, Hoenn = IDs 152–251 (convention IF), Tous = 572 Pokémon.
+Inclut un filtre de jeu (`GameFilter = "kanto" | "hoenn" | "all"`) qui restreint la liste aux Pokémon de la région concernée. Kanto = les 501 Pokémon du jeu d'origine, Hoenn = les 81 ajouts (`is_hoenn_only`), Tous = 582. Les compteurs des onglets sont lus en base (`usePokemonCount`), pas codés en dur.
 
 ### FusionMovesetTable
 

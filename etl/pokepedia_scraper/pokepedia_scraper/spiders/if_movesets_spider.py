@@ -36,6 +36,13 @@ CT_USUL_PATTERNS = [
 
 LEVEL_RE = re.compile(r"N\.(\d+)")
 
+_NAME_FORM_SUFFIX = re.compile(r"\s*\([^)]*\)\s*$")
+
+
+def _species_key(name_en: str) -> str:
+    """'Tornadus (Therian)' → 'tornadus' (Pokepédia mapping key)."""
+    return _NAME_FORM_SUFFIX.sub("", name_en).strip().lower()
+
 
 class IFMovesetSpider(scrapy.Spider):
     name          = "if_movesets"
@@ -84,7 +91,9 @@ class IFMovesetSpider(scrapy.Spider):
             if_id   = entry["if_id"]
             name_en = entry["name_en"]
 
-            poke_entry = pokepedia_map.get(name_en.lower())
+            # Forms baked into the name ("Tornadus (Therian)") share the
+            # species page: look up the bare species name.
+            poke_entry = pokepedia_map.get(_species_key(name_en))
 
             if poke_entry:
                 gen7_url      = poke_entry["gen7_url"]

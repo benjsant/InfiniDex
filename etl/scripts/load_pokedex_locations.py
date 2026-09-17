@@ -3,7 +3,7 @@ ETL — Load wild + quest encounter locations from the IF Pokédex wiki page.
 
 Source: https://infinitefusion.fandom.com/wiki/Pokédex/Hoenn/Classic
 (the top-level "Pokédex" page became a data-less hub after the wiki
-restructure — the full 572-entry table lives in the Hoenn/Classic subpage).
+restructure — the full table lives in the Hoenn/Classic subpage).
 
 Parses the {{PokedexTable/Data|...}} template format and extracts:
   - Wild encounters  (plain [[Location]] links) → method='wild'
@@ -26,6 +26,7 @@ from etl.scripts.extract_pokedex_if import PAGE as POKEDEX_PAGE
 from etl.utils.db import pg_connection
 from etl.utils.http import USER_AGENT
 from etl.utils.logging import setup_logging
+from etl.utils.wikitext import parse_template_calls
 
 LOGGER = setup_logging(__name__)
 
@@ -145,45 +146,36 @@ def fetch_pokedex_content() -> str:
 def parse_pokedex(content: str) -> list[tuple[int, str, str, str | None]]:
     """
     Returns list of (if_id, location_name, method, notes).
+
+    Reads param 7 (location) through `parse_template_calls`, which handles
+    `[[Page|Display]]` pipes and named params (`7=...`) natively — replacing
+    the former split-on-`|` + rejoin-from-`parts[6:]` workaround.
     """
     entries: list[tuple[int, str, str, str | None]] = []
-    lines = [l for l in content.split("\n") if l.startswith("{{PokedexTable/Data")]
+    calls = parse_template_calls(content, "PokedexTable/Data")
 
     # Fail loudly instead of silently loading nothing: when the wiki moved the
-    # table off the top-level "Pokédex" page, this parsed 0 lines and the step
+    # table off the top-level "Pokédex" page, this parsed 0 rows and the step
     # still reported success.
-    if not lines:
+    if not calls:
         raise RuntimeError(
-            f"Parsed 0 PokedexTable/Data lines from '{POKEDEX_PAGE}' — the "
+            f"Parsed 0 PokedexTable/Data rows from '{POKEDEX_PAGE}' — the "
             f"wiki page has likely changed upstream again."
         )
 
-    for line in lines:
-        # Strip template markers and split on |
-        inner = line.removeprefix("{{PokedexTable/Data|").rstrip("}").rstrip("|")
-        parts = inner.split("|")
-        # parts[0]=IF_ID, parts[1]=NAT_ID, parts[2]=Name, parts[3]=Form (usually empty),
-        # parts[4]=Type1, parts[5]=Type2(or empty), parts[6..]=Location field
-        # NOTE: wiki links like [[Page|Display]] contain | which breaks the split.
-        # Fix: rejoin from parts[6] and trim after the last ]] to recover the full field.
-        if len(parts) < 7:
+    for params in calls:
+        raw_id = params.get(2, "")
+        if not raw_id.isdigit():
             continue
-        try:
-            if_id = int(parts[0].strip())
-        except ValueError:
-            continue
-        raw_tail = "|".join(parts[6:])
-        last_bracket = raw_tail.rfind("]]")
-        if last_bracket == -1:
-            continue  # no wiki links → evolution-only or no location
-        location_field = raw_tail[: last_bracket + 2].strip()
-        if not location_field:
-            continue
+        if_id = int(raw_id)
+        location_field = params.get(7, "")
+        if "]]" not in location_field:
+            continue  # no wiki links → evolution-only, TBA or no location
 
         for loc_name, method, notes in _parse_location_field(location_field):
             entries.append((if_id, loc_name, method, notes))
 
-    LOGGER.info("Parsed %d (pokemon, location, method) tuples from %d lines", len(entries), len(lines))
+    LOGGER.info("Parsed %d (pokemon, location, method) tuples from %d rows", len(entries), len(calls))
     return entries
 
 
