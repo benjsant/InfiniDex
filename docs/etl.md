@@ -108,6 +108,19 @@ flowchart TD
     style DB  fill:#2d1e3b,color:#c4b5fd
 ```
 
+## Sprites : ajouts et redessins
+
+`extract_sprites.py` ne se contente pas d'ajouter les sprites manquants. Les artistes redessinent régulièrement des sprites **sous le même nom de fichier** : la liste `CUSTOM_SPRITES` ne change pas, et l'ancienne logique « fichier présent → on saute » gardait l'ancien dessin indéfiniment, alors que `load_sprite_credits.py` créditait déjà le nouvel artiste.
+
+Chaque planche a son ETag enregistré dans `data/spritesheet_etags.json` (état local, lié à `data/sprites/`, non versionné). À chaque extraction :
+
+| Réponse du serveur | Effet |
+| --- | --- |
+| **304** (planche inchangée) | rien n'est téléchargé |
+| **200** (planche modifiée, ou jamais vérifiée) | redécoupe de toute la planche, réécriture des seuls sprites dont les **pixels** diffèrent |
+
+Premier passage (septembre 2026) : 1 316 sprites redessinés rattrapés sur 429 planches, environ 22 min. Passages suivants : 178 045 sprites revalidés en ~2 min. Le manifeste est sauvegardé toutes les 25 planches ; en cas de corruption, il est ignoré et tout est revérifié. `--force` ignore le manifeste mais ne réécrit toujours que les pixels modifiés.
+
 ## Migrations de schéma
 
 Pas d'outil de migration : `docker/init_postgres.sql` ne s'exécute que sur un volume vierge. Les évolutions de schéma vivent dans `etl/utils/schema.py` (instructions idempotentes `IF NOT EXISTS`, à ajouter sans jamais modifier les précédentes). `pipeline.py` les applique **à chaque démarrage**, y compris quand les données sont déjà chargées ; comme le backend attend la fin du conteneur ETL, une base existante est migrée avant que le backend ne lise les nouvelles colonnes. Toute nouvelle colonne s'ajoute aux deux endroits : `init_postgres.sql` (bases neuves) et `schema.py` (bases existantes), plus `backend/tests/fixtures/schema.sql` pour la CI.

@@ -5,8 +5,18 @@ Optimizations:
   - Filter by real IF IDs (data/pokedex_if.json) → ignore out-of-game sprites
   - By default: main sprites only (alt="")
   - Option --alts: include community variants (a, b, c...)
-  - Idempotent: skip sprites already extracted (unless --force)
   - A single request per spritesheet → crop all body_ids in one pass
+
+Keeping sprites in sync with REDRAWS (not just additions):
+  Artists redraw sprites under the same filename, so CUSTOM_SPRITES doesn't
+  change and "skip if the file exists" kept stale art forever — while
+  load_sprite_credits.py already credited the NEW artist on the OLD image.
+  Each sheet's ETag is stored in data/spritesheet_etags.json (local state,
+  tied to data/sprites/). Every run sends a conditional GET per sheet:
+    304 → unchanged, nothing downloaded;
+    200 → sheet changed: re-crop every sprite, rewrite only those whose
+          pixels differ.
+  A sheet with no stored ETag (first run) is downloaded once and verified.
 
 Sprite grid layout (CustomSpriteExtracter.rb):
   Size: 96×96 px | Columns: 20
@@ -21,6 +31,7 @@ URLs (pif-downloadables/Settings.rb):
 from __future__ import annotations
 
 import io
+import json
 import re
 import sys
 import time
@@ -45,6 +56,8 @@ CREDITS_OUT    = DATA_DIR / "sprite_credits.csv"
 # weekly CI watch can say "a new spritepack landed — re-run the ETL" without
 # needing any persistent state of its own.
 SPRITES_BASELINE = DATA_DIR / "sprites_baseline.txt"
+# Local (gitignored) ETag per spritesheet — see "Keeping sprites in sync".
+SHEET_ETAGS    = DATA_DIR / "spritesheet_etags.json"
 POKEDEX_IF     = DATA_DIR / "pokedex_if.json"
 
 # ── URLs ──────────────────────────────────────────────────────────────────────
@@ -55,7 +68,9 @@ SPRITESHEET_BASE_URL = "https://infinitefusion.net/customsprites/spritesheets/sp
 # ── Constants ─────────────────────────────────────────────────────────────────
 SPRITE_SIZE    = 96
 GRID_COLS      = 20
-DOWNLOAD_DELAY = 2.0    # seconds between two spritesheets (respectful)
+DOWNLOAD_DELAY = 2.0    # seconds after a full spritesheet download (respectful)
+REVALIDATE_DELAY = 0.1  # after a 304 (no body transferred)
+ETAGS_SAVE_EVERY = 25   # sheets — an interrupted first run keeps its progress
 
 SPRITE_RE = re.compile(r"^(\d+)\.(\d+)([a-z]*)\.png$")
 
@@ -87,23 +102,32 @@ def fetch_text(url: str) -> str:
     return resp.text
 
 
-def fetch_bytes(url: str) -> bytes | None:
-    """GET binary content with a small retry/backoff on 429/503/network error.
+def fetch_sheet(url: str, etag: str | None) -> tuple[str, bytes | None, str | None]:
+    """Conditional GET of a spritesheet.
 
-    404 (a genuinely missing spritesheet) returns None immediately — no retry.
+    Returns ``(status, content, etag)`` with status one of:
+      "not_modified" — 304, the stored ETag is still current (no body);
+      "modified"     — 200, content + the new ETag;
+      "missing"      — 404 or repeated failure.
+    Retries with backoff on 429/503/network errors.
     """
+    headers = dict(HEADERS)
+    if etag:
+        headers["If-None-Match"] = etag
     for attempt in range(1, 4):
         try:
-            resp = requests.get(url, headers=HEADERS, timeout=30)
+            resp = requests.get(url, headers=headers, timeout=30)
+            if resp.status_code == 304:
+                return "not_modified", None, etag
             if resp.status_code == 200:
-                return resp.content
+                return "modified", resp.content, resp.headers.get("ETag")
             if resp.status_code in (429, 503) and attempt < 3:
                 wait = 5 * 2 ** (attempt - 1)
                 LOGGER.warning("HTTP %s — %s — backing off %ss", resp.status_code, url, wait)
                 time.sleep(wait)
                 continue
             LOGGER.warning("HTTP %s — %s", resp.status_code, url)
-            return None
+            return "missing", None, None
         except requests.RequestException as e:
             if attempt < 3:
                 wait = 5 * 2 ** (attempt - 1)
@@ -111,8 +135,53 @@ def fetch_bytes(url: str) -> bytes | None:
                 time.sleep(wait)
                 continue
             LOGGER.warning("Request failed %s — %s", url, e)
-            return None
-    return None
+    return "missing", None, None
+
+
+def write_sheet_sprites(
+    sheet: Image.Image, head_id: int, alt: str, body_ids: list[int], sprites_dir: Path,
+) -> tuple[int, int, int, int]:
+    """Crop every body_id from a sheet; write only new or changed sprites.
+
+    Returns ``(created, refreshed, unchanged, failed)``. Pixels are compared
+    (RGBA), not file bytes, so re-encoding differences never count as a change.
+    """
+    created = refreshed = unchanged = failed = 0
+    for body_id in body_ids:
+        out_path = sprites_dir / f"{head_id}.{body_id}{alt}.png"
+        try:
+            new = crop_sprite(sheet, body_id).convert("RGBA")
+            if out_path.exists():
+                with Image.open(out_path) as old:
+                    if old.convert("RGBA").tobytes() == new.tobytes():
+                        unchanged += 1
+                        continue
+                new.save(out_path, format="PNG")
+                refreshed += 1
+            else:
+                new.save(out_path, format="PNG")
+                created += 1
+        except Exception as e:
+            LOGGER.warning("Crop failed head=%d body=%d: %s", head_id, body_id, e)
+            failed += 1
+    return created, refreshed, unchanged, failed
+
+
+def load_etags(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    try:
+        data = load_json(path)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        LOGGER.warning("%s unreadable — every sheet will be re-verified", path.name)
+        return {}
+
+
+def save_etags(path: Path, etags: dict[str, str]) -> None:
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(etags, indent=1, sort_keys=True), encoding="utf-8")
+    tmp.replace(path)
 
 
 def crop_sprite(sheet: Image.Image, body_id: int) -> Image.Image:
@@ -193,53 +262,55 @@ def extract_sprites(force: bool, include_alts: bool) -> None:
     n_sprites = sum(len(v) for v in groups.values())
     LOGGER.info("To download: %d spritesheets / %d sprites", n_sheets, n_sprites)
 
-    extracted = skipped = failed = 0
+    etags = {} if force else load_etags(SHEET_ETAGS)
+    created = refreshed = unchanged = revalidated = failed = 0
+    sheets_changed = 0
 
     for idx, ((head_id, alt), body_ids) in enumerate(sorted(groups.items()), 1):
+        key       = f"{head_id}{alt}"
+        sheet_url = f"{SPRITESHEET_BASE_URL}/{head_id}/{head_id}{alt}.png"
 
-        # Skip if all sprites already exist
-        if not force:
-            missing = [
-                b for b in body_ids
-                if not (SPRITES_DIR / f"{head_id}.{b}{alt}.png").exists()
-            ]
-            if not missing:
-                skipped += len(body_ids)
-                continue
-            body_ids = missing
+        # Revalidate only when every sprite is on disk AND we know the ETag:
+        # a missing sprite, or a sheet never verified, needs the content.
+        all_present = all((SPRITES_DIR / f"{head_id}.{b}{alt}.png").exists() for b in body_ids)
+        known_etag  = etags.get(key) if all_present else None
 
-        # Download the spritesheet only once
-        sheet_url  = f"{SPRITESHEET_BASE_URL}/{head_id}/{head_id}{alt}.png"
-        sheet_data = fetch_bytes(sheet_url)
+        status, content, etag = fetch_sheet(sheet_url, known_etag)
 
-        if sheet_data is None:
+        if status == "not_modified":
+            revalidated += len(body_ids)
+            time.sleep(REVALIDATE_DELAY)
+            continue
+
+        if status == "missing" or content is None:
             LOGGER.warning("[%d/%d] Missing spritesheet head=%d alt='%s'", idx, n_sheets, head_id, alt)
             failed += len(body_ids)
             continue
 
         try:
-            sheet = Image.open(io.BytesIO(sheet_data)).convert("RGBA")
+            sheet = Image.open(io.BytesIO(content)).convert("RGBA")
         except Exception as e:
             LOGGER.warning("Could not open spritesheet %s: %s", sheet_url, e)
             failed += len(body_ids)
             continue
 
-        # Crop all body_ids in a single pass
-        for body_id in body_ids:
-            out_path = SPRITES_DIR / f"{head_id}.{body_id}{alt}.png"
-            try:
-                crop_sprite(sheet, body_id).save(out_path, format="PNG")
-                extracted += 1
-            except Exception as e:
-                LOGGER.warning("Crop failed head=%d body=%d: %s", head_id, body_id, e)
-                failed += 1
+        c, r, u, f = write_sheet_sprites(sheet, head_id, alt, body_ids, SPRITES_DIR)
+        created, refreshed, unchanged, failed = created + c, refreshed + r, unchanged + u, failed + f
+        if f == 0 and etag:
+            etags[key] = etag           # only a fully written sheet is "in sync"
+        if c or r:
+            sheets_changed += 1
+            LOGGER.info("[%d/%d] head=%d alt='%s' → %d new, %d redrawn", idx, n_sheets, head_id, alt, c, r)
 
-        LOGGER.info("[%d/%d] head=%d alt='%s' → %d sprites", idx, n_sheets, head_id, alt, len(body_ids))
+        if idx % ETAGS_SAVE_EVERY == 0:
+            save_etags(SHEET_ETAGS, etags)
         time.sleep(DOWNLOAD_DELAY)
 
+    save_etags(SHEET_ETAGS, etags)
     LOGGER.info(
-        "Done — extracted=%d / skipped=%d / failed=%d",
-        extracted, skipped, failed,
+        "Done — new=%d / redrawn=%d / verified-identical=%d / unchanged-304=%d / failed=%d "
+        "(%d sheet(s) changed, %d ETags stored)",
+        created, refreshed, unchanged, revalidated, failed, sheets_changed, len(etags),
     )
 
     # Record the size of the list we just consumed. Only on a clean run: a
