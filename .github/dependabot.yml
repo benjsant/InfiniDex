@@ -31,6 +31,11 @@ updates:
     groups:
       e2e-minor-patch: { update-types: [minor, patch] }
     labels: [dependencies, e2e]
+    ignore:
+      # Doit rester égal à l'image mcr.microsoft.com/playwright de
+      # docker/Dockerfile.e2e (navigateurs embarqués) : c'est la PR docker
+      # qui pilote, on bumpe package.json dans la même PR.
+      - dependency-name: "@playwright/test"
 
   - package-ecosystem: github-actions
     directory: /
@@ -46,6 +51,15 @@ updates:
     groups:
       docker-images: { update-types: [minor, patch] }
     labels: [dependencies, docker]
+    ignore:
+      # Une « mineure » Python (3.12 → 3.14) est une majeure en pratique
+      # (wheels natives, compat des libs). Changement de runtime = décision
+      # à la main, avec les lockfiles régénérés.
+      - dependency-name: python
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      # Node : rester sur une LTS paire, choisie à la main.
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
 
   # Images des services compose (postgres, nginx, prefect, ollama).
   # Exige des tags épinglés : un tag flottant comme `3-latest` n'est jamais bumpé.
@@ -55,3 +69,14 @@ updates:
     groups:
       compose-images: { update-types: [minor, patch] }
     labels: [dependencies, docker]
+    ignore:
+      # Le serveur Prefect suit le lock ETL (test etl/tests/test_versions.py) :
+      # il est bumpé dans la PR uv de etl/, pas ici. Dependabot proposait en
+      # plus des tags de pré-release (3.8.7.dev2).
+      - dependency-name: prefecthq/prefect
+      # Majeure Postgres = répertoire de données incompatible (dump/restore).
+      # À planifier à la main, jamais en PR automatique.
+      - dependency-name: postgres
+        update-types: ["version-update:semver-major"]
+      # Ollama publie sans semver stable ; tag latest assumé (profil optionnel).
+      - dependency-name: ollama/ollama
