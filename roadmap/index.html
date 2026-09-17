@@ -1157,10 +1157,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cap-v11-separation-infinidex-hoenndex" class="md-nav__link">
+  <a href="#cap-v11-infinidex-couvre-if1-et-if2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cap v1.1 - séparation InfiniDex / HoennDex
+        Cap v1.1 - InfiniDex couvre IF1 et IF2
       
     </span>
   </a>
@@ -1561,10 +1561,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cap-v11-separation-infinidex-hoenndex" class="md-nav__link">
+  <a href="#cap-v11-infinidex-couvre-if1-et-if2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cap v1.1 - séparation InfiniDex / HoennDex
+        Cap v1.1 - InfiniDex couvre IF1 et IF2
       
     </span>
   </a>
@@ -1597,7 +1597,7 @@
 <h3 id="etl-stabilise">ETL - ✅ stabilisé<a class="headerlink" href="#etl-stabilise" title="Permanent link">&para;</a></h3>
 <p>Pipeline en 38 étapes (orchestrateur <code>etl/pipeline.py</code>). Données actuelles :</p>
 <ul>
-<li><strong>582 Pokémon</strong> (501 Kanto + 81 Hoenn)</li>
+<li><strong>582 Pokémon</strong> (501 d'IF1 + 81 propres à IF2/Hoenn)</li>
 <li><strong>658 moves</strong> · <strong>183 abilities</strong> · <strong>45 073</strong> pokemon_move</li>
 <li><strong>178 047</strong> fusion_sprite · <strong>25</strong> triple_fusion</li>
 <li><strong>7 511</strong> créateurs · <strong>2 454</strong> pokemon_location · <strong>190</strong> locations</li>
@@ -1641,7 +1641,7 @@
 </ul>
 <p><strong>Pistes ouvertes :</strong></p>
 <ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <strong>CI full pytest</strong> - le reste des tests nécessite un dump SQL fixture à committer sous <code>backend/tests/fixtures/</code></li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> <strong>CI full pytest</strong> - dump SQL fixture sous <code>backend/tests/fixtures/</code>, job <code>full</code> avec postgres:16</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Endpoint <code>/moves/{id}</code> enrichi avec TM number + location (après TM location cleanup)</li>
 </ul>
 <h3 id="frontend-complet">Frontend - ✅ complet<a class="headerlink" href="#frontend-complet" title="Permanent link">&para;</a></h3>
@@ -1704,10 +1704,10 @@
 </ul>
 <p><strong>Pistes ouvertes :</strong></p>
 <ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Dump SQL fixture → full pytest en CI</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Dump SQL fixture → full pytest en CI</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Choix de l'hébergement (Fly.io, Railway, VPS ?)</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> TLS + domaine pour la démo publique</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Déployer la doc MkDocs (GitHub Pages ?)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Doc MkDocs déployée sur GitHub Pages (<code>docs.yml</code>)</li>
 </ul>
 <h3 id="documentation-mise-a-jour">Documentation - ✅ mise à jour<a class="headerlink" href="#documentation-mise-a-jour" title="Permanent link">&para;</a></h3>
 <p>Pages MkDocs Material à jour : README, ROADMAP, architecture (9 outils IA, flux SSE, cascade DB→wiki→web), API, frontend (toutes les pages + hooks), ETL (pipeline.py 38 étapes), database, roadmap.</p>
@@ -1721,29 +1721,27 @@
 <ul class="task-list">
 <li>✅ Frontend stable (toutes les pages principales en place)</li>
 <li>✅ IA agentique phases 1-5 livrées (tool calling DB + wiki IF + web + privacy + transparence)</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> CI full verte (dump fixture committé)</li>
+<li>✅ CI full verte (dump fixture committé)</li>
 <li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Déploiement public accessible</li>
 <li>✅ Documentation à jour sur chaque page</li>
 </ul>
 <p>Avant cette étape, les docs historiques restent figées sous <a href="../archive/">Archive</a>.</p>
-<h2 id="cap-v11-separation-infinidex-hoenndex">Cap v1.1 - séparation InfiniDex / HoennDex<a class="headerlink" href="#cap-v11-separation-infinidex-hoenndex" title="Permanent link">&para;</a></h2>
-<p>Décision actée 2026-06-23 : le futur jeu Pokémon Infinite Fusion: Hoenn est un fan-game séparé, pas une DLC. Il aura son propre projet (HoennDex). En conséquence, les 71 Pokémon actuellement marqués <code>is_hoenn_only</code> dans la DB d'InfiniDex ne sont <strong>pas</strong> dans le jeu Kanto et seront retirés à terme.</p>
-<p><strong>Phase A - soft-remove</strong> (à exécuter après livraison de la v0.1 du companion mobile Flutter <code>infinidex_mobile</code>) :</p>
-<ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> <code>include_hoenn=False</code> par défaut sur les endpoints <code>/pokemon/*</code></li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Retirer le toggle Kanto/Hoenn du frontend (ou le mettre derrière un flag avancé)</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Mettre à jour les comptes dans README + docs : <code>572 Pokémon</code> → <code>501</code></li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> CHANGELOG v1.1</li>
+<h2 id="cap-v11-infinidex-couvre-if1-et-if2">Cap v1.1 - InfiniDex couvre IF1 et IF2<a class="headerlink" href="#cap-v11-infinidex-couvre-if1-et-if2" title="Permanent link">&para;</a></h2>
+<p>Décision du 2026-09-17, qui <strong>annule</strong> celle du 2026-06-23 (retrait des Pokémon Hoenn-only, projet HoennDex séparé). Ce qui a changé entre-temps :</p>
+<ul>
+<li>Le wiki officiel présente Hoenn comme la région de <strong>Pokémon Infinite Fusion 2</strong>, suite officielle de la même équipe, sur le même wiki, avec le même template Pokédex et le même pool de sprites communautaires.</li>
+<li>Le contenu IF2 grandit dans les mêmes sources (71 → 81 Pokémon en deux mois, localisations, formes) et 19 452 sprites de fusion sur 178 047 (11 %) impliquent un Pokémon IF2. Le supprimer reviendrait à lutter contre chaque spritepack.</li>
+<li>Un seul code, un seul ETL et une seule API couvrent les deux jeux ; le companion mobile n'a qu'un backend à consommer.</li>
 </ul>
-<p><strong>Phase B - hard delete</strong> (à exécuter après HoennDex v0.1) :</p>
+<p>Le problème réel de juin (« un joueur voit des Pokémon qu'il ne peut pas attraper ») est traité par l'étiquetage, pas par la suppression :</p>
 <ul class="task-list">
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Migration SQL : DELETE en cascade sur <code>pokemon_move</code>, <code>pokemon_ability</code>, <code>pokemon_location</code>, <code>fusion_sprite</code>, <code>evolution</code>, puis <code>pokemon WHERE is_hoenn_only</code></li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Retrait du param API <code>include_hoenn</code> + colonne <code>is_hoenn_only</code> (modèle + schemas)</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Retrait des étapes ETL qui chargent ces Pokémon</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Recompter et publier les nouveaux chiffres (fusion_sprite notamment)</li>
-<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Bump v1.2.0</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Badge <strong>IF2</strong> sur les cartes et les fiches des Pokémon <code>is_hoenn_only</code></li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Onglets <strong>IF1 / IF2 / Tous</strong> (Pokédex et sélecteur de fusion), défaut « Tous »</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> Roadmap et docs alignées</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Renommer <code>is_hoenn_only</code> / <code>include_hoenn</code> en <code>if2</code> lors d'une prochaine évolution de schéma (pas avant : le mobile consomme l'API actuelle)</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Étendre les localisations IF2 quand le wiki les documentera (aujourd'hui majoritairement <code>TBA</code>)</li>
 </ul>
-<p>Les Pokémon Hoenn complets (Gen 3) seront servis par le futur HoennDex via son propre wiki source et son propre Pokédex. Cf. mémoire <code>project_hoenn_cleanup_deferred.md</code>.</p>
+<p>Le projet HoennDex séparé est abandonné. Cf. mémoire <code>project_hoenn_cleanup_deferred.md</code>.</p>
 
 
 
