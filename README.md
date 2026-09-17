@@ -1,6 +1,6 @@
 # InfiniDex
 
-Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.com/) - 572 Pokémon (501 Kanto + 71 Hoenn), 168 000+ fusions calculées, movepools, types, triple-fusions, Move Experts, maîtres des capacités, galerie des créateurs de sprites, et un **assistant IA agentique** à 9 outils.
+Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.com/) - 582 Pokémon (501 Kanto + 81 Hoenn), 178 000+ fusions calculées, movepools, types, triple-fusions, Move Experts, maîtres des capacités, galerie des créateurs de sprites, et un **assistant IA agentique** à 9 outils.
 
 📖 **[Documentation complète →](https://benjsant.github.io/InfiniDex/)**
 
@@ -28,7 +28,7 @@ Choix d'archi que je voulais documenter pour les recruteurs IA / data eng qui ou
 - **PII redactor en pré-traitement.** Tous les messages partant vers le LLM passent par [`pii_redactor.py`](backend/services/pii_redactor.py) qui supprime emails, numéros, Discord tags, etc.
 - **SSE streaming + transparence agent.** Le frontend reçoit chaque `tool_call` en temps réel via Server-Sent Events. `GET /ai/prompt` expose le system prompt complet pour l'audit utilisateur.
 - **ETL Prefect 3 self-hosté.** Deux watchers daily (Pokédex + sprites custom) qui alertent Discord quand le wiki Infinite Fusion ou le repo `pif-downloadables` change. Drift snapshot dans `audit_db.py` (3 niveaux : compile + tests unit + diff vs run précédent).
-- **Cache-aware backend.** `_pokemon_cache` warm au startup (572 entrées) + `_fusion_cache` borné à 4096. ~80 % des appels API ne touchent jamais la DB.
+- **Cache-aware backend.** `_pokemon_cache` warm au startup (une entrée par Pokémon) + `_fusion_cache` borné à 4096. ~80 % des appels API ne touchent jamais la DB.
 - **Discipline d'audit.** 14 rounds d'audit + 4 PR de dedup (~333 LOC nettes supprimées, 9 modules partagés extraits). CI à 4 lanes path-filtered.
 
 ---
@@ -54,7 +54,7 @@ docker compose up -d
 | API + Swagger | http://localhost:58000/docs |
 | Sprites (debug) | http://localhost:58080/sprites/ |
 
-> **Premier démarrage (~15 min).** Le conteneur `etl` se lance automatiquement et peuple la base : 572 Pokémon, 658 capacités, 168 000+ sprites. Le backend attend la fin de l'ETL avant de démarrer.
+> **Premier démarrage (~15 min).** Le conteneur `etl` se lance automatiquement et peuple la base : 582 Pokémon, 663 capacités, 178 000+ sprites. Le backend attend la fin de l'ETL avant de démarrer.
 
 ### Assistant IA
 
@@ -108,7 +108,7 @@ UI Prefect : http://localhost:54200 - cron `06:00 Paris` (pokedex) + `07:00 Pari
 | `/abilities/[id]` | Fiche talent : description EN/FR |
 | `/items` | Objets du jeu (fusion / evolution / valuable) avec lieux d'obtention |
 | `/triple-fusions` | 23 fusions triples - sprites, composants, stats, faiblesses |
-| `/creators` | Galerie des 7 126 créateurs de sprites - recherche + modal sprites |
+| `/creators` | Galerie des 7 500+ créateurs de sprites - recherche + modal sprites |
 | `/creators/[id]` | Fiche créateur - tous ses sprites |
 | `/ai` | Chat IA streaming - agent à 9 outils avec transparence des appels en temps réel |
 | `/about` | À propos du projet |
@@ -118,8 +118,8 @@ UI Prefect : http://localhost:54200 - cron `06:00 Paris` (pokedex) + `07:00 Pari
 ## Données
 
 ```
-572 Pokémon · 658 capacités · 183 talents · 26 types · 70 objets
-168 154 fusion_sprites · 7 126 créateurs · 23 triple_fusions
+582 Pokémon · 663 capacités · 183 talents · 26 types · 70 objets
+178 047 fusion_sprites · 7 511 créateurs · 25 triple_fusions
 45 073 pokemon_move · 2 448 pokemon_location (55 gift · 25 trade)
 121 TMs · 115 tm_locations · 65 move_expert_moves · 41 move_tutors
 ```

@@ -91,6 +91,11 @@ function PokedexContent() {
     ability_id: abilityId,
   });
   const searchQuery = usePokemonSearch(q);
+  // Totaux des onglets lus en base : le wiki ajoute des Pokémon (582 en
+  // 2026-09 contre 572 en juillet), des nombres en dur se périment en silence.
+  const kantoTotal  = usePokemonCount({ include_hoenn: false }).data;
+  const allTotal    = usePokemonCount({ include_hoenn: true }).data;
+  const hoennTotal  = kantoTotal !== undefined && allTotal !== undefined ? allTotal - kantoTotal : undefined;
 
   const pokemons = isSearching ? searchQuery.data ?? [] : listQuery.data ?? [];
   const isLoading = isSearching ? searchQuery.isLoading : listQuery.isLoading;
@@ -167,7 +172,11 @@ function PokedexContent() {
               onClick={() => handleGame(v)}
               className={`px-3 py-1.5 transition-colors ${game === v ? "bg-indigo-600 text-white" : "bg-if-elevated text-if-text-xs hover:bg-if-input"}`}
             >
-              {v === "kanto" ? "IF Kanto (501)" : v === "hoenn" ? "IF Hoenn (71)" : "Tous (572)"}
+              {v === "kanto"
+                ? `IF Kanto (${kantoTotal ?? "…"})`
+                : v === "hoenn"
+                  ? `IF Hoenn (${hoennTotal ?? "…"})`
+                  : `Tous (${allTotal ?? "…"})`}
             </button>
           ))}
         </div>

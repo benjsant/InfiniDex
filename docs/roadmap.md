@@ -8,10 +8,10 @@ Version live du suivi : [ROADMAP.md](https://github.com/benjsant/InfiniDex/blob/
 
 Pipeline en 38 étapes (orchestrateur `etl/pipeline.py`). Données actuelles :
 
-- **572 Pokémon** (501 IF + 71 formes)
+- **582 Pokémon** (501 Kanto + 81 Hoenn)
 - **658 moves** · **183 abilities** · **45 073** pokemon_move
-- **168 154** fusion_sprite · **23** triple_fusion
-- **7 126** créateurs · **2 448** pokemon_location · **188** locations
+- **178 047** fusion_sprite · **25** triple_fusion
+- **7 511** créateurs · **2 454** pokemon_location · **190** locations
 - **121** TMs · **41** tuteurs de capacités
 
 **Pistes ouvertes :**

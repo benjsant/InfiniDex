@@ -189,16 +189,28 @@ def load_pokemon(conn, pokedex: list[dict], stats: list[dict], gen_map: dict) ->
             s       = stats_by_id.get(if_id, {})
             gen_id  = gen_map.get(entry.get("generation", 1), 1)
 
+            # national_id here is provisional (extract_stats_pokeapi fetched by
+            # if_id; fix_national_ids corrects it at step 8d). On a fresh DB
+            # it can't collide, but on an existing one the earlier rows already
+            # hold their CORRECTED national ids: a newly added IF Pokémon then
+            # clashes on the UNIQUE constraint (2026-09: Tornadus #577 vs
+            # Solosis, whose real national id is 577). Start it at NULL instead
+            # when the provisional value is taken — step 8d assigns the real one.
             cur.execute(
                 """INSERT INTO pokemon
                    (id, national_id, name_en, name_fr, generation_id,
                     hp, attack, defense, sp_attack, sp_defense, speed,
                     base_experience, is_hoenn_only, sprite_path)
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                   VALUES (%s,
+                           CASE WHEN EXISTS (
+                               SELECT 1 FROM pokemon WHERE national_id = %s AND id <> %s
+                           ) THEN NULL ELSE %s END,
+                           %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                    ON CONFLICT (id) DO UPDATE SET
                        sprite_path = EXCLUDED.sprite_path""",
                 (
                     if_id,
+                    s.get("national_id"), if_id,
                     s.get("national_id"),
                     entry["name_en"],
                     s.get("name_fr"),

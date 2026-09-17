@@ -141,7 +141,7 @@ flowchart TD
 ```
 
 !!! note "IF id ≠ national dex id"
-    Pour Gen 1–2 les deux IDs coïncident (1–251). Au-delà, IF utilise sa propre numérotation - ex. Arceus est `#315` en IF mais `#493` au national dex. `usePokemonIdMap` charge une fois la liste complète des 572 Pokémon et construit la map en mémoire (React Query `staleTime: Infinity`).
+    Pour Gen 1–2 les deux IDs coïncident (1–251). Au-delà, IF utilise sa propre numérotation - ex. Arceus est `#315` en IF mais `#493` au national dex. `usePokemonIdMap` charge une fois la liste complète des Pokémon (582) et construit la map en mémoire (React Query `staleTime: Infinity`).
 
 ### Flux IA (SSE)
 
