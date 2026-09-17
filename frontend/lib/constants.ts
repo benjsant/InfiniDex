@@ -129,6 +129,10 @@ export const API_BASE_URL = "/api";
 
 export const POKEDEX_PAGE_SIZE = 40;
 
+// Game filter wording. "kanto"/"hoenn" stay as internal keys (URL params,
+// API `include_hoenn`); players know the games as IF1 and IF2.
+export const GAME_FILTER_LABELS = { kanto: "IF1", hoenn: "IF2", all: "Tous" } as const;
+
 // Base Pokémon sprites — PokeAPI's public sprites repo (national dex id).
 // Long-standing community CDN; avoids redistributing fan-game assets.
 export const BASE_SPRITES_URL =

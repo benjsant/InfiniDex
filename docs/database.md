@@ -18,7 +18,7 @@ PostgreSQL 16. Schéma défini dans [docker/init_postgres.sql](https://github.co
 
 | Table                   | Contenu                                               |
 | ----------------------- | ----------------------------------------------------- |
-| `pokemon`               | 501 Pokémon Kanto + 81 ajouts Hoenn = **582 entrées**          |
+| `pokemon`               | 501 Pokémon d'IF1 + 81 propres à IF2 (Hoenn, `is_hoenn_only`) = **582 entrées**          |
 | `pokemon_type`          | Types primaires/secondaires (FK vers `type`)          |
 | `pokemon_ability`       | Talents disponibles (normaux + cachés)                |
 | `pokemon_move`          | Learnset : 45 073 lignes (level-up, TM, tutor, egg)   |

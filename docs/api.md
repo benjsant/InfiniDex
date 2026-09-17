@@ -36,7 +36,7 @@ Chaque `route` importe son `service`, qui importe ses `models` et `schemas`. Les
 | Méthode | Chemin                                          | Description                               |
 | ------- | ----------------------------------------------- | ----------------------------------------- |
 | GET     | `/pokemon/count`                                | Nombre total de Pokémon (entier brut)     |
-| GET     | `/pokemon/`                                     | Liste paginée + filtres type/gen/Hoenn    |
+| GET     | `/pokemon/`                                     | Liste paginée + filtres type/gen/IF2 (`include_hoenn`)    |
 | GET     | `/pokemon/search?q={nom}`                       | Recherche par nom EN ou FR (ilike accent-insensitive) |
 | GET     | `/pokemon/{id}`                                 | Fiche complète (types, talents, stats)    |
 | GET     | `/pokemon/{id}/moves`                           | Learnset (level-up + TM + tutor + egg)    |

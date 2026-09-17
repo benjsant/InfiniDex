@@ -8,7 +8,7 @@ Version live du suivi : [ROADMAP.md](https://github.com/benjsant/InfiniDex/blob/
 
 Pipeline en 38 étapes (orchestrateur `etl/pipeline.py`). Données actuelles :
 
-- **582 Pokémon** (501 Kanto + 81 Hoenn)
+- **582 Pokémon** (501 d'IF1 + 81 propres à IF2/Hoenn)
 - **658 moves** · **183 abilities** · **45 073** pokemon_move
 - **178 047** fusion_sprite · **25** triple_fusion
 - **7 511** créateurs · **2 454** pokemon_location · **190** locations
@@ -54,7 +54,7 @@ Pipeline en 38 étapes (orchestrateur `etl/pipeline.py`). Données actuelles :
 
 **Pistes ouvertes :**
 
-- [ ] **CI full pytest** - le reste des tests nécessite un dump SQL fixture à committer sous `backend/tests/fixtures/`
+- [x] **CI full pytest** - dump SQL fixture sous `backend/tests/fixtures/`, job `full` avec postgres:16
 - [ ] Endpoint `/moves/{id}` enrichi avec TM number + location (après TM location cleanup)
 
 ### Frontend - ✅ complet
@@ -120,10 +120,10 @@ Pages : `/pokedex`, `/pokedex/[id]`, `/pokedex/favorites`, `/fusion`, `/fusion/[
 
 **Pistes ouvertes :**
 
-- [ ] Dump SQL fixture → full pytest en CI
+- [x] Dump SQL fixture → full pytest en CI
 - [ ] Choix de l'hébergement (Fly.io, Railway, VPS ?)
 - [ ] TLS + domaine pour la démo publique
-- [ ] Déployer la doc MkDocs (GitHub Pages ?)
+- [x] Doc MkDocs déployée sur GitHub Pages (`docs.yml`)
 
 ### Documentation - ✅ mise à jour
 
@@ -140,29 +140,26 @@ Les critères pour désarchiver les plans initiaux et considérer l'app complèt
 
 - ✅ Frontend stable (toutes les pages principales en place)
 - ✅ IA agentique phases 1-5 livrées (tool calling DB + wiki IF + web + privacy + transparence)
-- [ ] CI full verte (dump fixture committé)
+- ✅ CI full verte (dump fixture committé)
 - [ ] Déploiement public accessible
 - ✅ Documentation à jour sur chaque page
 
 Avant cette étape, les docs historiques restent figées sous [Archive](archive/index.md).
 
-## Cap v1.1 - séparation InfiniDex / HoennDex
+## Cap v1.1 - InfiniDex couvre IF1 et IF2
 
-Décision actée 2026-06-23 : le futur jeu Pokémon Infinite Fusion: Hoenn est un fan-game séparé, pas une DLC. Il aura son propre projet (HoennDex). En conséquence, les 71 Pokémon actuellement marqués `is_hoenn_only` dans la DB d'InfiniDex ne sont **pas** dans le jeu Kanto et seront retirés à terme.
+Décision du 2026-09-17, qui **annule** celle du 2026-06-23 (retrait des Pokémon Hoenn-only, projet HoennDex séparé). Ce qui a changé entre-temps :
 
-**Phase A - soft-remove** (à exécuter après livraison de la v0.1 du companion mobile Flutter `infinidex_mobile`) :
+- Le wiki officiel présente Hoenn comme la région de **Pokémon Infinite Fusion 2**, suite officielle de la même équipe, sur le même wiki, avec le même template Pokédex et le même pool de sprites communautaires.
+- Le contenu IF2 grandit dans les mêmes sources (71 → 81 Pokémon en deux mois, localisations, formes) et 19 452 sprites de fusion sur 178 047 (11 %) impliquent un Pokémon IF2. Le supprimer reviendrait à lutter contre chaque spritepack.
+- Un seul code, un seul ETL et une seule API couvrent les deux jeux ; le companion mobile n'a qu'un backend à consommer.
 
-- [ ] `include_hoenn=False` par défaut sur les endpoints `/pokemon/*`
-- [ ] Retirer le toggle Kanto/Hoenn du frontend (ou le mettre derrière un flag avancé)
-- [ ] Mettre à jour les comptes dans README + docs : `572 Pokémon` → `501`
-- [ ] CHANGELOG v1.1
+Le problème réel de juin (« un joueur voit des Pokémon qu'il ne peut pas attraper ») est traité par l'étiquetage, pas par la suppression :
 
-**Phase B - hard delete** (à exécuter après HoennDex v0.1) :
+- [x] Badge **IF2** sur les cartes et les fiches des Pokémon `is_hoenn_only`
+- [x] Onglets **IF1 / IF2 / Tous** (Pokédex et sélecteur de fusion), défaut « Tous »
+- [x] Roadmap et docs alignées
+- [ ] Renommer `is_hoenn_only` / `include_hoenn` en `if2` lors d'une prochaine évolution de schéma (pas avant : le mobile consomme l'API actuelle)
+- [ ] Étendre les localisations IF2 quand le wiki les documentera (aujourd'hui majoritairement `TBA`)
 
-- [ ] Migration SQL : DELETE en cascade sur `pokemon_move`, `pokemon_ability`, `pokemon_location`, `fusion_sprite`, `evolution`, puis `pokemon WHERE is_hoenn_only`
-- [ ] Retrait du param API `include_hoenn` + colonne `is_hoenn_only` (modèle + schemas)
-- [ ] Retrait des étapes ETL qui chargent ces Pokémon
-- [ ] Recompter et publier les nouveaux chiffres (fusion_sprite notamment)
-- [ ] Bump v1.2.0
-
-Les Pokémon Hoenn complets (Gen 3) seront servis par le futur HoennDex via son propre wiki source et son propre Pokédex. Cf. mémoire `project_hoenn_cleanup_deferred.md`.
+Le projet HoennDex séparé est abandonné. Cf. mémoire `project_hoenn_cleanup_deferred.md`.

@@ -77,7 +77,7 @@ export default function AboutPage() {
         </h2>
         <ul className="space-y-2 text-sm" style={{ color: "var(--color-if-text-dim)" }}>
           {[
-            "Pokédex complet des Pokémon d'Infinite Fusion (Kanto + Hoenn)",
+            "Pokédex complet des Pokémon d'Infinite Fusion 1 et 2 (Kanto + Hoenn)",
             "Calculateur de fusion avec stats, types, mouvements et sprites",
             "168 000+ sprites de fusion servis localement via CDN",
             "Données complètes : mouvements, tuteurs, Move Experts, CTs, objets, types, lieux",

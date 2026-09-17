@@ -8,7 +8,7 @@ import { usePokemonList, usePokemonSearch, usePokemonCount, useTypes, useAbiliti
 import { PokemonCard } from "@/components/pokemon/PokemonCard";
 import { SearchBar } from "@/components/layout/SearchBar";
 import { primaryType, secondaryType, normalize } from "@/lib/utils";
-import { POKEDEX_PAGE_SIZE } from "@/lib/constants";
+import { GAME_FILTER_LABELS, POKEDEX_PAGE_SIZE } from "@/lib/constants";
 import type { PokemonSortBy } from "@/lib/api";
 
 const PAGE_SIZE = POKEDEX_PAGE_SIZE;
@@ -50,7 +50,7 @@ function PokedexContent() {
   const [typeId, setTypeId]   = useState<number | undefined>(undefined);
   const [type2Id, setType2Id] = useState<number | undefined>(undefined);
   const [page, setPage] = useState(1);
-  const [game, setGame] = useState<"kanto" | "hoenn" | "all">("kanto");
+  const [game, setGame] = useState<"kanto" | "hoenn" | "all">("all");
   const [sortBy, setSortBy] = useState<SortBy>("id");
   const [minBst, setMinBst] = useState<string>("");
   const [maxBst, setMaxBst] = useState<string>("");
@@ -172,11 +172,7 @@ function PokedexContent() {
               onClick={() => handleGame(v)}
               className={`px-3 py-1.5 transition-colors ${game === v ? "bg-indigo-600 text-white" : "bg-if-elevated text-if-text-xs hover:bg-if-input"}`}
             >
-              {v === "kanto"
-                ? `IF Kanto (${kantoTotal ?? "…"})`
-                : v === "hoenn"
-                  ? `IF Hoenn (${hoennTotal ?? "…"})`
-                  : `Tous (${allTotal ?? "…"})`}
+              {GAME_FILTER_LABELS[v]} ({(v === "kanto" ? kantoTotal : v === "hoenn" ? hoennTotal : allTotal) ?? "…"})
             </button>
           ))}
         </div>

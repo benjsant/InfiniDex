@@ -7,7 +7,7 @@ import { usePokemonList } from "@/hooks/usePokemon";
 import { getPokemon } from "@/lib/api";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import type { PokemonListItem } from "@/types/api";
-import { basePokemonSprite } from "@/lib/constants";
+import { GAME_FILTER_LABELS, basePokemonSprite } from "@/lib/constants";
 import { primaryType, secondaryType, normalize } from "@/lib/utils";
 import Image from "next/image";
 
@@ -183,7 +183,7 @@ function PokemonPicker({ label, selected, onSelect, game, loading = false }: Pok
 export function FusionSelector() {
   const [head, setHead] = useState<PokemonListItem | null>(null);
   const [body, setBody] = useState<PokemonListItem | null>(null);
-  const [game, setGame] = useState<GameFilter>("kanto");
+  const [game, setGame] = useState<GameFilter>("all");
   const [preloading, setPreloading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -223,7 +223,7 @@ export function FusionSelector() {
               onClick={() => setGame(v)}
               className={`px-2.5 py-1 transition-colors ${game === v ? "bg-indigo-600 text-white" : "bg-if-elevated text-if-text-xs hover:bg-if-input"}`}
             >
-              {v === "kanto" ? "IF Kanto" : v === "hoenn" ? "IF Hoenn" : "Tous"}
+              {GAME_FILTER_LABELS[v]}
             </button>
           ))}
         </div>

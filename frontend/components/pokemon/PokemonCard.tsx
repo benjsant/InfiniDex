@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { PokemonListItem } from "@/types/api";
 import { TypeBadge } from "./TypeBadge";
+import { GameBadge } from "./GameBadge";
 import { basePokemonSprite, typeColor } from "@/lib/constants";
 import { primaryType, secondaryType } from "@/lib/utils";
 
@@ -59,8 +60,9 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
       </div>
 
       <div className="text-center">
-        <p className="text-[10px] font-mono" style={{ color: "var(--color-if-muted)" }}>
+        <p className="text-[10px] font-mono flex items-center justify-center gap-1" style={{ color: "var(--color-if-muted)" }}>
           #{String(pokemon.id).padStart(3, "0")}
+          <GameBadge isHoennOnly={pokemon.is_hoenn_only} />
         </p>
         <p className="text-sm font-semibold text-if-text group-hover:text-white transition-colors leading-tight">
           {pokemon.name_fr ?? pokemon.name_en}
