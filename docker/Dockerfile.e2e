@@ -1,7 +1,7 @@
 # Dependabot (docker) bumpe cette image ; bumper e2e/package.json
 # (@playwright/test) à la MÊME version dans la même PR - les navigateurs
 # embarqués doivent correspondre au paquet npm.
-FROM mcr.microsoft.com/playwright:v1.60.0-jammy
+FROM mcr.microsoft.com/playwright:v1.63.0-jammy
 
 WORKDIR /app
 
