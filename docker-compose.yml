@@ -100,7 +100,7 @@ services:
     restart: unless-stopped
 
   sprites:
-    image: nginx:1.27-alpine
+    image: nginx:1.31-alpine
     container_name: infinidex_sprites
     volumes:
       - ./data/sprites:/usr/share/nginx/html/sprites:ro
@@ -221,7 +221,7 @@ services:
     # Épinglé sur la version du lock ETL (etl/uv.lock) : le worker est construit
     # depuis ce lock, un serveur en `3-latest` dériverait du client à chaque
     # pull. Dependabot bumpe les deux ensemble (écosystèmes uv + docker-compose).
-    image: prefecthq/prefect:3.6.26-python3.12
+    image: prefecthq/prefect:3.8.7.dev2-python3.12
     container_name: infinidex_prefect_server
     profiles: ["prefect"]
     command: prefect server start --host 0.0.0.0 --port 4200
