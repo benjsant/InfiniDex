@@ -713,6 +713,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#migrations-de-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migrations de schéma
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#lancer-le-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1522,6 +1533,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#migrations-de-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migrations de schéma
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#lancer-le-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1830,6 +1852,8 @@
     style SRC fill:#1e2d40,color:#93c5fd
     style ETL fill:#1e3b2f,color:#6ee7b7
     style DB  fill:#2d1e3b,color:#c4b5fd</code></pre>
+<h2 id="migrations-de-schema">Migrations de schéma<a class="headerlink" href="#migrations-de-schema" title="Permanent link">&para;</a></h2>
+<p>Pas d'outil de migration : <code>docker/init_postgres.sql</code> ne s'exécute que sur un volume vierge. Les évolutions de schéma vivent dans <code>etl/utils/schema.py</code> (instructions idempotentes <code>IF NOT EXISTS</code>, à ajouter sans jamais modifier les précédentes). <code>pipeline.py</code> les applique <strong>à chaque démarrage</strong>, y compris quand les données sont déjà chargées ; comme le backend attend la fin du conteneur ETL, une base existante est migrée avant que le backend ne lise les nouvelles colonnes. Toute nouvelle colonne s'ajoute aux deux endroits : <code>init_postgres.sql</code> (bases neuves) et <code>schema.py</code> (bases existantes), plus <code>backend/tests/fixtures/schema.sql</code> pour la CI.</p>
 <h2 id="lancer-le-pipeline">Lancer le pipeline<a class="headerlink" href="#lancer-le-pipeline" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Via Docker (recommandé)</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>etl

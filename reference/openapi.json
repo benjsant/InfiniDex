@@ -340,6 +340,17 @@
       ],
       "title": "Evolves Into National Id"
      },
+     "evolves_into_sprite_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Evolves Into Sprite Id"
+     },
      "id": {
       "title": "Id",
       "type": "integer"
@@ -428,6 +439,17 @@
        }
       ],
       "title": "Pokemon National Id"
+     },
+     "pokemon_sprite_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pokemon Sprite Id"
      },
      "trigger_type": {
       "title": "Trigger Type",
@@ -1736,6 +1758,17 @@
       "title": "Speed",
       "type": "integer"
      },
+     "sprite_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sprite Id"
+     },
      "sprite_path": {
       "anyOf": [
        {
@@ -1828,6 +1861,17 @@
        }
       ],
       "title": "Pokepedia Url"
+     },
+     "sprite_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sprite Id"
      },
      "sprite_path": {
       "anyOf": [
@@ -2275,6 +2319,17 @@
      "position": {
       "title": "Position",
       "type": "integer"
+     },
+     "sprite_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sprite Id"
      }
     },
     "required": [
