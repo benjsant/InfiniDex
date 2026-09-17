@@ -7,6 +7,7 @@ import { ChevronLeft } from "lucide-react";
 import { usePokemon, usePokemonList, useTypes } from "@/hooks/usePokemon";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import { normalize, primaryType, secondaryType } from "@/lib/utils";
+import { basePokemonSprite } from "@/lib/constants";
 
 const PAGE_SIZE = 40;
 
@@ -78,7 +79,7 @@ export default function FusionsByHeadPage({ params }: { params: Promise<{ headId
         <div className="flex items-center gap-3">
           {head && (
             <Image
-              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${head.national_id ?? hId}.png`}
+              src={basePokemonSprite(head.sprite_id)}
               alt={headName}
               width={56}
               height={56}

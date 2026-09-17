@@ -51,6 +51,7 @@ def pokemon_to_list_item(p: Pokemon) -> PokemonListItem:
     return PokemonListItem(
         id=p.id,
         national_id=p.national_id,
+        sprite_id=p.sprite_id,
         name_en=p.name_en,
         name_fr=p.name_fr,
         types=_serialize_types(p.types),
@@ -139,6 +140,7 @@ def get_pokemon(p: Pokemon = Depends(get_pokemon_or_404)):
     return PokemonDetail(
         id=p.id,
         national_id=p.national_id,
+        sprite_id=p.sprite_id,
         name_en=p.name_en,
         name_fr=p.name_fr,
         generation_id=p.generation_id,
@@ -197,10 +199,12 @@ def get_evolutions_for_pokemon(
             pokemon_name_en=r.pokemon.name_en if r.pokemon else None,
             pokemon_name_fr=r.pokemon.name_fr if r.pokemon else None,
             pokemon_national_id=r.pokemon.national_id if r.pokemon else None,
+            pokemon_sprite_id=r.pokemon.sprite_id if r.pokemon else None,
             evolves_into_id=r.evolves_into_id,
             evolves_into_name_en=r.evolves_into.name_en,
             evolves_into_name_fr=r.evolves_into.name_fr,
             evolves_into_national_id=r.evolves_into.national_id,
+            evolves_into_sprite_id=r.evolves_into.sprite_id,
             trigger_type=r.trigger_type,
             min_level=r.min_level,
             item_name_en=r.item_name_en,

@@ -137,6 +137,10 @@ Le scroll distingue l'ajout d'un nouveau message (smooth) de l'arrivée d'un tok
 
 Sprite de fusion extrait d'un spritesheet 1920×2784 (20 colonnes × 29 lignes de 96×96px) hébergé par Infinite Fusion. Rendu par `background-position` CSS - aucun téléchargement d'image individuelle.
 
+### Sprites de base
+
+Toujours passer par `basePokemonSprite(sprite_id)` (`lib/constants.ts`), avec le champ `sprite_id` renvoyé par l'API : l'id PokeAPI de la forme alternative (Boréas Totémique → 10019) ou, à défaut, le numéro national. **Ne jamais retomber sur l'id IF** : PokeAPI renverrait une autre espèce (IF #431 Plumeline Pom-Pom = Chaglam sur PokeAPI). Sans `sprite_id`, le helper renvoie `/sprite-placeholder.svg`.
+
 ## Design system IF
 
 Le site utilise une palette et des tokens CSS inspirés de Pokémon Infinite Fusion.

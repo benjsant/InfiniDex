@@ -113,7 +113,7 @@ export function getPokemonIdMap(): Promise<Map<number, number>> {
   return apiFetch<PokemonListItem[]>("/pokemon/?limit=600").then((list) => {
     const map = new Map<number, number>();
     for (const p of list) {
-      if (p.national_id != null) map.set(p.id, p.national_id);
+      if (p.sprite_id != null) map.set(p.id, p.sprite_id);
     }
     return map;
   });

@@ -21,6 +21,9 @@ class AbilityOut(BaseModel):
 class PokemonListItem(BaseModel):
     id: int
     national_id: int | None
+    # PokeAPI sprite id: the form's own id (10xxx) or else national_id.
+    # NEVER fall back to `id` (IF id): that is another species' sprite.
+    sprite_id: int | None = None
     name_en: str
     name_fr: str | None
     types: list[PokemonTypeOut]
@@ -35,6 +38,9 @@ class PokemonListItem(BaseModel):
 class PokemonDetail(BaseModel):
     id: int
     national_id: int | None
+    # PokeAPI sprite id: the form's own id (10xxx) or else national_id.
+    # NEVER fall back to `id` (IF id): that is another species' sprite.
+    sprite_id: int | None = None
     name_en: str
     name_fr: str | None
     generation_id: int

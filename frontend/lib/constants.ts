@@ -135,6 +135,14 @@ export const BASE_SPRITES_URL =
   process.env.NEXT_PUBLIC_BASE_SPRITES_URL ??
   "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon";
 
-export function basePokemonSprite(nationalId: number): string {
-  return `${BASE_SPRITES_URL}/${nationalId}.png`;
+// Neutral image for a Pokémon without a PokeAPI sprite.
+export const SPRITE_PLACEHOLDER = "/sprite-placeholder.svg";
+
+/**
+ * Base sprite URL from the API's `sprite_id` (alternate form id, else national
+ * id). Never pass the IF id as a fallback: PokeAPI would serve ANOTHER species
+ * (IF #431 Oricorio Pom-Pom is Glameow on PokeAPI) — show the placeholder.
+ */
+export function basePokemonSprite(spriteId: number | null | undefined): string {
+  return spriteId != null ? `${BASE_SPRITES_URL}/${spriteId}.png` : SPRITE_PLACEHOLDER;
 }

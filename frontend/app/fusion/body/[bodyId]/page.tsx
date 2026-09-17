@@ -7,6 +7,7 @@ import { usePokemon, usePokemonList, useTypes } from "@/hooks/usePokemon";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import { normalize, primaryType, secondaryType } from "@/lib/utils";
 import type { PokemonListItem } from "@/types/api";
+import { basePokemonSprite } from "@/lib/constants";
 
 const PAGE_SIZE = 40;
 
@@ -78,7 +79,7 @@ export default function FusionsByBodyPage({ params }: { params: Promise<{ bodyId
         <div className="flex items-center gap-3">
           {body && (
             <Image
-              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${body.national_id ?? bId}.png`}
+              src={basePokemonSprite(body.sprite_id)}
               alt={bodyName}
               width={56}
               height={56}

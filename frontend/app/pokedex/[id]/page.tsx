@@ -89,7 +89,7 @@ export default function PokemonDetailPage({
   if (isLoading) return <PageSkeleton />;
   if (!pokemon)  return <NotFound id={pokemonId} />;
 
-  const spriteUrl = basePokemonSprite(pokemon.national_id ?? pokemonId);
+  const spriteUrl = basePokemonSprite(pokemon.sprite_id);
 
   const t1 = primaryType(pokemon.types);
   const t2 = secondaryType(pokemon.types);
@@ -165,7 +165,7 @@ export default function PokemonDetailPage({
                 <button
                   onClick={() => {
                     const wasFav = isFavorite(pokemonId);
-                    toggleFavorite({ id: pokemonId, nationalId: pokemon.national_id ?? null, nameEn: pokemon.name_en, nameFr: pokemon.name_fr ?? null });
+                    toggleFavorite({ id: pokemonId, nationalId: pokemon.national_id ?? null, spriteId: pokemon.sprite_id ?? null, nameEn: pokemon.name_en, nameFr: pokemon.name_fr ?? null });
                     toast(wasFav ? "Retiré des favoris" : "Ajouté aux favoris", wasFav ? "info" : "success");
                   }}
                   title={isFavorite(pokemonId) ? "Retirer des favoris" : "Ajouter aux favoris"}

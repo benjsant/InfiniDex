@@ -10,7 +10,7 @@ interface PokemonCardProps {
 }
 
 export function PokemonCard({ pokemon }: PokemonCardProps) {
-  const spriteUrl = basePokemonSprite(pokemon.national_id ?? pokemon.id);
+  const spriteUrl = basePokemonSprite(pokemon.sprite_id);
   const t1 = primaryType(pokemon.types);
   const t2 = secondaryType(pokemon.types);
   const color1 = t1 ? typeColor(t1.name_en) : "#6366f1";

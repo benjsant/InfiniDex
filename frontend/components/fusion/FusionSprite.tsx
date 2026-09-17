@@ -6,6 +6,7 @@
 
 import { useState } from "react";
 import { usePokemonIdMap } from "@/hooks/usePokemon";
+import { basePokemonSprite } from "@/lib/constants";
 
 export interface FusionSpriteProps {
   headId: number;
@@ -14,11 +15,11 @@ export interface FusionSpriteProps {
   className?: string;
 }
 
-function PokeApiSprite({ id, size, label }: { id: number; size: number; label: string }) {
+function PokeApiSprite({ id, size, label }: { id: number | undefined; size: number; label: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`}
+      src={basePokemonSprite(id)}
       alt={label}
       width={size}
       height={size}
@@ -38,8 +39,9 @@ export function FusionSprite({
 
   if (error) {
     const half = Math.round(size * 0.55);
-    const headNat = idMap.get(headId) ?? headId;
-    const bodyNat = idMap.get(bodyId) ?? bodyId;
+    // Sprite ids only — never the IF id (another species on PokeAPI).
+    const headNat = idMap.get(headId);
+    const bodyNat = idMap.get(bodyId);
     return (
       <div
         className={`flex items-center justify-center gap-0.5 ${className}`}

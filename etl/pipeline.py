@@ -237,6 +237,12 @@ def main(argv: Sequence[str] | None = None) -> None:
             print(f"[ETL] Unknown step '{from_step}'. Valid: {', '.join(names)}", flush=True)
             sys.exit(2)
 
+    # Idempotent schema migrations first, on EVERY run (even when the data is
+    # already loaded and we skip): the backend waits for this container, so an
+    # existing DB gets new columns before the backend queries them.
+    from etl.utils.schema import ensure_schema
+    ensure_schema()
+
     # --from is an explicit resume → bypass the already-loaded short-circuit.
     # Otherwise preserve original behaviour: always probe the DB (so a
     # DB-down condition still exits non-zero) then skip unless --force.
