@@ -713,6 +713,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#sprites-ajouts-et-redessins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprites : ajouts et redessins
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#migrations-de-schema" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1533,6 +1544,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#sprites-ajouts-et-redessins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sprites : ajouts et redessins
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#migrations-de-schema" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1852,6 +1874,28 @@
     style SRC fill:#1e2d40,color:#93c5fd
     style ETL fill:#1e3b2f,color:#6ee7b7
     style DB  fill:#2d1e3b,color:#c4b5fd</code></pre>
+<h2 id="sprites-ajouts-et-redessins">Sprites : ajouts et redessins<a class="headerlink" href="#sprites-ajouts-et-redessins" title="Permanent link">&para;</a></h2>
+<p><code>extract_sprites.py</code> ne se contente pas d'ajouter les sprites manquants. Les artistes redessinent régulièrement des sprites <strong>sous le même nom de fichier</strong> : la liste <code>CUSTOM_SPRITES</code> ne change pas, et l'ancienne logique « fichier présent → on saute » gardait l'ancien dessin indéfiniment, alors que <code>load_sprite_credits.py</code> créditait déjà le nouvel artiste.</p>
+<p>Chaque planche a son ETag enregistré dans <code>data/spritesheet_etags.json</code> (état local, lié à <code>data/sprites/</code>, non versionné). À chaque extraction :</p>
+<table>
+<thead>
+<tr>
+<th>Réponse du serveur</th>
+<th>Effet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>304</strong> (planche inchangée)</td>
+<td>rien n'est téléchargé</td>
+</tr>
+<tr>
+<td><strong>200</strong> (planche modifiée, ou jamais vérifiée)</td>
+<td>redécoupe de toute la planche, réécriture des seuls sprites dont les <strong>pixels</strong> diffèrent</td>
+</tr>
+</tbody>
+</table>
+<p>Premier passage (septembre 2026) : 1 316 sprites redessinés rattrapés sur 429 planches, environ 22 min. Passages suivants : 178 045 sprites revalidés en ~2 min. Le manifeste est sauvegardé toutes les 25 planches ; en cas de corruption, il est ignoré et tout est revérifié. <code>--force</code> ignore le manifeste mais ne réécrit toujours que les pixels modifiés.</p>
 <h2 id="migrations-de-schema">Migrations de schéma<a class="headerlink" href="#migrations-de-schema" title="Permanent link">&para;</a></h2>
 <p>Pas d'outil de migration : <code>docker/init_postgres.sql</code> ne s'exécute que sur un volume vierge. Les évolutions de schéma vivent dans <code>etl/utils/schema.py</code> (instructions idempotentes <code>IF NOT EXISTS</code>, à ajouter sans jamais modifier les précédentes). <code>pipeline.py</code> les applique <strong>à chaque démarrage</strong>, y compris quand les données sont déjà chargées ; comme le backend attend la fin du conteneur ETL, une base existante est migrée avant que le backend ne lise les nouvelles colonnes. Toute nouvelle colonne s'ajoute aux deux endroits : <code>init_postgres.sql</code> (bases neuves) et <code>schema.py</code> (bases existantes), plus <code>backend/tests/fixtures/schema.sql</code> pour la CI.</p>
 <h2 id="lancer-le-pipeline">Lancer le pipeline<a class="headerlink" href="#lancer-le-pipeline" title="Permanent link">&para;</a></h2>
