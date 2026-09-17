@@ -1992,7 +1992,7 @@
 <h2 id="composants-cles">Composants clés<a class="headerlink" href="#composants-cles" title="Permanent link">&para;</a></h2>
 <h3 id="fusionselector">FusionSelector<a class="headerlink" href="#fusionselector" title="Permanent link">&para;</a></h3>
 <p>Sélecteur head/body avec recherche intégrée. Lit <code>?head=ID</code> et <code>?body=ID</code> depuis les search params au montage pour pré-sélectionner un Pokémon (utilisé par les liens "Fusionner en tant que Tête" de la fiche Pokédex).</p>
-<p>Inclut un filtre de jeu (<code>GameFilter = "kanto" | "hoenn" | "all"</code>) qui restreint la liste aux Pokémon de la région concernée. Kanto = IDs 1–151, Hoenn = IDs 152–251 (convention IF), Tous = 572 Pokémon.</p>
+<p>Inclut un filtre de jeu (<code>GameFilter = "kanto" | "hoenn" | "all"</code>) qui restreint la liste aux Pokémon de la région concernée. Kanto = les 501 Pokémon du jeu d'origine, Hoenn = les 81 ajouts (<code>is_hoenn_only</code>), Tous = 582. Les compteurs des onglets sont lus en base (<code>usePokemonCount</code>), pas codés en dur.</p>
 <h3 id="fusionmovesettable">FusionMovesetTable<a class="headerlink" href="#fusionmovesettable" title="Permanent link">&para;</a></h3>
 <p>Tableau du moveset d'une fusion, groupé par méthode d'apprentissage (niveau, reproduction, donneur, CT, donneur expert). Chaque ligne affiche une pastille d'origine :</p>
 <ul>

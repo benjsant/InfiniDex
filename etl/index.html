@@ -1656,7 +1656,7 @@
 </tr>
 <tr>
 <td><strong>Wiki IF - sous-pages Pokédex</strong></td>
-<td>572 entrées <code>PokedexTable</code> + localisations (voir note ci-dessous)</td>
+<td>582 entrées <code>PokedexTable</code> + localisations (voir note ci-dessous)</td>
 </tr>
 <tr>
 <td><strong>Poképédia</strong> (MediaWiki + Scrapy)</td>
@@ -1689,7 +1689,7 @@
 <tr>
 <td>1</td>
 <td><code>extract_pokedex_if.py</code></td>
-<td>572 Pokémon depuis le wiki IF (sous-pages <code>Pokédex/Hoenn/Classic</code> + <code>Pokédex/Kanto/Classic</code>)</td>
+<td>582 Pokémon depuis le wiki IF (sous-pages <code>Pokédex/Hoenn/Classic</code> + <code>Pokédex/Kanto/Classic</code>)</td>
 </tr>
 <tr>
 <td>2a</td>
@@ -1704,7 +1704,7 @@
 <tr>
 <td>3</td>
 <td><code>extract_moves_if.py</code></td>
-<td>658 moves + 121 TMs + 40 tuteurs + 57 Move Experts</td>
+<td>~660 moves + 121 TMs + 40 tuteurs + 57 Move Experts</td>
 </tr>
 <tr>
 <td>3b</td>
@@ -1765,11 +1765,21 @@
 </table>
 <div class="admonition note">
 <p class="admonition-title">Étape 9b-ter - <code>load_pokedex_locations.py</code></p>
-<p>Parse la sous-page <code>Pokédex/Hoenn/Classic</code> du wiki IF (<code>{{PokedexTable/Data|...}}</code>) pour extraire les localisations sauvages et quêtes manquantes. Utilise <code>ON CONFLICT DO NOTHING</code> - ne réécrit jamais les données prioritaires de <code>fix_pokemon_locations.py</code>. Gère le <code>|</code> dans les liens wiki (<code>[[Page|Display]]</code>) en reconstruisant le champ depuis <code>parts[6:]</code>.</p>
+<p>Parse la sous-page <code>Pokédex/Hoenn/Classic</code> du wiki IF (<code>{{PokedexTable/Data|...}}</code>) pour extraire les localisations sauvages et quêtes manquantes. Utilise <code>ON CONFLICT DO NOTHING</code> - ne réécrit jamais les données prioritaires de <code>fix_pokemon_locations.py</code>. Lit le champ de localisation (paramètre 7) via <code>parse_template_calls</code>, qui gère nativement les <code>|</code> des liens wiki (<code>[[Page|Display]]</code>) et les paramètres nommés.</p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Restructuration du wiki (2026-07)</p>
-<p>La page <code>Pokédex</code> du wiki IF est devenue un hub sans données : les 572 entrées vivent dans <code>Pokédex/Hoenn/Classic</code>, le template a gagné un champ <code>form</code> en 4e position, et les marqueurs "Not in game" ont disparu (le flag <code>is_hoenn_only</code> est désormais dérivé de la différence Kanto/Hoenn). La restructuration a aussi remis la plupart des champs Location à <code>TBA</code> (436/572) - <code>load_pokedex_locations.py</code> ne récupère plus que ~7 tuples contre ~2 448 avant. L'étape 9b-quater (<code>load_locations_snapshot.py</code>) rejoue un snapshot committé de la table pré-restructuration (<code>etl/data/snapshots/pokemon_location_snapshot.json</code>, dump du 2026-07-13) en <code>ON CONFLICT DO NOTHING</code> : les données wiki vivantes gagnent toujours, le snapshot ne fait que combler les trous. Les deux scripts qui lisent cette page échouent désormais bruyamment s'ils parsent 0 entrée.</p>
+<p>La page <code>Pokédex</code> du wiki IF est devenue un hub sans données : les entrées vivent dans <code>Pokédex/Hoenn/Classic</code>, le template a gagné un champ <code>form</code> en 4e position, et les marqueurs "Not in game" ont disparu (le flag <code>is_hoenn_only</code> est désormais dérivé de la différence Kanto/Hoenn). La restructuration a aussi remis la plupart des champs Location à <code>TBA</code> (436/572) - <code>load_pokedex_locations.py</code> ne récupère plus que ~7 tuples contre ~2 448 avant. L'étape 9b-quater (<code>load_locations_snapshot.py</code>) rejoue un snapshot committé de la table pré-restructuration (<code>etl/data/snapshots/pokemon_location_snapshot.json</code>, dump du 2026-07-13) en <code>ON CONFLICT DO NOTHING</code> : les données wiki vivantes gagnent toujours, le snapshot ne fait que combler les trous. Les deux scripts qui lisent cette page échouent désormais bruyamment s'ils parsent 0 entrée.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Ajouts du wiki (2026-09)</p>
+<p>Le wiki a ajouté 10 Pokémon (Sancoki et Tritosor Est/Ouest, Boréas, Fulguris, Démétéros et leurs formes Totémiques : 572 → 582). Trois conséquences corrigées :</p>
+<ul>
+<li><strong>Paramètres nommés</strong> : certaines lignes sautent les colonnes vides avec <code>7=Route 119</code>. La regex à arité fixe débordait au-delà du <code>}}</code> et avalait la ligne suivante (les deux Tritosor disparaissaient). Les lignes sont désormais lues par <code>etl/utils/wikitext.parse_template_calls</code>, qui applique la sémantique MediaWiki (positionnels puis nommés, jamais au-delà de l'appel).</li>
+<li><strong>Collision de <code>national_id</code></strong> : <code>load_db.py</code> insère un numéro national provisoire égal à l'id IF. Sur une base existante, un nouveau Pokémon pouvait entrer en collision avec une ligne déjà corrigée (Boréas #577 contre Nucléos, vrai national 577). Le provisoire part à NULL s'il est déjà pris ; l'étape 8d attribue le bon.</li>
+<li><strong>Deux conventions de forme</strong> : colonne <code>form</code> (Sancoki « West ») ou forme dans le nom (« Tornadus (Therian) »). <code>fix_form_pokemon.py</code> couvre les deux et échoue si une forme n'est pas mappée.</li>
+</ul>
+<p>L'audit (check 2) ne bloque plus sur un Pokémon sans sprite de fusion quand <strong>aucun</strong> n'existe en amont (credits CSV) : les génies viennent d'arriver et n'ont pas encore été dessinés par la communauté. Il bloque toujours si des sprites existent en amont mais manquent en base.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Étape 8e-ter - <code>fix_evolutions.py</code></p>
@@ -1788,11 +1798,11 @@
         direction TB
         S1[1. init_postgres.sql\ncréation des tables]
         S2[2. types + générations]
-        S3[3. pokedex_if → 572 Pokémon]
+        S3[3. pokedex_if → 582 Pokémon]
         S4[4. abilities + pokemon_ability]
-        S5[5. moves + learnsets\n45 100 pokemon_move]
+        S5[5. moves + learnsets\n~47 k pokemon_move]
         S6[6. évolutions]
-        S7[7. fusion_sprite\n168 k lignes + créateurs]
+        S7[7. fusion_sprite\n178 k lignes + créateurs]
         S8[8. triple_fusions]
         S9[9. locations + pokemon_location]
         S10[10. TMs + tm_location]
@@ -1806,7 +1816,7 @@
 
     subgraph DB[(PostgreSQL 16)]
         T1[pokemon · move\nability · type]
-        T2[fusion_sprite\n168 k sprites]
+        T2[fusion_sprite\n178 k sprites]
         T3[move_expert_move\npokemon_location]
     end
 
