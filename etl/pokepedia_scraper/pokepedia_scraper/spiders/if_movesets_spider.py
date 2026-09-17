@@ -50,8 +50,16 @@ class IFMovesetSpider(scrapy.Spider):
 
     # ── Startup ──────────────────────────────────────────────────────────────
 
-    def start_requests(self):
+    # Overridable with `scrapy crawl if_movesets -a data_dir=...` (and in tests).
+    data_dir: str | None = None
+
+    async def start(self):
         """
+        Scrapy >= 2.13 entry point. Scrapy 2.19 REMOVED `start_requests()`:
+        a spider that only defines it is silently never started (the default
+        `start()` reads the empty `start_urls`, the crawl "finishes" with zero
+        requests). etl/tests/test_scrapy_spider.py locks this in.
+
         Build request list by joining:
           - data/pokedex_if.json      → IF IDs + EN names
           - data/pokepedia_names.json → EN name → Pokepedia slug + gen7 URL
@@ -59,9 +67,9 @@ class IFMovesetSpider(scrapy.Spider):
         Falls back to a best-effort slug (name_fr from PokeAPI) if no match found.
         """
         # Resolve data/ relative to project root (4 levels up from this file)
-        _root = Path(__file__).resolve().parents[4]
-        pokedex_file   = _root / "data/pokedex_if.json"
-        pokepedia_file = _root / "data/pokepedia_names.json"
+        data = Path(self.data_dir) if self.data_dir else Path(__file__).resolve().parents[4] / "data"
+        pokedex_file   = data / "pokedex_if.json"
+        pokepedia_file = data / "pokepedia_names.json"
 
         if not pokedex_file.exists():
             self.logger.error("data/pokedex_if.json not found — run extract_pokedex_if.py first")

@@ -19,11 +19,12 @@ OUTPUT_FILE = _ROOT / "data/movesets_base.json"
 
 
 class MovesetPipeline:
-    def open_spider(self, spider) -> None:
+    # `spider` args are optional: Scrapy 2.19 deprecates passing them.
+    def open_spider(self, spider=None) -> None:
         self.records: list[dict] = []
         LOGGER.info("[PIPELINE] Moveset pipeline opened — output: %s", OUTPUT_FILE)
 
-    def close_spider(self, spider) -> None:
+    def close_spider(self, spider=None) -> None:
         # Never clobber a good file with an empty crawl: when every request
         # fails (site down, URL scheme changed upstream), keeping the previous
         # movesets_base.json lets the merge step run on stale-but-valid data.
@@ -37,11 +38,11 @@ class MovesetPipeline:
         OUTPUT_FILE.write_text(json.dumps(self.records, ensure_ascii=False, indent=2))
         LOGGER.info("[PIPELINE] Saved %d moveset records → %s", len(self.records), OUTPUT_FILE)
 
-    def process_item(self, item, spider):
+    def process_item(self, item, spider=None):
         try:
             item.validate()
         except ValueError as exc:
-            spider.logger.warning("[INVALID ITEM] %s — %s", exc, dict(item))
+            LOGGER.warning("[INVALID ITEM] %s — %s", exc, dict(item))
             return item
 
         self.records.append({
