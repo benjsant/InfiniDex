@@ -1,0 +1,57 @@
+# Veille des dépendances - complète wiki-watch.yml (veille des données).
+# Une PR groupée par écosystème et par semaine (lundi, comme la veille wiki),
+# mineures et correctifs ensemble ; les majeures arrivent seules pour être
+# revues à part. La CI de chaque couche valide la PR avant merge.
+version: 2
+updates:
+  - package-ecosystem: uv
+    directory: /etl
+    schedule: { interval: weekly, day: monday, time: "06:30", timezone: Europe/Paris }
+    groups:
+      etl-minor-patch: { update-types: [minor, patch] }
+    labels: [dependencies, etl]
+
+  - package-ecosystem: uv
+    directory: /backend
+    schedule: { interval: weekly, day: monday, time: "06:30", timezone: Europe/Paris }
+    groups:
+      backend-minor-patch: { update-types: [minor, patch] }
+    labels: [dependencies, backend]
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule: { interval: weekly, day: monday, time: "06:30", timezone: Europe/Paris }
+    groups:
+      frontend-minor-patch: { update-types: [minor, patch] }
+    labels: [dependencies, frontend]
+
+  - package-ecosystem: npm
+    directory: /e2e
+    schedule: { interval: weekly, day: monday, time: "06:30", timezone: Europe/Paris }
+    groups:
+      e2e-minor-patch: { update-types: [minor, patch] }
+    labels: [dependencies, e2e]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly, day: monday, time: "06:30", timezone: Europe/Paris }
+    groups:
+      actions: { patterns: ["*"] }
+    labels: [dependencies, ci]
+
+  # Images de base des Dockerfiles (python, node, playwright)
+  - package-ecosystem: docker
+    directory: /docker
+    schedule: { interval: weekly, day: monday, time: "06:30", timezone: Europe/Paris }
+    groups:
+      docker-images: { update-types: [minor, patch] }
+    labels: [dependencies, docker]
+
+  # Images des services compose (postgres, nginx, prefect, ollama).
+  # Exige des tags épinglés : un tag flottant comme `3-latest` n'est jamais bumpé.
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule: { interval: weekly, day: monday, time: "06:30", timezone: Europe/Paris }
+    groups:
+      compose-images: { update-types: [minor, patch] }
+    labels: [dependencies, docker]
