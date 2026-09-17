@@ -48,7 +48,7 @@ Pages en place : `/pokedex` + `/pokedex/[id]`, `/fusion` + `/fusion/[headId]/[bo
 **Fonctionnalités ajoutées**
 - [x] Page `/moves/tutors` - Maîtres des Capacités (tuteurs classiques groupés par lieu + Move Experts par île)
 - [x] Page `/triple-fusions` - liste des 23 fusions triples
-- [x] `FusionSelector` - filtre Kanto/Hoenn/Tous (`GameFilter = "kanto" | "hoenn" | "all"`)
+- [x] `FusionSelector` - filtre IF1/IF2/Tous (`GameFilter = "kanto" | "hoenn" | "all"`)
 - [x] Responsive mobile - hamburger + drawer full-width (`md:hidden`), `hidden sm:table-cell`, `flex-col md:flex-row`
 - [x] Design IF-style - palette gold `#e8b84b`, fond `#090c1a`, tokens CSS `@theme`, grid texture, TypeBadge avec glow, PokemonCard avec gradient de type, StatBar avec gradient + glow
 - [x] `search_pokemon_locations` - outil IA pour chercher les Pokémon par condition/méthode

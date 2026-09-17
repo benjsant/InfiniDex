@@ -1,6 +1,6 @@
 # InfiniDex
 
-Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.com/) - 582 Pokémon (501 Kanto + 81 Hoenn), 178 000+ fusions calculées, movepools, types, triple-fusions, Move Experts, maîtres des capacités, galerie des créateurs de sprites, et un **assistant IA agentique** à 9 outils.
+Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.com/) - 582 Pokémon (501 d'IF1 + 81 propres à IF2/Hoenn), 178 000+ fusions calculées, movepools, types, triple-fusions, Move Experts, maîtres des capacités, galerie des créateurs de sprites, et un **assistant IA agentique** à 9 outils.
 
 📖 **[Documentation complète →](https://benjsant.github.io/InfiniDex/)**
 
@@ -89,10 +89,10 @@ UI Prefect : http://localhost:54200 - cron `06:00 Paris` (pokedex) + `07:00 Pari
 | Page | Description |
 | ---- | ----------- |
 | `/` | Accueil |
-| `/pokedex` | Liste paginée (40/page) + recherche + filtre par type + filtre Kanto/Hoenn |
+| `/pokedex` | Liste paginée (40/page) + recherche + filtre par type + filtre IF1/IF2/Tous |
 | `/pokedex/[id]` | Fiche complète : stats, capacités, évolutions, faiblesses, onglet Fusion |
 | `/pokedex/favorites` | Pokémon favoris (stockés localStorage) |
-| `/fusion` | Sélecteur head/body + filtre Kanto/Hoenn/Tous + pré-sélection via URL |
+| `/fusion` | Sélecteur head/body + filtre IF1/IF2/Tous + pré-sélection via URL |
 | `/fusion/[h]/[b]` | Sprites custom + normal/inversé, stats fusionnées, moveset, Move Expert moves |
 | `/fusion/[headId]` | Toutes les fusions d'un Pokémon en tête |
 | `/fusion/body/[bodyId]` | Toutes les fusions d'un Pokémon en corps |

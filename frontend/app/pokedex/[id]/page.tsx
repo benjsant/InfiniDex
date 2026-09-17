@@ -20,6 +20,7 @@ import { EvolutionChain } from "@/components/pokemon/EvolutionChain";
 import { WeaknessGrid } from "@/components/pokemon/WeaknessGrid";
 import { AiSuggestButton } from "@/components/ai/AiSuggestButton";
 import { basePokemonSprite, typeColor } from "@/lib/constants";
+import { GameBadge } from "@/components/pokemon/GameBadge";
 import { primaryType, secondaryType, cn } from "@/lib/utils";
 import { FusionSprite } from "@/components/fusion/FusionSprite";
 import { usePokemonFavorites } from "@/hooks/usePokemonFavorites";
@@ -150,9 +151,12 @@ export default function PokemonDetailPage({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2 flex-wrap">
               <div>
-                <p className="text-xs font-mono" style={{ color: "var(--color-if-muted)" }}>
-                  IF #{String(pokemon.id).padStart(3, "0")}
-                  {pokemon.national_id && ` · #${String(pokemon.national_id).padStart(3, "0")} National`}
+                <p className="text-xs font-mono flex items-center gap-2" style={{ color: "var(--color-if-muted)" }}>
+                  <span>
+                    IF #{String(pokemon.id).padStart(3, "0")}
+                    {pokemon.national_id && ` · #${String(pokemon.national_id).padStart(3, "0")} National`}
+                  </span>
+                  <GameBadge isHoennOnly={pokemon.is_hoenn_only} size="md" />
                 </p>
                 <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: "var(--color-if-text)" }}>
                   {pokemon.name_fr ?? pokemon.name_en}
