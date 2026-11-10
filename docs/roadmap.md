@@ -33,7 +33,7 @@ Pipeline en 38 étapes (orchestrateur `etl/pipeline.py`). Données actuelles :
 
 ### Backend - ✅ base solide
 
-54 endpoints + `/health` + 136 tests pytest. Couvre pokémon, moves, abilities, types, fusions, sprites, triple-fusions, générations, créateurs, stats, IA.
+54 endpoints + `/health` + ~170 tests pytest. Couvre pokémon, moves, abilities, types, fusions, sprites, triple-fusions, générations, créateurs, stats, IA.
 
 **Optimisations livées (PRs #9 → #31)** :
 
@@ -74,7 +74,7 @@ Pages : `/pokedex`, `/pokedex/[id]`, `/pokedex/favorites`, `/fusion`, `/fusion/[
 **Pistes ouvertes :**
 
 - [ ] Toggle EN/FR global persistent
-- [x] Tests Playwright - 10 tests E2E Chromium (`docker compose --profile e2e run --rm e2e`)
+- [x] Tests Playwright - 13 tests E2E Chromium (`docker compose --profile e2e run --rm e2e`)
 
 ### IA - ✅ phases 1 à 5 livrées
 

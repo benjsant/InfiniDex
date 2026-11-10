@@ -9,7 +9,7 @@
 | ETL        | Python 3.12 + `uv` + MediaWiki + PokeAPI    | ✅ stable  |
 | Base       | PostgreSQL 16 (tables relationnelles + `INTEGER[]`) | ✅ stable |
 | Backend    | FastAPI + SQLAlchemy 2 + Pydantic           | ✅ stable  |
-| Frontend   | Next.js 15 App Router + TypeScript          | ✅ stable  |
+| Frontend   | Next.js 16 App Router + TypeScript          | ✅ stable  |
 | IA         | Agent tool-calling DeepSeek/OpenRouter/Ollama - 9 outils | ✅ stable  |
 | Infra      | Docker Compose (dev + prod), Next.js proxy  | ✅ stable  |
 

@@ -28,7 +28,7 @@ Pipeline complet en 38 étapes (orchestrateur `etl/pipeline.py`), factorisé en 
 
 ## Backend FastAPI - ✅ base solide
 
-**51 endpoints + `/health`** couvrant Pokémon, moves, abilities, types, fusions, sprites, triple-fusions, générations, créateurs, stats, IA, CTs. **163 tests pytest** (voir [backend/tests/](backend/tests/)).
+**51 endpoints + `/health`** couvrant Pokémon, moves, abilities, types, fusions, sprites, triple-fusions, générations, créateurs, stats, IA, CTs. **~170 tests pytest** (voir [backend/tests/](backend/tests/)).
 
 **Optimisations DB** (PR #9 en cours) - index `idx_fusion_sprite_body` (seq scan 7.8ms → BitmapOr 2.76ms sur `/fusions/involving`), contrainte partielle `uq_fusion_sprite_default`, `compute_fusion_abilities` 2→1 query.
 
@@ -56,7 +56,7 @@ Pages en place : `/pokedex` + `/pokedex/[id]`, `/fusion` + `/fusion/[headId]/[bo
 **Pistes restantes**
 - [x] Galerie sprites + crédits (par créateur) - page `/creators` avec 7 600+ créateurs, recherche, modal sprites
 - [ ] Toggle EN/FR global persistent
-- [x] Tests Playwright - 10 tests E2E (homepage, pokédex, fusion, types/items, moves) via `docker compose --profile e2e run --rm e2e`
+- [x] Tests Playwright - 13 tests E2E (homepage, pokédex, fusion, types/items, moves) via `docker compose --profile e2e run --rm e2e`
 - [x] UI transparence IA - ToolPill, SourceBadge, token count, PromptModal
 
 ## IA - 🚧 en cours : phases avancées (transparence, privacy)

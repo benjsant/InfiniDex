@@ -13,9 +13,9 @@ Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.c
 | ETL        | Python 3.12 + `uv` + MediaWiki API + PokeAPI + Prefect 3    | ✅ stable |
 | Base       | PostgreSQL 16 (relationnelle + `INTEGER[]`)                 | ✅ stable |
 | Backend    | FastAPI + SQLAlchemy 2 + Pydantic - 54 endpoints            | ✅ stable |
-| Frontend   | Next.js 15 App Router + TypeScript + PWA - 23 pages         | ✅ stable |
+| Frontend   | Next.js 16 App Router + TypeScript + PWA - 23 pages         | ✅ stable |
 | IA         | Agent tool-calling - DeepSeek / OpenRouter / Ollama         | ✅ stable |
-| Infra      | Docker Compose (5 profils) + 4 lanes CI GitHub Actions      | ✅ stable |
+| Infra      | Docker Compose (5 profils) + 6 workflows GitHub Actions     | ✅ stable |
 
 ---
 
@@ -29,7 +29,7 @@ Choix d'archi que je voulais documenter pour les recruteurs IA / data eng qui ou
 - **SSE streaming + transparence agent.** Le frontend reçoit chaque `tool_call` en temps réel via Server-Sent Events. `GET /ai/prompt` expose le system prompt complet pour l'audit utilisateur.
 - **ETL Prefect 3 self-hosté.** Deux watchers daily (Pokédex + sprites custom) qui alertent Discord quand le wiki Infinite Fusion ou le repo `pif-downloadables` change. Drift snapshot dans `audit_db.py` (3 niveaux : compile + tests unit + diff vs run précédent).
 - **Cache-aware backend.** `_pokemon_cache` warm au startup (une entrée par Pokémon) + `_fusion_cache` borné à 4096. ~80 % des appels API ne touchent jamais la DB.
-- **Discipline d'audit.** 14 rounds d'audit + 4 PR de dedup (~333 LOC nettes supprimées, 9 modules partagés extraits). CI à 4 lanes path-filtered.
+- **Discipline d'audit.** 14 rounds d'audit + 4 PR de dedup (~333 LOC nettes supprimées, 9 modules partagés extraits). CI path-filtered (6 workflows, dont E2E Playwright et veille hebdo des sources).
 
 ---
 
@@ -156,7 +156,7 @@ Réponses streamées via SSE. Chaque appel d'outil est affiché en temps réel d
 ETL (Python/uv + Prefect)
   └── PostgreSQL 16
         └── FastAPI (SQLAlchemy 2 + cache mémoire)
-              └── proxy Next.js 15  ←→  navigateur
+              └── proxy Next.js 16  ←→  navigateur
                     └── /ai/ask  →  agent tool-calling (DeepSeek / OpenRouter / Ollama)
 ```
 
@@ -175,11 +175,13 @@ Voir la [documentation complète](https://benjsant.github.io/InfiniDex/) pour le
 | Workflow | Déclencheur | Contenu |
 |----------|-------------|---------|
 | `backend-ci` | Push/PR sur `backend/` | Import check + tests DB-free + pytest contre PostgreSQL réel |
-| `frontend-ci` | Push/PR sur `frontend/` | TypeScript typecheck + `next build` |
-| `etl-ci` | Push/PR sur `etl/` | Compile gate (`compileall`) + tests parsers wiki |
+| `frontend-ci` | Push/PR sur `frontend/` | `next typegen` + TypeScript typecheck + ESLint |
+| `etl-ci` | Push/PR sur `etl/` | Compile gate (`compileall`) + tests unitaires ETL |
+| `e2e` | Push/PR sur frontend, backend, e2e, Dockerfiles, compose | 13 tests Playwright contre la stack Docker sur la base de fixtures |
 | `docs` | Push sur `main` (docs/) | Build MkDocs → déploiement GitHub Pages |
+| `wiki-watch` | Cron du lundi + manuel | Veille des sources amont : rouge = relancer l'ETL |
 
-Les 4 lanes sont **path-filtered** : un PR qui ne touche que le backend ne déclenche que `backend-ci`.
+Les lanes sont **path-filtered** : un PR qui ne touche que le backend ne déclenche que `backend-ci` et `e2e`. Dependabot propose chaque lundi les mises à jour des 7 écosystèmes, validées par ces mêmes lanes.
 
 ---
 
