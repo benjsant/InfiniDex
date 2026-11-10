@@ -55,8 +55,10 @@ def pg_connection() -> Iterator[psycopg2.extensions.connection]:
 
 
 def get_engine():
+    # Driver explicite : depuis SQLAlchemy 2.1, `postgresql://` résout vers
+    # psycopg (v3), alors que seul psycopg2 est installé.
     url = (
-        f"postgresql://{os.getenv('POSTGRES_USER', 'infinidex_user')}"
+        f"postgresql+psycopg2://{os.getenv('POSTGRES_USER', 'infinidex_user')}"
         f":{_require_password()}"
         f"@{os.getenv('POSTGRES_HOST', 'db')}"
         f":{os.getenv('POSTGRES_PORT', '5432')}"

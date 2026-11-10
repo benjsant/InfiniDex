@@ -11,8 +11,10 @@ if _missing:
         "Set them in your .env file or Docker environment."
     )
 
+# Driver explicite : depuis SQLAlchemy 2.1, `postgresql://` résout vers psycopg
+# (v3), alors que seul psycopg2 est installé.
 _DB_URL = (
-    f"postgresql://{os.getenv('POSTGRES_USER', 'infinidex_user')}"
+    f"postgresql+psycopg2://{os.getenv('POSTGRES_USER', 'infinidex_user')}"
     f":{os.getenv('POSTGRES_PASSWORD')}"
     f"@{os.getenv('POSTGRES_HOST', 'db')}"
     f":{os.getenv('POSTGRES_PORT', '5432')}"
