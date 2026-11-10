@@ -1700,7 +1700,7 @@
 </tr>
 <tr>
 <td><strong>Wiki IF - sous-pages Pokédex</strong></td>
-<td>582 entrées <code>PokedexTable</code> + localisations (voir note ci-dessous)</td>
+<td>594 entrées <code>PokedexTable</code> + localisations (voir note ci-dessous)</td>
 </tr>
 <tr>
 <td><strong>Poképédia</strong> (MediaWiki + Scrapy)</td>
@@ -1733,7 +1733,7 @@
 <tr>
 <td>1</td>
 <td><code>extract_pokedex_if.py</code></td>
-<td>582 Pokémon depuis le wiki IF (sous-pages <code>Pokédex/Hoenn/Classic</code> + <code>Pokédex/Kanto/Classic</code>)</td>
+<td>594 Pokémon depuis le wiki IF (sous-pages <code>Pokédex/Hoenn/Classic</code> + <code>Pokédex/Kanto/Classic</code>)</td>
 </tr>
 <tr>
 <td>2a</td>
@@ -1815,6 +1815,10 @@
 <p class="admonition-title">Restructuration du wiki (2026-07)</p>
 <p>La page <code>Pokédex</code> du wiki IF est devenue un hub sans données : les entrées vivent dans <code>Pokédex/Hoenn/Classic</code>, le template a gagné un champ <code>form</code> en 4e position, et les marqueurs "Not in game" ont disparu (le flag <code>is_hoenn_only</code> est désormais dérivé de la différence Kanto/Hoenn). La restructuration a aussi remis la plupart des champs Location à <code>TBA</code> (436/572) - <code>load_pokedex_locations.py</code> ne récupère plus que ~7 tuples contre ~2 448 avant. L'étape 9b-quater (<code>load_locations_snapshot.py</code>) rejoue un snapshot committé de la table pré-restructuration (<code>etl/data/snapshots/pokemon_location_snapshot.json</code>, dump du 2026-07-13) en <code>ON CONFLICT DO NOTHING</code> : les données wiki vivantes gagnent toujours, le snapshot ne fait que combler les trous. Les deux scripts qui lisent cette page échouent désormais bruyamment s'ils parsent 0 entrée.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Ajouts du wiki (2026-11)</p>
+<p>12 Pokémon de plus (582 → 594 : Tritox, Malamandre, Sepiatop, Sepiatroce, Arkéapti, Aéroptéryx, Carapagos, Mégapagos, Rototaupe, Minotaupe, Spododo, Lampignon), absorbés sans modifier le parseur. Leurs lieux sont encore « TBA » sur le wiki.</p>
+</div>
 <div class="admonition warning">
 <p class="admonition-title">Ajouts du wiki (2026-09)</p>
 <p>Le wiki a ajouté 10 Pokémon (Sancoki et Tritosor Est/Ouest, Boréas, Fulguris, Démétéros et leurs formes Totémiques : 572 → 582). Trois conséquences corrigées :</p>
@@ -1842,7 +1846,7 @@
         direction TB
         S1[1. init_postgres.sql\ncréation des tables]
         S2[2. types + générations]
-        S3[3. pokedex_if → 582 Pokémon]
+        S3[3. pokedex_if → 594 Pokémon]
         S4[4. abilities + pokemon_ability]
         S5[5. moves + learnsets\n~47 k pokemon_move]
         S6[6. évolutions]
@@ -1892,6 +1896,10 @@
 <tr>
 <td><strong>200</strong> (planche modifiée, ou jamais vérifiée)</td>
 <td>redécoupe de toute la planche, réécriture des seuls sprites dont les <strong>pixels</strong> diffèrent</td>
+</tr>
+<tr>
+<td><strong>404</strong> (planche pas encore publiée)</td>
+<td>sprites comptés « en attente » (<code>pending-upstream</code>), rien n'est écrit : ils sont redemandés au run suivant</td>
 </tr>
 </tbody>
 </table>
@@ -1958,6 +1966,10 @@ silencieusement :
 <li><code>data/game_version.txt</code> - version du jeu (<code>LATEST_GAME_RELEASE</code> du dépôt <code>pif-downloadables</code>). Une nouvelle version garde la veille rouge tant qu'on n'a pas passé la release en revue et bumpé le fichier.</li>
 <li><code>data/sprites_baseline.txt</code> - nombre d'entrées de <code>CUSTOM_SPRITES</code> lors de la dernière extraction réussie, écrit automatiquement par <code>extract_sprites.py</code> (jamais si des téléchargements ont échoué : un état partiel ne doit pas prétendre être à jour). Un écart signifie « nouveau spritepack, relancer l'ETL ».</li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Planches pas encore publiées</p>
+<p><code>CUSTOM_SPRITES</code> liste parfois des sprites avant que le site n'ait rendu leur planche. En novembre 2026, les 478 sprites ayant pour tête l'un des 18 derniers Pokémon (n° 577 à 594) répondaient 404, y compris pour le jeu lui-même. Comme ces sprites bloquaient la référence, la veille est restée rouge du 5 octobre au 10 novembre pour des sprites que personne ne pouvait télécharger. Depuis, un 404 ne bloque plus la référence, sauf au-delà de 25 planches ou de 5 % du total : à ce stade, c'est une panne ou une URL déplacée, pas un retard de publication. Les vraies erreurs (réseau, 5xx, découpe) bloquent toujours.</p>
+</div>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Sonde manuelle (cache HTTP désactivé pour taper le live)</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>--no-deps<span class="w"> </span>-e<span class="w"> </span><span class="nv">ETL_HTTP_CACHE_TTL_HOURS</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>etl<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>python<span class="w"> </span>-m<span class="w"> </span>etl.scripts.check_sources
