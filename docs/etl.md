@@ -8,7 +8,7 @@ Le pipeline ETL extrait les données depuis plusieurs sources externes, les tran
 | --------------------------------- | --------------------------------------------------------------- |
 | **PokeAPI** (REST)                | Stats de base, national dex IDs, learnsets TM/tutor             |
 | **Wiki IF - pages spécifiques**   | Fusions, Move Experts, légendaires, tuteurs, mécaniques IF      |
-| **Wiki IF - sous-pages Pokédex**  | 582 entrées `PokedexTable` + localisations (voir note ci-dessous) |
+| **Wiki IF - sous-pages Pokédex**  | 594 entrées `PokedexTable` + localisations (voir note ci-dessous) |
 | **Poképédia** (MediaWiki + Scrapy)| Noms FR, learnsets Gen 7 (USUL)                                 |
 | **GitHub PokeAPI/sprites**        | Sprites PNG statiques                                           |
 
@@ -25,7 +25,7 @@ L'orchestrateur [etl/pipeline.py](https://github.com/benjsant/InfiniDex/blob/mai
 
 | Étape | Script | Rôle |
 |-------|--------|------|
-| 1 | `extract_pokedex_if.py` | 582 Pokémon depuis le wiki IF (sous-pages `Pokédex/Hoenn/Classic` + `Pokédex/Kanto/Classic`) |
+| 1 | `extract_pokedex_if.py` | 594 Pokémon depuis le wiki IF (sous-pages `Pokédex/Hoenn/Classic` + `Pokédex/Kanto/Classic`) |
 | 2a | `extract_stats_pokeapi.py` | Stats + name_fr + évolutions via PokeAPI |
 | 2b | `extract_pokepedia_names.py` | Mapping name_en → slug Pokepédia + URL Gen 7 |
 | 3 | `extract_moves_if.py` | ~660 moves + 121 TMs + 40 tuteurs + 57 Move Experts |
@@ -46,6 +46,9 @@ L'orchestrateur [etl/pipeline.py](https://github.com/benjsant/InfiniDex/blob/mai
 
 !!! warning "Restructuration du wiki (2026-07)"
     La page `Pokédex` du wiki IF est devenue un hub sans données : les entrées vivent dans `Pokédex/Hoenn/Classic`, le template a gagné un champ `form` en 4e position, et les marqueurs "Not in game" ont disparu (le flag `is_hoenn_only` est désormais dérivé de la différence Kanto/Hoenn). La restructuration a aussi remis la plupart des champs Location à `TBA` (436/572) - `load_pokedex_locations.py` ne récupère plus que ~7 tuples contre ~2 448 avant. L'étape 9b-quater (`load_locations_snapshot.py`) rejoue un snapshot committé de la table pré-restructuration (`etl/data/snapshots/pokemon_location_snapshot.json`, dump du 2026-07-13) en `ON CONFLICT DO NOTHING` : les données wiki vivantes gagnent toujours, le snapshot ne fait que combler les trous. Les deux scripts qui lisent cette page échouent désormais bruyamment s'ils parsent 0 entrée.
+
+!!! note "Ajouts du wiki (2026-11)"
+    12 Pokémon de plus (582 → 594 : Tritox, Malamandre, Sepiatop, Sepiatroce, Arkéapti, Aéroptéryx, Carapagos, Mégapagos, Rototaupe, Minotaupe, Spododo, Lampignon), absorbés sans modifier le parseur. Leurs lieux sont encore « TBA » sur le wiki.
 
 !!! warning "Ajouts du wiki (2026-09)"
     Le wiki a ajouté 10 Pokémon (Sancoki et Tritosor Est/Ouest, Boréas, Fulguris, Démétéros et leurs formes Totémiques : 572 → 582). Trois conséquences corrigées :
@@ -74,7 +77,7 @@ flowchart TD
         direction TB
         S1[1. init_postgres.sql\ncréation des tables]
         S2[2. types + générations]
-        S3[3. pokedex_if → 582 Pokémon]
+        S3[3. pokedex_if → 594 Pokémon]
         S4[4. abilities + pokemon_ability]
         S5[5. moves + learnsets\n~47 k pokemon_move]
         S6[6. évolutions]
@@ -118,6 +121,7 @@ Chaque planche a son ETag enregistré dans `data/spritesheet_etags.json` (état 
 | --- | --- |
 | **304** (planche inchangée) | rien n'est téléchargé |
 | **200** (planche modifiée, ou jamais vérifiée) | redécoupe de toute la planche, réécriture des seuls sprites dont les **pixels** diffèrent |
+| **404** (planche pas encore publiée) | sprites comptés « en attente » (`pending-upstream`), rien n'est écrit : ils sont redemandés au run suivant |
 
 Premier passage (septembre 2026) : 1 316 sprites redessinés rattrapés sur 429 planches, environ 22 min. Passages suivants : 178 045 sprites revalidés en ~2 min. Le manifeste est sauvegardé toutes les 25 planches ; en cas de corruption, il est ignoré et tout est revérifié. `--force` ignore le manifeste mais ne réécrit toujours que les pixels modifiés.
 
@@ -170,6 +174,9 @@ Les checks 8 et 9 comparent le live à des **fichiers committés**, ce qui les r
 
 - `data/game_version.txt` - version du jeu (`LATEST_GAME_RELEASE` du dépôt `pif-downloadables`). Une nouvelle version garde la veille rouge tant qu'on n'a pas passé la release en revue et bumpé le fichier.
 - `data/sprites_baseline.txt` - nombre d'entrées de `CUSTOM_SPRITES` lors de la dernière extraction réussie, écrit automatiquement par `extract_sprites.py` (jamais si des téléchargements ont échoué : un état partiel ne doit pas prétendre être à jour). Un écart signifie « nouveau spritepack, relancer l'ETL ».
+
+!!! note "Planches pas encore publiées"
+    `CUSTOM_SPRITES` liste parfois des sprites avant que le site n'ait rendu leur planche. En novembre 2026, les 478 sprites ayant pour tête l'un des 18 derniers Pokémon (n° 577 à 594) répondaient 404, y compris pour le jeu lui-même. Comme ces sprites bloquaient la référence, la veille est restée rouge du 5 octobre au 10 novembre pour des sprites que personne ne pouvait télécharger. Depuis, un 404 ne bloque plus la référence, sauf au-delà de 25 planches ou de 5 % du total : à ce stade, c'est une panne ou une URL déplacée, pas un retard de publication. Les vraies erreurs (réseau, 5xx, découpe) bloquent toujours.
 
 ```bash
 # Sonde manuelle (cache HTTP désactivé pour taper le live)
