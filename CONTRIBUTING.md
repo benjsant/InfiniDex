@@ -32,12 +32,11 @@ Services:
 
 ### Populate the database
 
-The schema is created automatically, but **data is not bundled** (fan-game assets). Run the ETL:
+The schema is created automatically, but **data is not bundled** (fan-game assets). On a fresh volume, `docker compose up -d` runs the `etl` container first (~40 min, mostly the sprite download) and the backend waits for it. To re-run it on an existing database:
 
 ```bash
-cd etl
-uv sync
-uv run python -m etl.scripts.load_db   # ~5–15 min
+docker compose run --rm etl python etl/pipeline.py --force
+docker compose up backend -d --force-recreate   # reload the backend caches
 ```
 
 ### Dev without Docker
@@ -60,26 +59,37 @@ npm run dev   # http://localhost:3000
 
 All tests run via Docker - never install pytest or Playwright locally.
 
-**Backend (136 tests against a real Postgres):**
+**Backend (~170 tests against a real Postgres):**
 ```bash
 docker compose --profile test run --rm test-backend
 ```
 
-**E2E Playwright (10 tests - requires the stack to be running):**
+**ETL (parser and pipeline unit tests, no database):**
+```bash
+docker compose --profile test run --rm test-etl
+```
+
+**E2E Playwright (13 tests - requires the stack to be running):**
 ```bash
 docker compose up -d          # start frontend + backend + db
 docker compose --profile e2e run --rm e2e
 ```
 
-**Type-check frontend only:**
+**Frontend build (typecheck + `next build`):**
 ```bash
-docker compose run --rm --no-deps frontend sh -c "npm run build"
+docker compose build frontend
 ```
 
-The CI runs two workflows:
+The CI runs six workflows, path-filtered on the layer they cover:
 
-- `ci.yml` - lint + mypy + build on every push
-- `full-pytest.yml` - 160 backend tests against a real Postgres, triggered on PRs
+| Workflow | Trigger | Content |
+|----------|---------|---------|
+| `backend-ci.yml` | `backend/**` | import check + DB-free tests, then full pytest against Postgres 16 with the committed fixtures |
+| `frontend-ci.yml` | `frontend/**` | `next typegen` + `tsc --noEmit` + ESLint |
+| `etl-ci.yml` | `etl/**` | `compileall` gate + ETL unit tests |
+| `e2e.yml` | frontend, backend, e2e, Dockerfiles, compose | 13 Playwright tests against the Docker stack on the fixture DB |
+| `docs.yml` | push on `main` (docs) | MkDocs build + GitHub Pages deploy |
+| `wiki-watch.yml` | Monday cron + manual | probes upstream sources; red means "re-run the ETL" (see `docs/etl.md`) |
 
 ## Commit conventions
 
@@ -112,29 +122,29 @@ Work from `main`. Open PRs against `main`.
 ## Pull request checklist
 
 - [ ] Backend tests pass (`docker compose --profile test run --rm test-backend`)
-- [ ] No new mypy errors (`docker compose run --rm --no-deps backend uv run mypy backend/`)
-- [ ] Frontend builds without TypeScript errors (`docker compose run --rm --no-deps frontend sh -c "npm run build"`)
+- [ ] ETL tests pass if `etl/` changed (`docker compose --profile test run --rm test-etl`)
+- [ ] Frontend builds without TypeScript errors (`docker compose build frontend`)
 - [ ] New tools registered in `TOOLS` list and covered by a test
 - [ ] Prompt changes in `backend/prompts/system.md` reviewed for fail-closed behavior
 
 ## Project structure
 
 ```
-backend/        FastAPI + SQLAlchemy 2 + Pydantic (54 endpoints, 136 tests)
+backend/        FastAPI + SQLAlchemy 2 + Pydantic (54 endpoints, ~170 tests)
 ├── routes/     API route handlers
 ├── services/   Business logic, AI agent, tools
 │   └── tools/  Agent tools (db_tools, wiki_tool, web_tool)
 ├── prompts/    LLM system prompt
 └── tests/      pytest suite (fixtures/ = dump SQL Postgres)
 
-frontend/       Next.js 15 App Router + TypeScript
+frontend/       Next.js 16 App Router + TypeScript
 ├── app/        Pages and layouts
 ├── components/ UI components (AI, Pokemon, Fusion…)
 ├── hooks/      Data-fetching hooks
 └── lib/        Constants, API client, types
 
 etl/            Data pipeline (MediaWiki + PokeAPI → Postgres)
-e2e/            Playwright E2E tests (10 happy-path tests, Chromium)
+e2e/            Playwright E2E tests (13 happy-path tests, Chromium)
 docker/         Dockerfiles + init_postgres.sql
 docs/           MkDocs documentation source
 ```
@@ -153,8 +163,8 @@ Adding a tool:
 
 ## Code style
 
-- **Python**: ruff (linting + formatting), mypy strict. Run `uv run ruff check . && uv run mypy backend/`.
-- **TypeScript**: ESLint + tsc. Run `npm run lint && npm run build` in `frontend/`.
+- **Python**: follow the surrounding style (PEP 8, type hints). No linter or type checker is wired in yet, neither in the lockfiles nor in CI.
+- **TypeScript**: ESLint (flat config, `eslint-config-next`) + tsc, both enforced by `frontend-ci`.
 - **Comments**: only when the *why* is non-obvious. No docstring novels.
 - **No hallucination surface**: every factual claim in the AI prompt must be verifiable via a tool - no hardcoded game data in system.md that the DB already covers.
 

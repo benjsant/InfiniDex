@@ -1,6 +1,6 @@
 # Frontend
 
-Next.js 15 (App Router) + TypeScript. Rendu SSR par défaut, déploiement en mode `output: "standalone"` dans Docker.
+Next.js 16 (App Router) + TypeScript. Rendu SSR par défaut, déploiement en mode `output: "standalone"` dans Docker.
 
 !!! tip "Captures d'écran"
     Toutes les pages sont documentées visuellement → [Captures d'écran](screenshots.md)

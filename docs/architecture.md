@@ -31,7 +31,7 @@ flowchart LR
         IA[ai_service<br/>agent loop + SSE]
     end
 
-    subgraph Frontend["Next.js 15 App Router"]
+    subgraph Frontend["Next.js 16 App Router"]
         M[pages /pokedex /fusion /ai…]
         N[proxy /api/* /sprites-cdn/*]
     end

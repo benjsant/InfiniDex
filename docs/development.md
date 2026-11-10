@@ -196,7 +196,7 @@ En prod, seul `frontend` est exposé publiquement. Prérequis : `.env.prod` avec
 docker compose --profile test run --rm test-backend
 ```
 
-136 tests contre un vrai Postgres. Le dump SQL est sous `backend/tests/fixtures/` (committé).
+~170 tests contre un vrai Postgres. Le dump SQL est sous `backend/tests/fixtures/` (committé).
 
 ### E2E Playwright
 
@@ -236,9 +236,9 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
 ## Structure du repo
 
 ```
-backend/        # FastAPI + SQLAlchemy + 136 tests
+backend/        # FastAPI + SQLAlchemy + ~170 tests
 etl/            # pipeline Python + uv
-frontend/       # Next.js 15 App Router
+frontend/       # Next.js 16 App Router
 e2e/            # Playwright (13 tests E2E Chromium, en CI via e2e.yml)
 docker/         # Dockerfiles + init_postgres.sql
 docs/           # cette documentation (MkDocs)
