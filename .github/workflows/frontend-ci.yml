@@ -13,7 +13,7 @@ on:
 
 jobs:
   typecheck:
-    name: TypeScript typecheck
+    name: Typecheck + lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -21,7 +21,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22   # même version que docker/Dockerfile.frontend
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -29,6 +29,16 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      # Next 16 : next-env.d.ts et les types de routes (.next/types) ne sont
+      # plus versionnés, typegen les génère sans build complet.
+      - name: Generate Next.js types
+        working-directory: frontend
+        run: npx next typegen
+
       - name: TypeScript typecheck
         working-directory: frontend
         run: npx tsc --noEmit
+
+      - name: ESLint
+        working-directory: frontend
+        run: npm run lint

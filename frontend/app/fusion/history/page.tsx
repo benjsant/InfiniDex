@@ -47,7 +47,7 @@ export default function FusionHistoryPage() {
       {entries.length === 0 ? (
         <div className="text-center py-16">
           <Clock size={40} className="mx-auto mb-4 text-if-elevated" />
-          <p className="text-if-text-xs">Aucune fusion visitée pour l'instant.</p>
+          <p className="text-if-text-xs">Aucune fusion visitée pour l&apos;instant.</p>
           <Link href="/fusion" className="mt-4 block text-sm transition-colors" style={{ color: "#e8b84b" }}>
             Calculer une fusion →
           </Link>

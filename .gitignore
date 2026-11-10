@@ -228,6 +228,9 @@ frontend/.next/
 frontend/node_modules/
 frontend/.env.local
 frontend/out/
+# Générés par `next build` / `next typegen` (Next 16) et par tsc --incremental
+frontend/next-env.d.ts
+frontend/*.tsbuildinfo
 backups/
 
 # Assets binaires déplacés vers ../infinidex-assets/ (hors repo)

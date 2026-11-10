@@ -42,7 +42,7 @@ export default function PokemonFavoritesPage() {
       {favorites.length === 0 ? (
         <div className="text-center py-16">
           <Star size={40} className="mx-auto mb-4 text-if-elevated" />
-          <p className="text-if-text-xs">Aucun Pokémon en favori pour l'instant.</p>
+          <p className="text-if-text-xs">Aucun Pokémon en favori pour l&apos;instant.</p>
           <Link href="/pokedex" className="mt-4 block text-sm transition-colors" style={{ color: "#e8b84b" }}>
             Explorer le Pokédex →
           </Link>
