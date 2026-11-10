@@ -1,6 +1,6 @@
 # InfiniDex
 
-Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.com/) - 582 Pokémon (501 d'IF1 + 81 propres à IF2/Hoenn), 178 000+ fusions calculées, movepools, types, triple-fusions, Move Experts, maîtres des capacités, galerie des créateurs de sprites, et un **assistant IA agentique** à 9 outils.
+Pokédex complet pour [Pokémon Infinite Fusion](https://infinitefusion.fandom.com/) - 594 Pokémon (501 d'IF1 + 93 propres à IF2/Hoenn), 182 000+ fusions calculées, movepools, types, triple-fusions, Move Experts, maîtres des capacités, galerie des créateurs de sprites, et un **assistant IA agentique** à 9 outils.
 
 📖 **[Documentation complète →](https://benjsant.github.io/InfiniDex/)**
 
@@ -54,7 +54,7 @@ docker compose up -d
 | API + Swagger | http://localhost:58000/docs |
 | Sprites (debug) | http://localhost:58080/sprites/ |
 
-> **Premier démarrage (~15 min).** Le conteneur `etl` se lance automatiquement et peuple la base : 582 Pokémon, 663 capacités, 178 000+ sprites. Le backend attend la fin de l'ETL avant de démarrer.
+> **Premier démarrage (~15 min).** Le conteneur `etl` se lance automatiquement et peuple la base : 594 Pokémon, 663 capacités, 182 000+ sprites. Le backend attend la fin de l'ETL avant de démarrer.
 
 ### Assistant IA
 
@@ -108,7 +108,7 @@ UI Prefect : http://localhost:54200 - cron `06:00 Paris` (pokedex) + `07:00 Pari
 | `/abilities/[id]` | Fiche talent : description EN/FR |
 | `/items` | Objets du jeu (fusion / evolution / valuable) avec lieux d'obtention |
 | `/triple-fusions` | 23 fusions triples - sprites, composants, stats, faiblesses |
-| `/creators` | Galerie des 7 500+ créateurs de sprites - recherche + modal sprites |
+| `/creators` | Galerie des 7 600+ créateurs de sprites - recherche + modal sprites |
 | `/creators/[id]` | Fiche créateur - tous ses sprites |
 | `/ai` | Chat IA streaming - agent à 9 outils avec transparence des appels en temps réel |
 | `/about` | À propos du projet |
@@ -118,9 +118,9 @@ UI Prefect : http://localhost:54200 - cron `06:00 Paris` (pokedex) + `07:00 Pari
 ## Données
 
 ```
-582 Pokémon · 663 capacités · 183 talents · 26 types · 70 objets
-178 047 fusion_sprites · 7 511 créateurs · 25 triple_fusions
-45 073 pokemon_move · 2 448 pokemon_location (55 gift · 25 trade)
+594 Pokémon · 663 capacités · 183 talents · 26 types · 70 objets
+182 785 fusion_sprites · 7 632 créateurs · 25 triple_fusions
+47 800 pokemon_move · 2 448 pokemon_location (55 gift · 25 trade)
 121 TMs · 115 tm_locations · 65 move_expert_moves · 41 move_tutors
 ```
 

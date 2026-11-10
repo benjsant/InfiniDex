@@ -8,10 +8,10 @@ Version live du suivi : [ROADMAP.md](https://github.com/benjsant/InfiniDex/blob/
 
 Pipeline en 38 étapes (orchestrateur `etl/pipeline.py`). Données actuelles :
 
-- **582 Pokémon** (501 d'IF1 + 81 propres à IF2/Hoenn)
-- **658 moves** · **183 abilities** · **45 073** pokemon_move
-- **178 047** fusion_sprite · **25** triple_fusion
-- **7 511** créateurs · **2 454** pokemon_location · **190** locations
+- **594 Pokémon** (501 d'IF1 + 93 propres à IF2/Hoenn)
+- **658 moves** · **183 abilities** · **47 800** pokemon_move
+- **182 785** fusion_sprite · **25** triple_fusion
+- **7 632** créateurs · **2 454** pokemon_location · **190** locations
 - **121** TMs · **41** tuteurs de capacités
 
 **Pistes ouvertes :**

@@ -77,9 +77,29 @@ def test_fetch_sheet_without_etag_sends_no_condition(monkeypatch):
     assert "If-None-Match" not in seen
 
 
-def test_fetch_sheet_404_is_missing(monkeypatch):
+def test_fetch_sheet_404_is_unpublished(monkeypatch):
     monkeypatch.setattr(es.requests, "get", lambda url, headers=None, timeout=None: _Resp(404))
-    assert es.fetch_sheet("https://x/999/999.png", None) == ("missing", None, None)
+    assert es.fetch_sheet("https://x/999/999.png", None) == ("unpublished", None, None)
+
+
+def test_fetch_sheet_other_error_is_missing(monkeypatch):
+    monkeypatch.setattr(es.requests, "get", lambda url, headers=None, timeout=None: _Resp(500))
+    assert es.fetch_sheet("https://x/25/25.png", None) == ("missing", None, None)
+
+
+def test_baseline_moves_despite_a_few_unpublished_sheets():
+    # Novembre 2026 : 18 têtes (577-594) listées dans CUSTOM_SPRITES, planches en 404.
+    assert es.baseline_blocker(failed=0, unpublished_sheets=18, n_sheets=594) is None
+
+
+def test_baseline_blocked_by_real_failures():
+    assert es.baseline_blocker(failed=3, unpublished_sheets=0, n_sheets=594) is not None
+
+
+def test_baseline_blocked_by_a_wave_of_404():
+    # Panne ou URL déplacée : tout répond 404, ce n'est pas un retard de publication.
+    assert es.baseline_blocker(failed=0, unpublished_sheets=594, n_sheets=594) is not None
+    assert es.baseline_blocker(failed=0, unpublished_sheets=40, n_sheets=594) is not None
 
 
 def test_etags_roundtrip_and_corrupt_file(tmp_path):

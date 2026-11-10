@@ -71,6 +71,10 @@ GRID_COLS      = 20
 DOWNLOAD_DELAY = 2.0    # seconds after a full spritesheet download (respectful)
 REVALIDATE_DELAY = 0.1  # after a 304 (no body transferred)
 ETAGS_SAVE_EVERY = 25   # sheets — an interrupted first run keeps its progress
+# Sheets answering 404 still let the baseline move (newest heads are listed
+# before the site renders their sheet), up to this many: beyond, it's an outage.
+MAX_UNPUBLISHED_SHEETS = 25
+MAX_UNPUBLISHED_RATIO  = 0.05
 
 SPRITE_RE = re.compile(r"^(\d+)\.(\d+)([a-z]*)\.png$")
 
@@ -108,7 +112,9 @@ def fetch_sheet(url: str, etag: str | None) -> tuple[str, bytes | None, str | No
     Returns ``(status, content, etag)`` with status one of:
       "not_modified" — 304, the stored ETag is still current (no body);
       "modified"     — 200, content + the new ETag;
-      "missing"      — 404 or repeated failure.
+      "unpublished"  — 404: CUSTOM_SPRITES already lists the sprites but the
+                       site has no sheet for this head yet (newest Pokémon);
+      "missing"      — any other error, or repeated failure.
     Retries with backoff on 429/503/network errors.
     """
     headers = dict(HEADERS)
@@ -121,6 +127,8 @@ def fetch_sheet(url: str, etag: str | None) -> tuple[str, bytes | None, str | No
                 return "not_modified", None, etag
             if resp.status_code == 200:
                 return "modified", resp.content, resp.headers.get("ETag")
+            if resp.status_code == 404:
+                return "unpublished", None, None
             if resp.status_code in (429, 503) and attempt < 3:
                 wait = 5 * 2 ** (attempt - 1)
                 LOGGER.warning("HTTP %s — %s — backing off %ss", resp.status_code, url, wait)
@@ -263,8 +271,9 @@ def extract_sprites(force: bool, include_alts: bool) -> None:
     LOGGER.info("To download: %d spritesheets / %d sprites", n_sheets, n_sprites)
 
     etags = {} if force else load_etags(SHEET_ETAGS)
-    created = refreshed = unchanged = revalidated = failed = 0
+    created = refreshed = unchanged = revalidated = failed = pending = 0
     sheets_changed = 0
+    unpublished: list[str] = []
 
     for idx, ((head_id, alt), body_ids) in enumerate(sorted(groups.items()), 1):
         key       = f"{head_id}{alt}"
@@ -279,6 +288,13 @@ def extract_sprites(force: bool, include_alts: bool) -> None:
 
         if status == "not_modified":
             revalidated += len(body_ids)
+            time.sleep(REVALIDATE_DELAY)
+            continue
+
+        # No file is written, so the next run sees them absent and asks again.
+        if status == "unpublished":
+            unpublished.append(key)
+            pending += len(body_ids)
             time.sleep(REVALIDATE_DELAY)
             continue
 
@@ -309,21 +325,41 @@ def extract_sprites(force: bool, include_alts: bool) -> None:
     save_etags(SHEET_ETAGS, etags)
     LOGGER.info(
         "Done — new=%d / redrawn=%d / verified-identical=%d / unchanged-304=%d / failed=%d "
-        "(%d sheet(s) changed, %d ETags stored)",
-        created, refreshed, unchanged, revalidated, failed, sheets_changed, len(etags),
+        "/ pending-upstream=%d (%d sheet(s) changed, %d ETags stored)",
+        created, refreshed, unchanged, revalidated, failed, pending, sheets_changed, len(etags),
     )
+    if unpublished:
+        LOGGER.warning(
+            "%d sprite(s) listed in CUSTOM_SPRITES but %d sheet(s) not published yet "
+            "upstream (HTTP 404) — retried on the next run: %s",
+            pending, len(unpublished), " ".join(unpublished),
+        )
 
     # Record the size of the list we just consumed. Only on a clean run: a
     # partial extraction must not claim we are in sync with upstream.
-    if failed == 0:
+    reason = baseline_blocker(failed, len(unpublished), n_sheets)
+    if reason is None:
         count = count_sprite_entries(raw_list)
         SPRITES_BASELINE.write_text(f"{count}\n", encoding="utf-8")
         LOGGER.info("Baseline CUSTOM_SPRITES → %d (%s)", count, SPRITES_BASELINE.name)
     else:
-        LOGGER.warning(
-            "%d spritesheet(s) failed — baseline left untouched (still out of sync)",
-            failed,
-        )
+        LOGGER.warning("%s — baseline left untouched (still out of sync)", reason)
+
+
+def baseline_blocker(failed: int, unpublished_sheets: int, n_sheets: int) -> str | None:
+    """Why the run must not record a new baseline, or None if it may.
+
+    A sheet the site has not published yet (404) does not block: the game
+    itself cannot fetch it, and holding the baseline back kept the weekly
+    watch red for weeks over sprites nobody can download. A wave of 404s is
+    an outage or a URL change, not a publishing delay, so it still blocks.
+    """
+    if failed:
+        return f"{failed} sprite(s) failed"
+    if n_sheets and unpublished_sheets > max(MAX_UNPUBLISHED_SHEETS, n_sheets * MAX_UNPUBLISHED_RATIO):
+        return (f"{unpublished_sheets}/{n_sheets} sheets answer 404 — looks like an "
+                "outage or a moved URL, not a publishing delay")
+    return None
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
