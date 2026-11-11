@@ -1,4 +1,4 @@
-import { ExternalLink, Database, Brain, Layers, GitMerge, Code2, Heart } from "lucide-react";
+import { ExternalLink, Database, Brain, GitMerge, Code2, Heart } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 

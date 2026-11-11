@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -37,7 +37,12 @@ export default function AbilitiesPage() {
     );
   }, [abilities, q]);
 
-  useEffect(() => { setPage(1); }, [q]);
+  // Nouvelle recherche → retour page 1 (ajusté au rendu, sans effet).
+  const [prevQ, setPrevQ] = useState(q);
+  if (q !== prevQ) {
+    setPrevQ(q);
+    setPage(1);
+  }
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);

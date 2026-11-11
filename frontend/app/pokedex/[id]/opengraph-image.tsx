@@ -52,7 +52,6 @@ export default async function Image({
         }}
       >
         {spriteSrc && (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={spriteSrc} alt={name} width={180} height={180} style={{ imageRendering: "pixelated" }} />
         )}
 

@@ -6,7 +6,7 @@ import { Info, X } from "lucide-react";
 import Link from "next/link";
 import type { PokemonMoveOut } from "@/types/api";
 import { TypeBadge } from "./TypeBadge";
-import { formatCategory, formatMethod, formatPower, formatAccuracy } from "@/lib/utils";
+import { formatCategory, formatPower, formatAccuracy } from "@/lib/utils";
 import { METHOD_LABELS } from "@/lib/constants";
 import { getMove } from "@/lib/api";
 

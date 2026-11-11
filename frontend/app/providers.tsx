@@ -1,8 +1,9 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import { ToastProvider } from "@/components/layout/Toast";
+import { readRaw, subscribe, writeRaw } from "@/lib/localStore";
 import { ThemeContext } from "@/hooks/useTheme";
 import type { Theme } from "@/hooks/useTheme";
 
@@ -20,23 +21,21 @@ function retryDelay(failureCount: number, error: unknown): number {
 }
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
+  // Valeur brute "dark" | "light" (format historique, pas de JSON).
+  // "dark" côté serveur et pendant l'hydratation, puis la préférence stockée.
+  const theme: Theme = useSyncExternalStore(
+    subscribe,
+    () => (readRaw("theme") === "light" ? "light" : "dark"),
+    () => "dark",
+  );
 
-  // Read from localStorage on mount, apply to <html>
+  // Synchronise <html> (système externe) avec le thème courant.
   useEffect(() => {
-    const stored = localStorage.getItem("theme") as Theme | null;
-    const initial = stored ?? "dark";
-    setTheme(initial);
-    document.documentElement.setAttribute("data-theme", initial === "light" ? "light" : "");
-  }, []);
+    document.documentElement.setAttribute("data-theme", theme === "light" ? "light" : "");
+  }, [theme]);
 
   const toggle = useCallback(() => {
-    setTheme((prev) => {
-      const next: Theme = prev === "dark" ? "light" : "dark";
-      localStorage.setItem("theme", next);
-      document.documentElement.setAttribute("data-theme", next === "light" ? "light" : "");
-      return next;
-    });
+    writeRaw("theme", readRaw("theme") === "light" ? "dark" : "light");
   }, []);
 
   return (

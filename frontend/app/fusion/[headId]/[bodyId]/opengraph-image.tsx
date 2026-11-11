@@ -59,7 +59,6 @@ export default async function Image({
       >
         {/* Sprite */}
         {spriteSrc && (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={spriteSrc}
             alt={name}

@@ -97,7 +97,10 @@ function PokedexContent() {
   const allTotal    = usePokemonCount({ include_hoenn: true }).data;
   const hoennTotal  = kantoTotal !== undefined && allTotal !== undefined ? allTotal - kantoTotal : undefined;
 
-  const pokemons = isSearching ? searchQuery.data ?? [] : listQuery.data ?? [];
+  const pokemons = useMemo(
+    () => (isSearching ? searchQuery.data : listQuery.data) ?? [],
+    [isSearching, searchQuery.data, listQuery.data],
+  );
   const isLoading = isSearching ? searchQuery.isLoading : listQuery.isLoading;
   const isError   = isSearching ? searchQuery.isError   : listQuery.isError;
 

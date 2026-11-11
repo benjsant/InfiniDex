@@ -184,16 +184,18 @@ export function FusionSelector() {
   const [head, setHead] = useState<PokemonListItem | null>(null);
   const [body, setBody] = useState<PokemonListItem | null>(null);
   const [game, setGame] = useState<GameFilter>("all");
-  const [preloading, setPreloading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  // Chargement dès le premier rendu si l'URL pré-sélectionne un Pokémon.
+  const [preloading, setPreloading] = useState(
+    () => Boolean(searchParams.get("head") || searchParams.get("body")),
+  );
 
   // Pre-select from URL params (?head=ID&?body=ID) — e.g. links from Pokédex page.
   useEffect(() => {
     const headId = searchParams.get("head");
     const bodyId = searchParams.get("body");
     if (!headId && !bodyId) return;
-    setPreloading(true);
     Promise.all([
       headId ? getPokemon(parseInt(headId, 10)).then(setHead).catch(() => null) : Promise.resolve(),
       bodyId ? getPokemon(parseInt(bodyId, 10)).then(setBody).catch(() => null) : Promise.resolve(),

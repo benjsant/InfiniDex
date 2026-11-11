@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { askAi } from "@/lib/api";
 import type { HistoryMessage } from "@/types/api";
 
@@ -27,8 +27,12 @@ export function useAiChat() {
   const [error, setError] = useState<string | null>(null);
 
   // Ref tracks latest messages so sendMessage doesn't need them as a dep.
+  // Updated after commit (not during render); sendMessage runs from events,
+  // always after the latest commit.
   const messagesRef = useRef<ChatMessage[]>([]);
-  messagesRef.current = messages;
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   // Abort controller for the current in-flight request.
   const abortRef = useRef<AbortController | null>(null);

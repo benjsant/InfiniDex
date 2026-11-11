@@ -67,7 +67,7 @@ function FullTable() {
               <td className="sticky left-0 z-10 bg-if-surface p-1">
                 <TypeBadge typeName={TYPES_FR[ri]} size="sm" />
               </td>
-              {TYPES_EN.map((defEn, ci) => {
+              {TYPES_EN.map((defEn) => {
                 const m = effectiveness(atkEn, defEn);
                 const label = m === 1 ? "" : multiplierText(m);
                 return (

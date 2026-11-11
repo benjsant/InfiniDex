@@ -45,14 +45,22 @@ export function GlobalSearch() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  // Focus input when overlay opens
-  useEffect(() => {
+  // Fresh state each time the overlay opens (adjusted during render, no effect).
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
-      setTimeout(() => inputRef.current?.focus(), 50);
       setQ("");
       setResults(EMPTY);
       setCursor(-1);
     }
+  }
+
+  // Focus input when overlay opens (DOM sync only)
+  useEffect(() => {
+    if (!open) return;
+    const t = setTimeout(() => inputRef.current?.focus(), 50);
+    return () => clearTimeout(t);
   }, [open]);
 
   // ── Debounced search ──────────────────────────────────────────────────────
