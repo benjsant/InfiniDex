@@ -68,7 +68,7 @@ def load_generations(conn) -> dict[int, int]:
         (7, "generation-vii", "génération-vii"),
     ]
     with conn.cursor() as cur:
-        for num, name_en, name_fr in GENS:
+        for _num, name_en, name_fr in GENS:
             cur.execute(
                 "INSERT INTO generation (name_en, name_fr) VALUES (%s, %s) "
                 "ON CONFLICT (name_en) DO NOTHING",
@@ -80,7 +80,6 @@ def load_generations(conn) -> dict[int, int]:
 
     gen_map = {}
     for db_id, name_en in rows:
-        num = int(name_en.split("-")[-1].replace("i", "1").replace("v", "5").replace("x", "10"))
         # Use Roman numeral position for mapping
         roman = {"i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5, "vi": 6, "vii": 7}
         suffix = name_en.split("-")[-1]

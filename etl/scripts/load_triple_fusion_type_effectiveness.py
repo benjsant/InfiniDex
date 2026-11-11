@@ -16,6 +16,7 @@ Idempotence: uses ON CONFLICT DO UPDATE.
 """
 
 from __future__ import annotations
+
 from etl.utils.db import pg_connection
 from etl.utils.logging import setup_logging
 from etl.utils.sql import load_id_map

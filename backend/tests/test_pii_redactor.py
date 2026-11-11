@@ -2,7 +2,6 @@
 
 from backend.services.pii_redactor import redact
 
-
 # ─── Key removal ─────────────────────────────────────────────────────────────
 
 def test_removes_creator_key() -> None:

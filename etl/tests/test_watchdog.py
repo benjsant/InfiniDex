@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from etl.flows.pokedex_watcher import POKEDEX_PAGE, _ENTRY_RE
+from etl.flows.pokedex_watcher import _ENTRY_RE, POKEDEX_PAGE
 from etl.scripts.check_sources import parse_game_version
 from etl.scripts.extract_sprites import count_sprite_entries
 

@@ -9,8 +9,6 @@ from fastapi import APIRouter, Depends, HTTPException, Path
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
-SPECIAL_SPRITES_DIR = FilePath(os.environ.get("SPECIAL_SPRITES_DIR", "/app/data/special_sprites"))
-
 from backend.db.session import get_db
 from backend.schemas.triple_fusion import (
     TripleFusionAbilityOut,
@@ -25,6 +23,8 @@ from backend.services.triple_fusion_service import (
     get_triple_fusion,
     list_triple_fusions,
 )
+
+SPECIAL_SPRITES_DIR = FilePath(os.environ.get("SPECIAL_SPRITES_DIR", "/app/data/special_sprites"))
 
 router = APIRouter(prefix="/triple-fusions", tags=["TripleFusion"])
 

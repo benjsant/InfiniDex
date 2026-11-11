@@ -3,10 +3,15 @@ evolutions, locations, weaknesses)."""
 
 from sqlalchemy.orm import Session, joinedload
 
-from backend.db.models import Pokemon, PokemonAbility, PokemonEvolution, PokemonLocation, PokemonType
+from backend.db.models import (
+    Pokemon,
+    PokemonAbility,
+    PokemonEvolution,
+    PokemonLocation,
+    PokemonType,
+)
 from backend.services.type_effectiveness import compute_weaknesses_for
 from backend.utils.text import ilike_escape
-
 
 _BST = (
     Pokemon.hp + Pokemon.attack + Pokemon.defense
@@ -194,7 +199,6 @@ def get_pokemon_evolutions(db: Session, pokemon_id: int) -> list[PokemonEvolutio
 
 def get_pokemon_locations(db: Session, pokemon_id: int) -> list[PokemonLocation]:
     """Encounter locations for a Pokémon, with location name eagerly loaded."""
-    from backend.db.models import Location  # noqa: PLC0415
     return (
         db.query(PokemonLocation)
         .options(joinedload(PokemonLocation.location))

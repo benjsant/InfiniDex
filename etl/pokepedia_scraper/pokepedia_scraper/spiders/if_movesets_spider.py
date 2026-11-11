@@ -21,7 +21,6 @@ import scrapy
 
 from pokepedia_scraper.items import MovesetItem
 
-
 # ── Column detection ─────────────────────────────────────────────────────────
 
 # Exact abbreviation used in the level-up table header

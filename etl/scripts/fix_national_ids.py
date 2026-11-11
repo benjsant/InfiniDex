@@ -20,7 +20,6 @@ forms mapped to their default variant.
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 
 from etl.utils.db import pg_connection
@@ -123,7 +122,7 @@ def fix_national_ids(conn) -> None:
     #    here, to avoid temporarily violating the UNIQUE constraint.
     updates: list[tuple[int, int | None]] = []
 
-    for pokemon_id, current_national, name_en in db_rows:
+    for pokemon_id, _current_national, name_en in db_rows:
         # Check that the DB name_en actually matches pokedex_if.json
         expected_name = pokedex_if.get(pokemon_id)
         if expected_name and expected_name != name_en:

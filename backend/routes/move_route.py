@@ -6,7 +6,15 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
-from backend.schemas.move import MoveDetail, MoveExpertOut, MoveListItem, MoveTutorOut, PokemonMoveOut, TMInfo, TMListItem, TMLocationOut
+from backend.schemas.move import (
+    MoveDetail,
+    MoveExpertOut,
+    MoveListItem,
+    MoveTutorOut,
+    TMInfo,
+    TMListItem,
+    TMLocationOut,
+)
 from backend.schemas.type_ import TypeOut
 from backend.services.move_service import (
     get_move_by_id,

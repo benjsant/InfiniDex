@@ -20,9 +20,9 @@ from __future__ import annotations
 
 import threading
 import time
+from collections.abc import Callable, Iterable, Sequence
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from logging import Logger
-from typing import Callable, Iterable, Sequence
 
 from etl.utils.http import get_json
 

@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Sequence, TypeVar
+from collections.abc import Sequence
 
 from sqlalchemy.orm import Session
 
 from backend.utils.text import ilike_escape, normalize
 
-T = TypeVar("T")
 
-
-def bilingual_ilike_search(
+def bilingual_ilike_search[T](
     db: Session,
     model: type[T],
     name: str,

@@ -4,16 +4,18 @@ on:
   pull_request:
     paths:
       - 'etl/**'
+      - 'ruff.toml'
       - '.github/workflows/etl-ci.yml'
   push:
     branches: [main]
     paths:
       - 'etl/**'
+      - 'ruff.toml'
       - '.github/workflows/etl-ci.yml'
 
 jobs:
   etl:
-    name: Compile gate + parser tests
+    name: Lint + compile gate + parser tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -30,6 +32,10 @@ jobs:
 
       - name: Install ETL deps
         run: uv sync --frozen --project etl
+
+      # Règles dans ruff.toml (racine), version épinglée dans le lockfile.
+      - name: Ruff
+        run: uv run --project etl ruff check etl
 
       # Syntax gate: nothing else compiled the ETL layer before — a broken
       # script (the bug class from this session) now fails CI here.

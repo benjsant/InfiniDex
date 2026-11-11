@@ -13,7 +13,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 # Import all models so SQLAlchemy registers them with Base
 import backend.db.models  # noqa: F401
-
 from backend.routes import (
     ability_route,
     ai_route,
