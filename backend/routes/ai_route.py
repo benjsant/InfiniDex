@@ -11,14 +11,20 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
-LOGGER = logging.getLogger(__name__)
-
 from backend.db.session import get_db
-from backend.schemas.ai import AiPromptInfo, AiProviderInfo, AiRequest, FeedbackRequest, FeedbackResponse
+from backend.schemas.ai import (
+    AiPromptInfo,
+    AiProviderInfo,
+    AiRequest,
+    FeedbackRequest,
+    FeedbackResponse,
+)
 from backend.services.ai_service import MAX_HISTORY_MSGS, stream_ai_response
 from backend.services.llm_providers import provider_setup_instructions, select_provider
 from backend.services.prompt import SYSTEM_PROMPT
 from backend.services.tools import TOOL_SPECS
+
+LOGGER = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/ai", tags=["AI"])
 

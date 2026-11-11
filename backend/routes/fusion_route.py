@@ -5,9 +5,9 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 
+from backend.db.models import Pokemon
 from backend.db.session import get_db
 from backend.routes.deps import get_pokemon_or_404
-from backend.db.models import Pokemon
 from backend.schemas.fusion import (
     FusionAbilityOut,
     FusionExpertMoveOut,
@@ -21,7 +21,6 @@ from backend.schemas.fusion import (
 from backend.schemas.type_ import TypeOut
 from backend.schemas.weakness import WeaknessOut
 from backend.services.fusion_service import (
-    load_pokemon_with_types,
     compute_fusion,
     compute_fusion_abilities,
     compute_fusion_expert_moves,
@@ -30,6 +29,7 @@ from backend.services.fusion_service import (
     list_featured_fusions,
     list_fusions_involving,
     list_top_fusions_for_pokemon,
+    load_pokemon_with_types,
     random_fusion_ids,
 )
 

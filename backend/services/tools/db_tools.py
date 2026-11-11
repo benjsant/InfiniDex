@@ -24,10 +24,17 @@ from backend.services.move_service import (
     list_tutors_for_move,
     search_moves,
 )
-from backend.services.pokemon_service import get_pokemon_by_id, get_pokemon_locations, search_pokemon, search_pokemon_locations
-from backend.services.triple_fusion_service import get_triple_fusion, list_triple_fusions
+from backend.services.pokemon_service import (
+    get_pokemon_by_id,
+    get_pokemon_locations,
+    search_pokemon,
+    search_pokemon_locations,
+)
 from backend.services.tools._base import Tool
-
+from backend.services.triple_fusion_service import (
+    get_triple_fusion,
+    list_triple_fusions,
+)
 
 # ─── Internal helpers ─────────────────────────────────────────────────────────
 

@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from etl.utils.db import pg_connection
@@ -124,7 +124,7 @@ def _snapshot_and_diff(cur, issues: int) -> None:
             "blocking_issues": issues,
         }
         record = {
-            "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "ts": datetime.now(UTC).isoformat(timespec="seconds"),
             **metrics,
         }
 
@@ -370,7 +370,7 @@ def run_audit() -> int:
         rows = cur.fetchall()
         if rows:
             warn(f"{len(rows)} Kanto/common Pokémon with no location:")
-            for pid, name, hoenn in rows[:30]:
+            for pid, name, _hoenn in rows[:30]:
                 print(f"       #{pid} {name}")
             if len(rows) > 30:
                 print(f"       … and {len(rows) - 30} more")

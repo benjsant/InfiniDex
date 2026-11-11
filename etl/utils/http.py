@@ -18,9 +18,9 @@ import json
 import logging
 import os
 import time
+from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Iterable
 
 import requests
 

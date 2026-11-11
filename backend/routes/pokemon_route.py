@@ -11,7 +11,12 @@ from backend.routes.deps import get_pokemon_or_404
 from backend.schemas.evolution import EvolutionOut
 from backend.schemas.location import LocationOut
 from backend.schemas.move import PokemonMoveOut
-from backend.schemas.pokemon import AbilityOut, PokemonDetail, PokemonListItem, PokemonTypeOut
+from backend.schemas.pokemon import (
+    AbilityOut,
+    PokemonDetail,
+    PokemonListItem,
+    PokemonTypeOut,
+)
 from backend.schemas.type_ import TypeOut
 from backend.schemas.weakness import WeaknessOut
 from backend.services.move_service import list_pokemon_moves

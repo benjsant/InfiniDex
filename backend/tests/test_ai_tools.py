@@ -52,7 +52,6 @@ def test_tool_specs_are_valid_openai_schema() -> None:
 
 
 def test_all_tools_have_callable_handler() -> None:
-    import asyncio
     for tool in TOOLS:
         assert callable(tool.handler), f"{tool.name} handler is not callable"
 

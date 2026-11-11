@@ -4,7 +4,17 @@ from __future__ import annotations
 
 from sqlalchemy.orm import Session, joinedload
 
-from backend.db.models import Location, Move, MoveExpertMove, MoveTutor, Pokemon, PokemonMove, TM, TMLocation, Type
+from backend.db.models import (
+    TM,
+    Location,
+    Move,
+    MoveExpertMove,
+    MoveTutor,
+    Pokemon,
+    PokemonMove,
+    TMLocation,
+    Type,
+)
 from backend.utils.search import bilingual_ilike_search
 
 

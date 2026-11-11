@@ -1,0 +1,28 @@
+# Lint Python partagé par backend/ et etl/ (ruff remonte l'arborescence
+# jusqu'à ce fichier). Règles listées explicitement : la sélection par défaut
+# de ruff change d'une version à l'autre, une montée de version ne doit pas
+# élargir le périmètre en silence.
+target-version = "py312"
+extend-exclude = ["**/.venv", "**/data", "**/fixtures"]
+
+[lint]
+select = [
+    "F",   # pyflakes : imports et variables inutilisés, noms indéfinis
+    "E",   # pycodestyle (erreurs)
+    "W",   # pycodestyle (warnings)
+    "I",   # tri des imports
+    "B",   # bugbear : pièges courants
+    "UP",  # syntaxe Python 3.12
+]
+ignore = [
+    "E501",  # longueur de ligne : pas de formateur adopté pour l'instant
+    "E741",  # `l` pour « ligne » est lisible ici
+    "B008",  # idiome FastAPI : `Depends()` en valeur par défaut
+]
+
+[lint.per-file-ignores]
+# Tokenizer MediaWiki volontairement compact (une transition d'état par ligne).
+"etl/utils/wikitext.py" = ["E702"]
+
+[lint.isort]
+known-first-party = ["backend", "etl"]

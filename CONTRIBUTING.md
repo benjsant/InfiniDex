@@ -163,7 +163,7 @@ Adding a tool:
 
 ## Code style
 
-- **Python**: follow the surrounding style (PEP 8, type hints). No linter or type checker is wired in yet, neither in the lockfiles nor in CI.
+- **Python**: ruff (rules in the root `ruff.toml`, shared by `backend/` and `etl/`), enforced by `backend-ci` and `etl-ci`. Run it with `docker compose --profile test run --rm --entrypoint uv test-backend run ruff check .` and `docker compose --profile test run --rm --entrypoint ruff test-etl check etl` (both containers mount `ruff.toml`). No formatter or type checker yet.
 - **TypeScript**: ESLint (flat config, `eslint-config-next`) + tsc, both enforced by `frontend-ci`.
 - **Comments**: only when the *why* is non-obvious. No docstring novels.
 - **No hallucination surface**: every factual claim in the AI prompt must be verifiable via a tool - no hardcoded game data in system.md that the DB already covers.

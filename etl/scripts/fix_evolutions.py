@@ -99,7 +99,7 @@ def fix_evolutions(conn) -> None:
     # Warm the shared HTTP cache concurrently; the loop below reads from it.
     prefetch_json(POKEAPI_SPECIES.format(nid) for _, _, nid in pokemon_rows)
 
-    for i, (pk_id, name_en, national_id) in enumerate(pokemon_rows, start=1):
+    for i, (_pk_id, name_en, national_id) in enumerate(pokemon_rows, start=1):
         species = get_json(POKEAPI_SPECIES.format(national_id))
         if not species:
             LOGGER.warning("species not found for %s (national=%d)", name_en, national_id)

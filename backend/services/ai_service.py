@@ -14,7 +14,8 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import AsyncIterator, Literal, TypedDict
+from collections.abc import AsyncIterator
+from typing import Literal, TypedDict
 
 from sqlalchemy.orm import Session
 

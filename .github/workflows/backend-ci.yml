@@ -4,16 +4,18 @@ on:
   pull_request:
     paths:
       - 'backend/**'
+      - 'ruff.toml'
       - '.github/workflows/backend-ci.yml'
   push:
     branches: [main]
     paths:
       - 'backend/**'
+      - 'ruff.toml'
       - '.github/workflows/backend-ci.yml'
 
 jobs:
   smoke:
-    name: Import + lightweight tests
+    name: Lint + import + lightweight tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -31,6 +33,11 @@ jobs:
       - name: Install backend deps
         working-directory: backend
         run: uv sync --frozen
+
+      # Règles dans ruff.toml (racine), version épinglée dans le lockfile.
+      - name: Ruff
+        working-directory: backend
+        run: uv run ruff check .
 
       - name: Verify app imports (pytest collect)
         working-directory: backend

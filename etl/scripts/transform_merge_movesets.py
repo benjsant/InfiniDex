@@ -104,15 +104,6 @@ def apply_alias(name: str) -> str | None:
     return name
 
 
-def build_name_fr_to_en(moves: list[dict]) -> dict[str, str]:
-    """Build a mapping: normalized_name_fr → name_en."""
-    mapping: dict[str, str] = {}
-    for m in moves:
-        if m.get("name_fr"):
-            mapping[normalize(m["name_fr"])] = m["name_en"]
-    return mapping
-
-
 def build_name_en_to_fr(moves: list[dict]) -> dict[str, str]:
     """Build a mapping: normalized_name_en → name_fr."""
     mapping: dict[str, str] = {}
@@ -134,7 +125,6 @@ def main() -> None:
     moves_if       : list[dict] = load_json(IN_MOVES)
 
     en_to_fr = build_name_en_to_fr(moves_if)
-    fr_to_en = build_name_fr_to_en(moves_if)
 
     # ── Index base movesets by (if_id, move_name_fr_normalized, method) ──────
     base_index: set[tuple[int, str, str]] = set()
@@ -160,12 +150,6 @@ def main() -> None:
     # ── TMs IF — add CT rows not already present ──────────────────────────────
     # tms_if entries have move_name in EN; we convert to FR for consistency
     # then check if (pokemon_id, move_name_fr, 'tm') already exists in base
-
-    # Build set of (if_id, move_name_fr_norm) already known via any method
-    base_any_method: set[tuple[int, str]] = {
-        (r["pokemon_if_id"], normalize(r["move_name_fr"]))
-        for r in base_movesets
-    }
 
     # tms_if only lists the move + location, not which Pokémon learn it.
     # The Pokémon→CT assignment comes from the base moveset (method='tm').
@@ -220,8 +204,6 @@ def main() -> None:
     # For each base Pokémon that learns a move by some method, if IF
     # adds a NEW method (tm/tutor) not present in base, add a row.
     # We derive this from the CT/tutor lists cross-referenced with base records.
-
-    base_pokemon_ids = {r["pokemon_if_id"] for r in base_movesets}
 
     for record in base_movesets:
         if_id   = record["pokemon_if_id"]

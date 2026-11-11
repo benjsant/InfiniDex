@@ -17,10 +17,8 @@ this script uses ON CONFLICT DO NOTHING so it never overwrites existing entries.
 from __future__ import annotations
 
 import re
-import time
 
 import httpx
-import psycopg2
 
 from etl.scripts.extract_pokedex_if import PAGE as POKEDEX_PAGE
 from etl.utils.db import pg_connection

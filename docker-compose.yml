@@ -163,6 +163,7 @@ services:
       INFINIDEX_TEST_DOCKER: "1"
     volumes:
       - ./backend:/app/backend
+      - ./ruff.toml:/app/ruff.toml:ro   # règles ruff partagées
     networks:
       - backend
     working_dir: /app/backend
@@ -180,6 +181,7 @@ services:
     volumes:
       - ./etl:/app/etl
       - ./docker-compose.yml:/app/docker-compose.yml:ro   # test_versions.py
+      - ./ruff.toml:/app/ruff.toml:ro                     # règles ruff partagées
     entrypoint: ["python", "-m", "pytest"]
     command: ["etl/tests", "-v"]
 
