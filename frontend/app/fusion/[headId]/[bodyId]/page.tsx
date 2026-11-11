@@ -27,7 +27,7 @@ export default function FusionResultPage({
 
   const { data: full, isLoading, error }                     = useFusionFull(hId, bId);
   const fusion                                               = full?.fusion;
-  const moves                                                = full?.moves ?? [];
+  const moves                                                = useMemo(() => full?.moves ?? [], [full]);
   const expertMoves                                          = full?.expert_moves ?? [];
   const { data: abilities = [] }                             = useFusionAbilities(hId, bId);
   const { data: sprites = [], isLoading: spritesLoading }    = useSprites(hId, bId);

@@ -93,7 +93,6 @@ function LocationsPanel({ locations }: { locations: ItemLocationOut[] }) {
 
 function ItemRow({ item }: { item: ItemOut }) {
   const [open, setOpen] = useState(false);
-  const hasLocations = item.locations.length > 0;
   const colSpan = 5;
 
   return (

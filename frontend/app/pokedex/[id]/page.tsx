@@ -21,7 +21,7 @@ import { WeaknessGrid } from "@/components/pokemon/WeaknessGrid";
 import { AiSuggestButton } from "@/components/ai/AiSuggestButton";
 import { basePokemonSprite, typeColor } from "@/lib/constants";
 import { GameBadge } from "@/components/pokemon/GameBadge";
-import { primaryType, secondaryType, cn } from "@/lib/utils";
+import { primaryType, secondaryType } from "@/lib/utils";
 import { FusionSprite } from "@/components/fusion/FusionSprite";
 import { usePokemonFavorites } from "@/hooks/usePokemonFavorites";
 import { useToast } from "@/components/layout/Toast";

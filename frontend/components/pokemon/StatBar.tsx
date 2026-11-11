@@ -1,4 +1,4 @@
-import { statBarWidth, formatStatName } from "@/lib/utils";
+import { statBarWidth } from "@/lib/utils";
 import { STAT_LABELS } from "@/lib/constants";
 
 interface StatBarProps {

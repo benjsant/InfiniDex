@@ -3,7 +3,6 @@
 import { use, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronLeft } from "lucide-react";
 import { usePokemon, usePokemonList, useTypes } from "@/hooks/usePokemon";
 import { TypeBadge } from "@/components/pokemon/TypeBadge";
 import { normalize, primaryType, secondaryType } from "@/lib/utils";

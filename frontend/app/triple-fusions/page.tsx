@@ -39,6 +39,7 @@ function TripleSpriteWithFallback({ id, name, components }: { id: number; name: 
 
   if (!failed) {
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={`/api/triple-fusions/${id}/sprite`}
         alt={name}
@@ -55,6 +56,7 @@ function TripleSpriteWithFallback({ id, name, components }: { id: number; name: 
       <div className="flex gap-1 items-center">
         {components?.map((c, i) => (
           <span key={c.pokemon_id}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={basePokemonSprite(c.sprite_id)}
               alt={c.name_fr ?? c.name_en}
