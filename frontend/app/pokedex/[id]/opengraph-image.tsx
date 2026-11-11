@@ -1,7 +1,10 @@
 import { ImageResponse } from "next/og";
 import { BACKEND_URL, fetchJson, fetchSpriteDataUrl } from "@/lib/og";
 
-export const runtime = "edge";
+// Rendue à chaque demande avec les données du backend. Sans ce réglage, le
+// generateStaticParams du layout pré-rendrait les 594 images au build, où le
+// backend n'est pas joignable : elles resteraient figées sur le repli vide.
+export const dynamic = "force-dynamic";
 export const alt = "Pokémon Infinite Fusion";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";

@@ -1,7 +1,9 @@
 import { ImageResponse } from "next/og";
 import { BACKEND_URL, fetchJson, fetchSpriteDataUrl } from "@/lib/og";
 
-export const runtime = "edge";
+// Rendue à chaque demande avec les données du backend (jamais pré-rendue au
+// build, où le backend n'est pas joignable).
+export const dynamic = "force-dynamic";
 export const alt = "Fusion Pokémon Infinite Fusion";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";

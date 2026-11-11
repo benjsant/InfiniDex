@@ -1,6 +1,6 @@
 /**
  * Shared helpers for the OpenGraph image routes (`opengraph-image.tsx`).
- * Runs on the Next.js edge runtime — keep dependencies minimal.
+ * Runs on the Node.js runtime (the Edge Runtime is deprecated since Next 16).
  */
 
 export const BACKEND_URL =
@@ -29,10 +29,8 @@ export async function fetchSpriteDataUrl(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, { headers: authHeaders() });
     if (!res.ok) return null;
-    const bytes = new Uint8Array(await res.arrayBuffer());
-    let binary = "";
-    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-    return `data:image/png;base64,${btoa(binary)}`;
+    const b64 = Buffer.from(await res.arrayBuffer()).toString("base64");
+    return `data:image/png;base64,${b64}`;
   } catch {
     return null;
   }
